@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="matpam.member.MemberMapper">
+
+    <resultMap id="memberResultMap" type="kr.co.matpam.admin.member.service.MemberVO">
+        <result property="memberType" column="MEMBER_TYPE" />
+        <result property="region" column="REGION" />
+        <result property="memberId" column="MEMBER_ID" />
+        <result property="companyName" column="COMPANY_NAME" />
+        <result property="businessNumber" column="BUSINESS_NUMBER" />
+        <result property="ceoName" column="CEO_NAME" />
+        <result property="contactNumber" column="CONTACT_NUMBER" />
+        <result property="managerName" column="MANAGER_NAME" />
+        <result property="managerContact" column="MANAGER_CONTACT" />
+        <result property="creditLimit" column="CREDIT_LIMIT" />
+        <result property="meatMoney" column="MEAT_MONEY" />
+        <result property="memberGrade" column="MEMBER_GRADE" />
+        <result property="status" column="STATUS" />
+        <result property="joinDate" column="JOIN_DATE" jdbcType="DATE" />
+    </resultMap>
+
+    <sql id="memberWhere">
+        <where>
+            <if test="status != null and status != ''">
+                AND STATUS = #{status}
+            </if>
+            <if test="region != null and region != ''">
+                AND REGION = #{region}
+            </if>
+            <if test="memberGrade != null and memberGrade != ''">
+                AND MEMBER_GRADE = #{memberGrade}
+            </if>
+            <if test="joinDateFrom != null and joinDateFrom != ''">
+                AND JOIN_DATE <![CDATA[>=]]> #{joinDateFrom}
+            </if>
+            <if test="joinDateTo != null and joinDateTo != ''">
+                AND JOIN_DATE <![CDATA[<=]]> #{joinDateTo}
+            </if>
+            <if test="searchKeyword != null and searchKeyword != '' and searchCondition != null and searchCondition != ''">
+                <choose>
+                    <when test="searchCondition == 'memberId'">
+                        AND MEMBER_ID LIKE CONCAT('%', #{searchKeyword}, '%')
+                    </when>
+                    <when test="searchCondition == 'companyName'">
+                        AND COMPANY_NAME LIKE CONCAT('%', #{searchKeyword}, '%')
+                    </when>
+                    <otherwise>
+                        AND (MEMBER_ID LIKE CONCAT('%', #{searchKeyword}, '%')
+                             OR COMPANY_NAME LIKE CONCAT('%', #{searchKeyword}, '%'))
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectMemberList" resultMap="memberResultMap" parameterType="kr.co.matpam.admin.member.service.MemberDefaultVO">
+        SELECT MEMBER_TYPE,
+               REGION,
+               MEMBER_ID,
+               COMPANY_NAME,
+               BUSINESS_NUMBER,
+               CEO_NAME,
+               CONTACT_NUMBER,
+               MANAGER_NAME,
+               MANAGER_CONTACT,
+               CREDIT_LIMIT,
+               MEAT_MONEY,
+               MEMBER_GRADE,
+               STATUS,
+               JOIN_DATE
+          FROM TB_MEMBER
+        <include refid="memberWhere" />
+         ORDER BY JOIN_DATE DESC
+         LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
+    </select>
+
+    <select id="selectMemberListTotCnt" resultType="int" parameterType="kr.co.matpam.admin.member.service.MemberDefaultVO">
+        SELECT COUNT(1)
+          FROM TB_MEMBER
+        <include refid="memberWhere" />
+    </select>
+
+</mapper>
