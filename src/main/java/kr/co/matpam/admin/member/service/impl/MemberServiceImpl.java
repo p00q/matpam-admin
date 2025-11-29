@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import egovframework.rte.fdl.cmmn.EgovAbstractServiceImpl;
+import org.egovframe.rte.fdl.cmmn.EgovAbstractServiceImpl;
 import kr.co.matpam.admin.member.service.MemberDefaultVO;
 import kr.co.matpam.admin.member.service.MemberService;
 import kr.co.matpam.admin.member.service.MemberVO;
