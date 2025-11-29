@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
-import egovframework.rte.psl.dataaccess.EgovAbstractMapper;
+import org.egovframe.rte.psl.dataaccess.EgovAbstractMapper;
 import kr.co.matpam.admin.member.service.MemberDefaultVO;
 import kr.co.matpam.admin.member.service.MemberVO;
 

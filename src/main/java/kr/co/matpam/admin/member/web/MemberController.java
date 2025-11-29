@@ -9,7 +9,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import egovframework.rte.ptl.mvc.tags.ui.pagination.PaginationInfo;
+import org.egovframe.rte.ptl.mvc.tags.ui.pagination.PaginationInfo;
 import kr.co.matpam.admin.member.service.MemberDefaultVO;
 import kr.co.matpam.admin.member.service.MemberService;
 import kr.co.matpam.admin.member.service.MemberVO;
