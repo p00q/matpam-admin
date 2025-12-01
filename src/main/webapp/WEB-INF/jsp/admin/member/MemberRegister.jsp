@@ -64,6 +64,8 @@
                 <form name="memberForm" method="post" action="<c:url value='/admin/member/insertMember.do'/>">
                     <input type="hidden" name="menu" value="member" />
                     <input type="hidden" name="joinDate" value="${currentDate}" />
+                    <input type="hidden" name="creditLimit" value="0" />
+                    <input type="hidden" name="meatMoney" value="0" />
 
                     <!-- Tab Navigation -->
                     <ul class="nav nav-tabs mb-3" id="memberTab" role="tablist">

@@ -58,6 +58,12 @@ public class MemberController {
         if (memberVO.getJoinDate() == null) {
             memberVO.setJoinDate(LocalDate.now());
         }
+        if (memberVO.getCreditLimit() == null) {
+            memberVO.setCreditLimit(0L);
+        }
+        if (memberVO.getMeatMoney() == null) {
+            memberVO.setMeatMoney(0L);
+        }
         memberService.insertMember(memberVO);
         return "redirect:/admin/member/memberList.do?menu=member";
     }
