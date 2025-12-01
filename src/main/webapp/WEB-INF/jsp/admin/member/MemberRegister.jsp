@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-    <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-        <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<!-- 회원등록 화면 -->
 
             <style>
                 .form-table th,
@@ -92,17 +93,27 @@
                                     <col style="width: 15%;">
                                     <col style="width: 35%;">
                                 </colgroup>
-                                <th>지역</th>
-                                <td>
-                                    <select name="region" class="form-select form-select-sm" style="max-width: 200px;">
-                                        <option value="">전체</option>
-                                        <option value="SEOUL">서울</option>
-                                        <option value="GYEONGGI">경기</option>
-                                        <option value="INCHEON">인천</option>
-                                        <option value="GANGWON">강원</option>
-                                    </select>
-                                </td>
-                                </tr>
+                                <tbody>
+                                    <tr>
+                                        <th>회원타입 <span class="text-danger">*</span></th>
+                                        <td>
+                                            <select name="memberType" class="form-select form-select-sm" style="max-width: 200px;" required>
+                                                <option value="" disabled selected>회원타입 선택</option>
+                                                <option value="INDIVIDUAL">일반회원</option>
+                                                <option value="BUSINESS">사업자회원</option>
+                                            </select>
+                                        </td>
+                                        <th>지역</th>
+                                        <td>
+                                            <select name="region" class="form-select form-select-sm" style="max-width: 200px;">
+                                                <option value="">전체</option>
+                                                <option value="SEOUL">서울</option>
+                                                <option value="GYEONGGI">경기</option>
+                                                <option value="INCHEON">인천</option>
+                                                <option value="GANGWON">강원</option>
+                                            </select>
+                                        </td>
+                                    </tr>
                                 <tr>
                                     <th>아이디 <span class="text-danger">*</span></th>
                                     <td>
@@ -360,6 +371,11 @@
                         document.getElementById('managerPhone1').value = document.querySelector('input[name="companyPhone"]').value;
                         document.getElementById('managerMobile1').value = document.querySelector('input[name="mobileNumber"]').value;
                         document.getElementById('managerEmail1').value = document.querySelector('input[name="email"]').value;
+                    } else {
+                        document.getElementById('managerName1').value = '';
+                        document.getElementById('managerPhone1').value = '';
+                        document.getElementById('managerMobile1').value = '';
+                        document.getElementById('managerEmail1').value = '';
                     }
                 }
 
@@ -446,6 +462,7 @@
                 function resetForm() {
                     if (confirm('입력한 내용을 모두 취소하시겠습니까?')) {
                         document.querySelector('form[name="memberForm"]').reset();
+                        document.querySelector('form[name="memberForm"]').classList.remove('was-validated');
                         // 담당자 2 이상 모두 삭제
                         const managers = document.querySelectorAll('.manager-section');
                         managers.forEach((manager, index) => {
