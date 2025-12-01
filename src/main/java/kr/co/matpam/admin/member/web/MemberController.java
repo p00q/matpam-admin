@@ -1,5 +1,6 @@
 package kr.co.matpam.admin.member.web;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -54,6 +55,9 @@ public class MemberController {
 
     @RequestMapping(value = "/admin/member/insertMember.do")
     public String insertMember(@ModelAttribute("memberVO") MemberVO memberVO) throws Exception {
+        if (memberVO.getJoinDate() == null) {
+            memberVO.setJoinDate(LocalDate.now());
+        }
         memberService.insertMember(memberVO);
         return "redirect:/admin/member/memberList.do?menu=member";
     }

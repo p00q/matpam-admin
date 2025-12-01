@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-    <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-        <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<!-- 회원등록 화면 -->
 
             <style>
                 .form-table th,
@@ -57,8 +58,12 @@
                     </ol>
                 </nav>
 
+                <jsp:useBean id="today" class="java.util.Date" />
+                <fmt:formatDate var="currentDate" value="${today}" pattern="yyyy-MM-dd" />
+
                 <form name="memberForm" method="post" action="<c:url value='/admin/member/insertMember.do'/>">
                     <input type="hidden" name="menu" value="member" />
+                    <input type="hidden" name="joinDate" value="${currentDate}" />
 
                     <!-- Tab Navigation -->
                     <ul class="nav nav-tabs mb-3" id="memberTab" role="tablist">
@@ -92,17 +97,27 @@
                                     <col style="width: 15%;">
                                     <col style="width: 35%;">
                                 </colgroup>
-                                <th>지역</th>
-                                <td>
-                                    <select name="region" class="form-select form-select-sm" style="max-width: 200px;">
-                                        <option value="">전체</option>
-                                        <option value="SEOUL">서울</option>
-                                        <option value="GYEONGGI">경기</option>
-                                        <option value="INCHEON">인천</option>
-                                        <option value="GANGWON">강원</option>
-                                    </select>
-                                </td>
-                                </tr>
+                                <tbody>
+                                    <tr>
+                                        <th>회원타입 <span class="text-danger">*</span></th>
+                                        <td>
+                                            <select name="memberType" class="form-select form-select-sm" style="max-width: 200px;" required>
+                                                <option value="" disabled selected>회원타입 선택</option>
+                                                <option value="INDIVIDUAL">일반회원</option>
+                                                <option value="BUSINESS">사업자회원</option>
+                                            </select>
+                                        </td>
+                                        <th>지역</th>
+                                        <td>
+                                            <select name="region" class="form-select form-select-sm" style="max-width: 200px;">
+                                                <option value="">전체</option>
+                                                <option value="SEOUL">서울</option>
+                                                <option value="GYEONGGI">경기</option>
+                                                <option value="INCHEON">인천</option>
+                                                <option value="GANGWON">강원</option>
+                                            </select>
+                                        </td>
+                                    </tr>
                                 <tr>
                                     <th>아이디 <span class="text-danger">*</span></th>
                                     <td>
@@ -147,10 +162,10 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th>휴대폰번호</th>
+                                    <th>연락처 <span class="text-danger">*</span></th>
                                     <td>
-                                        <input type="text" name="mobileNumber" class="form-control form-control-sm"
-                                            placeholder="010-0000-0000" maxlength="13" />
+                                        <input type="tel" name="contactNumber" class="form-control form-control-sm"
+                                            placeholder="010-0000-0000" maxlength="13" required />
                                     </td>
                                     <th>회사 전화번호</th>
                                     <td>
@@ -205,12 +220,12 @@
                                             <tr>
                                                 <th>이름</th>
                                                 <td>
-                                                    <input type="text" name="managerName1" id="managerName1"
+                                                    <input type="text" name="managerName" id="managerName"
                                                         class="form-control form-control-sm" />
                                                 </td>
                                                 <th>전화번호</th>
                                                 <td>
-                                                    <input type="tel" name="managerPhone1" id="managerPhone1"
+                                                    <input type="tel" name="managerContact" id="managerContact"
                                                         class="form-control form-control-sm" placeholder="010-0000-0000"
                                                         maxlength="13" />
                                                 </td>
@@ -300,7 +315,7 @@
 
                 // 전화번호 자동 하이픈 추가
                 document.addEventListener('DOMContentLoaded', function () {
-                    const phoneInputs = document.querySelectorAll('input[type="tel"], input[name="businessNumber"], input[name="mobileNumber"], input[name="companyPhone"]');
+                    const phoneInputs = document.querySelectorAll('input[type="tel"], input[name="businessNumber"], input[name="contactNumber"], input[name="companyPhone"]');
                     phoneInputs.forEach(input => {
                         input.addEventListener('input', function (e) {
                             let value = e.target.value.replace(/[^0-9]/g, '');
@@ -356,10 +371,15 @@
                 function copySameAsMember() {
                     const checked = document.getElementById('sameAsMember').checked;
                     if (checked) {
-                        document.getElementById('managerName1').value = document.querySelector('input[name="ceoName"]').value;
-                        document.getElementById('managerPhone1').value = document.querySelector('input[name="companyPhone"]').value;
-                        document.getElementById('managerMobile1').value = document.querySelector('input[name="mobileNumber"]').value;
+                        document.getElementById('managerName').value = document.querySelector('input[name="ceoName"]').value;
+                        document.getElementById('managerContact').value = document.querySelector('input[name="contactNumber"]').value;
+                        document.getElementById('managerMobile1').value = document.querySelector('input[name="contactNumber"]').value;
                         document.getElementById('managerEmail1').value = document.querySelector('input[name="email"]').value;
+                    } else {
+                        document.getElementById('managerName').value = '';
+                        document.getElementById('managerContact').value = '';
+                        document.getElementById('managerMobile1').value = '';
+                        document.getElementById('managerEmail1').value = '';
                     }
                 }
 
@@ -446,6 +466,7 @@
                 function resetForm() {
                     if (confirm('입력한 내용을 모두 취소하시겠습니까?')) {
                         document.querySelector('form[name="memberForm"]').reset();
+                        document.querySelector('form[name="memberForm"]').classList.remove('was-validated');
                         // 담당자 2 이상 모두 삭제
                         const managers = document.querySelectorAll('.manager-section');
                         managers.forEach((manager, index) => {
