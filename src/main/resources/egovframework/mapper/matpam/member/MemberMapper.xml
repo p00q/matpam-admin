@@ -3,6 +3,7 @@
 <mapper namespace="matpam.member.MemberMapper">
 
     <resultMap id="memberResultMap" type="kr.co.matpam.admin.member.service.MemberVO">
+        <result property="locId" column="LOCID" />
         <result property="memberType" column="MEMBER_TYPE" />
         <result property="region" column="REGION" />
         <result property="memberId" column="MEMBER_ID" />
@@ -17,12 +18,16 @@
         <result property="memberGrade" column="MEMBER_GRADE" />
         <result property="status" column="STATUS" />
         <result property="joinDate" column="JOIN_DATE" jdbcType="DATE" />
+        <result property="approvalYn" column="APPROVAL_YN" />
     </resultMap>
 
     <sql id="memberWhere">
         <where>
             <if test="status != null and status != ''">
                 AND STATUS = #{status}
+            </if>
+            <if test="memberType != null and memberType != ''">
+                AND MEMBER_TYPE = #{memberType}
             </if>
             <if test="region != null and region != ''">
                 AND REGION = #{region}
@@ -54,7 +59,8 @@
     </sql>
 
     <select id="selectMemberList" resultMap="memberResultMap" parameterType="kr.co.matpam.admin.member.service.MemberDefaultVO">
-        SELECT MEMBER_TYPE,
+        SELECT LOCID,
+               MEMBER_TYPE,
                REGION,
                MEMBER_ID,
                COMPANY_NAME,
@@ -67,7 +73,8 @@
                MEAT_MONEY,
                MEMBER_GRADE,
                STATUS,
-               JOIN_DATE
+               JOIN_DATE,
+               APPROVAL_YN
           FROM TB_MEMBER
         <include refid="memberWhere" />
          ORDER BY JOIN_DATE DESC
@@ -79,5 +86,43 @@
           FROM TB_MEMBER
         <include refid="memberWhere" />
     </select>
+
+    <insert id="insertMember" parameterType="kr.co.matpam.admin.member.service.MemberVO">
+        INSERT INTO TB_MEMBER (
+            LOCID,
+            MEMBER_TYPE,
+            REGION,
+            MEMBER_ID,
+            COMPANY_NAME,
+            BUSINESS_NUMBER,
+            CEO_NAME,
+            CONTACT_NUMBER,
+            MANAGER_NAME,
+            MANAGER_CONTACT,
+            CREDIT_LIMIT,
+            MEAT_MONEY,
+            MEMBER_GRADE,
+            STATUS,
+            JOIN_DATE,
+            APPROVAL_YN
+        ) VALUES (
+            #{locId},
+            #{memberType},
+            #{region},
+            #{memberId},
+            #{companyName},
+            #{businessNumber},
+            #{ceoName},
+            #{contactNumber},
+            #{managerName},
+            #{managerContact},
+            #{creditLimit},
+            #{meatMoney},
+            #{memberGrade},
+            #{status},
+            COALESCE(#{joinDate}, CURRENT_DATE),
+            COALESCE(#{approvalYn}, 'N')
+        )
+    </insert>
 
 </mapper>

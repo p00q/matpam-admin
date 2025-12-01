@@ -18,4 +18,8 @@ public class MemberDAO extends EgovAbstractMapper {
     public int selectMemberListTotCnt(MemberDefaultVO searchVO) {
         return selectOne("matpam.member.MemberMapper.selectMemberListTotCnt", searchVO);
     }
+
+    public void insertMember(MemberVO member) {
+        insert("matpam.member.MemberMapper.insertMember", member);
+    }
 }

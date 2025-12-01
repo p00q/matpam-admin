@@ -1,12 +1,15 @@
 package kr.co.matpam.admin.member.service;
 
 import java.io.Serializable;
-import java.time.LocalDate;
+import java.sql.Date;
+
+import org.springframework.format.annotation.DateTimeFormat;
 
 public class MemberVO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    private String locId;
     private String memberType;
     private String region;
     private String memberId;
@@ -20,7 +23,17 @@ public class MemberVO implements Serializable {
     private Long meatMoney;
     private String memberGrade;
     private String status;
-    private LocalDate joinDate;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date joinDate;
+    private String approvalYn;
+
+    public String getLocId() {
+        return locId;
+    }
+
+    public void setLocId(String locId) {
+        this.locId = locId;
+    }
 
     public String getMemberType() {
         return memberType;
@@ -126,11 +139,19 @@ public class MemberVO implements Serializable {
         this.status = status;
     }
 
-    public LocalDate getJoinDate() {
+    public Date getJoinDate() {
         return joinDate;
     }
 
-    public void setJoinDate(LocalDate joinDate) {
+    public void setJoinDate(Date joinDate) {
         this.joinDate = joinDate;
+    }
+
+    public String getApprovalYn() {
+        return approvalYn;
+    }
+
+    public void setApprovalYn(String approvalYn) {
+        this.approvalYn = approvalYn;
     }
 }

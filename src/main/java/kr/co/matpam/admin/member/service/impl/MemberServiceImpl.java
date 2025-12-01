@@ -31,4 +31,9 @@ public class MemberServiceImpl extends EgovAbstractServiceImpl implements Member
     public int selectMemberListTotCnt(MemberDefaultVO searchVO) throws Exception {
         return memberDAO.selectMemberListTotCnt(searchVO);
     }
+
+    @Override
+    public void insertMember(MemberVO member) throws Exception {
+        memberDAO.insertMember(member);
+    }
 }

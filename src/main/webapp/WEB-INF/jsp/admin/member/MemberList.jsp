@@ -14,6 +14,14 @@
     <h2 class="mb-4">회원 목록</h2>
     <form class="row gy-2 gx-3 align-items-center mb-3" action="<c:url value='/admin/member/memberList.do'/>" method="get">
         <div class="col-md-2">
+            <label class="form-label">회원타입</label>
+            <select name="memberType" class="form-select">
+                <option value="">전체</option>
+                <option value="BUYER" <c:if test="${searchVO.memberType eq 'BUYER'}">selected</c:if>>구매자</option>
+                <option value="SELLER" <c:if test="${searchVO.memberType eq 'SELLER'}">selected</c:if>>판매자</option>
+            </select>
+        </div>
+        <div class="col-md-2">
             <label class="form-label">가입상태</label>
             <select name="status" class="form-select">
                 <option value="">전체</option>
@@ -69,24 +77,41 @@
             <th scope="col">회원타입</th>
             <th scope="col">지역</th>
             <th scope="col">아이디</th>
+            <th scope="col">LOCID</th>
             <th scope="col">업체명</th>
             <th scope="col">사업자번호</th>
             <th scope="col">대표명</th>
-            <th scope="col">연락처</th>
+            <th scope="col">대표연락처</th>
             <th scope="col">담당자</th>
             <th scope="col">담당자연락처</th>
             <th scope="col">여신</th>
             <th scope="col">미트머니</th>
             <th scope="col">회원등급</th>
+            <th scope="col">가입일</th>
+            <th scope="col">승인여부</th>
             <th scope="col">가입상태</th>
         </tr>
         </thead>
         <tbody>
         <c:forEach var="member" items="${resultList}">
             <tr>
-                <td>${member.memberType}</td>
-                <td>${member.region}</td>
+                <td>
+                    <c:choose>
+                        <c:when test="${member.memberType eq 'BUYER'}">구매자</c:when>
+                        <c:when test="${member.memberType eq 'SELLER'}">판매자</c:when>
+                        <c:otherwise>${member.memberType}</c:otherwise>
+                    </c:choose>
+                </td>
+                <td>
+                    <c:choose>
+                        <c:when test="${member.region eq 'SEOUL'}">서울</c:when>
+                        <c:when test="${member.region eq 'BUSAN'}">부산</c:when>
+                        <c:when test="${member.region eq 'DAEJEON'}">대전</c:when>
+                        <c:otherwise>${member.region}</c:otherwise>
+                    </c:choose>
+                </td>
                 <td>${member.memberId}</td>
+                <td>${member.locId}</td>
                 <td>${member.companyName}</td>
                 <td>${member.businessNumber}</td>
                 <td>${member.ceoName}</td>
@@ -96,16 +121,30 @@
                 <td class="text-end"><fmt:formatNumber value="${member.creditLimit}" type="number" groupingUsed="true"/></td>
                 <td class="text-end"><fmt:formatNumber value="${member.meatMoney}" type="number" groupingUsed="true"/></td>
                 <td>${member.memberGrade}</td>
+                <td><fmt:formatDate value="${member.joinDate}" pattern="yyyy-MM-dd"/></td>
+                <td>
+                    <span class="badge bg-<c:choose><c:when test='${member.approvalYn eq "Y"}'>success</c:when><c:otherwise>secondary</c:otherwise></c:choose>">
+                        <c:choose>
+                            <c:when test="${member.approvalYn eq 'Y'}">승인</c:when>
+                            <c:otherwise>대기</c:otherwise>
+                        </c:choose>
+                    </span>
+                </td>
                 <td>
                     <span class="badge bg-<c:choose><c:when test='${member.status eq "ACTIVE"}'>success</c:when><c:when test='${member.status eq "PENDING"}'>warning text-dark</c:when><c:otherwise>secondary</c:otherwise></c:choose>">
-                        ${member.status}
+                        <c:choose>
+                            <c:when test="${member.status eq 'ACTIVE'}">가입</c:when>
+                            <c:when test="${member.status eq 'PENDING'}">대기</c:when>
+                            <c:when test="${member.status eq 'INACTIVE'}">탈퇴</c:when>
+                            <c:otherwise>${member.status}</c:otherwise>
+                        </c:choose>
                     </span>
                 </td>
             </tr>
         </c:forEach>
         <c:if test="${empty resultList}">
             <tr>
-                <td colspan="13" class="text-center">등록된 회원이 없습니다.</td>
+                <td colspan="16" class="text-center">등록된 회원이 없습니다.</td>
             </tr>
         </c:if>
         </tbody>
@@ -117,6 +156,7 @@
 
     <form name="pageForm" action="<c:url value='/admin/member/memberList.do'/>" method="get">
         <input type="hidden" name="pageIndex" value="${searchVO.pageIndex}"/>
+        <input type="hidden" name="memberType" value="${searchVO.memberType}"/>
         <input type="hidden" name="status" value="${searchVO.status}"/>
         <input type="hidden" name="region" value="${searchVO.region}"/>
         <input type="hidden" name="joinDateFrom" value="${searchVO.joinDateFrom}"/>
