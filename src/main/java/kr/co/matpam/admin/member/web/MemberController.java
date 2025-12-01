@@ -21,7 +21,8 @@ public class MemberController {
     private MemberService memberService;
 
     @RequestMapping(value = "/admin/member/memberList.do")
-    public String selectMemberList(@ModelAttribute("searchVO") MemberDefaultVO searchVO, ModelMap model) throws Exception {
+    public String selectMemberList(@ModelAttribute("searchVO") MemberDefaultVO searchVO, ModelMap model)
+            throws Exception {
         PaginationInfo paginationInfo = new PaginationInfo();
         paginationInfo.setCurrentPageNo(searchVO.getPageIndex());
         paginationInfo.setRecordCountPerPage(searchVO.getPageUnit());
@@ -37,6 +38,23 @@ public class MemberController {
         List<MemberVO> resultList = memberService.selectMemberList(searchVO);
         model.addAttribute("resultList", resultList);
         model.addAttribute("paginationInfo", paginationInfo);
-        return "admin/member/MemberList";
+
+        // Set content page for layout
+        model.addAttribute("contentPage", "/WEB-INF/jsp/admin/member/MemberList.jsp");
+
+        return "layout/main";
+    }
+
+    @RequestMapping(value = "/admin/member/memberRegisterForm.do")
+    public String memberRegisterForm(ModelMap model) throws Exception {
+        // Set content page for layout
+        model.addAttribute("contentPage", "/WEB-INF/jsp/admin/member/MemberRegister.jsp");
+        return "layout/main";
+    }
+
+    @RequestMapping(value = "/admin/member/insertMember.do")
+    public String insertMember(@ModelAttribute("memberVO") MemberVO memberVO) throws Exception {
+        memberService.insertMember(memberVO);
+        return "redirect:/admin/member/memberList.do?menu=member";
     }
 }

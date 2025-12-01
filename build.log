@@ -1,0 +1,65 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------< kr.co.matpam:matpam-admin >----------------------
+[INFO] Building matpam-admin Maven Webapp 1.0.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ war ]---------------------------------
+[WARNING] The artifact org.slf4j:slf4j-log4j12:jar:1.7.36 has been relocated to org.slf4j:slf4j-reload4j:jar:1.7.36
+[WARNING] The artifact mysql:mysql-connector-java:jar:8.0.33 has been relocated to com.mysql:mysql-connector-j:jar:8.0.33: MySQL Connector/J artifacts moved to reverse-DNS compliant Maven 2+ coordinates.
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ matpam-admin ---
+[INFO] Deleting C:\Users\abclab-3\matpam-admin\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ matpam-admin ---
+[INFO] Copying 4 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ matpam-admin ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 6 source files with javac [debug deprecation target 17] to target\classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] -------------------------------------------------------------
+[WARNING] COMPILATION WARNING : 
+[INFO] -------------------------------------------------------------
+[WARNING] system modules path not set in conjunction with -source 17
+[WARNING] No processor claimed any of these annotations: /javax.annotation.Resource,/org.springframework.stereotype.Repository,/org.springframework.web.bind.annotation.ModelAttribute,/org.springframework.stereotype.Service,/org.springframework.stereotype.Controller,/org.springframework.web.bind.annotation.RequestMapping
+[INFO] 2 warnings 
+[INFO] -------------------------------------------------------------
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /C:/Users/abclab-3/matpam-admin/src/main/java/kr/co/matpam/admin/member/web/MemberController.java:[12,52] package egovframework.rte.ptl.mvc.tags.ui.pagination does not exist
+[ERROR] /C:/Users/abclab-3/matpam-admin/src/main/java/kr/co/matpam/admin/member/service/impl/MemberServiceImpl.java:[11,34] package egovframework.rte.fdl.cmmn does not exist
+[ERROR] /C:/Users/abclab-3/matpam-admin/src/main/java/kr/co/matpam/admin/member/service/impl/MemberServiceImpl.java:[17,40] cannot find symbol
+  symbol: class EgovAbstractServiceImpl
+[ERROR] /C:/Users/abclab-3/matpam-admin/src/main/java/kr/co/matpam/admin/member/service/impl/MemberDAO.java:[7,40] package egovframework.rte.psl.dataaccess does not exist
+[ERROR] /C:/Users/abclab-3/matpam-admin/src/main/java/kr/co/matpam/admin/member/service/impl/MemberDAO.java:[12,32] cannot find symbol
+  symbol: class EgovAbstractMapper
+[INFO] 5 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.696 s
+[INFO] Finished at: 2025-11-29T16:57:35+09:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.11.0:compile (default-compile) on project matpam-admin: Compilation failure: Compilation failure: 
+[ERROR] /C:/Users/abclab-3/matpam-admin/src/main/java/kr/co/matpam/admin/member/web/MemberController.java:[12,52] package egovframework.rte.ptl.mvc.tags.ui.pagination does not exist
+[ERROR] /C:/Users/abclab-3/matpam-admin/src/main/java/kr/co/matpam/admin/member/service/impl/MemberServiceImpl.java:[11,34] package egovframework.rte.fdl.cmmn does not exist
+[ERROR] /C:/Users/abclab-3/matpam-admin/src/main/java/kr/co/matpam/admin/member/service/impl/MemberServiceImpl.java:[17,40] cannot find symbol
+[ERROR]   symbol: class EgovAbstractServiceImpl
+[ERROR] /C:/Users/abclab-3/matpam-admin/src/main/java/kr/co/matpam/admin/member/service/impl/MemberDAO.java:[7,40] package egovframework.rte.psl.dataaccess does not exist
+[ERROR] /C:/Users/abclab-3/matpam-admin/src/main/java/kr/co/matpam/admin/member/service/impl/MemberDAO.java:[12,32] cannot find symbol
+[ERROR]   symbol: class EgovAbstractMapper
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

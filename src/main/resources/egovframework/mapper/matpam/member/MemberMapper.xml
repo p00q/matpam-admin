@@ -79,5 +79,39 @@
           FROM TB_MEMBER
         <include refid="memberWhere" />
     </select>
+    
+    <insert id="insertMember" parameterType="kr.co.matpam.admin.member.service.MemberVO">
+        INSERT INTO TB_MEMBER (
+            MEMBER_TYPE,
+            REGION,
+            MEMBER_ID,
+            COMPANY_NAME,
+            BUSINESS_NUMBER,
+            CEO_NAME,
+            CONTACT_NUMBER,
+            MANAGER_NAME,
+            MANAGER_CONTACT,
+            CREDIT_LIMIT,
+            MEAT_MONEY,
+            MEMBER_GRADE,
+            STATUS,
+            JOIN_DATE
+        ) VALUES (
+            #{memberType},
+            #{region},
+            #{memberId},
+            #{companyName},
+            #{businessNumber},
+            #{ceoName},
+            #{contactNumber},
+            #{managerName},
+            #{managerContact},
+            #{creditLimit, jdbcType=DECIMAL},
+            #{meatMoney, jdbcType=DECIMAL},
+            #{memberGrade},
+            #{status},
+            #{joinDate, jdbcType=DATE}
+        )
+    </insert>
 
 </mapper>
