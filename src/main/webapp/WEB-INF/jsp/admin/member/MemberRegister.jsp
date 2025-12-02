@@ -58,8 +58,14 @@
                     </ol>
                 </nav>
 
+                <jsp:useBean id="today" class="java.util.Date" />
+                <fmt:formatDate var="currentDate" value="${today}" pattern="yyyy-MM-dd" />
+
                 <form name="memberForm" method="post" action="<c:url value='/admin/member/insertMember.do'/>">
                     <input type="hidden" name="menu" value="member" />
+                    <input type="hidden" name="joinDate" value="${currentDate}" />
+                    <input type="hidden" name="creditLimit" value="0" />
+                    <input type="hidden" name="meatMoney" value="0" />
 
                     <!-- Tab Navigation -->
                     <ul class="nav nav-tabs mb-3" id="memberTab" role="tablist">
@@ -158,10 +164,10 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th>휴대폰번호</th>
+                                    <th>연락처 <span class="text-danger">*</span></th>
                                     <td>
-                                        <input type="text" name="mobileNumber" class="form-control form-control-sm"
-                                            placeholder="010-0000-0000" maxlength="13" />
+                                        <input type="tel" name="contactNumber" class="form-control form-control-sm"
+                                            placeholder="010-0000-0000" maxlength="13" required />
                                     </td>
                                     <th>회사 전화번호</th>
                                     <td>
@@ -216,12 +222,12 @@
                                             <tr>
                                                 <th>이름</th>
                                                 <td>
-                                                    <input type="text" name="managerName1" id="managerName1"
+                                                    <input type="text" name="managerName" id="managerName"
                                                         class="form-control form-control-sm" />
                                                 </td>
                                                 <th>전화번호</th>
                                                 <td>
-                                                    <input type="tel" name="managerPhone1" id="managerPhone1"
+                                                    <input type="tel" name="managerContact" id="managerContact"
                                                         class="form-control form-control-sm" placeholder="010-0000-0000"
                                                         maxlength="13" />
                                                 </td>
@@ -311,7 +317,7 @@
 
                 // 전화번호 자동 하이픈 추가
                 document.addEventListener('DOMContentLoaded', function () {
-                    const phoneInputs = document.querySelectorAll('input[type="tel"], input[name="businessNumber"], input[name="mobileNumber"], input[name="companyPhone"]');
+                    const phoneInputs = document.querySelectorAll('input[type="tel"], input[name="businessNumber"], input[name="contactNumber"], input[name="companyPhone"]');
                     phoneInputs.forEach(input => {
                         input.addEventListener('input', function (e) {
                             let value = e.target.value.replace(/[^0-9]/g, '');
@@ -367,13 +373,13 @@
                 function copySameAsMember() {
                     const checked = document.getElementById('sameAsMember').checked;
                     if (checked) {
-                        document.getElementById('managerName1').value = document.querySelector('input[name="ceoName"]').value;
-                        document.getElementById('managerPhone1').value = document.querySelector('input[name="companyPhone"]').value;
-                        document.getElementById('managerMobile1').value = document.querySelector('input[name="mobileNumber"]').value;
+                        document.getElementById('managerName').value = document.querySelector('input[name="ceoName"]').value;
+                        document.getElementById('managerContact').value = document.querySelector('input[name="contactNumber"]').value;
+                        document.getElementById('managerMobile1').value = document.querySelector('input[name="contactNumber"]').value;
                         document.getElementById('managerEmail1').value = document.querySelector('input[name="email"]').value;
                     } else {
-                        document.getElementById('managerName1').value = '';
-                        document.getElementById('managerPhone1').value = '';
+                        document.getElementById('managerName').value = '';
+                        document.getElementById('managerContact').value = '';
                         document.getElementById('managerMobile1').value = '';
                         document.getElementById('managerEmail1').value = '';
                     }
