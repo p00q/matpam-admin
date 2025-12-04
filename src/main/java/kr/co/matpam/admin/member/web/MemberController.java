@@ -21,6 +21,9 @@ public class MemberController {
     @Resource(name = "memberService")
     private MemberService memberService;
 
+    @Resource(name = "codeManagementService")
+    private kr.co.matpam.admin.code.service.CodeManagementService codeManagementService;
+
     @RequestMapping(value = "/admin/member/memberList.do")
     public String selectMemberList(@ModelAttribute("searchVO") MemberDefaultVO searchVO, ModelMap model)
             throws Exception {
@@ -40,6 +43,10 @@ public class MemberController {
         model.addAttribute("resultList", resultList);
         model.addAttribute("paginationInfo", paginationInfo);
 
+        // Load codes for search filters
+        model.addAttribute("memberTypes", codeManagementService.selectDetailCodeList("003", "003001"));
+        model.addAttribute("statusCodes", codeManagementService.selectDetailCodeList("004", "004001"));
+
         // Set content page for layout
         model.addAttribute("contentPage", "/WEB-INF/jsp/admin/member/MemberList.jsp");
 
@@ -48,15 +55,29 @@ public class MemberController {
 
     @RequestMapping(value = "/admin/member/memberRegisterForm.do")
     public String memberRegisterForm(ModelMap model) throws Exception {
+        // Load codes for dropdowns
+        model.addAttribute("memberTypes", codeManagementService.selectDetailCodeList("003", "003001"));
+        model.addAttribute("memberGrades", codeManagementService.selectDetailCodeList("005", "005001"));
+        model.addAttribute("statusCodes", codeManagementService.selectDetailCodeList("004", "004001"));
+
         // Set content page for layout
         model.addAttribute("contentPage", "/WEB-INF/jsp/admin/member/MemberRegister.jsp");
         return "layout/main";
     }
 
     @RequestMapping(value = "/admin/member/insertMember.do")
-    public String insertMember(@ModelAttribute("memberVO") MemberVO memberVO) throws Exception {
-        if (memberVO.getJoinDate() == null) {
-            memberVO.setJoinDate(LocalDate.now());
+    public String insertMember(@ModelAttribute("memberVO") MemberVO memberVO,
+            org.springframework.validation.BindingResult bindingResult, ModelMap model) throws Exception {
+        if (bindingResult.hasErrors()) {
+            System.out.println("Binding Errors: " + bindingResult.getAllErrors());
+            for (org.springframework.validation.ObjectError error : bindingResult.getAllErrors()) {
+                System.out.println(error.getDefaultMessage());
+            }
+            return "admin/member/MemberRegister"; // Return to form if errors
+        }
+
+        if (memberVO.getJoinDate() == null || memberVO.getJoinDate().isEmpty()) {
+            memberVO.setJoinDate(LocalDate.now().toString());
         }
         if (memberVO.getCreditLimit() == null) {
             memberVO.setCreditLimit(0L);

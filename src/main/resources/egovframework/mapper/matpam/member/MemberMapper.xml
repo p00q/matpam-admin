@@ -54,23 +54,32 @@
     </sql>
 
     <select id="selectMemberList" resultMap="memberResultMap" parameterType="kr.co.matpam.admin.member.service.MemberDefaultVO">
-        SELECT MEMBER_TYPE,
-               REGION,
-               MEMBER_ID,
-               COMPANY_NAME,
-               BUSINESS_NUMBER,
-               CEO_NAME,
-               CONTACT_NUMBER,
-               MANAGER_NAME,
-               MANAGER_CONTACT,
-               CREDIT_LIMIT,
-               MEAT_MONEY,
-               MEMBER_GRADE,
-               STATUS,
-               JOIN_DATE
-          FROM TB_MEMBER
+        SELECT m.MEMBER_TYPE,
+               mt.DETAIL_CODE_NAME as MEMBER_TYPE_NAME,
+               m.REGION,
+               m.MEMBER_ID,
+               m.COMPANY_NAME,
+               m.BUSINESS_NUMBER,
+               m.CEO_NAME,
+               m.CONTACT_NUMBER,
+               m.MANAGER_NAME,
+               m.MANAGER_CONTACT,
+               m.CREDIT_LIMIT,
+               m.MEAT_MONEY,
+               m.MEMBER_GRADE,
+               mg.DETAIL_CODE_NAME as MEMBER_GRADE_NAME,
+               m.STATUS,
+               st.DETAIL_CODE_NAME as STATUS_NAME,
+               m.JOIN_DATE
+          FROM TB_MEMBER m
+          LEFT JOIN TB_DETAIL_CODE mt ON m.MEMBER_TYPE = mt.DETAIL_CODE 
+                AND mt.GROUP_CODE = '003' AND mt.CODE = '003001'
+          LEFT JOIN TB_DETAIL_CODE mg ON m.MEMBER_GRADE = mg.DETAIL_CODE 
+                AND mg.GROUP_CODE = '005' AND mg.CODE = '005001'
+          LEFT JOIN TB_DETAIL_CODE st ON m.STATUS = st.DETAIL_CODE 
+                AND st.GROUP_CODE = '004' AND st.CODE = '004001'
         <include refid="memberWhere" />
-         ORDER BY JOIN_DATE DESC
+         ORDER BY m.JOIN_DATE DESC
          LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
     </select>
 
@@ -85,32 +94,56 @@
             MEMBER_TYPE,
             REGION,
             MEMBER_ID,
+            LOGIN_ID,
+            LOGIN_PW,
             COMPANY_NAME,
             BUSINESS_NUMBER,
             CEO_NAME,
             CONTACT_NUMBER,
+            EMAIL,
+
+            COMPANY_PHONE,
+            POSTCODE,
+            ADDRESS,
+            ADDRESS_DETAIL,
             MANAGER_NAME,
             MANAGER_CONTACT,
+            MANAGER_MOBILE,
+            MANAGER_EMAIL,
             CREDIT_LIMIT,
             MEAT_MONEY,
             MEMBER_GRADE,
             STATUS,
+            AGREE_MARKETING,
+            AGREE_SMS,
             JOIN_DATE
         ) VALUES (
             #{memberType},
             #{region},
             #{memberId},
+            'admin',
+            #{loginPw},
             #{companyName},
             #{businessNumber},
             #{ceoName},
             #{contactNumber},
+            #{email},
+
+            #{companyPhone},
+            #{postcode},
+            #{address},
+            #{addressDetail},
             #{managerName},
             #{managerContact},
+            #{managerMobile},
+            #{managerEmail},
             #{creditLimit, jdbcType=DECIMAL},
             #{meatMoney, jdbcType=DECIMAL},
             #{memberGrade},
             #{status},
-            #{joinDate, jdbcType=DATE}
+            #{agreeMarketing},
+            #{agreeSms},
+            #{joinDate}
         )
     </insert>
 

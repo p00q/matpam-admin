@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<!-- 회원등록 화면 -->
+    <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+        <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+            <!-- 회원등록 화면 -->
 
             <style>
                 .form-table th,
@@ -103,15 +103,18 @@
                                     <tr>
                                         <th>회원타입 <span class="text-danger">*</span></th>
                                         <td>
-                                            <select name="memberType" class="form-select form-select-sm" style="max-width: 200px;" required>
+                                            <select name="memberType" class="form-select form-select-sm"
+                                                style="max-width: 200px;" required>
                                                 <option value="" disabled selected>회원타입 선택</option>
-                                                <option value="INDIVIDUAL">일반회원</option>
-                                                <option value="BUSINESS">사업자회원</option>
+                                                <c:forEach var="type" items="${memberTypes}">
+                                                    <option value="${type.detailCode}">${type.detailCodeName}</option>
+                                                </c:forEach>
                                             </select>
                                         </td>
                                         <th>지역</th>
                                         <td>
-                                            <select name="region" class="form-select form-select-sm" style="max-width: 200px;">
+                                            <select name="region" class="form-select form-select-sm"
+                                                style="max-width: 200px;">
                                                 <option value="">전체</option>
                                                 <option value="SEOUL">서울</option>
                                                 <option value="GYEONGGI">경기</option>
@@ -120,83 +123,90 @@
                                             </select>
                                         </td>
                                     </tr>
-                                <tr>
-                                    <th>아이디 <span class="text-danger">*</span></th>
-                                    <td>
-                                        <input type="text" name="memberId" class="form-control form-control-sm"
-                                            required />
-                                    </td>
-                                    <th>업체명</th>
-                                    <td>
-                                        <input type="text" name="companyName" class="form-control form-control-sm" />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>사업자등록번호</th>
-                                    <td>
-                                        <input type="text" name="businessNumber" class="form-control form-control-sm"
-                                            placeholder="000-00-00000" maxlength="12" />
-                                    </td>
-                                    <th>회원등급</th>
-                                    <td>
-                                        <select name="memberGrade" class="form-select form-select-sm"
-                                            style="max-width: 200px;">
-                                            <option value="GENERAL">일반</option>
-                                            <option value="SILVER">Silver</option>
-                                            <option value="GOLD">Gold</option>
-                                            <option value="VIP">VIP</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>대표자명</th>
-                                    <td>
-                                        <input type="text" name="ceoName" class="form-control form-control-sm" />
-                                    </td>
-                                    <th>가입상태</th>
-                                    <td>
-                                        <select name="status" class="form-select form-select-sm"
-                                            style="max-width: 200px;">
-                                            <option value="ACTIVE">가입완료</option>
-                                            <option value="PENDING">승인대기</option>
-                                            <option value="INACTIVE">탈퇴</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>연락처 <span class="text-danger">*</span></th>
-                                    <td>
-                                        <input type="tel" name="contactNumber" class="form-control form-control-sm"
-                                            placeholder="010-0000-0000" maxlength="13" required />
-                                    </td>
-                                    <th>회사 전화번호</th>
-                                    <td>
-                                        <input type="text" name="companyPhone" class="form-control form-control-sm"
-                                            placeholder="02-0000-0000" maxlength="13" />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>이메일주소</th>
-                                    <td colspan="3">
-                                        <input type="email" name="email" class="form-control form-control-sm" />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>주소</th>
-                                    <td colspan="3">
-                                        <div class="d-flex gap-2 mb-2">
-                                            <input type="text" id="postcode" name="postcode"
-                                                class="form-control form-control-sm" placeholder="우편번호" readonly
-                                                style="max-width: 150px;" />
-                                            <button type="button" class="btn btn-secondary btn-sm"
-                                                onclick="execDaumPostcode()">주소검색</button>
-                                        </div>
-                                        <input type="text" id="address" name="address"
-                                            class="form-control form-control-sm mb-2" placeholder="주소" readonly />
-                                        <input type="text" name="addressDetail" class="form-control form-control-sm"
-                                            placeholder="상세주소" />
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <th>아이디 <span class="text-danger">*</span></th>
+                                        <td>
+                                            <input type="text" name="memberId" class="form-control form-control-sm"
+                                                required />
+                                        </td>
+                                        <th>비밀번호 <span class="text-danger">*</span></th>
+                                        <td>
+                                            <input type="password" name="loginPw" class="form-control form-control-sm"
+                                                required />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>업체명</th>
+                                        <td>
+                                            <input type="text" name="companyName"
+                                                class="form-control form-control-sm" />
+                                        </td>
+                                        <th>사업자등록번호</th>
+                                        <td>
+                                            <input type="text" name="businessNumber"
+                                                class="form-control form-control-sm" placeholder="000-00-00000"
+                                                maxlength="12" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>회원등급</th>
+                                        <td>
+                                            <select name="memberGrade" class="form-select form-select-sm"
+                                                style="max-width: 200px;">
+                                                <c:forEach var="grade" items="${memberGrades}">
+                                                    <option value="${grade.detailCode}">${grade.detailCodeName}</option>
+                                                </c:forEach>
+                                            </select>
+                                        </td>
+                                        <th>대표자명</th>
+                                        <td>
+                                            <input type="text" name="ceoName" class="form-control form-control-sm" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>가입상태</th>
+                                        <td>
+                                            <select name="status" class="form-select form-select-sm"
+                                                style="max-width: 200px;">
+                                                <c:forEach var="statusItem" items="${statusCodes}">
+                                                    <option value="${statusItem.detailCode}">
+                                                        ${statusItem.detailCodeName}</option>
+                                                </c:forEach>
+                                            </select>
+                                        </td>
+                                        <th>연락처 <span class="text-danger">*</span></th>
+                                        <td>
+                                            <input type="tel" name="contactNumber" class="form-control form-control-sm"
+                                                placeholder="010-0000-0000" maxlength="13" required />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>회사 전화번호</th>
+                                        <td>
+                                            <input type="text" name="companyPhone" class="form-control form-control-sm"
+                                                placeholder="02-0000-0000" maxlength="13" />
+                                        </td>
+                                        <th>이메일주소</th>
+                                        <td>
+                                            <input type="email" name="email" class="form-control form-control-sm" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>주소</th>
+                                        <td colspan="3">
+                                            <div class="d-flex gap-2 mb-2">
+                                                <input type="text" id="postcode" name="postcode"
+                                                    class="form-control form-control-sm" placeholder="우편번호" readonly
+                                                    style="max-width: 150px;" />
+                                                <button type="button" class="btn btn-secondary btn-sm"
+                                                    onclick="execDaumPostcode()">주소검색</button>
+                                            </div>
+                                            <input type="text" id="address" name="address"
+                                                class="form-control form-control-sm mb-2" placeholder="주소" readonly />
+                                            <input type="text" name="addressDetail" class="form-control form-control-sm"
+                                                placeholder="상세주소" />
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
 

@@ -148,10 +148,12 @@
                         </div>
                         <div class="d-flex gap-2">
                             <button type="button" class="btn btn-success btn-sm"
-                                onclick="location.href='<c:url value='/admin/member/memberRegisterForm.do?menu=member'/>'"><i
-                                    class="bi bi-plus-lg me-1"></i>신규등록</button>
-                            <button type="button" class="btn btn-secondary btn-sm"><i
-                                    class="bi bi-file-earmark-excel me-1"></i>엑셀다운로드</button>
+                                onclick="location.href='<c:url value='/admin/member/memberRegisterForm.do?menu=member'/>'">
+                                <i class="bi bi-plus-lg me-1"></i>신규등록
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm">
+                                <i class="bi bi-file-earmark-excel me-1"></i>엑셀다운로드
+                            </button>
                         </div>
                     </div>
 
@@ -183,7 +185,7 @@
                                             <c:out
                                                 value="${paginationInfo.totalRecordCount - ((searchVO.pageIndex-1) * searchVO.pageUnit + status.index)}" />
                                         </td>
-                                        <td>${member.memberType}</td>
+                                        <td>${member.memberTypeName}</td>
                                         <td>${member.region}</td>
                                         <td class="text-primary text-decoration-underline cursor-pointer">
                                             ${member.memberId}</td>
@@ -200,9 +202,10 @@
                                             <fmt:formatNumber value="${member.meatMoney}" type="number" />원
                                         </td>
                                         <td>
-                                            <span class="badge rounded-pill bg-secondary">${member.memberGrade}</span>
+                                            <span
+                                                class="badge rounded-pill bg-secondary">${member.memberGradeName}</span>
                                         </td>
-                                        <td>${member.status}</td>
+                                        <td>${member.statusName}</td>
                                     </tr>
                                 </c:forEach>
                                 <c:if test="${empty resultList}">
