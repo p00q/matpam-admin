@@ -245,13 +245,13 @@
                                             <tr>
                                                 <th>휴대전화번호</th>
                                                 <td>
-                                                    <input type="tel" name="managerMobile1" id="managerMobile1"
+                                                    <input type="tel" name="managerMobile" id="managerMobile"
                                                         class="form-control form-control-sm" placeholder="010-0000-0000"
                                                         maxlength="13" />
                                                 </td>
                                                 <th>이메일주소</th>
                                                 <td>
-                                                    <input type="email" name="managerEmail1" id="managerEmail1"
+                                                    <input type="email" name="managerEmail" id="managerEmail"
                                                         class="form-control form-control-sm" />
                                                 </td>
                                             </tr>
