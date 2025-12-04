@@ -85,6 +85,12 @@ public class MemberController {
         if (memberVO.getMeatMoney() == null) {
             memberVO.setMeatMoney(0L);
         }
+        if (memberVO.getAgreeMarketing() == null || memberVO.getAgreeMarketing().isEmpty()) {
+            memberVO.setAgreeMarketing("N");
+        }
+        if (memberVO.getAgreeSms() == null || memberVO.getAgreeSms().isEmpty()) {
+            memberVO.setAgreeSms("N");
+        }
         memberService.insertMember(memberVO);
         return "redirect:/admin/member/memberList.do?menu=member";
     }

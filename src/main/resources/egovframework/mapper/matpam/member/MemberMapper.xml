@@ -121,7 +121,7 @@
             #{memberType},
             #{region},
             #{memberId},
-            'admin',
+            #{memberId},
             #{loginPw},
             #{companyName},
             #{businessNumber},
