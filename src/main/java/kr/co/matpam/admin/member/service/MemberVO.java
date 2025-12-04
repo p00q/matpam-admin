@@ -1,11 +1,15 @@
 package kr.co.matpam.admin.member.service;
 
 import java.io.Serializable;
+import java.util.List;
+
+import kr.co.matpam.admin.member.service.manager.MemberManagerVO;
 
 public class MemberVO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    private Long memberNo;
     private String memberType;
     private String memberTypeName; // 코드명 표시용
     private String region;
@@ -33,6 +37,16 @@ public class MemberVO implements Serializable {
     private String agreeMarketing;
     private String agreeSms;
     private String joinDate;
+
+    private List<MemberManagerVO> memberManagers;
+
+    public Long getMemberNo() {
+        return memberNo;
+    }
+
+    public void setMemberNo(Long memberNo) {
+        this.memberNo = memberNo;
+    }
 
     public String getMemberType() {
         return memberType;
@@ -248,5 +262,13 @@ public class MemberVO implements Serializable {
 
     public void setAgreeSms(String agreeSms) {
         this.agreeSms = agreeSms;
+    }
+
+    public List<MemberManagerVO> getMemberManagers() {
+        return memberManagers;
+    }
+
+    public void setMemberManagers(List<MemberManagerVO> memberManagers) {
+        this.memberManagers = memberManagers;
     }
 }

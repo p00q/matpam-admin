@@ -3,19 +3,28 @@
 <mapper namespace="matpam.member.MemberMapper">
 
     <resultMap id="memberResultMap" type="kr.co.matpam.admin.member.service.MemberVO">
+        <id property="memberNo" column="MEMBER_NO" />
         <result property="memberType" column="MEMBER_TYPE" />
+        <result property="memberTypeName" column="MEMBER_TYPE_NAME" />
         <result property="region" column="REGION" />
         <result property="memberId" column="MEMBER_ID" />
         <result property="companyName" column="COMPANY_NAME" />
         <result property="businessNumber" column="BUSINESS_NUMBER" />
         <result property="ceoName" column="CEO_NAME" />
         <result property="contactNumber" column="CONTACT_NUMBER" />
-        <result property="managerName" column="MANAGER_NAME" />
-        <result property="managerContact" column="MANAGER_CONTACT" />
+        <result property="email" column="EMAIL" />
+        <result property="companyPhone" column="COMPANY_PHONE" />
+        <result property="postcode" column="POSTCODE" />
+        <result property="address" column="ADDRESS" />
+        <result property="addressDetail" column="ADDRESS_DETAIL" />
         <result property="creditLimit" column="CREDIT_LIMIT" />
         <result property="meatMoney" column="MEAT_MONEY" />
         <result property="memberGrade" column="MEMBER_GRADE" />
+        <result property="memberGradeName" column="MEMBER_GRADE_NAME" />
         <result property="status" column="STATUS" />
+        <result property="statusName" column="STATUS_NAME" />
+        <result property="agreeMarketing" column="AGREE_MARKETING" />
+        <result property="agreeSms" column="AGREE_SMS" />
         <result property="joinDate" column="JOIN_DATE" jdbcType="DATE" />
     </resultMap>
 
@@ -54,7 +63,8 @@
     </sql>
 
     <select id="selectMemberList" resultMap="memberResultMap" parameterType="kr.co.matpam.admin.member.service.MemberDefaultVO">
-        SELECT m.MEMBER_TYPE,
+        SELECT m.MEMBER_NO,
+               m.MEMBER_TYPE,
                mt.DETAIL_CODE_NAME as MEMBER_TYPE_NAME,
                m.REGION,
                m.MEMBER_ID,
@@ -62,14 +72,19 @@
                m.BUSINESS_NUMBER,
                m.CEO_NAME,
                m.CONTACT_NUMBER,
-               m.MANAGER_NAME,
-               m.MANAGER_CONTACT,
+               m.EMAIL,
+               m.COMPANY_PHONE,
+               m.POSTCODE,
+               m.ADDRESS,
+               m.ADDRESS_DETAIL,
                m.CREDIT_LIMIT,
                m.MEAT_MONEY,
                m.MEMBER_GRADE,
                mg.DETAIL_CODE_NAME as MEMBER_GRADE_NAME,
                m.STATUS,
                st.DETAIL_CODE_NAME as STATUS_NAME,
+               m.AGREE_MARKETING,
+               m.AGREE_SMS,
                m.JOIN_DATE
           FROM TB_MEMBER m
           LEFT JOIN TB_DETAIL_CODE mt ON m.MEMBER_TYPE = mt.DETAIL_CODE 
@@ -89,7 +104,8 @@
         <include refid="memberWhere" />
     </select>
     
-    <insert id="insertMember" parameterType="kr.co.matpam.admin.member.service.MemberVO">
+    <insert id="insertMember" parameterType="kr.co.matpam.admin.member.service.MemberVO" useGeneratedKeys="true"
+        keyProperty="memberNo" keyColumn="MEMBER_NO">
         INSERT INTO TB_MEMBER (
             MEMBER_TYPE,
             REGION,
@@ -105,10 +121,6 @@
             POSTCODE,
             ADDRESS,
             ADDRESS_DETAIL,
-            MANAGER_NAME,
-            MANAGER_CONTACT,
-            MANAGER_MOBILE,
-            MANAGER_EMAIL,
             CREDIT_LIMIT,
             MEAT_MONEY,
             MEMBER_GRADE,
@@ -131,10 +143,6 @@
             #{postcode},
             #{address},
             #{addressDetail},
-            #{managerName},
-            #{managerContact},
-            #{managerMobile},
-            #{managerEmail},
             #{creditLimit, jdbcType=DECIMAL},
             #{meatMoney, jdbcType=DECIMAL},
             #{memberGrade},

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="matpam.member.MemberManagerMapper">
+
+    <resultMap id="memberManagerResultMap" type="kr.co.matpam.admin.member.service.manager.MemberManagerVO">
+        <id property="managerNo" column="MANAGER_NO" />
+        <result property="memberNo" column="MEMBER_NO" />
+        <result property="managerName" column="MANAGER_NAME" />
+        <result property="mobileNumber" column="MOBILE_NUMBER" />
+        <result property="phoneNumber" column="PHONE_NUMBER" />
+        <result property="email" column="EMAIL" />
+        <result property="mainYn" column="MAIN_YN" />
+        <result property="useYn" column="USE_YN" />
+    </resultMap>
+
+    <insert id="insertMemberManagers" parameterType="java.util.List">
+        INSERT INTO TB_MEMBER_MANAGER (
+            MEMBER_NO,
+            MANAGER_NAME,
+            MOBILE_NUMBER,
+            PHONE_NUMBER,
+            EMAIL,
+            MAIN_YN,
+            USE_YN
+        ) VALUES
+        <foreach collection="list" item="manager" separator=",">
+            (
+            #{manager.memberNo},
+            #{manager.managerName},
+            #{manager.mobileNumber},
+            #{manager.phoneNumber},
+            #{manager.email},
+            #{manager.mainYn},
+            #{manager.useYn}
+            )
+        </foreach>
+    </insert>
+
+    <delete id="deleteMemberManagersByMemberNo" parameterType="long">
+        DELETE FROM TB_MEMBER_MANAGER
+        WHERE MEMBER_NO = #{value}
+    </delete>
+
+    <select id="selectMemberManagers" resultMap="memberManagerResultMap" parameterType="long">
+        SELECT MANAGER_NO,
+               MEMBER_NO,
+               MANAGER_NAME,
+               MOBILE_NUMBER,
+               PHONE_NUMBER,
+               EMAIL,
+               MAIN_YN,
+               USE_YN
+          FROM TB_MEMBER_MANAGER
+         WHERE MEMBER_NO = #{value}
+         ORDER BY MAIN_YN DESC, MANAGER_NO ASC
+    </select>
+
+</mapper>
