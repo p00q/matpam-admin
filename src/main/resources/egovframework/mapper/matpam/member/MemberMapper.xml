@@ -94,7 +94,6 @@
             MEMBER_TYPE,
             REGION,
             MEMBER_ID,
-            LOGIN_ID,
             LOGIN_PW,
             COMPANY_NAME,
             BUSINESS_NUMBER,
@@ -120,7 +119,6 @@
         ) VALUES (
             #{memberType},
             #{region},
-            #{memberId},
             #{memberId},
             #{loginPw},
             #{companyName},
