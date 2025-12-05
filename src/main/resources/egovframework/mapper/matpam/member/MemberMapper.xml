@@ -31,12 +31,16 @@
         <result property="agreeMarketing" column="AGREE_MARKETING" />
         <result property="agreeSms" column="AGREE_SMS" />
         <result property="joinDate" column="JOIN_DATE" jdbcType="DATE" />
+        <result property="approvalYn" column="APPROVAL_YN" />
     </resultMap>
 
     <sql id="memberWhere">
         <where>
             <if test="status != null and status != ''">
                 AND STATUS = #{status}
+            </if>
+            <if test="memberType != null and memberType != ''">
+                AND MEMBER_TYPE = #{memberType}
             </if>
             <if test="region != null and region != ''">
                 AND REGION = #{region}

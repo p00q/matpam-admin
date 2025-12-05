@@ -6,6 +6,9 @@ public class MemberDefaultVO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    /** 회원타입 */
+    private String memberType;
+
     /** 가입상태 */
     private String status;
 
@@ -47,6 +50,14 @@ public class MemberDefaultVO implements Serializable {
 
     /** 페이지 당 레코드 수 */
     private int recordCountPerPage = 10;
+
+    public String getMemberType() {
+        return memberType;
+    }
+
+    public void setMemberType(String memberType) {
+        this.memberType = memberType;
+    }
 
     public String getStatus() {
         return status;
