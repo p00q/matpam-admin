@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import org.egovframe.rte.ptl.mvc.tags.ui.pagination.PaginationInfo;
 import kr.co.matpam.admin.member.service.MemberDefaultVO;
@@ -60,6 +61,8 @@ public class MemberController {
         model.addAttribute("memberGrades", codeManagementService.selectDetailCodeList("005", "005001"));
         model.addAttribute("statusCodes", codeManagementService.selectDetailCodeList("004", "004001"));
 
+        model.addAttribute("mode", "insert");
+
         // Set content page for layout
         model.addAttribute("contentPage", "/WEB-INF/jsp/admin/member/MemberRegister.jsp");
         return "layout/main";
@@ -93,5 +96,43 @@ public class MemberController {
         }
         memberService.insertMember(memberVO);
         return "redirect:/admin/member/memberList.do?menu=member";
+    }
+
+    @RequestMapping(value = "/admin/member/memberView.do")
+    public String memberView(@RequestParam("memberNo") Long memberNo, ModelMap model) throws Exception {
+        MemberVO member = memberService.selectMember(memberNo);
+        if (member == null) {
+            return "redirect:/admin/member/memberList.do?menu=member";
+        }
+
+        model.addAttribute("member", member);
+        model.addAttribute("memberManagers", memberService.selectMemberManagers(memberNo));
+
+        model.addAttribute("contentPage", "/WEB-INF/jsp/admin/member/MemberView.jsp");
+        return "layout/main";
+    }
+
+    @RequestMapping(value = "/admin/member/memberDetail.do")
+    public String selectMember(@RequestParam("memberId") String memberId, ModelMap model) throws Exception {
+        MemberVO member = memberService.selectMemberById(memberId);
+        if (member == null) {
+            return "redirect:/admin/member/memberList.do?menu=member";
+        }
+
+        List<kr.co.matpam.admin.member.service.manager.MemberManagerVO> managerList = memberService
+                .selectMemberManagers(member.getMemberNo());
+        member.setMemberManagers(managerList);
+
+        model.addAttribute("member", member);
+        model.addAttribute("memberManagers", managerList);
+        model.addAttribute("managers", managerList);
+
+        model.addAttribute("mode", "view");
+        model.addAttribute("memberTypes", codeManagementService.selectDetailCodeList("003", "003001"));
+        model.addAttribute("memberGrades", codeManagementService.selectDetailCodeList("005", "005001"));
+        model.addAttribute("statusCodes", codeManagementService.selectDetailCodeList("004", "004001"));
+
+        model.addAttribute("contentPage", "/WEB-INF/jsp/admin/member/MemberRegister.jsp");
+        return "layout/main";
     }
 }
