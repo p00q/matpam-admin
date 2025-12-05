@@ -1,38 +1,52 @@
 package kr.co.matpam.admin.member.service;
 
 import java.io.Serializable;
-import java.sql.Date;
+import java.util.List;
 
-import org.springframework.format.annotation.DateTimeFormat;
+import kr.co.matpam.admin.member.service.manager.MemberManagerVO;
 
 public class MemberVO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private String locId;
+    private Long memberNo;
     private String memberType;
+    private String memberTypeName; // 코드명 표시용
     private String region;
     private String memberId;
+    private String loginPw;
     private String companyName;
     private String businessNumber;
     private String ceoName;
     private String contactNumber;
+    private String email;
+    private String companyPhone;
+    private String postcode;
+    private String address;
+    private String addressDetail;
     private String managerName;
     private String managerContact;
+    private String managerMobile;
+    private String managerPhone;
+    private String managerEmail;
     private Long creditLimit;
     private Long meatMoney;
     private String memberGrade;
+    private String memberGradeName; // 코드명 표시용
     private String status;
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date joinDate;
-    private String approvalYn;
+    private String statusName; // 코드명 표시용
+    private String agreeMarketing;
+    private String agreeSms;
+    private String joinDate;
 
-    public String getLocId() {
-        return locId;
+    private List<MemberManagerVO> memberManagers;
+
+    public Long getMemberNo() {
+        return memberNo;
     }
 
-    public void setLocId(String locId) {
-        this.locId = locId;
+    public void setMemberNo(Long memberNo) {
+        this.memberNo = memberNo;
     }
 
     public String getMemberType() {
@@ -41,6 +55,14 @@ public class MemberVO implements Serializable {
 
     public void setMemberType(String memberType) {
         this.memberType = memberType;
+    }
+
+    public String getMemberTypeName() {
+        return memberTypeName;
+    }
+
+    public void setMemberTypeName(String memberTypeName) {
+        this.memberTypeName = memberTypeName;
     }
 
     public String getRegion() {
@@ -57,6 +79,14 @@ public class MemberVO implements Serializable {
 
     public void setMemberId(String memberId) {
         this.memberId = memberId;
+    }
+
+    public String getLoginPw() {
+        return loginPw;
+    }
+
+    public void setLoginPw(String loginPw) {
+        this.loginPw = loginPw;
     }
 
     public String getCompanyName() {
@@ -131,6 +161,14 @@ public class MemberVO implements Serializable {
         this.memberGrade = memberGrade;
     }
 
+    public String getMemberGradeName() {
+        return memberGradeName;
+    }
+
+    public void setMemberGradeName(String memberGradeName) {
+        this.memberGradeName = memberGradeName;
+    }
+
     public String getStatus() {
         return status;
     }
@@ -139,19 +177,107 @@ public class MemberVO implements Serializable {
         this.status = status;
     }
 
-    public Date getJoinDate() {
+    public String getStatusName() {
+        return statusName;
+    }
+
+    public void setStatusName(String statusName) {
+        this.statusName = statusName;
+    }
+
+    public String getJoinDate() {
         return joinDate;
     }
 
-    public void setJoinDate(Date joinDate) {
+    public void setJoinDate(String joinDate) {
         this.joinDate = joinDate;
     }
 
-    public String getApprovalYn() {
-        return approvalYn;
+    public String getEmail() {
+        return email;
     }
 
-    public void setApprovalYn(String approvalYn) {
-        this.approvalYn = approvalYn;
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getCompanyPhone() {
+        return companyPhone;
+    }
+
+    public void setCompanyPhone(String companyPhone) {
+        this.companyPhone = companyPhone;
+    }
+
+    public String getPostcode() {
+        return postcode;
+    }
+
+    public void setPostcode(String postcode) {
+        this.postcode = postcode;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getAddressDetail() {
+        return addressDetail;
+    }
+
+    public void setAddressDetail(String addressDetail) {
+        this.addressDetail = addressDetail;
+    }
+
+    public String getManagerMobile() {
+        return managerMobile;
+    }
+
+    public void setManagerMobile(String managerMobile) {
+        this.managerMobile = managerMobile;
+    }
+
+    public String getManagerPhone() {
+        return managerPhone;
+    }
+
+    public void setManagerPhone(String managerPhone) {
+        this.managerPhone = managerPhone;
+    }
+
+    public String getManagerEmail() {
+        return managerEmail;
+    }
+
+    public void setManagerEmail(String managerEmail) {
+        this.managerEmail = managerEmail;
+    }
+
+    public String getAgreeMarketing() {
+        return agreeMarketing;
+    }
+
+    public void setAgreeMarketing(String agreeMarketing) {
+        this.agreeMarketing = agreeMarketing;
+    }
+
+    public String getAgreeSms() {
+        return agreeSms;
+    }
+
+    public void setAgreeSms(String agreeSms) {
+        this.agreeSms = agreeSms;
+    }
+
+    public List<MemberManagerVO> getMemberManagers() {
+        return memberManagers;
+    }
+
+    public void setMemberManagers(List<MemberManagerVO> memberManagers) {
+        this.memberManagers = memberManagers;
     }
 }

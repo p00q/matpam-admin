@@ -1,0 +1,3 @@
+
+[ERROR] No plugin found for prefix '.egovframe.rte' in the current project and in the plugin groups [org.apache.maven.plugins, org.codehaus.mojo] available from the repositories [local (C:\Users\abclab-3\.m2\repository), central (https://repo.maven.apache.org/maven2)] -> [Help 1]
+

@@ -19,7 +19,19 @@ public class MemberDAO extends EgovAbstractMapper {
         return selectOne("matpam.member.MemberMapper.selectMemberListTotCnt", searchVO);
     }
 
-    public void insertMember(MemberVO member) {
-        insert("matpam.member.MemberMapper.insertMember", member);
+    public void insertMember(MemberVO memberVO) {
+        insert("matpam.member.MemberMapper.insertMember", memberVO);
+    }
+
+    public MemberVO selectMember(Long memberNo) {
+        return selectOne("matpam.member.MemberMapper.selectMember", memberNo);
+    }
+
+    public MemberVO selectMemberById(String memberId) {
+        return selectOne("matpam.member.MemberMapper.selectMemberById", memberId);
+    }
+
+    public List<MemberVO> selectSellerList() {
+        return selectList("matpam.member.MemberMapper.selectSellerList", null);
     }
 }

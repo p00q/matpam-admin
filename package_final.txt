@@ -1,0 +1,47 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------< kr.co.matpam:matpam-admin >----------------------
+[INFO] Building matpam-admin Maven Webapp 1.0.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ war ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ matpam-admin ---
+[INFO] Deleting C:\Users\abclab-3\matpam-admin\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ matpam-admin ---
+[INFO] Copying 4 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ matpam-admin ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 6 source files with javac [debug deprecation target 17] to target\classes
+[WARNING] system modules path not set in conjunction with -source 17
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[WARNING] No processor claimed any of these annotations: /javax.annotation.Resource,/org.springframework.stereotype.Repository,/org.springframework.web.bind.annotation.ModelAttribute,/org.springframework.stereotype.Service,/org.springframework.stereotype.Controller,/org.springframework.web.bind.annotation.RequestMapping
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ matpam-admin ---
+[INFO] skip non existing resourceDirectory C:\Users\abclab-3\matpam-admin\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ matpam-admin ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ matpam-admin ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- war:3.4.0:war (default-war) @ matpam-admin ---
+[INFO] Packaging webapp
+[INFO] Assembling webapp [matpam-admin] in [C:\Users\abclab-3\matpam-admin\target\matpam-admin-1.0.0-SNAPSHOT]
+[INFO] Processing war project
+[INFO] Copying webapp resources [C:\Users\abclab-3\matpam-admin\src\main\webapp]
+[INFO] Building war: C:\Users\abclab-3\matpam-admin\target\matpam-admin-1.0.0-SNAPSHOT.war
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  2.830 s
+[INFO] Finished at: 2025-11-29T19:52:01+09:00
+[INFO] ------------------------------------------------------------------------

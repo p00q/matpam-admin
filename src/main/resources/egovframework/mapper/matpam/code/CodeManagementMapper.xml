@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.matpam.admin.code.service.impl.CodeManagementMapper">
+
+    <!-- ========================================
+         그룹코드 관련 쿼리
+    ======================================== -->
+    
+    <!-- 그룹코드 목록 조회 -->
+    <select id="selectGroupCodeList" parameterType="kr.co.matpam.admin.code.service.GroupCodeVO" 
+            resultType="kr.co.matpam.admin.code.service.GroupCodeVO">
+        SELECT 
+            GROUP_CODE as groupCode,
+            GROUP_CODE_NAME as groupCodeName,
+            USE_YN as useYn,
+            DATE_FORMAT(REG_DATE, '%Y-%m-%d %H:%i:%s') as regDate,
+            DATE_FORMAT(MOD_DATE, '%Y-%m-%d %H:%i:%s') as modDate
+        FROM TB_GROUP_CODE
+        <where>
+            <if test="groupCodeName != null and groupCodeName != ''">
+                AND GROUP_CODE_NAME LIKE CONCAT('%', #{groupCodeName}, '%')
+            </if>
+            <if test="useYn != null and useYn != '' and useYn != '전체'">
+                AND USE_YN = #{useYn}
+            </if>
+        </where>
+        ORDER BY GROUP_CODE
+    </select>
+    
+    <!-- 그룹코드 단건 조회 -->
+    <select id="selectGroupCode" parameterType="string" 
+            resultType="kr.co.matpam.admin.code.service.GroupCodeVO">
+        SELECT 
+            GROUP_CODE as groupCode,
+            GROUP_CODE_NAME as groupCodeName,
+            USE_YN as useYn
+        FROM TB_GROUP_CODE
+        WHERE GROUP_CODE = #{groupCode}
+    </select>
+    
+    <!-- 그룹코드 등록 -->
+    <insert id="insertGroupCode" parameterType="kr.co.matpam.admin.code.service.GroupCodeVO">
+        INSERT INTO TB_GROUP_CODE (
+            GROUP_CODE,
+            GROUP_CODE_NAME,
+            USE_YN
+        ) VALUES (
+            #{groupCode},
+            #{groupCodeName},
+            #{useYn}
+        )
+    </insert>
+    
+    <!-- 그룹코드 수정 -->
+    <update id="updateGroupCode" parameterType="kr.co.matpam.admin.code.service.GroupCodeVO">
+        UPDATE TB_GROUP_CODE SET
+            GROUP_CODE_NAME = #{groupCodeName},
+            USE_YN = #{useYn}
+        WHERE GROUP_CODE = #{groupCode}
+    </update>
+    
+    <!-- 그룹코드 삭제 -->
+    <delete id="deleteGroupCode" parameterType="string">
+        DELETE FROM TB_GROUP_CODE
+        WHERE GROUP_CODE = #{groupCode}
+    </delete>
+
+    <!-- ========================================
+         코드 관련 쿼리
+    ======================================== -->
+    
+    <!-- 코드 목록 조회 -->
+    <select id="selectCodeList" parameterType="string" 
+            resultType="kr.co.matpam.admin.code.service.CodeVO">
+        SELECT 
+            GROUP_CODE as groupCode,
+            CODE as code,
+            CODE_NAME as codeName,
+            SORT_ORDER as sortOrder,
+            USE_YN as useYn,
+            DATE_FORMAT(REG_DATE, '%Y-%m-%d %H:%i:%s') as regDate,
+            DATE_FORMAT(MOD_DATE, '%Y-%m-%d %H:%i:%s') as modDate
+        FROM TB_CODE
+        WHERE GROUP_CODE = #{groupCode}
+        ORDER BY SORT_ORDER, CODE
+    </select>
+    
+    <!-- 코드 단건 조회 -->
+    <select id="selectCode" resultType="kr.co.matpam.admin.code.service.CodeVO">
+        SELECT 
+            GROUP_CODE as groupCode,
+            CODE as code,
+            CODE_NAME as codeName,
+            SORT_ORDER as sortOrder,
+            USE_YN as useYn
+        FROM TB_CODE
+        WHERE GROUP_CODE = #{param1}
+          AND CODE = #{param2}
+    </select>
+    
+    <!-- 코드 등록 -->
+    <insert id="insertCode" parameterType="kr.co.matpam.admin.code.service.CodeVO">
+        INSERT INTO TB_CODE (
+            GROUP_CODE,
+            CODE,
+            CODE_NAME,
+            SORT_ORDER,
+            USE_YN
+        ) VALUES (
+            #{groupCode},
+            #{code},
+            #{codeName},
+            #{sortOrder},
+            #{useYn}
+        )
+    </insert>
+    
+    <!-- 코드 수정 -->
+    <update id="updateCode" parameterType="kr.co.matpam.admin.code.service.CodeVO">
+        UPDATE TB_CODE SET
+            CODE_NAME = #{codeName},
+            SORT_ORDER = #{sortOrder},
+            USE_YN = #{useYn}
+        WHERE GROUP_CODE = #{groupCode}
+          AND CODE = #{code}
+    </update>
+    
+    <!-- 코드 삭제 -->
+    <delete id="deleteCode">
+        DELETE FROM TB_CODE
+        WHERE GROUP_CODE = #{param1}
+          AND CODE = #{param2}
+    </delete>
+
+    <!-- ========================================
+         상세코드 관련 쿼리
+    ======================================== -->
+    
+    <!-- 상세코드 목록 조회 -->
+    <select id="selectDetailCodeList" resultType="kr.co.matpam.admin.code.service.DetailCodeVO">
+        SELECT 
+            GROUP_CODE as groupCode,
+            CODE as code,
+            DETAIL_CODE as detailCode,
+            DETAIL_CODE_NAME as detailCodeName,
+            SORT_ORDER as sortOrder,
+            USE_YN as useYn,
+            DATE_FORMAT(REG_DATE, '%Y-%m-%d %H:%i:%s') as regDate,
+            DATE_FORMAT(MOD_DATE, '%Y-%m-%d %H:%i:%s') as modDate
+        FROM TB_DETAIL_CODE
+        WHERE GROUP_CODE = #{param1}
+          AND CODE = #{param2}
+        ORDER BY SORT_ORDER, DETAIL_CODE
+    </select>
+    
+    <!-- 상세코드 단건 조회 -->
+    <select id="selectDetailCode" resultType="kr.co.matpam.admin.code.service.DetailCodeVO">
+        SELECT 
+            GROUP_CODE as groupCode,
+            CODE as code,
+            DETAIL_CODE as detailCode,
+            DETAIL_CODE_NAME as detailCodeName,
+            SORT_ORDER as sortOrder,
+            USE_YN as useYn
+        FROM TB_DETAIL_CODE
+        WHERE GROUP_CODE = #{param1}
+          AND CODE = #{param2}
+          AND DETAIL_CODE = #{param3}
+    </select>
+    
+    <!-- 상세코드 등록 -->
+    <insert id="insertDetailCode" parameterType="kr.co.matpam.admin.code.service.DetailCodeVO">
+        INSERT INTO TB_DETAIL_CODE (
+            GROUP_CODE,
+            CODE,
+            DETAIL_CODE,
+            DETAIL_CODE_NAME,
+            SORT_ORDER,
+            USE_YN
+        ) VALUES (
+            #{groupCode},
+            #{code},
+            #{detailCode},
+            #{detailCodeName},
+            #{sortOrder},
+            #{useYn}
+        )
+    </insert>
+    
+    <!-- 상세코드 수정 -->
+    <update id="updateDetailCode" parameterType="kr.co.matpam.admin.code.service.DetailCodeVO">
+        UPDATE TB_DETAIL_CODE SET
+            DETAIL_CODE_NAME = #{detailCodeName},
+            SORT_ORDER = #{sortOrder},
+            USE_YN = #{useYn}
+        WHERE GROUP_CODE = #{groupCode}
+          AND CODE = #{code}
+          AND DETAIL_CODE = #{detailCode}
+    </update>
+    
+    <!-- 상세코드 삭제 -->
+    <delete id="deleteDetailCode">
+        DELETE FROM TB_DETAIL_CODE
+        WHERE GROUP_CODE = #{param1}
+          AND CODE = #{param2}
+          AND DETAIL_CODE = #{param3}
+    </delete>
+
+</mapper>

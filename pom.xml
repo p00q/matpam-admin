@@ -109,7 +109,7 @@
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
+      <artifactId>slf4j-reload4j</artifactId>
       <version>${org.slf4j-version}</version>
       <scope>runtime</scope>
     </dependency>
@@ -191,11 +191,40 @@
     </dependency>
     <!-- Assuming MySQL for now, can be changed -->
     <dependency>
-        <groupId>mysql</groupId>
-        <artifactId>mysql-connector-java</artifactId>
+        <groupId>com.mysql</groupId>
+        <artifactId>mysql-connector-j</artifactId>
         <version>8.0.33</version>
     </dependency>
     
+    <!-- JSON-B 구현체 -->
+    <dependency>
+        <groupId>org.eclipse</groupId>
+        <artifactId>yasson</artifactId>
+        <version>1.0.3</version>
+    </dependency>
+    <dependency>
+        <groupId>org.glassfish</groupId>
+        <artifactId>javax.json</artifactId>
+        <version>1.1.4</version>
+    </dependency>
+    
+
+    <!-- Bean Validation 구현체 : Hibernate Validator (javax.validation 2.0) -->
+    <dependency>
+        <groupId>org.hibernate.validator</groupId>
+        <artifactId>hibernate-validator</artifactId>
+        <version>6.2.5.Final</version>
+    </dependency>
+
+    <!-- EL 구현체 (필수는 아니지만, 밸리데이션이 EL을 쓰는 경우 필요) -->
+    <dependency>
+        <groupId>org.glassfish</groupId>
+        <artifactId>jakarta.el</artifactId>
+        <version>3.0.4</version>
+    </dependency>
+
+
+
     <!-- Test -->
     <dependency>
       <groupId>junit</groupId>
@@ -206,6 +235,7 @@
   </dependencies>
 
   <build>
+    <finalName>matpam-admin</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-eclipse-plugin</artifactId>
@@ -239,6 +269,38 @@
         <version>1.2.1</version>
         <configuration>
           <mainClass>org.test.int1.Main</mainClass>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.cargo</groupId>
+        <artifactId>cargo-maven3-plugin</artifactId>
+        <version>1.10.9</version>
+        <configuration>
+          <container>
+            <containerId>tomcat9x</containerId>
+            <type>embedded</type>
+          </container>
+          <configuration>
+            <properties>
+              <cargo.servlet.port>5050</cargo.servlet.port>
+            </properties>
+          </configuration>
+        </configuration>
+      </plugin>
+
+      <!-- Jetty Plugin for Port 5050 (Compatible with javax.servlet) -->
+      <plugin>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-maven-plugin</artifactId>
+        <version>10.0.15</version>
+        <configuration>
+          <httpConnector>
+            <port>5050</port>
+          </httpConnector>
+          <webApp>
+            <contextPath>/</contextPath>
+          </webApp>
         </configuration>
       </plugin>
     </plugins>

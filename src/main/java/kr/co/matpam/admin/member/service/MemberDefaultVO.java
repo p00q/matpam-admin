@@ -30,6 +30,9 @@ public class MemberDefaultVO implements Serializable {
     /** 검색어 */
     private String searchKeyword;
 
+    /** 회원타입 */
+    private String memberType;
+
     /** 현재 페이지 번호 */
     private int pageIndex = 1;
 
@@ -110,6 +113,14 @@ public class MemberDefaultVO implements Serializable {
 
     public void setSearchKeyword(String searchKeyword) {
         this.searchKeyword = searchKeyword;
+    }
+
+    public String getMemberType() {
+        return memberType;
+    }
+
+    public void setMemberType(String memberType) {
+        this.memberType = memberType;
     }
 
     public int getPageIndex() {

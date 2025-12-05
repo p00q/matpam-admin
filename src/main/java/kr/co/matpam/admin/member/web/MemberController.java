@@ -1,8 +1,6 @@
 package kr.co.matpam.admin.member.web;
 
-import java.beans.PropertyEditorSupport;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -11,9 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import org.egovframe.rte.ptl.mvc.tags.ui.pagination.PaginationInfo;
 import kr.co.matpam.admin.member.service.MemberDefaultVO;
@@ -26,56 +22,12 @@ public class MemberController {
     @Resource(name = "memberService")
     private MemberService memberService;
 
-    @InitBinder
-    public void initBinder(WebDataBinder binder) {
-        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        dateFormat.setLenient(false);
-
-        binder.registerCustomEditor(java.sql.Date.class, new PropertyEditorSupport() {
-            @Override
-            public void setAsText(String text) throws IllegalArgumentException {
-                if (text == null || text.trim().isEmpty()) {
-                    setValue(null);
-                    return;
-                }
-
-                try {
-                    java.util.Date utilDate = dateFormat.parse(text.trim());
-                    setValue(new java.sql.Date(utilDate.getTime()));
-                } catch (ParseException e) {
-                    throw new IllegalArgumentException("Invalid date format. Please use yyyy-MM-dd", e);
-                }
-            }
-
-            @Override
-            public String getAsText() {
-                Object value = getValue();
-                if (value instanceof java.sql.Date) {
-                    return dateFormat.format((java.sql.Date) value);
-                }
-                return "";
-            }
-        });
-    }
-
-    @RequestMapping(value = "/admin/member/memberForm.do")
-    public String memberForm() {
-        return "admin/member/MemberRegister";
-    }
-
-    @RequestMapping(value = "/admin/member/memberRegister.do")
-    public String memberRegister() {
-        return "admin/member/MemberRegister";
-    }
-
-    @RequestMapping(value = "/admin/member/insertMember.do", method = RequestMethod.POST)
-    public String insertMember(@ModelAttribute("member") MemberVO member) throws Exception {
-        memberService.insertMember(member);
-        return "redirect:/admin/member/memberList.do";
-    }
+    @Resource(name = "codeManagementService")
+    private kr.co.matpam.admin.code.service.CodeManagementService codeManagementService;
 
     @RequestMapping(value = "/admin/member/memberList.do")
-    public String selectMemberList(@ModelAttribute("searchVO") MemberDefaultVO searchVO, ModelMap model) throws Exception {
+    public String selectMemberList(@ModelAttribute("searchVO") MemberDefaultVO searchVO, ModelMap model)
+            throws Exception {
         PaginationInfo paginationInfo = new PaginationInfo();
         paginationInfo.setCurrentPageNo(searchVO.getPageIndex());
         paginationInfo.setRecordCountPerPage(searchVO.getPageUnit());
@@ -91,6 +43,96 @@ public class MemberController {
         List<MemberVO> resultList = memberService.selectMemberList(searchVO);
         model.addAttribute("resultList", resultList);
         model.addAttribute("paginationInfo", paginationInfo);
-        return "admin/member/MemberList";
+
+        // Load codes for search filters
+        model.addAttribute("memberTypes", codeManagementService.selectDetailCodeList("003", "003001"));
+        model.addAttribute("statusCodes", codeManagementService.selectDetailCodeList("004", "004001"));
+
+        // Set content page for layout
+        model.addAttribute("contentPage", "/WEB-INF/jsp/admin/member/MemberList.jsp");
+
+        return "layout/main";
+    }
+
+    @RequestMapping(value = "/admin/member/memberRegisterForm.do")
+    public String memberRegisterForm(ModelMap model) throws Exception {
+        // Load codes for dropdowns
+        model.addAttribute("memberTypes", codeManagementService.selectDetailCodeList("003", "003001"));
+        model.addAttribute("memberGrades", codeManagementService.selectDetailCodeList("005", "005001"));
+        model.addAttribute("statusCodes", codeManagementService.selectDetailCodeList("004", "004001"));
+
+        model.addAttribute("mode", "insert");
+
+        // Set content page for layout
+        model.addAttribute("contentPage", "/WEB-INF/jsp/admin/member/MemberRegister.jsp");
+        return "layout/main";
+    }
+
+    @RequestMapping(value = "/admin/member/insertMember.do")
+    public String insertMember(@ModelAttribute("memberVO") MemberVO memberVO,
+            org.springframework.validation.BindingResult bindingResult, ModelMap model) throws Exception {
+        if (bindingResult.hasErrors()) {
+            System.out.println("Binding Errors: " + bindingResult.getAllErrors());
+            for (org.springframework.validation.ObjectError error : bindingResult.getAllErrors()) {
+                System.out.println(error.getDefaultMessage());
+            }
+            return "admin/member/MemberRegister"; // Return to form if errors
+        }
+
+        if (memberVO.getJoinDate() == null || memberVO.getJoinDate().isEmpty()) {
+            memberVO.setJoinDate(LocalDate.now().toString());
+        }
+        if (memberVO.getCreditLimit() == null) {
+            memberVO.setCreditLimit(0L);
+        }
+        if (memberVO.getMeatMoney() == null) {
+            memberVO.setMeatMoney(0L);
+        }
+        if (memberVO.getAgreeMarketing() == null || memberVO.getAgreeMarketing().isEmpty()) {
+            memberVO.setAgreeMarketing("N");
+        }
+        if (memberVO.getAgreeSms() == null || memberVO.getAgreeSms().isEmpty()) {
+            memberVO.setAgreeSms("N");
+        }
+        memberService.insertMember(memberVO);
+        return "redirect:/admin/member/memberList.do?menu=member";
+    }
+
+    @RequestMapping(value = "/admin/member/memberView.do")
+    public String memberView(@RequestParam("memberNo") Long memberNo, ModelMap model) throws Exception {
+        MemberVO member = memberService.selectMember(memberNo);
+        if (member == null) {
+            return "redirect:/admin/member/memberList.do?menu=member";
+        }
+
+        model.addAttribute("member", member);
+        model.addAttribute("memberManagers", memberService.selectMemberManagers(memberNo));
+
+        model.addAttribute("contentPage", "/WEB-INF/jsp/admin/member/MemberView.jsp");
+        return "layout/main";
+    }
+
+    @RequestMapping(value = "/admin/member/memberDetail.do")
+    public String selectMember(@RequestParam("memberId") String memberId, ModelMap model) throws Exception {
+        MemberVO member = memberService.selectMemberById(memberId);
+        if (member == null) {
+            return "redirect:/admin/member/memberList.do?menu=member";
+        }
+
+        List<kr.co.matpam.admin.member.service.manager.MemberManagerVO> managerList = memberService
+                .selectMemberManagers(member.getMemberNo());
+        member.setMemberManagers(managerList);
+
+        model.addAttribute("member", member);
+        model.addAttribute("memberManagers", managerList);
+        model.addAttribute("managers", managerList);
+
+        model.addAttribute("mode", "view");
+        model.addAttribute("memberTypes", codeManagementService.selectDetailCodeList("003", "003001"));
+        model.addAttribute("memberGrades", codeManagementService.selectDetailCodeList("005", "005001"));
+        model.addAttribute("statusCodes", codeManagementService.selectDetailCodeList("004", "004001"));
+
+        model.addAttribute("contentPage", "/WEB-INF/jsp/admin/member/MemberRegister.jsp");
+        return "layout/main";
     }
 }
