@@ -271,6 +271,38 @@
           <mainClass>org.test.int1.Main</mainClass>
         </configuration>
       </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.cargo</groupId>
+        <artifactId>cargo-maven3-plugin</artifactId>
+        <version>1.10.9</version>
+        <configuration>
+          <container>
+            <containerId>tomcat9x</containerId>
+            <type>embedded</type>
+          </container>
+          <configuration>
+            <properties>
+              <cargo.servlet.port>5050</cargo.servlet.port>
+            </properties>
+          </configuration>
+        </configuration>
+      </plugin>
+
+      <!-- Jetty Plugin for Port 5050 (Compatible with javax.servlet) -->
+      <plugin>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-maven-plugin</artifactId>
+        <version>10.0.15</version>
+        <configuration>
+          <httpConnector>
+            <port>5050</port>
+          </httpConnector>
+          <webApp>
+            <contextPath>/</contextPath>
+          </webApp>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 </project>

@@ -28,6 +28,88 @@ public class BundleProductVO {
 
     public void setBundleId(Long bundleId) {
         this.bundleId = bundleId;
+import java.io.Serializable;
+import java.util.Date;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
+/**
+ * 구성상품 VO
+ */
+public class BundleProductVO implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    /** 상품번호 (PK) */
+    private Long productNo;
+
+    /** 상품명 */
+    private String productName;
+
+    /** 저장유형 (냉장/냉동/상온 등) */
+    private String storageType;
+    private String storageTypeName;
+
+    /** 처리유형 (세척/전처리 등) */
+    private String processType;
+    private String processTypeName;
+
+    /** 분리유형 (부위/손질 등) */
+    private String divisionType;
+    private String divisionTypeName;
+
+    /** 단위구분 (kg/팩/EA 등) */
+    private String unitType;
+    private String unitTypeName;
+
+    /** 판매유형 (원물/가공 등) */
+    private String saleType;
+    private String saleTypeName;
+
+    /** 판매자 회원번호 (FK: TB_MEMBER.MEMBER_NO) */
+    private Long sellerId;
+    private String sellerName;
+
+    /** 원가 */
+    private Integer costPrice;
+
+    /** 부가세 */
+    private Integer vatAmount;
+
+    /** 부가세 자동 계산 여부 (Y/N) */
+    private String autoVatYn;
+
+    /** 판매가격 (원가 + 부가세) */
+    private Integer salePrice;
+
+    /** 판매상태 (판매중/중지/삭제 등) */
+    private String saleStatus;
+    private String saleStatusName;
+
+    /** 노출상태 (Y/N) */
+    private String displayYn;
+
+    /** 판매 시작일 */
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date saleStartDate;
+
+    /** 판매 종료일 */
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date saleEndDate;
+
+    /** 등록일 */
+    private Date regDt;
+
+    /** 수정일 */
+    private Date modDt;
+
+    // Getters and Setters
+    public Long getProductNo() {
+        return productNo;
+    }
+
+    public void setProductNo(Long productNo) {
+        this.productNo = productNo;
     }
 
     public String getProductName() {
@@ -60,6 +142,36 @@ public class BundleProductVO {
 
     public void setStorageType(String storageType) {
         this.storageType = storageType;
+    public String getStorageType() {
+        return storageType;
+    }
+
+    public void setStorageType(String storageType) {
+        this.storageType = storageType;
+    }
+
+    public String getStorageTypeName() {
+        return storageTypeName;
+    }
+
+    public void setStorageTypeName(String storageTypeName) {
+        this.storageTypeName = storageTypeName;
+    }
+
+    public String getProcessType() {
+        return processType;
+    }
+
+    public void setProcessType(String processType) {
+        this.processType = processType;
+    }
+
+    public String getProcessTypeName() {
+        return processTypeName;
+    }
+
+    public void setProcessTypeName(String processTypeName) {
+        this.processTypeName = processTypeName;
     }
 
     public String getDivisionType() {

@@ -247,4 +247,16 @@
         )
     </insert>
 
+    <!-- 판매자 목록 조회 (회원타입이 '003001002' = 판매자인 회원만) -->
+    <select id="selectSellerList" resultType="kr.co.matpam.admin.member.service.MemberVO">
+        SELECT
+            m.MEMBER_NO as memberNo,
+            m.MEMBER_ID as memberId,
+            m.COMPANY_NAME as companyName,
+            m.CEO_NAME as ceoName
+        FROM TB_MEMBER m
+        WHERE m.MEMBER_TYPE = '003001002'
+        ORDER BY m.COMPANY_NAME
+    </select>
+
 </mapper>
