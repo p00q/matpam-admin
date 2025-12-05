@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import org.egovframe.rte.ptl.mvc.tags.ui.pagination.PaginationInfo;
 import kr.co.matpam.admin.member.service.MemberDefaultVO;
@@ -93,5 +94,19 @@ public class MemberController {
         }
         memberService.insertMember(memberVO);
         return "redirect:/admin/member/memberList.do?menu=member";
+    }
+
+    @RequestMapping(value = "/admin/member/memberView.do")
+    public String memberView(@RequestParam("memberNo") Long memberNo, ModelMap model) throws Exception {
+        MemberVO member = memberService.selectMember(memberNo);
+        if (member == null) {
+            return "redirect:/admin/member/memberList.do?menu=member";
+        }
+
+        model.addAttribute("member", member);
+        model.addAttribute("memberManagers", memberService.selectMemberManagers(memberNo));
+
+        model.addAttribute("contentPage", "/WEB-INF/jsp/admin/member/MemberView.jsp");
+        return "layout/main";
     }
 }

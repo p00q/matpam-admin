@@ -114,6 +114,47 @@
           FROM TB_MEMBER
         <include refid="memberWhere" />
     </select>
+
+    <select id="selectMember" resultMap="memberResultMap" parameterType="long">
+        SELECT m.MEMBER_NO,
+               m.MEMBER_TYPE,
+               mt.DETAIL_CODE_NAME as MEMBER_TYPE_NAME,
+               m.REGION,
+               m.MEMBER_ID,
+               m.COMPANY_NAME,
+               m.BUSINESS_NUMBER,
+               m.CEO_NAME,
+               m.CONTACT_NUMBER,
+               m.EMAIL,
+               m.COMPANY_PHONE,
+               m.POSTCODE,
+               m.ADDRESS,
+               m.ADDRESS_DETAIL,
+               mgr.MANAGER_NAME AS MANAGER_NAME,
+               mgr.MOBILE_NUMBER AS MANAGER_CONTACT,
+               mgr.MOBILE_NUMBER AS MANAGER_MOBILE,
+               mgr.PHONE_NUMBER AS MANAGER_PHONE,
+               mgr.EMAIL AS MANAGER_EMAIL,
+               m.CREDIT_LIMIT,
+               m.MEAT_MONEY,
+               m.MEMBER_GRADE,
+               mg.DETAIL_CODE_NAME as MEMBER_GRADE_NAME,
+               m.STATUS,
+               st.DETAIL_CODE_NAME as STATUS_NAME,
+               m.AGREE_MARKETING,
+               m.AGREE_SMS,
+               m.JOIN_DATE
+          FROM TB_MEMBER m
+          LEFT JOIN TB_MEMBER_MANAGER mgr ON mgr.MEMBER_NO = m.MEMBER_NO AND mgr.MAIN_YN = 'Y'
+          LEFT JOIN TB_DETAIL_CODE mt ON m.MEMBER_TYPE = mt.DETAIL_CODE
+                AND mt.GROUP_CODE = '003' AND mt.CODE = '003001'
+          LEFT JOIN TB_DETAIL_CODE mg ON m.MEMBER_GRADE = mg.DETAIL_CODE
+                AND mg.GROUP_CODE = '005' AND mg.CODE = '005001'
+          LEFT JOIN TB_DETAIL_CODE st ON m.STATUS = st.DETAIL_CODE
+                AND st.GROUP_CODE = '004' AND st.CODE = '004001'
+         WHERE m.MEMBER_NO = #{value}
+    </select>
+
     
     <insert id="insertMember" parameterType="kr.co.matpam.admin.member.service.MemberVO" useGeneratedKeys="true"
         keyProperty="memberNo" keyColumn="MEMBER_NO">

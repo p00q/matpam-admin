@@ -186,6 +186,14 @@
                                                 value="${paginationInfo.totalRecordCount - ((searchVO.pageIndex-1) * searchVO.pageUnit + status.index)}" />
                                         </td>
                                         <td>${member.memberTypeName}</td>
+                                    <td>
+                                        <c:url var="memberViewUrl" value='/admin/member/memberView.do'>
+                                            <c:param name='memberNo' value='${member.memberNo}' />
+                                            <c:param name='menu' value='member' />
+                                        </c:url>
+                                        <a class="text-primary text-decoration-underline" href="${memberViewUrl}">
+                                            ${member.memberId}</a>
+                                    </td>
                                         <td class="text-primary text-decoration-underline cursor-pointer">
                                             ${member.memberId}</td>
                                         <td>${member.contactNumber}</td>
