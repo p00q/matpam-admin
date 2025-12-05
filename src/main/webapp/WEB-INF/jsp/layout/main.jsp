@@ -108,8 +108,8 @@
                             </a>
                         </li>
                         <li>
-                            <a href="<c:url value='/admin/config/configList.do'/>"
-                                class="${param.menu eq 'config' ? 'active' : ''}">
+                            <a href="<c:url value='/admin/product/bundleProductList.do?menu=bundle'/>"
+                                class="${param.menu eq 'bundle' ? 'active' : ''}">
                                 <i class="bi bi-gear-fill"></i>구성상품관리
                             </a>
                         </li>
