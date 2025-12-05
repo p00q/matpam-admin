@@ -27,6 +27,7 @@ public class MemberVO implements Serializable {
     private String managerName;
     private String managerContact;
     private String managerMobile;
+    private String managerPhone;
     private String managerEmail;
     private Long creditLimit;
     private Long meatMoney;
@@ -238,6 +239,14 @@ public class MemberVO implements Serializable {
 
     public void setManagerMobile(String managerMobile) {
         this.managerMobile = managerMobile;
+    }
+
+    public String getManagerPhone() {
+        return managerPhone;
+    }
+
+    public void setManagerPhone(String managerPhone) {
+        this.managerPhone = managerPhone;
     }
 
     public String getManagerEmail() {
