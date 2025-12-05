@@ -148,7 +148,12 @@
                     <!-- Data Table Section -->
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <div class="fw-bold text-primary">TOTAL :
-                            <fmt:formatNumber value="${paginationInfo.totalRecordCount}" type="number" />건
+                            <c:choose>
+                                <c:when test="${not empty paginationInfo}">
+                                    <fmt:formatNumber value="${paginationInfo.totalRecordCount}" type="number" />건
+                                </c:when>
+                                <c:otherwise>0건</c:otherwise>
+                            </c:choose>
                         </div>
                         <div class="d-flex gap-2">
                             <a href="<c:url value='/admin/product/bundleRegist.do'/>" class="btn btn-success btn-sm">
@@ -230,15 +235,18 @@
                     </div>
 
                     <!-- Pagination -->
-                    <div class="d-flex justify-content-center mt-4">
-                        <ui:pagination paginationInfo="${paginationInfo}" type="image" jsFunction="fn_page" />
-                    </div>
+                    <c:if test="${not empty paginationInfo}">
+                        <div class="d-flex justify-content-center mt-4">
+                            <ui:pagination paginationInfo="${paginationInfo}" type="image" jsFunction="fn_page" />
+                        </div>
+                    </c:if>
 
                     <!-- 페이지 유지용 form -->
                     <form name="pageForm" id="pageForm" method="get"
                         action="<c:url value='/admin/product/bundleProductList.do'/>">
                         <input type="hidden" name="menu" value="bundle" />
-                        <input type="hidden" name="pageIndex" value="${paginationInfo.currentPageNo}" />
+                        <input type="hidden" name="pageIndex"
+                            value="${not empty paginationInfo ? paginationInfo.currentPageNo : 1}" />
                         <input type="hidden" name="saleType" value="${param.saleType}" />
                         <input type="hidden" name="storageType" value="${param.storageType}" />
                         <input type="hidden" name="divisionType" value="${param.divisionType}" />
