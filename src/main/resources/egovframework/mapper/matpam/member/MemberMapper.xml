@@ -18,7 +18,7 @@
         <result property="address" column="ADDRESS" />
         <result property="addressDetail" column="ADDRESS_DETAIL" />
         <result property="managerName" column="MANAGER_NAME" />
-        <result property="managerContact" column="MANAGER_MOBILE" />
+        <result property="managerContact" column="MANAGER_CONTACT" />
         <result property="managerMobile" column="MANAGER_MOBILE" />
         <result property="managerPhone" column="MANAGER_PHONE" />
         <result property="managerEmail" column="MANAGER_EMAIL" />
@@ -83,6 +83,7 @@
                m.ADDRESS,
                m.ADDRESS_DETAIL,
                mgr.MANAGER_NAME AS MANAGER_NAME,
+               mgr.MOBILE_NUMBER AS MANAGER_CONTACT,
                mgr.MOBILE_NUMBER AS MANAGER_MOBILE,
                mgr.PHONE_NUMBER AS MANAGER_PHONE,
                mgr.EMAIL AS MANAGER_EMAIL,
