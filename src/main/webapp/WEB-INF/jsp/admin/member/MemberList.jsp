@@ -189,11 +189,15 @@
                                     <td>
                                         <c:url var="memberViewUrl" value='/admin/member/memberDetail.do'>
                                             <c:param name='memberId' value='${member.memberId}' />
+                                        <c:url var="memberViewUrl" value='/admin/member/memberView.do'>
+                                            <c:param name='memberNo' value='${member.memberNo}' />
                                             <c:param name='menu' value='member' />
                                         </c:url>
                                         <a class="text-primary text-decoration-underline" href="${memberViewUrl}">
                                             ${member.memberId}</a>
                                     </td>
+                                        <td class="text-primary text-decoration-underline cursor-pointer">
+                                            ${member.memberId}</td>
                                         <td>${member.contactNumber}</td>
                                         <td class="fw-bold">${member.companyName}</td>
                                         <td>${member.businessNumber}</td>
