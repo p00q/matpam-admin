@@ -125,6 +125,7 @@ public class MemberController {
 
         model.addAttribute("member", member);
         model.addAttribute("memberManagers", managerList);
+        model.addAttribute("managers", managerList);
 
         model.addAttribute("mode", "view");
         model.addAttribute("memberTypes", codeManagementService.selectDetailCodeList("003", "003001"));

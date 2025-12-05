@@ -62,6 +62,7 @@
                 <jsp:useBean id="today" class="java.util.Date" />
                 <fmt:formatDate var="currentDate" value="${today}" pattern="yyyy-MM-dd" />
                 <c:set var="managers"
+                    value="${not empty member.memberManagers ? member.memberManagers : managers}" />
                     value="${not empty member.memberManagers ? member.memberManagers : memberManagers}" />
 
                 <form name="memberForm" method="post" action="<c:url value='/admin/member/insertMember.do'/>">
@@ -367,6 +368,7 @@
                                             </div>
                                         </c:otherwise>
                                     </c:choose>
+                                    </div>
                                     </div>
                             <div id="managerContainer">
                                 <div class="manager-section" data-index="0">
