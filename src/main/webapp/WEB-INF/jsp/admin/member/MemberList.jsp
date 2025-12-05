@@ -194,6 +194,8 @@
                                         <a class="text-primary text-decoration-underline" href="${memberViewUrl}">
                                             ${member.memberId}</a>
                                     </td>
+                                        <td class="text-primary text-decoration-underline cursor-pointer">
+                                            ${member.memberId}</td>
                                         <td>${member.contactNumber}</td>
                                         <td class="fw-bold">${member.companyName}</td>
                                         <td>${member.businessNumber}</td>

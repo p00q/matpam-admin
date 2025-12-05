@@ -155,6 +155,7 @@
          WHERE m.MEMBER_NO = #{value}
     </select>
 
+    
     <insert id="insertMember" parameterType="kr.co.matpam.admin.member.service.MemberVO" useGeneratedKeys="true"
         keyProperty="memberNo" keyColumn="MEMBER_NO">
         INSERT INTO TB_MEMBER (
