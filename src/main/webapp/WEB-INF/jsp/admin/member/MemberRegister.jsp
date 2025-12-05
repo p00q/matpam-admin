@@ -222,22 +222,36 @@
                             </div>
 
                             <div id="managerContainer">
-                                <!-- 담당자 1 -->
-                                <div class="manager-section" id="manager1">
+                                <div class="manager-section" data-index="0">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <strong>담당자 1</strong>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <strong class="manager-title">담당자 1</strong>
+                                            <div class="form-check mb-0">
+                                                <input class="form-check-input main-radio" type="radio"
+                                                    name="mainManagerIndex" value="0" checked>
+                                                <label class="form-check-label">기본 담당자</label>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-danger remove-manager-btn d-none"
+                                            onclick="removeManager(this)">삭제</button>
                                     </div>
+                                    <input type="hidden" class="main-yn-field" name="memberManagers[0].mainYn"
+                                        value="Y" />
+                                    <input type="hidden" class="use-yn-field" name="memberManagers[0].useYn"
+                                        value="Y" />
                                     <table class="table table-bordered form-table mb-0">
                                         <tbody>
                                             <tr>
                                                 <th>이름</th>
                                                 <td>
-                                                    <input type="text" name="managerName" id="managerName"
+                                                    <input type="text" id="managerName0" data-field="managerName"
+                                                        name="memberManagers[0].managerName"
                                                         class="form-control form-control-sm" />
                                                 </td>
                                                 <th>전화번호</th>
                                                 <td>
-                                                    <input type="tel" name="managerContact" id="managerContact"
+                                                    <input type="tel" id="managerPhone0" data-field="phoneNumber"
+                                                        name="memberManagers[0].phoneNumber"
                                                         class="form-control form-control-sm" placeholder="010-0000-0000"
                                                         maxlength="13" />
                                                 </td>
@@ -245,14 +259,15 @@
                                             <tr>
                                                 <th>휴대전화번호</th>
                                                 <td>
-                                                    <input type="tel" name="managerMobile" id="managerMobile"
+                                                    <input type="tel" id="managerMobile0" data-field="mobileNumber"
+                                                        name="memberManagers[0].mobileNumber"
                                                         class="form-control form-control-sm" placeholder="010-0000-0000"
                                                         maxlength="13" />
                                                 </td>
                                                 <th>이메일주소</th>
                                                 <td>
-                                                    <input type="email" name="managerEmail" id="managerEmail"
-                                                        class="form-control form-control-sm" />
+                                                    <input type="email" id="managerEmail0" data-field="email"
+                                                        name="memberManagers[0].email" class="form-control form-control-sm" />
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -323,18 +338,21 @@
             <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 
             <script>
-                let managerCount = 1;
+                let managerIndex = 0;
 
-                // 전화번호 자동 하이픈 추가
                 document.addEventListener('DOMContentLoaded', function () {
-                    const phoneInputs = document.querySelectorAll('input[type="tel"], input[name="businessNumber"], input[name="contactNumber"], input[name="companyPhone"]');
-                    phoneInputs.forEach(input => {
+                    attachPhoneFormatter(document.querySelectorAll('input[type="tel"], input[name="businessNumber"], input[name="contactNumber"], input[name="companyPhone"]'));
+                    document.querySelectorAll('.main-radio').forEach(radio => radio.addEventListener('change', syncMainFlags));
+                    syncMainFlags();
+                });
+
+                function attachPhoneFormatter(inputs) {
+                    inputs.forEach(input => {
                         input.addEventListener('input', function (e) {
                             let value = e.target.value.replace(/[^0-9]/g, '');
                             let formattedValue = '';
 
                             if (e.target.name === 'businessNumber') {
-                                // 사업자등록번호: 000-00-00000
                                 if (value.length <= 3) {
                                     formattedValue = value;
                                 } else if (value.length <= 5) {
@@ -343,7 +361,6 @@
                                     formattedValue = value.slice(0, 3) + '-' + value.slice(3, 5) + '-' + value.slice(5, 10);
                                 }
                             } else {
-                                // 전화번호: 010-0000-0000 또는 02-0000-0000
                                 if (value.startsWith('02')) {
                                     if (value.length <= 2) {
                                         formattedValue = value;
@@ -366,9 +383,8 @@
                             e.target.value = formattedValue;
                         });
                     });
-                });
+                }
 
-                // Daum 주소 검색
                 function execDaumPostcode() {
                     new daum.Postcode({
                         oncomplete: function (data) {
@@ -379,119 +395,167 @@
                     }).open();
                 }
 
-                // 회원정보와 동일
                 function copySameAsMember() {
                     const checked = document.getElementById('sameAsMember').checked;
-                    if (checked) {
-                        document.getElementById('managerName').value = document.querySelector('input[name="ceoName"]').value;
-                        document.getElementById('managerContact').value = document.querySelector('input[name="contactNumber"]').value;
-                        document.getElementById('managerMobile1').value = document.querySelector('input[name="contactNumber"]').value;
-                        document.getElementById('managerEmail1').value = document.querySelector('input[name="email"]').value;
-                    } else {
-                        document.getElementById('managerName').value = '';
-                        document.getElementById('managerContact').value = '';
-                        document.getElementById('managerMobile1').value = '';
-                        document.getElementById('managerEmail1').value = '';
+                    const ceoName = document.querySelector('input[name="ceoName"]').value;
+                    const contactNumber = document.querySelector('input[name="contactNumber"]').value;
+                    const email = document.querySelector('input[name="email"]').value;
+
+                    document.getElementById('managerName0').value = checked ? ceoName : '';
+                    document.getElementById('managerPhone0').value = checked ? contactNumber : '';
+                    document.getElementById('managerMobile0').value = checked ? contactNumber : '';
+                    document.getElementById('managerEmail0').value = checked ? email : '';
+                }
+
+                function buildManagerSection(index) {
+                    const newManager = document.createElement('div');
+                    newManager.className = 'manager-section';
+                    newManager.dataset.index = index;
+                    newManager.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center gap-3">
+                                <strong class="manager-title">담당자 ${index + 1}</strong>
+                                <div class="form-check mb-0">
+                                    <input class="form-check-input main-radio" type="radio" name="mainManagerIndex" value="${index}">
+                                    <label class="form-check-label">기본 담당자</label>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-danger remove-manager-btn" onclick="removeManager(this)">삭제</button>
+                        </div>
+                        <input type="hidden" class="main-yn-field" name="memberManagers[${index}].mainYn" value="N" />
+                        <input type="hidden" class="use-yn-field" name="memberManagers[${index}].useYn" value="Y" />
+                        <table class="table table-bordered form-table mb-0">
+                            <tbody>
+                                <tr>
+                                    <th>이름</th>
+                                    <td>
+                                        <input type="text" data-field="managerName" name="memberManagers[${index}].managerName" class="form-control form-control-sm" />
+                                    </td>
+                                    <th>전화번호</th>
+                                    <td>
+                                        <input type="tel" data-field="phoneNumber" name="memberManagers[${index}].phoneNumber" class="form-control form-control-sm" placeholder="010-0000-0000" maxlength="13" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>휴대전화번호</th>
+                                    <td>
+                                        <input type="tel" data-field="mobileNumber" name="memberManagers[${index}].mobileNumber" class="form-control form-control-sm" placeholder="010-0000-0000" maxlength="13" />
+                                    </td>
+                                    <th>이메일주소</th>
+                                    <td>
+                                        <input type="email" data-field="email" name="memberManagers[${index}].email" class="form-control form-control-sm" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    `;
+                    return newManager;
+                }
+
+                function addManager() {
+                    managerIndex++;
+                    const container = document.getElementById('managerContainer');
+                    const newManager = buildManagerSection(managerIndex);
+                    container.appendChild(newManager);
+                    attachPhoneFormatter(newManager.querySelectorAll('input[type="tel"]'));
+                    newManager.querySelector('.main-radio').addEventListener('change', syncMainFlags);
+                    renumberManagers();
+                    syncMainFlags();
+                }
+
+                function removeManager(button) {
+                    const manager = button.closest('.manager-section');
+                    if (manager) {
+                        manager.remove();
+                        renumberManagers();
+                        syncMainFlags();
                     }
                 }
 
-                // 담당자 추가
-                function addManager() {
-                    managerCount++;
-                    const container = document.getElementById('managerContainer');
-                    const newManager = document.createElement('div');
-                    newManager.className = 'manager-section';
-                    newManager.id = 'manager' + managerCount;
-
-                    let html = '';
-                    html += '<div class="d-flex justify-content-between align-items-center mb-2">';
-                    html += '    <strong>담당자 ' + managerCount + '</strong>';
-                    html += '    <button type="button" class="btn btn-sm btn-danger" onclick="removeManager(' + managerCount + ')">삭제</button>';
-                    html += '</div>';
-                    html += '<table class="table table-bordered form-table mb-0">';
-                    html += '    <tbody>';
-                    html += '        <tr>';
-                    html += '            <th style="width: 15%;">이름</th>';
-                    html += '            <td style="width: 35%;">';
-                    html += '                <input type="text" name="managerName' + managerCount + '" class="form-control form-control-sm"/>';
-                    html += '            </td>';
-                    html += '            <th style="width: 15%;">전화번호</th>';
-                    html += '            <td style="width: 35%;">';
-                    html += '                <input type="tel" name="managerPhone' + managerCount + '" class="form-control form-control-sm" placeholder="010-0000-0000" maxlength="13"/>';
-                    html += '            </td>';
-                    html += '        </tr>';
-                    html += '        <tr>';
-                    html += '            <th>휴대전화번호</th>';
-                    html += '            <td>';
-                    html += '                <input type="tel" name="managerMobile' + managerCount + '" class="form-control form-control-sm" placeholder="010-0000-0000" maxlength="13"/>';
-                    html += '            </td>';
-                    html += '            <th>이메일주소</th>';
-                    html += '            <td>';
-                    html += '                <input type="email" name="managerEmail' + managerCount + '" class="form-control form-control-sm"/>';
-                    html += '            </td>';
-                    html += '        </tr>';
-                    html += '    </tbody>';
-                    html += '</table>';
-
-                    newManager.innerHTML = html;
-                    container.appendChild(newManager);
-
-                    // 새로 추가된 전화번호 입력 필드에도 이벤트 리스너 추가
-                    const newPhoneInputs = newManager.querySelectorAll('input[type="tel"]');
-                    newPhoneInputs.forEach(input => {
-                        input.addEventListener('input', function (e) {
-                            let value = e.target.value.replace(/[^0-9]/g, '');
-                            let formattedValue = '';
-
-                            if (value.startsWith('02')) {
-                                if (value.length <= 2) {
-                                    formattedValue = value;
-                                } else if (value.length <= 6) {
-                                    formattedValue = value.slice(0, 2) + '-' + value.slice(2);
-                                } else {
-                                    formattedValue = value.slice(0, 2) + '-' + value.slice(2, 6) + '-' + value.slice(6, 10);
-                                }
-                            } else {
-                                if (value.length <= 3) {
-                                    formattedValue = value;
-                                } else if (value.length <= 7) {
-                                    formattedValue = value.slice(0, 3) + '-' + value.slice(3);
-                                } else {
-                                    formattedValue = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7, 11);
-                                }
-                            }
-
-                            e.target.value = formattedValue;
+                function renumberManagers() {
+                    const managers = document.querySelectorAll('#managerContainer .manager-section');
+                    managers.forEach((manager, index) => {
+                        manager.dataset.index = index;
+                        const title = manager.querySelector('.manager-title');
+                        if (title) {
+                            title.textContent = '담당자 ' + (index + 1);
+                        }
+                        manager.querySelectorAll('[data-field]').forEach(input => {
+                            const field = input.dataset.field;
+                            input.name = `memberManagers[${index}].${field}`;
+                            input.id = `${field}${index}`;
                         });
+                        const mainField = manager.querySelector('.main-yn-field');
+                        const useField = manager.querySelector('.use-yn-field');
+                        if (mainField) {
+                            mainField.name = `memberManagers[${index}].mainYn`;
+                        }
+                        if (useField) {
+                            useField.name = `memberManagers[${index}].useYn`;
+                        }
+                        const radio = manager.querySelector('.main-radio');
+                        if (radio) {
+                            radio.value = index;
+                            radio.name = 'mainManagerIndex';
+                        }
+                        const removeBtn = manager.querySelector('.remove-manager-btn');
+                        if (removeBtn) {
+                            removeBtn.classList.toggle('d-none', managers.length === 1 && index === 0);
+                        }
+                    });
+                    if (!document.querySelector('.main-radio:checked') && managers.length > 0) {
+                        managers[0].querySelector('.main-radio').checked = true;
+                    }
+                    managerIndex = managers.length - 1;
+                }
+
+                function syncMainFlags() {
+                    const selectedMain = document.querySelector('.main-radio:checked');
+                    const mainIndex = selectedMain ? selectedMain.value : '0';
+                    document.querySelectorAll('#managerContainer .manager-section').forEach(manager => {
+                        const mainField = manager.querySelector('.main-yn-field');
+                        if (mainField) {
+                            mainField.value = manager.dataset.index === mainIndex ? 'Y' : 'N';
+                        }
                     });
                 }
 
-                // 담당자 삭제
-                function removeManager(num) {
-                    const manager = document.getElementById('manager' + num);
-                    if (manager) {
-                        manager.remove();
-                    }
-                }
-
-                // 폼 초기화
                 function resetForm() {
                     if (confirm('입력한 내용을 모두 취소하시겠습니까?')) {
-                        document.querySelector('form[name="memberForm"]').reset();
-                        document.querySelector('form[name="memberForm"]').classList.remove('was-validated');
-                        // 담당자 2 이상 모두 삭제
-                        const managers = document.querySelectorAll('.manager-section');
+                        const form = document.querySelector('form[name="memberForm"]');
+                        form.reset();
+                        form.classList.remove('was-validated');
+                        const managers = document.querySelectorAll('#managerContainer .manager-section');
                         managers.forEach((manager, index) => {
                             if (index > 0) {
                                 manager.remove();
+                            } else {
+                                manager.querySelectorAll('input').forEach(input => {
+                                    if (input.type !== 'hidden' && input.type !== 'radio' && input.type !== 'checkbox') {
+                                        input.value = '';
+                                    }
+                                });
+                                const mainRadio = manager.querySelector('.main-radio');
+                                if (mainRadio) {
+                                    mainRadio.checked = true;
+                                }
+                                const mainYnField = manager.querySelector('.main-yn-field');
+                                if (mainYnField) {
+                                    mainYnField.value = 'Y';
+                                }
+                                const useYnField = manager.querySelector('.use-yn-field');
+                                if (useYnField) {
+                                    useYnField.value = 'Y';
+                                }
                             }
                         });
-                        managerCount = 1;
+                        managerIndex = 0;
+                        syncMainFlags();
                     }
                 }
 
-                // Form validation
                 document.querySelector('form[name="memberForm"]').addEventListener('submit', function (e) {
+                    syncMainFlags();
                     if (!this.checkValidity()) {
                         e.preventDefault();
                         e.stopPropagation();
