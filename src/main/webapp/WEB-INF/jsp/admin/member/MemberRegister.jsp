@@ -63,6 +63,7 @@
                 <fmt:formatDate var="currentDate" value="${today}" pattern="yyyy-MM-dd" />
                 <c:set var="managers"
                     value="${not empty member.memberManagers ? member.memberManagers : managers}" />
+                    value="${not empty member.memberManagers ? member.memberManagers : memberManagers}" />
 
                 <form name="memberForm" method="post" action="<c:url value='/admin/member/insertMember.do'/>">
                     <input type="hidden" name="menu" value="member" />
@@ -368,6 +369,58 @@
                                         </c:otherwise>
                                     </c:choose>
                                     </div>
+                                    </div>
+                            <div id="managerContainer">
+                                <div class="manager-section" data-index="0">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <strong class="manager-title">담당자 1</strong>
+                                            <div class="form-check mb-0">
+                                                <input class="form-check-input main-radio" type="radio"
+                                                    name="mainManagerIndex" value="0" checked>
+                                                <label class="form-check-label">기본 담당자</label>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-danger remove-manager-btn d-none"
+                                            onclick="removeManager(this)">삭제</button>
+                                    </div>
+                                    <input type="hidden" class="main-yn-field" name="memberManagers[0].mainYn"
+                                        value="Y" />
+                                    <input type="hidden" class="use-yn-field" name="memberManagers[0].useYn"
+                                        value="Y" />
+                                    <table class="table table-bordered form-table mb-0">
+                                        <tbody>
+                                            <tr>
+                                                <th>이름</th>
+                                                <td>
+                                                    <input type="text" id="managerName0" data-field="managerName"
+                                                        name="memberManagers[0].managerName"
+                                                        class="form-control form-control-sm" />
+                                                </td>
+                                                <th>전화번호</th>
+                                                <td>
+                                                    <input type="tel" id="managerPhone0" data-field="phoneNumber"
+                                                        name="memberManagers[0].phoneNumber"
+                                                        class="form-control form-control-sm" placeholder="010-0000-0000"
+                                                        maxlength="13" />
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>휴대전화번호</th>
+                                                <td>
+                                                    <input type="tel" id="managerMobile0" data-field="mobileNumber"
+                                                        name="memberManagers[0].mobileNumber"
+                                                        class="form-control form-control-sm" placeholder="010-0000-0000"
+                                                        maxlength="13" />
+                                                </td>
+                                                <th>이메일주소</th>
+                                                <td>
+                                                    <input type="email" id="managerEmail0" data-field="email"
+                                                        name="memberManagers[0].email" class="form-control form-control-sm" />
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </c:if>
 
@@ -436,6 +489,7 @@
 
             <script>
                 let managerIndex = <c:out value='${fn:length(managers) gt 0 ? fn:length(managers) - 1 : 0}'/>;
+                let managerIndex = 0;
 
                 document.addEventListener('DOMContentLoaded', function () {
                     attachPhoneFormatter(document.querySelectorAll('input[type="tel"], input[name="businessNumber"], input[name="contactNumber"], input[name="companyPhone"]'));

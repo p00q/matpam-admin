@@ -195,6 +195,12 @@
          WHERE m.MEMBER_ID = #{value}
     </select>
 
+          LEFT JOIN TB_DETAIL_CODE st ON m.STATUS = st.DETAIL_CODE
+                AND st.GROUP_CODE = '004' AND st.CODE = '004001'
+         WHERE m.MEMBER_NO = #{value}
+    </select>
+
+    
     <insert id="insertMember" parameterType="kr.co.matpam.admin.member.service.MemberVO" useGeneratedKeys="true"
         keyProperty="memberNo" keyColumn="MEMBER_NO">
         INSERT INTO TB_MEMBER (
