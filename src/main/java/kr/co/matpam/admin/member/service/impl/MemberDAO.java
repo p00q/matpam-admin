@@ -26,4 +26,8 @@ public class MemberDAO extends EgovAbstractMapper {
     public MemberVO selectMember(Long memberNo) {
         return selectOne("matpam.member.MemberMapper.selectMember", memberNo);
     }
+
+    public MemberVO selectMemberById(String memberId) {
+        return selectOne("matpam.member.MemberMapper.selectMemberById", memberId);
+    }
 }

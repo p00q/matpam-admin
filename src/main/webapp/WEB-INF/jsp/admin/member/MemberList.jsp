@@ -187,6 +187,8 @@
                                         </td>
                                         <td>${member.memberTypeName}</td>
                                     <td>
+                                        <c:url var="memberViewUrl" value='/admin/member/memberDetail.do'>
+                                            <c:param name='memberId' value='${member.memberId}' />
                                         <c:url var="memberViewUrl" value='/admin/member/memberView.do'>
                                             <c:param name='memberNo' value='${member.memberNo}' />
                                             <c:param name='menu' value='member' />

@@ -69,6 +69,11 @@ public class MemberServiceImpl extends EgovAbstractServiceImpl implements Member
         return memberDAO.selectMember(memberNo);
     }
 
+    @Override
+    public MemberVO selectMemberById(String memberId) throws Exception {
+        return memberDAO.selectMemberById(memberId);
+    }
+
     private List<MemberManagerVO> sanitizeManagers(List<MemberManagerVO> memberManagers) {
         if (memberManagers == null) {
             return Collections.emptyList();

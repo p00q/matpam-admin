@@ -15,4 +15,6 @@ public interface MemberService {
     List<MemberManagerVO> selectMemberManagers(Long memberNo) throws Exception;
 
     MemberVO selectMember(Long memberNo) throws Exception;
+
+    MemberVO selectMemberById(String memberId) throws Exception;
 }
