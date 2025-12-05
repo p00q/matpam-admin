@@ -164,16 +164,16 @@
                                 <tr>
                                     <th scope="col">순번</th>
                                     <th scope="col">회원타입</th>
-                                    <th scope="col">지역</th>
                                     <th scope="col">아이디</th>
+                                    <th scope="col">연락처</th>
                                     <th scope="col">업체명</th>
                                     <th scope="col">사업자등록번호</th>
                                     <th scope="col">대표명</th>
-                                    <th scope="col">연락처</th>
                                     <th scope="col">담당자</th>
                                     <th scope="col">담당자연락처</th>
                                     <th scope="col">여신</th>
                                     <th scope="col">미트머니</th>
+                                    <th scope="col">지역</th>
                                     <th scope="col">회원등급</th>
                                     <th scope="col">가입상태</th>
                                 </tr>
@@ -186,13 +186,18 @@
                                                 value="${paginationInfo.totalRecordCount - ((searchVO.pageIndex-1) * searchVO.pageUnit + status.index)}" />
                                         </td>
                                         <td>${member.memberTypeName}</td>
-                                        <td>${member.region}</td>
-                                        <td class="text-primary text-decoration-underline cursor-pointer">
-                                            ${member.memberId}</td>
+                                    <td>
+                                        <c:url var="memberViewUrl" value='/admin/member/memberDetail.do'>
+                                            <c:param name='memberId' value='${member.memberId}' />
+                                            <c:param name='menu' value='member' />
+                                        </c:url>
+                                        <a class="text-primary text-decoration-underline" href="${memberViewUrl}">
+                                            ${member.memberId}</a>
+                                    </td>
+                                        <td>${member.contactNumber}</td>
                                         <td class="fw-bold">${member.companyName}</td>
                                         <td>${member.businessNumber}</td>
                                         <td>${member.ceoName}</td>
-                                        <td>${member.contactNumber}</td>
                                         <td>${member.managerName}</td>
                                         <td>${member.managerContact}</td>
                                         <td class="text-end">
@@ -201,6 +206,7 @@
                                         <td class="text-end">
                                             <fmt:formatNumber value="${member.meatMoney}" type="number" />원
                                         </td>
+                                        <td>${member.region}</td>
                                         <td>
                                             <span
                                                 class="badge rounded-pill bg-secondary">${member.memberGradeName}</span>

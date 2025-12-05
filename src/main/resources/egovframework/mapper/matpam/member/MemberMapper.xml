@@ -3,19 +3,33 @@
 <mapper namespace="matpam.member.MemberMapper">
 
     <resultMap id="memberResultMap" type="kr.co.matpam.admin.member.service.MemberVO">
+        <id property="memberNo" column="MEMBER_NO" />
         <result property="memberType" column="MEMBER_TYPE" />
+        <result property="memberTypeName" column="MEMBER_TYPE_NAME" />
         <result property="region" column="REGION" />
         <result property="memberId" column="MEMBER_ID" />
         <result property="companyName" column="COMPANY_NAME" />
         <result property="businessNumber" column="BUSINESS_NUMBER" />
         <result property="ceoName" column="CEO_NAME" />
         <result property="contactNumber" column="CONTACT_NUMBER" />
+        <result property="email" column="EMAIL" />
+        <result property="companyPhone" column="COMPANY_PHONE" />
+        <result property="postcode" column="POSTCODE" />
+        <result property="address" column="ADDRESS" />
+        <result property="addressDetail" column="ADDRESS_DETAIL" />
         <result property="managerName" column="MANAGER_NAME" />
         <result property="managerContact" column="MANAGER_CONTACT" />
+        <result property="managerMobile" column="MANAGER_MOBILE" />
+        <result property="managerPhone" column="MANAGER_PHONE" />
+        <result property="managerEmail" column="MANAGER_EMAIL" />
         <result property="creditLimit" column="CREDIT_LIMIT" />
         <result property="meatMoney" column="MEAT_MONEY" />
         <result property="memberGrade" column="MEMBER_GRADE" />
+        <result property="memberGradeName" column="MEMBER_GRADE_NAME" />
         <result property="status" column="STATUS" />
+        <result property="statusName" column="STATUS_NAME" />
+        <result property="agreeMarketing" column="AGREE_MARKETING" />
+        <result property="agreeSms" column="AGREE_SMS" />
         <result property="joinDate" column="JOIN_DATE" jdbcType="DATE" />
     </resultMap>
 
@@ -53,43 +67,141 @@
         </where>
     </sql>
 
-    <select id="selectMemberList" resultMap="memberResultMap" parameterType="kr.co.matpam.admin.member.service.MemberDefaultVO">
-        SELECT m.MEMBER_TYPE,
-               mt.DETAIL_CODE_NAME as MEMBER_TYPE_NAME,
-               m.REGION,
-               m.MEMBER_ID,
-               m.COMPANY_NAME,
-               m.BUSINESS_NUMBER,
-               m.CEO_NAME,
-               m.CONTACT_NUMBER,
-               m.MANAGER_NAME,
-               m.MANAGER_CONTACT,
-               m.CREDIT_LIMIT,
-               m.MEAT_MONEY,
-               m.MEMBER_GRADE,
-               mg.DETAIL_CODE_NAME as MEMBER_GRADE_NAME,
-               m.STATUS,
-               st.DETAIL_CODE_NAME as STATUS_NAME,
-               m.JOIN_DATE
-          FROM TB_MEMBER m
-          LEFT JOIN TB_DETAIL_CODE mt ON m.MEMBER_TYPE = mt.DETAIL_CODE 
+    <select id="selectMemberList" resultMap="memberResultMap"
+        parameterType="kr.co.matpam.admin.member.service.MemberDefaultVO">
+        SELECT
+            m.MEMBER_NO,
+            m.MEMBER_TYPE,
+            mt.DETAIL_CODE_NAME AS MEMBER_TYPE_NAME,
+            m.REGION,
+            m.MEMBER_ID,
+            m.COMPANY_NAME,
+            m.BUSINESS_NUMBER,
+            m.CEO_NAME,
+            m.CONTACT_NUMBER,
+            m.EMAIL,
+            m.COMPANY_PHONE,
+            m.POSTCODE,
+            m.ADDRESS,
+            m.ADDRESS_DETAIL,
+            mgr.MANAGER_NAME AS MANAGER_NAME,
+            mgr.MOBILE_NUMBER AS MANAGER_CONTACT,
+            mgr.MOBILE_NUMBER AS MANAGER_MOBILE,
+            mgr.PHONE_NUMBER AS MANAGER_PHONE,
+            mgr.EMAIL AS MANAGER_EMAIL,
+            m.CREDIT_LIMIT,
+            m.MEAT_MONEY,
+            m.MEMBER_GRADE,
+            mg.DETAIL_CODE_NAME AS MEMBER_GRADE_NAME,
+            m.STATUS,
+            st.DETAIL_CODE_NAME AS STATUS_NAME,
+            m.AGREE_MARKETING,
+            m.AGREE_SMS,
+            m.JOIN_DATE
+        FROM TB_MEMBER m
+            LEFT JOIN TB_MEMBER_MANAGER mgr ON mgr.MEMBER_NO = m.MEMBER_NO AND mgr.MAIN_YN = 'Y'
+            LEFT JOIN TB_DETAIL_CODE mt ON m.MEMBER_TYPE = mt.DETAIL_CODE
                 AND mt.GROUP_CODE = '003' AND mt.CODE = '003001'
-          LEFT JOIN TB_DETAIL_CODE mg ON m.MEMBER_GRADE = mg.DETAIL_CODE 
+            LEFT JOIN TB_DETAIL_CODE mg ON m.MEMBER_GRADE = mg.DETAIL_CODE
                 AND mg.GROUP_CODE = '005' AND mg.CODE = '005001'
-          LEFT JOIN TB_DETAIL_CODE st ON m.STATUS = st.DETAIL_CODE 
+            LEFT JOIN TB_DETAIL_CODE st ON m.STATUS = st.DETAIL_CODE
                 AND st.GROUP_CODE = '004' AND st.CODE = '004001'
         <include refid="memberWhere" />
-         ORDER BY m.JOIN_DATE DESC
-         LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
+        ORDER BY m.JOIN_DATE DESC
+        LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
     </select>
 
-    <select id="selectMemberListTotCnt" resultType="int" parameterType="kr.co.matpam.admin.member.service.MemberDefaultVO">
+    <select id="selectMemberListTotCnt" resultType="int"
+        parameterType="kr.co.matpam.admin.member.service.MemberDefaultVO">
         SELECT COUNT(1)
-          FROM TB_MEMBER
+        FROM TB_MEMBER
         <include refid="memberWhere" />
     </select>
-    
-    <insert id="insertMember" parameterType="kr.co.matpam.admin.member.service.MemberVO">
+
+    <select id="selectMember" resultMap="memberResultMap" parameterType="long">
+        SELECT
+            m.MEMBER_NO,
+            m.MEMBER_TYPE,
+            mt.DETAIL_CODE_NAME AS MEMBER_TYPE_NAME,
+            m.REGION,
+            m.MEMBER_ID,
+            m.COMPANY_NAME,
+            m.BUSINESS_NUMBER,
+            m.CEO_NAME,
+            m.CONTACT_NUMBER,
+            m.EMAIL,
+            m.COMPANY_PHONE,
+            m.POSTCODE,
+            m.ADDRESS,
+            m.ADDRESS_DETAIL,
+            mgr.MANAGER_NAME AS MANAGER_NAME,
+            mgr.MOBILE_NUMBER AS MANAGER_CONTACT,
+            mgr.MOBILE_NUMBER AS MANAGER_MOBILE,
+            mgr.PHONE_NUMBER AS MANAGER_PHONE,
+            mgr.EMAIL AS MANAGER_EMAIL,
+            m.CREDIT_LIMIT,
+            m.MEAT_MONEY,
+            m.MEMBER_GRADE,
+            mg.DETAIL_CODE_NAME AS MEMBER_GRADE_NAME,
+            m.STATUS,
+            st.DETAIL_CODE_NAME AS STATUS_NAME,
+            m.AGREE_MARKETING,
+            m.AGREE_SMS,
+            m.JOIN_DATE
+        FROM TB_MEMBER m
+            LEFT JOIN TB_MEMBER_MANAGER mgr ON mgr.MEMBER_NO = m.MEMBER_NO AND mgr.MAIN_YN = 'Y'
+            LEFT JOIN TB_DETAIL_CODE mt ON m.MEMBER_TYPE = mt.DETAIL_CODE
+                AND mt.GROUP_CODE = '003' AND mt.CODE = '003001'
+            LEFT JOIN TB_DETAIL_CODE mg ON m.MEMBER_GRADE = mg.DETAIL_CODE
+                AND mg.GROUP_CODE = '005' AND mg.CODE = '005001'
+            LEFT JOIN TB_DETAIL_CODE st ON m.STATUS = st.DETAIL_CODE
+                AND st.GROUP_CODE = '004' AND st.CODE = '004001'
+        WHERE m.MEMBER_NO = #{value}
+    </select>
+
+    <select id="selectMemberById" resultMap="memberResultMap" parameterType="string">
+        SELECT
+            m.MEMBER_NO,
+            m.MEMBER_TYPE,
+            mt.DETAIL_CODE_NAME AS MEMBER_TYPE_NAME,
+            m.REGION,
+            m.MEMBER_ID,
+            m.COMPANY_NAME,
+            m.BUSINESS_NUMBER,
+            m.CEO_NAME,
+            m.CONTACT_NUMBER,
+            m.EMAIL,
+            m.COMPANY_PHONE,
+            m.POSTCODE,
+            m.ADDRESS,
+            m.ADDRESS_DETAIL,
+            mgr.MANAGER_NAME AS MANAGER_NAME,
+            mgr.MOBILE_NUMBER AS MANAGER_CONTACT,
+            mgr.MOBILE_NUMBER AS MANAGER_MOBILE,
+            mgr.PHONE_NUMBER AS MANAGER_PHONE,
+            mgr.EMAIL AS MANAGER_EMAIL,
+            m.CREDIT_LIMIT,
+            m.MEAT_MONEY,
+            m.MEMBER_GRADE,
+            mg.DETAIL_CODE_NAME AS MEMBER_GRADE_NAME,
+            m.STATUS,
+            st.DETAIL_CODE_NAME AS STATUS_NAME,
+            m.AGREE_MARKETING,
+            m.AGREE_SMS,
+            m.JOIN_DATE
+        FROM TB_MEMBER m
+            LEFT JOIN TB_MEMBER_MANAGER mgr ON mgr.MEMBER_NO = m.MEMBER_NO AND mgr.MAIN_YN = 'Y'
+            LEFT JOIN TB_DETAIL_CODE mt ON m.MEMBER_TYPE = mt.DETAIL_CODE
+                AND mt.GROUP_CODE = '003' AND mt.CODE = '003001'
+            LEFT JOIN TB_DETAIL_CODE mg ON m.MEMBER_GRADE = mg.DETAIL_CODE
+                AND mg.GROUP_CODE = '005' AND mg.CODE = '005001'
+            LEFT JOIN TB_DETAIL_CODE st ON m.STATUS = st.DETAIL_CODE
+                AND st.GROUP_CODE = '004' AND st.CODE = '004001'
+        WHERE m.MEMBER_ID = #{value}
+    </select>
+
+    <insert id="insertMember" parameterType="kr.co.matpam.admin.member.service.MemberVO"
+        useGeneratedKeys="true" keyProperty="memberNo" keyColumn="MEMBER_NO">
         INSERT INTO TB_MEMBER (
             MEMBER_TYPE,
             REGION,
@@ -100,15 +212,10 @@
             CEO_NAME,
             CONTACT_NUMBER,
             EMAIL,
-
             COMPANY_PHONE,
             POSTCODE,
             ADDRESS,
             ADDRESS_DETAIL,
-            MANAGER_NAME,
-            MANAGER_CONTACT,
-            MANAGER_MOBILE,
-            MANAGER_EMAIL,
             CREDIT_LIMIT,
             MEAT_MONEY,
             MEMBER_GRADE,
@@ -126,15 +233,10 @@
             #{ceoName},
             #{contactNumber},
             #{email},
-
             #{companyPhone},
             #{postcode},
             #{address},
             #{addressDetail},
-            #{managerName},
-            #{managerContact},
-            #{managerMobile},
-            #{managerEmail},
             #{creditLimit, jdbcType=DECIMAL},
             #{meatMoney, jdbcType=DECIMAL},
             #{memberGrade},
