@@ -88,10 +88,10 @@
                             </td>
                             <th class="text-center" style="background-color: #e9ecef;">노출상태</th>
                             <td>
-                                <select name="displayStatus" class="form-select form-select-sm" style="max-width: 200px;">
+                                <select name="displayYn" class="form-select form-select-sm" style="max-width: 200px;">
                                     <option value="">전체</option>
-                                    <option value="Y" ${param.displayStatus eq 'Y' ? 'selected' : '' }>노출</option>
-                                    <option value="N" ${param.displayStatus eq 'N' ? 'selected' : '' }>비노출</option>
+                                    <option value="Y" ${param.displayYn eq 'Y' ? 'selected' : '' }>노출</option>
+                                    <option value="N" ${param.displayYn eq 'N' ? 'selected' : '' }>비노출</option>
                                 </select>
                             </td>
                         </tr>
@@ -183,7 +183,13 @@
                         <td>${item.divisionTypeName}</td>
                         <td>${item.processTypeName}</td>
                         <td>${item.saleStatusName}</td>
-                        <td>${item.displayStatusName}</td>
+                        <td>
+                            <c:choose>
+                                <c:when test="${item.displayYn eq 'Y'}">노출</c:when>
+                                <c:when test="${item.displayYn eq 'N'}">비노출</c:when>
+                                <c:otherwise>-</c:otherwise>
+                            </c:choose>
+                        </td>
                         <td class="text-end">
                             <fmt:formatNumber value="${item.salePrice}" type="number" />원
                         </td>
@@ -230,7 +236,7 @@
         <input type="hidden" name="processType" value="${param.processType}" />
         <input type="hidden" name="sellerName" value="${param.sellerName}" />
         <input type="hidden" name="saleStatus" value="${param.saleStatus}" />
-        <input type="hidden" name="displayStatus" value="${param.displayStatus}" />
+        <input type="hidden" name="displayYn" value="${param.displayYn}" />
         <input type="hidden" name="productName" value="${param.productName}" />
     </form>
 </div>
@@ -244,7 +250,7 @@
         form.processType.value = "";
         form.sellerName.value = "";
         form.saleStatus.value = "";
-        form.displayStatus.value = "";
+        form.displayYn.value = "";
         form.productName.value = "";
     }
 
