@@ -3,6 +3,13 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!-- 구성상품 등록/상세 화면 -->
 
+<c:set var="saleTypeList" value="${not empty saleTypes ? saleTypes : saleTypeCodes}" />
+<c:set var="storageTypeList" value="${not empty storageTypes ? storageTypes : storageTypeCodes}" />
+<c:set var="divisionTypeList" value="${not empty divisionTypes ? divisionTypes : divisionTypeCodes}" />
+<c:set var="processTypeList" value="${not empty processTypes ? processTypes : processTypeCodes}" />
+<c:set var="unitTypeList" value="${unitTypes}" />
+<c:set var="saleStatusList" value="${not empty saleStatuses ? saleStatuses : saleStatusCodes}" />
+
 <style>
     .form-table th,
     .form-table td {
@@ -34,14 +41,19 @@
             <li class="breadcrumb-item"><a href="<c:url value='/admin/product/bundleProductList.do?menu=bundle'/>">상품목록</a></li>
             <li class="breadcrumb-item active" aria-current="page">
                 <c:choose>
-                    <c:when test="${not empty bundle.productNo}">상품상세</c:when>
-                    <c:otherwise>상품등록</c:otherwise>
+                    <c:when test="${not empty bundle.productNo}">구성 상품 상세</c:when>
+                    <c:otherwise>구성 상품 등록</c:otherwise>
                 </c:choose>
             </li>
         </ol>
     </nav>
 
-    <h4 class="mb-4">구성 상품 등록/상세</h4>
+    <h4 class="mb-4">
+        <c:choose>
+            <c:when test="${not empty bundle.productNo}">구성 상품 상세</c:when>
+            <c:otherwise>구성 상품 등록</c:otherwise>
+        </c:choose>
+    </h4>
 
     <c:set var="formAction" value="${not empty bundle.productNo ? '/admin/product/updateBundleProduct.do' : '/admin/product/insertBundleProduct.do'}" />
 
@@ -71,7 +83,7 @@
                     <td>
                         <select name="saleType" class="form-select form-select-sm" style="max-width: 200px;" required>
                             <option value="" disabled <c:if test="${empty bundle.saleType}">selected</c:if>>선택</option>
-                            <c:forEach var="code" items="${saleTypes}">
+                            <c:forEach var="code" items="${saleTypeList}">
                                 <option value="${code.detailCode}" <c:if test="${bundle.saleType eq code.detailCode}">selected</c:if>>${code.detailCodeName}</option>
                             </c:forEach>
                         </select>
@@ -83,7 +95,7 @@
                     <td>
                         <select name="storageType" class="form-select form-select-sm" style="max-width: 200px;" required>
                             <option value="" disabled <c:if test="${empty bundle.storageType}">selected</c:if>>선택</option>
-                            <c:forEach var="code" items="${storageTypes}">
+                            <c:forEach var="code" items="${storageTypeList}">
                                 <option value="${code.detailCode}" <c:if test="${bundle.storageType eq code.detailCode}">selected</c:if>>${code.detailCodeName}</option>
                             </c:forEach>
                         </select>
@@ -104,7 +116,7 @@
                     <td>
                         <select name="processType" class="form-select form-select-sm" style="max-width: 200px;" required>
                             <option value="" disabled <c:if test="${empty bundle.processType}">selected</c:if>>선택</option>
-                            <c:forEach var="code" items="${processTypes}">
+                            <c:forEach var="code" items="${processTypeList}">
                                 <option value="${code.detailCode}" <c:if test="${bundle.processType eq code.detailCode}">selected</c:if>>${code.detailCodeName}</option>
                             </c:forEach>
                         </select>
@@ -124,7 +136,7 @@
                     <td>
                         <select name="divisionType" class="form-select form-select-sm" style="max-width: 200px;" required>
                             <option value="" disabled <c:if test="${empty bundle.divisionType}">selected</c:if>>선택</option>
-                            <c:forEach var="code" items="${divisionTypes}">
+                            <c:forEach var="code" items="${divisionTypeList}">
                                 <option value="${code.detailCode}" <c:if test="${bundle.divisionType eq code.detailCode}">selected</c:if>>${code.detailCodeName}</option>
                             </c:forEach>
                         </select>
@@ -132,7 +144,7 @@
                     <th>부가세</th>
                     <td>
                         <div class="d-flex align-items-center gap-3">
-                            <div class="input-group" style="max-width: 150px;">
+                            <div class="input-group" style="max-width: 200px;">
                                 <input type="number" name="vatAmount" id="vatAmount" class="form-control form-control-sm"
                                     value="<c:out value='${bundle.vatAmount}'/>" min="0" />
                                 <span class="input-group-text">원</span>
@@ -150,7 +162,7 @@
                     <td>
                         <select name="unitType" class="form-select form-select-sm" style="max-width: 200px;" required>
                             <option value="" disabled <c:if test="${empty bundle.unitType}">selected</c:if>>선택</option>
-                            <c:forEach var="code" items="${unitTypes}">
+                            <c:forEach var="code" items="${unitTypeList}">
                                 <option value="${code.detailCode}" <c:if test="${bundle.unitType eq code.detailCode}">selected</c:if>>${code.detailCodeName}</option>
                             </c:forEach>
                         </select>
@@ -173,7 +185,7 @@
                     <td>
                         <select name="saleStatus" class="form-select form-select-sm" style="max-width: 200px;" required>
                             <option value="" disabled <c:if test="${empty bundle.saleStatus}">selected</c:if>>선택</option>
-                            <c:forEach var="code" items="${saleStatuses}">
+                            <c:forEach var="code" items="${saleStatusList}">
                                 <option value="${code.detailCode}" <c:if test="${bundle.saleStatus eq code.detailCode}">selected</c:if>>${code.detailCodeName}</option>
                             </c:forEach>
                         </select>
