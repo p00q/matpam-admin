@@ -78,6 +78,9 @@ public class BundleProductVO implements Serializable {
     /** 페이징 */
     private Integer recordCountPerPage;
     private Integer firstIndex;
+    private int pageIndex = 1;
+    private int pageUnit = 10;
+    private int pageSize = 10;
 
     public Long getBundleId() {
         return bundleId;
@@ -301,5 +304,29 @@ public class BundleProductVO implements Serializable {
 
     public void setFirstIndex(Integer firstIndex) {
         this.firstIndex = firstIndex;
+    }
+
+    public int getPageIndex() {
+        return pageIndex;
+    }
+
+    public void setPageIndex(int pageIndex) {
+        this.pageIndex = pageIndex;
+    }
+
+    public int getPageUnit() {
+        return pageUnit;
+    }
+
+    public void setPageUnit(int pageUnit) {
+        this.pageUnit = pageUnit;
+    }
+
+    public int getPageSize() {
+        return pageSize;
+    }
+
+    public void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
     }
 }

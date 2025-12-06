@@ -15,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,6 +24,7 @@ import kr.co.matpam.admin.code.service.CodeManagementService;
 import kr.co.matpam.admin.member.service.MemberService;
 import kr.co.matpam.admin.product.service.BundleProductService;
 import kr.co.matpam.admin.product.service.BundleProductVO;
+import org.egovframe.rte.ptl.mvc.tags.ui.pagination.PaginationInfo;
 
 /**
  * 구성상품 전용 컨트롤러
@@ -56,7 +58,22 @@ public class BundleProductController {
      * 구성상품 목록 화면
      */
     @RequestMapping(value = "/admin/product/bundleProductList.do")
-    public String bundleProductList(ModelMap model) throws Exception {
+    public String bundleProductList(@ModelAttribute("searchVO") BundleProductVO searchVO, ModelMap model)
+            throws Exception {
+
+        PaginationInfo paginationInfo = new PaginationInfo();
+        paginationInfo.setCurrentPageNo(searchVO.getPageIndex());
+        paginationInfo.setRecordCountPerPage(searchVO.getPageUnit());
+        paginationInfo.setPageSize(searchVO.getPageSize());
+
+        searchVO.setFirstIndex(paginationInfo.getFirstRecordIndex());
+        searchVO.setRecordCountPerPage(paginationInfo.getRecordCountPerPage());
+
+        int totalCount = bundleProductService.selectBundleProductListTotCnt(searchVO);
+        paginationInfo.setTotalRecordCount(totalCount);
+
+        model.addAttribute("bundleList", bundleProductService.selectBundleProductList(searchVO));
+        model.addAttribute("paginationInfo", paginationInfo);
 
         addBundleDropdowns(model);
 
