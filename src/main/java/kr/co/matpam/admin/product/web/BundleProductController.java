@@ -61,13 +61,20 @@ public class BundleProductController {
     public String bundleProductList(@ModelAttribute("searchVO") BundleProductVO searchVO, ModelMap model)
             throws Exception {
 
+        int currentPage = searchVO.getPageIndex() != null ? searchVO.getPageIndex() : 1;
+        int recordsPerPage = searchVO.getPageUnit() != null ? searchVO.getPageUnit() : 10;
+        int pageSize = searchVO.getPageSize() != null ? searchVO.getPageSize() : 10;
+
         PaginationInfo paginationInfo = new PaginationInfo();
-        paginationInfo.setCurrentPageNo(searchVO.getPageIndex());
-        paginationInfo.setRecordCountPerPage(searchVO.getPageUnit());
-        paginationInfo.setPageSize(searchVO.getPageSize());
+        paginationInfo.setCurrentPageNo(currentPage);
+        paginationInfo.setRecordCountPerPage(recordsPerPage);
+        paginationInfo.setPageSize(pageSize);
 
         searchVO.setFirstIndex(paginationInfo.getFirstRecordIndex());
         searchVO.setRecordCountPerPage(paginationInfo.getRecordCountPerPage());
+        searchVO.setPageIndex(currentPage);
+        searchVO.setPageUnit(recordsPerPage);
+        searchVO.setPageSize(pageSize);
 
         int totalCount = bundleProductService.selectBundleProductListTotCnt(searchVO);
         paginationInfo.setTotalRecordCount(totalCount);
