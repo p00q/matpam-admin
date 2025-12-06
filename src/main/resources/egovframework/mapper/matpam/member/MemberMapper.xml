@@ -31,7 +31,6 @@
         <result property="agreeMarketing" column="AGREE_MARKETING" />
         <result property="agreeSms" column="AGREE_SMS" />
         <result property="joinDate" column="JOIN_DATE" jdbcType="DATE" />
-        <result property="approvalYn" column="APPROVAL_YN" />
     </resultMap>
 
     <sql id="memberWhere">

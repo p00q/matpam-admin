@@ -3,7 +3,8 @@
 <mapper namespace="matpam.product.BundleProductMapper">
 
     <resultMap id="bundleProductResultMap" type="kr.co.matpam.admin.product.service.BundleProductVO">
-        <id property="productNo" column="PRODUCT_NO" />
+        <id property="bundleId" column="BUNDLE_ID" />
+        <result property="productNo" column="BUNDLE_ID" />
         <result property="productName" column="PRODUCT_NAME" />
         <result property="storageType" column="STORAGE_TYPE" />
         <result property="storageTypeName" column="STORAGE_TYPE_NAME" />
@@ -61,7 +62,7 @@
     <select id="selectBundleProductList" resultMap="bundleProductResultMap"
         parameterType="kr.co.matpam.admin.product.service.BundleProductVO">
         SELECT
-            p.PRODUCT_NO,
+            p.BUNDLE_ID,
             p.PRODUCT_NAME,
             p.STORAGE_TYPE,
             st.DETAIL_CODE_NAME AS STORAGE_TYPE_NAME,
@@ -118,7 +119,7 @@
     <!-- 구성상품 상세 조회 -->
     <select id="selectBundleProduct" resultMap="bundleProductResultMap" parameterType="long">
         SELECT
-            p.PRODUCT_NO,
+            p.BUNDLE_ID,
             p.PRODUCT_NAME,
             p.STORAGE_TYPE,
             st.DETAIL_CODE_NAME AS STORAGE_TYPE_NAME,
@@ -157,12 +158,12 @@
                 AND slt.GROUP_CODE = '007' AND slt.CODE = '007002'
             LEFT JOIN TB_DETAIL_CODE ss ON p.SALE_STATUS = ss.DETAIL_CODE
                 AND ss.GROUP_CODE = '007' AND ss.CODE = '007001'
-        WHERE p.PRODUCT_NO = #{value}
+        WHERE p.BUNDLE_ID = #{value}
     </select>
 
     <!-- 구성상품 등록 -->
     <insert id="insertBundleProduct" parameterType="kr.co.matpam.admin.product.service.BundleProductVO"
-        useGeneratedKeys="true" keyProperty="productNo" keyColumn="PRODUCT_NO">
+        useGeneratedKeys="true" keyProperty="productNo" keyColumn="BUNDLE_ID">
         INSERT INTO TB_BUNDLE_PRODUCT (
             PRODUCT_NAME,
             STORAGE_TYPE,
@@ -217,13 +218,13 @@
             SALE_START_DATE = #{saleStartDate, jdbcType=DATE},
             SALE_END_DATE = #{saleEndDate, jdbcType=DATE},
             MOD_DT = NOW()
-        WHERE PRODUCT_NO = #{productNo}
+        WHERE BUNDLE_ID = #{productNo}
     </update>
 
     <!-- 구성상품 삭제 -->
     <delete id="deleteBundleProduct" parameterType="long">
         DELETE FROM TB_BUNDLE_PRODUCT
-        WHERE PRODUCT_NO = #{value}
+        WHERE BUNDLE_ID = #{value}
     </delete>
 
 </mapper>
