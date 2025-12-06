@@ -66,6 +66,7 @@ public class ProductController {
     @RequestMapping(value = "/admin/product/bundleRegist.do")
     public String bundleRegistForm(ModelMap model) throws Exception {
 
+        model.addAttribute("bundle", new BundleProductVO());
         model.addAttribute("storageTypes", codeManagementService.selectDetailCodeList("001", "001001"));
         model.addAttribute("divisionTypes", codeManagementService.selectDetailCodeList("001", "001002"));
         model.addAttribute("processTypes", codeManagementService.selectDetailCodeList("001", "001003"));
