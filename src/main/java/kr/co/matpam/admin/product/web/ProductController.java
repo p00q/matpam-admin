@@ -1,9 +1,14 @@
 package kr.co.matpam.admin.product.web;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
 import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.beans.propertyeditors.CustomNumberEditor;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
@@ -41,19 +46,16 @@ public class ProductController {
         binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
         binder.registerCustomEditor(Long.class, new CustomNumberEditor(Long.class, true));
         binder.registerCustomEditor(Integer.class, new CustomNumberEditor(Integer.class, true));
+        binder.registerCustomEditor(Date.class, new CustomDateEditor(new SimpleDateFormat("yyyy-MM-dd"), true));
     }
 
     /**
      * 구성상품 목록 화면
      */
-    @RequestMapping(value = "/admin/product/bundleProductList.do")
+@RequestMapping(value = "/admin/product/bundleProductList.do")
     public String bundleProductList(ModelMap model) throws Exception {
 
-        model.addAttribute("saleTypes", codeManagementService.selectDetailCodeList("007", "007002"));
-        model.addAttribute("storageTypes", codeManagementService.selectDetailCodeList("001", "001001"));
-        model.addAttribute("divisionTypes", codeManagementService.selectDetailCodeList("001", "001002"));
-        model.addAttribute("processTypes", codeManagementService.selectDetailCodeList("001", "001003"));
-        model.addAttribute("saleStatuses", codeManagementService.selectDetailCodeList("007", "007001"));
+        addBundleDropdowns(model);
 
         model.addAttribute("contentPage", "/WEB-INF/jsp/admin/product/BundleProductList.jsp");
 
@@ -66,13 +68,17 @@ public class ProductController {
     @RequestMapping(value = "/admin/product/bundleRegist.do")
     public String bundleRegistForm(ModelMap model) throws Exception {
 
-        model.addAttribute("storageTypes", codeManagementService.selectDetailCodeList("001", "001001"));
-        model.addAttribute("divisionTypes", codeManagementService.selectDetailCodeList("001", "001002"));
-        model.addAttribute("processTypes", codeManagementService.selectDetailCodeList("001", "001003"));
-        model.addAttribute("unitTypes", codeManagementService.selectDetailCodeList("001", "001004"));
-        model.addAttribute("saleTypes", codeManagementService.selectDetailCodeList("007", "007002"));
-        model.addAttribute("saleStatuses", codeManagementService.selectDetailCodeList("007", "007001"));
-        model.addAttribute("sellers", memberService.selectSellerList());
+        Date today = new Date();
+        Calendar nextYear = Calendar.getInstance();
+        nextYear.setTime(today);
+        nextYear.add(Calendar.YEAR, 1);
+
+        BundleProductVO bundle = new BundleProductVO();
+        bundle.setSaleStartDate(today);
+        bundle.setSaleEndDate(nextYear.getTime());
+
+        model.addAttribute("bundle", bundle);
+        addBundleDropdowns(model);
 
         model.addAttribute("contentPage", "/WEB-INF/jsp/admin/product/BundleProductRegister.jsp");
 
@@ -128,13 +134,7 @@ public class ProductController {
         BundleProductVO bundle = bundleProductService.selectBundleProduct(productNo);
         model.addAttribute("bundle", bundle);
 
-        model.addAttribute("storageTypes", codeManagementService.selectDetailCodeList("001", "001001"));
-        model.addAttribute("divisionTypes", codeManagementService.selectDetailCodeList("001", "001002"));
-        model.addAttribute("processTypes", codeManagementService.selectDetailCodeList("001", "001003"));
-        model.addAttribute("unitTypes", codeManagementService.selectDetailCodeList("001", "001004"));
-        model.addAttribute("saleTypes", codeManagementService.selectDetailCodeList("007", "007002"));
-        model.addAttribute("saleStatuses", codeManagementService.selectDetailCodeList("007", "007001"));
-        model.addAttribute("sellers", memberService.selectSellerList());
+        addBundleDropdowns(model);
 
         model.addAttribute("contentPage", "/WEB-INF/jsp/admin/product/BundleProductRegister.jsp");
 
@@ -176,5 +176,15 @@ public class ProductController {
     public String deleteBundleProduct(@RequestParam("productNo") Long productNo) throws Exception {
         bundleProductService.deleteBundleProduct(productNo);
         return "redirect:/admin/product/bundleProductList.do?menu=bundle";
+    }
+
+    private void addBundleDropdowns(ModelMap model) throws Exception {
+        model.addAttribute("saleTypes", codeManagementService.selectDetailCodeList("007", "007002"));
+        model.addAttribute("storageTypes", codeManagementService.selectDetailCodeList("001", "001001"));
+        model.addAttribute("divisionTypes", codeManagementService.selectDetailCodeList("001", "001002"));
+        model.addAttribute("processTypes", codeManagementService.selectDetailCodeList("001", "001003"));
+        model.addAttribute("unitTypes", codeManagementService.selectDetailCodeList("001", "001004"));
+        model.addAttribute("saleStatuses", codeManagementService.selectDetailCodeList("007", "007001"));
+        model.addAttribute("sellers", memberService.selectSellerList());
     }
 }
