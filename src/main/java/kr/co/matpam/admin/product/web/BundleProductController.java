@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import kr.co.matpam.admin.code.service.CodeManagementService;
+import kr.co.matpam.admin.member.service.MemberService;
 import kr.co.matpam.admin.product.service.BundleProductVO;
 
 @Controller
@@ -21,6 +22,9 @@ public class BundleProductController {
 
     @Resource(name = "codeManagementService")
     private CodeManagementService codeManagementService;
+
+    @Resource(name = "memberService")
+    private MemberService memberService;
 
     @RequestMapping(value = "/admin/product/bundleList.do")
     public String bundleList(ModelMap model) throws Exception {
@@ -32,6 +36,7 @@ public class BundleProductController {
 
         model.addAttribute("bundleList", Collections.emptyList());
         model.addAttribute("paginationInfo", paginationInfo);
+        setCodeLists(model);
         model.addAttribute("contentPage", "/WEB-INF/jsp/admin/product/BundleProductList.jsp");
         model.addAttribute("menu", "config");
         return "layout/main";
@@ -67,12 +72,12 @@ public class BundleProductController {
     }
 
     private void setCodeLists(ModelMap model) throws Exception {
-        model.addAttribute("saleTypes", codeManagementService.selectDetailCodeList("011", "011001"));
-        model.addAttribute("productTypes", codeManagementService.selectDetailCodeList("012", "012001"));
-        model.addAttribute("storageTypes", codeManagementService.selectDetailCodeList("013", "013001"));
-        model.addAttribute("divisionTypes", codeManagementService.selectDetailCodeList("014", "014001"));
-        model.addAttribute("processTypes", codeManagementService.selectDetailCodeList("015", "015001"));
-        model.addAttribute("saleStatusCodes", codeManagementService.selectDetailCodeList("016", "016001"));
-        model.addAttribute("displayStatusCodes", codeManagementService.selectDetailCodeList("017", "017001"));
+        model.addAttribute("saleTypes", codeManagementService.selectDetailCodeList("007", "007002"));
+        model.addAttribute("storageTypes", codeManagementService.selectDetailCodeList("001", "001001"));
+        model.addAttribute("divisionTypes", codeManagementService.selectDetailCodeList("001", "001002"));
+        model.addAttribute("processTypes", codeManagementService.selectDetailCodeList("001", "001003"));
+        model.addAttribute("unitTypes", codeManagementService.selectDetailCodeList("001", "001004"));
+        model.addAttribute("saleStatuses", codeManagementService.selectDetailCodeList("007", "007001"));
+        model.addAttribute("sellers", memberService.selectSellerList());
     }
 }
