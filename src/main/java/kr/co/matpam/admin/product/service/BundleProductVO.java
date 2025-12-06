@@ -1,44 +1,19 @@
 package kr.co.matpam.admin.product.service;
 
-import java.time.LocalDate;
-
-/**
- * 단순 폼 바인딩용 구성상품 VO.
- */
-public class BundleProductVO {
-    private Long bundleId;
-    private String productName;
-    private String saleType;
-    private String type;
-    private String storageType;
-    private String divisionType;
-    private String processType;
-    private String saleStatus;
-    private String displayStatus;
-    private Long salePrice;
-    private Long vatAmount;
-    private Long totalSalesQty;
-    private String companyName;
-    private LocalDate saleStartDate;
-    private LocalDate saleEndDate;
-
-    public Long getBundleId() {
-        return bundleId;
-    }
-
-    public void setBundleId(Long bundleId) {
-        this.bundleId = bundleId;
 import java.io.Serializable;
 import java.util.Date;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
 /**
- * 구성상품 VO
+ * 구성상품 VO.
  */
 public class BundleProductVO implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    /** UI에서 사용하던 번들 식별자 (productNo와 동일하게 사용 가능). */
+    private Long bundleId;
 
     /** 상품번호 (PK) */
     private Long productNo;
@@ -89,21 +64,29 @@ public class BundleProductVO implements Serializable {
     /** 노출상태 (Y/N) */
     private String displayYn;
 
-    /** 판매 시작일 */
+    /** 판매 시작/종료일 */
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date saleStartDate;
 
-    /** 판매 종료일 */
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date saleEndDate;
 
-    /** 등록일 */
+    /** 등록/수정일 */
     private Date regDt;
-
-    /** 수정일 */
     private Date modDt;
 
-    // Getters and Setters
+    /** 페이징 */
+    private Integer recordCountPerPage;
+    private Integer firstIndex;
+
+    public Long getBundleId() {
+        return bundleId;
+    }
+
+    public void setBundleId(Long bundleId) {
+        this.bundleId = bundleId;
+    }
+
     public Long getProductNo() {
         return productNo;
     }
@@ -120,28 +103,6 @@ public class BundleProductVO implements Serializable {
         this.productName = productName;
     }
 
-    public String getSaleType() {
-        return saleType;
-    }
-
-    public void setSaleType(String saleType) {
-        this.saleType = saleType;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getStorageType() {
-        return storageType;
-    }
-
-    public void setStorageType(String storageType) {
-        this.storageType = storageType;
     public String getStorageType() {
         return storageType;
     }
@@ -182,12 +143,92 @@ public class BundleProductVO implements Serializable {
         this.divisionType = divisionType;
     }
 
-    public String getProcessType() {
-        return processType;
+    public String getDivisionTypeName() {
+        return divisionTypeName;
     }
 
-    public void setProcessType(String processType) {
-        this.processType = processType;
+    public void setDivisionTypeName(String divisionTypeName) {
+        this.divisionTypeName = divisionTypeName;
+    }
+
+    public String getUnitType() {
+        return unitType;
+    }
+
+    public void setUnitType(String unitType) {
+        this.unitType = unitType;
+    }
+
+    public String getUnitTypeName() {
+        return unitTypeName;
+    }
+
+    public void setUnitTypeName(String unitTypeName) {
+        this.unitTypeName = unitTypeName;
+    }
+
+    public String getSaleType() {
+        return saleType;
+    }
+
+    public void setSaleType(String saleType) {
+        this.saleType = saleType;
+    }
+
+    public String getSaleTypeName() {
+        return saleTypeName;
+    }
+
+    public void setSaleTypeName(String saleTypeName) {
+        this.saleTypeName = saleTypeName;
+    }
+
+    public Long getSellerId() {
+        return sellerId;
+    }
+
+    public void setSellerId(Long sellerId) {
+        this.sellerId = sellerId;
+    }
+
+    public String getSellerName() {
+        return sellerName;
+    }
+
+    public void setSellerName(String sellerName) {
+        this.sellerName = sellerName;
+    }
+
+    public Integer getCostPrice() {
+        return costPrice;
+    }
+
+    public void setCostPrice(Integer costPrice) {
+        this.costPrice = costPrice;
+    }
+
+    public Integer getVatAmount() {
+        return vatAmount;
+    }
+
+    public void setVatAmount(Integer vatAmount) {
+        this.vatAmount = vatAmount;
+    }
+
+    public String getAutoVatYn() {
+        return autoVatYn;
+    }
+
+    public void setAutoVatYn(String autoVatYn) {
+        this.autoVatYn = autoVatYn;
+    }
+
+    public Integer getSalePrice() {
+        return salePrice;
+    }
+
+    public void setSalePrice(Integer salePrice) {
+        this.salePrice = salePrice;
     }
 
     public String getSaleStatus() {
@@ -198,59 +239,67 @@ public class BundleProductVO implements Serializable {
         this.saleStatus = saleStatus;
     }
 
-    public String getDisplayStatus() {
-        return displayStatus;
+    public String getSaleStatusName() {
+        return saleStatusName;
     }
 
-    public void setDisplayStatus(String displayStatus) {
-        this.displayStatus = displayStatus;
+    public void setSaleStatusName(String saleStatusName) {
+        this.saleStatusName = saleStatusName;
     }
 
-    public Long getSalePrice() {
-        return salePrice;
+    public String getDisplayYn() {
+        return displayYn;
     }
 
-    public void setSalePrice(Long salePrice) {
-        this.salePrice = salePrice;
+    public void setDisplayYn(String displayYn) {
+        this.displayYn = displayYn;
     }
 
-    public Long getVatAmount() {
-        return vatAmount;
-    }
-
-    public void setVatAmount(Long vatAmount) {
-        this.vatAmount = vatAmount;
-    }
-
-    public Long getTotalSalesQty() {
-        return totalSalesQty;
-    }
-
-    public void setTotalSalesQty(Long totalSalesQty) {
-        this.totalSalesQty = totalSalesQty;
-    }
-
-    public String getCompanyName() {
-        return companyName;
-    }
-
-    public void setCompanyName(String companyName) {
-        this.companyName = companyName;
-    }
-
-    public LocalDate getSaleStartDate() {
+    public Date getSaleStartDate() {
         return saleStartDate;
     }
 
-    public void setSaleStartDate(LocalDate saleStartDate) {
+    public void setSaleStartDate(Date saleStartDate) {
         this.saleStartDate = saleStartDate;
     }
 
-    public LocalDate getSaleEndDate() {
+    public Date getSaleEndDate() {
         return saleEndDate;
     }
 
-    public void setSaleEndDate(LocalDate saleEndDate) {
+    public void setSaleEndDate(Date saleEndDate) {
         this.saleEndDate = saleEndDate;
+    }
+
+    public Date getRegDt() {
+        return regDt;
+    }
+
+    public void setRegDt(Date regDt) {
+        this.regDt = regDt;
+    }
+
+    public Date getModDt() {
+        return modDt;
+    }
+
+    public void setModDt(Date modDt) {
+        this.modDt = modDt;
+    }
+
+    public Integer getRecordCountPerPage() {
+        return recordCountPerPage;
+    }
+
+    public void setRecordCountPerPage(Integer recordCountPerPage) {
+        this.recordCountPerPage = recordCountPerPage;
+    }
+
+    public Integer getFirstIndex() {
+        return firstIndex;
+    }
+
+    public void setFirstIndex(Integer firstIndex) {
+        this.firstIndex = firstIndex;
     }
 }
