@@ -312,20 +312,20 @@
         <script type="text/javascript" charset="utf-8"
             src="<c:url value='/smarteditor2/js/service/HuskyEZCreator.js' />"></script>
         <script type="text/javascript">
+            var oEditors = [];
             let bundleList = [];
             const previewImages = {};
             const objectUrlMap = {};
             const imageModalElement = document.getElementById('imagePreviewModal');
             const imageModalInstance = (window.bootstrap && imageModalElement) ? new bootstrap.Modal(imageModalElement) : null;
             let fallbackModalCloser = null;
-            var oEditors = [];
 
             $(function () {
                 initSmartEditor();
-                initDisplayToggle();
                 initImagePreview();
                 initSalePeriodRecalc();
                 initBundlePopup();
+                initDisplayToggle();
                 initUnloadCleanup();
             });
 
@@ -343,21 +343,21 @@
 
                 const form = document.forms['productForm'];
                 if (form) {
-                    form.addEventListener('submit', function () {
-                        if (oEditors && oEditors.getById && oEditors.getById["mdContent"]) {
-                            oEditors.getById["mdContent"].exec("UPDATE_CONTENTS_FIELD", []);
-                        }
-                    });
+                    form.addEventListener('submit', syncEditorContent);
                 }
 
                 window.fn_save = function () {
-                    if (oEditors && oEditors.getById && oEditors.getById["mdContent"]) {
-                        oEditors.getById["mdContent"].exec("UPDATE_CONTENTS_FIELD", []);
-                    }
+                    syncEditorContent();
                     if (document.productForm) {
                         document.productForm.submit();
                     }
                 };
+            }
+
+            function syncEditorContent() {
+                if (oEditors && oEditors.getById && oEditors.getById["mdContent"]) {
+                    oEditors.getById["mdContent"].exec("UPDATE_CONTENTS_FIELD", []);
+                }
             }
 
             // === 구성상품 관련 로직 ===
@@ -532,28 +532,6 @@
                 if (prevUrl) {
                     URL.revokeObjectURL(prevUrl);
                 }
-            }
-
-            document.addEventListener('DOMContentLoaded', function () {
-                const displayYnCheckbox = document.getElementById('displayYnCheckbox');
-                fn_toggleDisplayYn(displayYnCheckbox);
-
-                document.querySelectorAll('.image-upload-box').forEach(box => {
-                    const inputId = box.getAttribute('data-input-id');
-                    box.addEventListener('click', function () {
-                        if (previewImages[box.id]) {
-                            openImageModal(previewImages[box.id]);
-                        } else if (inputId) {
-                            const inputEl = document.getElementById(inputId);
-                            if (inputEl) {
-                                inputEl.click();
-                            }
-                        }
-                    });
-                });
-
-                initProductImagePopup();
-                initSmartEditor();
 
                 const src = URL.createObjectURL(file);
                 objectUrlMap[boxId] = src;
@@ -623,6 +601,60 @@
 
             function initImagePreview() {
                 document.querySelectorAll('.image-upload-box').forEach(box => {
+                    const inputId = box.getAttribute('data-input-id');
+                    box.addEventListener('click', function () {
+                        if (previewImages[box.id]) {
+                            openImageModal(previewImages[box.id]);
+                        } else if (inputId) {
+                            const inputEl = document.getElementById(inputId);
+                            if (inputEl) {
+                                inputEl.click();
+                            }
+                        }
+                    });
+                });
+
+                if (!imageModalElement) return;
+                imageModalElement.classList.add('show');
+                imageModalElement.style.display = 'block';
+                imageModalElement.removeAttribute('aria-hidden');
+                document.body.classList.add('modal-open');
+                document.body.style.overflow = 'hidden';
+
+                fallbackModalCloser = function () {
+                    imageModalElement.classList.remove('show');
+                    imageModalElement.style.display = 'none';
+                    imageModalElement.setAttribute('aria-hidden', 'true');
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                };
+
+                imageModalElement.addEventListener('click', fallbackModalCloser, { once: true });
+            }
+
+            function initProductImagePopup() {
+                const thumbs = document.querySelectorAll('.product-image-thumb');
+                if (!thumbs.length) return;
+
+                const modal = document.getElementById('imagePreviewModal');
+                const modalImg = document.getElementById('imagePreviewModalImg');
+                if (!modal || !modalImg) return;
+
+                thumbs.forEach((thumb) => {
+                    if (thumb.dataset.popupBound === 'true') return;
+
+                    thumb.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        const fullUrl = thumb.getAttribute('data-full-url') || thumb.getAttribute('src');
+                        openImageModal(fullUrl);
+                    });
+
+                    thumb.dataset.popupBound = 'true';
+                });
+            }
+
+            function initImagePreview() {
+                document.querySelectorAll('.image-upload-box').forEach((box) => {
                     const inputId = box.getAttribute('data-input-id');
                     box.addEventListener('click', function () {
                         if (previewImages[box.id]) {
