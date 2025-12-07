@@ -435,6 +435,91 @@
                         if (!defaultSellerId && item.sellerId) {
                             defaultSellerId = item.sellerId;
                         }
+                    });
+
+                    salePriceInput.value = totalSale;
+                    costPriceInput.value = totalCost;
+                    vatAmountInput.value = totalVat;
+
+                    salePriceInput.readOnly = true;
+                    costPriceInput.readOnly = true;
+                    vatAmountInput.readOnly = true;
+
+                    });
+
+                    salePriceInput.value = totalSale;
+                    costPriceInput.value = totalCost;
+                    vatAmountInput.value = totalVat;
+
+                    salePriceInput.readOnly = true;
+                    costPriceInput.readOnly = true;
+                    vatAmountInput.readOnly = true;
+
+                    // 판매자는 원물 판매자 우선, 없으면 첫번째 구성 판매자로 설정
+                    if (rawSellerId) {
+                        sellerSelect.value = rawSellerId;
+                    } else if (defaultSellerId) {
+                        sellerSelect.value = defaultSellerId;
+                    }
+
+                    const { start, end } = calculateSalePeriod(bundleList);
+
+                    saleStartDateInput.value = start;
+                    saleEndDateInput.value = end;
+                    const hasCalculatedPeriod = !!(start && end);
+                    saleStartDateInput.readOnly = hasCalculatedPeriod;
+                    saleEndDateInput.readOnly = hasCalculatedPeriod;
+
+                } else {
+                    // 구성상품 없으면 직접 입력 가능
+                    salePriceInput.readOnly = false;
+                    costPriceInput.readOnly = false;
+                    vatAmountInput.readOnly = false;
+                    saleStartDateInput.readOnly = false;
+                    saleEndDateInput.readOnly = false;
+                    // sellerSelect.disabled = false;
+                }
+            }
+
+            function normalizeBundleItem(item) {
+                const safeDate = (value) => {
+                    if (!value) return '';
+                    return value.toString();
+                };
+
+                return {
+                    ...item,
+                    salePrice: Number(item.salePrice) || 0,
+                    costPrice: Number(item.costPrice) || 0,
+                    vatAmount: Number(item.vatAmount) || 0,
+                    saleStartDate: safeDate(item.saleStartDate),
+                    saleEndDate: safeDate(item.saleEndDate)
+                };
+            }
+
+                function fn_previewImage(input, boxId) {
+                    const box = document.getElementById(boxId);
+                    if (!input.files || input.files.length === 0 || !box) return;
+
+                    const file = input.files[0];
+                    const prevUrl = objectUrlMap[boxId];
+                    if (prevUrl) {
+                        URL.revokeObjectURL(prevUrl);
+                    }
+
+                    const src = URL.createObjectURL(file);
+                    objectUrlMap[boxId] = src;
+                    previewImages[boxId] = src;
+
+                    box.innerHTML = `
+                        <img src="${src}" alt="업로드 이미지" />
+                        <button type="button" class="btn btn-light btn-sm image-change-btn" onclick="event.stopPropagation(); document.getElementById('${input.id}').click();">변경</button>
+                    `;
+
+                    box.onclick = function () {
+                        openImageModal(src);
+                    };
+                }
 
                         if (!rawSellerId && isRawMaterial && item.sellerId) {
                             rawSellerId = item.sellerId;
@@ -607,6 +692,60 @@
                             loader.addEventListener('error', () => createEditor(cdnSkin), { once: true });
                         }
                     }
+
+                    if (!imageModalElement) return;
+                    imageModalElement.classList.add('show');
+                    imageModalElement.style.display = 'block';
+                    imageModalElement.removeAttribute('aria-hidden');
+                    document.body.classList.add('modal-open');
+                    document.body.style.overflow = 'hidden';
+
+                    fallbackModalCloser = function () {
+                        imageModalElement.classList.remove('show');
+                        imageModalElement.style.display = 'none';
+                        imageModalElement.setAttribute('aria-hidden', 'true');
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = '';
+                    };
+
+                    imageModalElement.addEventListener('click', fallbackModalCloser, { once: true });
+                }
+
+                function initSmartEditor() {
+                    const createEditor = function () {
+                        if (!(window.nhn && window.nhn.husky && window.nhn.husky.EZCreator)) return;
+                        window.nhn.husky.EZCreator.createInIFrame({
+                            oAppRef: oEditors,
+                            elPlaceHolder: "detailContent",
+                            sSkinURI: "https://cdn.jsdelivr.net/gh/naver/smarteditor2@2.10.0/workspace/static/SmartEditor2Skin.html",
+                            htParams: {
+                                bUseToolbar: true,
+                                bUseVerticalResizer: true,
+                                bUseModeChanger: true
+                            },
+                            fCreator: "createSEditor2"
+                        });
+                    };
+
+                    if (window.nhn && window.nhn.husky && window.nhn.husky.EZCreator) {
+                        createEditor();
+                        return;
+                    }
+
+                    const existingLoader = document.getElementById('smartEditorLoader');
+                    if (existingLoader) {
+                        existingLoader.addEventListener('load', createEditor, { once: true });
+                        return;
+                    }
+
+                    const script = document.createElement('script');
+                    script.id = 'smartEditorLoader';
+                    script.src = "https://cdn.jsdelivr.net/gh/naver/smarteditor2@2.10.0/workspace/static/js/service/HuskyEZCreator.js";
+                    script.onload = createEditor;
+                    script.onerror = function () {
+                        console.warn('스마트에디터 로딩에 실패했습니다. 네트워크 상태를 확인해주세요.');
+                    };
+                    document.head.appendChild(script);
                 }
 
                 // 노출여부 동기화
