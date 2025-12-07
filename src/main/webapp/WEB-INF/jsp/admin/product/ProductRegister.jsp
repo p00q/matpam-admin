@@ -310,9 +310,8 @@
             </div>
         </div>
 
-        <script id="smartEditorScript" type="text/javascript" charset="utf-8"
-            src="<c:url value='/smarteditor2/js/service/HuskyEZCreator.js'/>"
-            onerror="this.onerror=null; this.src='https://cdn.jsdelivr.net/gh/naver/smarteditor2@2.10.0/workspace/static/js/service/HuskyEZCreator.js';"></script>
+        <script type="text/javascript" charset="utf-8"
+            src="<c:url value='/smarteditor2/js/service/HuskyEZCreator.js' />"></script>
         <script>
             // === 구성상품 관련 로직 ===
             let bundleList = [];
@@ -322,7 +321,6 @@
             const imageModalInstance = (window.bootstrap && imageModalElement) ? new bootstrap.Modal(imageModalElement) : null;
             let fallbackModalCloser = null;
             let oEditors = [];
-            let smartEditorInitialized = false;
 
             function calculateSalePeriod(components) {
                 if (!components || components.length === 0) {
@@ -561,54 +559,61 @@
                 });
             }
 
-            function initSmartEditor() {
-                const localSkin = "<c:url value='/smarteditor2/SmartEditor2Skin.html'/>";
-                const cdnSkin = "https://cdn.jsdelivr.net/gh/naver/smarteditor2@2.10.0/workspace/static/SmartEditor2Skin.html";
+            function fn_toggleDisplayYn(checkbox) {
+                const hiddenField = document.getElementById('displayYnValue');
+                if (hiddenField && checkbox) {
+                    hiddenField.value = checkbox.checked ? 'Y' : 'N';
+                }
+            }
 
-                const createEditor = function (skinUrl) {
-                    if (smartEditorInitialized) return;
-                    if (!(window.nhn && window.nhn.husky && window.nhn.husky.EZCreator)) return;
+            document.addEventListener('DOMContentLoaded', function () {
+                const displayYnCheckbox = document.getElementById('displayYnCheckbox');
+                fn_toggleDisplayYn(displayYnCheckbox);
+
+                document.querySelectorAll('.image-upload-box').forEach(box => {
+                    const inputId = box.getAttribute('data-input-id');
+                    box.addEventListener('click', function () {
+                        if (previewImages[box.id]) {
+                            openImageModal(previewImages[box.id]);
+                        } else if (inputId) {
+                            const inputEl = document.getElementById(inputId);
+                            if (inputEl) {
+                                inputEl.click();
+                            }
+                        }
+                    });
+                });
+
+                initProductImagePopup();
+
+                window.addEventListener('beforeunload', function () {
+                    Object.values(objectUrlMap).forEach((url) => URL.revokeObjectURL(url));
+                });
+
+                const form = document.forms['productForm'];
+                if (form) {
+                    form.addEventListener('submit', function () {
+                        if (oEditors && oEditors.getById && oEditors.getById["mdContent"]) {
+                            oEditors.getById["mdContent"].exec("UPDATE_CONTENTS_FIELD", []);
+                        }
+                    });
+                }
+            });
+
+        </script>
+        <script type="text/javascript">
+            (function () {
+                function createSmartEditor() {
+                    if (!(window.nhn && window.nhn.husky && window.nhn.husky.EZCreator)) {
+                        return;
+                    }
 
                     window.nhn.husky.EZCreator.createInIFrame({
                         oAppRef: oEditors,
                         elPlaceHolder: "mdContent",
-                        sSkinURI: skinUrl,
-                        fCreator: "createSEditor2",
-                        htParams: {
-                            bUseToolbar: true,
-                            bUseVerticalResizer: true,
-                            bUseModeChanger: true
-                        }
+                        sSkinURI: "<c:url value='/smarteditor2/SmartEditor2Skin.html' />",
+                        fCreator: "createSEditor2"
                     });
-                    smartEditorInitialized = true;
-                };
-
-                const tryCreate = () => {
-                    createEditor(localSkin);
-                    setTimeout(() => {
-                        if (!smartEditorInitialized) {
-                            createEditor(cdnSkin);
-                        }
-                    }, 400);
-                };
-
-                if (window.nhn && window.nhn.husky && window.nhn.husky.EZCreator) {
-                    tryCreate();
-                } else {
-                    const loader = document.getElementById('smartEditorScript');
-                    if (loader) {
-                        loader.addEventListener('load', tryCreate, { once: true });
-                        loader.addEventListener('error', () => createEditor(cdnSkin), { once: true });
-                    }
-
-                    const script = document.createElement('script');
-                    script.id = 'smartEditorLoader';
-                    script.src = "https://cdn.jsdelivr.net/gh/naver/smarteditor2@2.10.0/workspace/static/js/service/HuskyEZCreator.js";
-                    script.onload = createEditor;
-                    script.onerror = function () {
-                        console.warn('스마트에디터 로딩에 실패했습니다. 네트워크 상태를 확인해주세요.');
-                    };
-                    document.head.appendChild(script);
                 }
             }
 
@@ -640,18 +645,22 @@
                 initProductImagePopup();
                 initSmartEditor();
 
-                window.addEventListener('beforeunload', function () {
-                    Object.values(objectUrlMap).forEach((url) => URL.revokeObjectURL(url));
-                });
-
-                const form = document.forms['productForm'];
-                if (form) {
-                    form.addEventListener('submit', function () {
-                        if (oEditors && oEditors.getById && oEditors.getById["mdContent"]) {
-                            oEditors.getById["mdContent"].exec("UPDATE_CONTENTS_FIELD", []);
-                        }
+                if (window.jQuery) {
+                    jQuery(function () {
+                        createSmartEditor();
                     });
+                } else {
+                    document.addEventListener('DOMContentLoaded', createSmartEditor);
                 }
             });
 
+                window.fn_save = function () {
+                    if (oEditors && oEditors.getById && oEditors.getById["mdContent"]) {
+                        oEditors.getById["mdContent"].exec("UPDATE_CONTENTS_FIELD", []);
+                    }
+                    if (document.productForm) {
+                        document.productForm.submit();
+                    }
+                };
+            })();
         </script>
