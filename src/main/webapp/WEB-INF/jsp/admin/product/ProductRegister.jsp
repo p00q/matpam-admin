@@ -43,10 +43,24 @@
                     justify-content: center;
                     cursor: pointer;
                     background-color: #fff;
+                    position: relative;
+                    overflow: hidden;
                 }
 
                 .image-upload-box:hover {
                     background-color: #f8f9fa;
+                }
+
+                .image-upload-box img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
+
+                .image-change-btn {
+                    position: absolute;
+                    top: 6px;
+                    right: 6px;
                 }
             </style>
 
@@ -63,11 +77,15 @@
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h4>판매상품 등록</h4>
                     <div>
-                        <button type="button" class="btn btn-secondary">목록</button>
+                        <button type="button" class="btn btn-secondary"
+                            onclick="location.href='<c:url value="/admin/product/productList.do"/>'">목록</button>
                     </div>
                 </div>
 
                 <form name="productForm" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="productNo" value="<c:out value='${product.productNo}'/>" />
+                    <input type="hidden" name="displayYn" id="displayYnValue"
+                        value="<c:out value='${product.displayYn}' default='Y'/>" />
 
                     <!-- 1. 상품일반정보 -->
                     <div class="section-header">상품일반정보</div>
@@ -83,12 +101,12 @@
                                 <th>상품명</th>
                                 <td>
                                     <input type="text" name="productName" class="form-control form-control-sm"
-                                        required />
+                                        value="<c:out value='${product.productName}'/>" required />
                                 </td>
                                 <th>상품 번호</th>
                                 <td>
-                                    <input type="text" class="form-control form-control-sm" placeholder="자동 생성" readonly
-                                        disabled />
+                                    <input type="text" class="form-control form-control-sm" placeholder="자동 생성"
+                                        value="<c:out value='${product.productNo}'/>" readonly disabled />
                                 </td>
                             </tr>
                             <tr>
@@ -96,7 +114,7 @@
                                 <td>
                                     <div class="input-group input-group-sm">
                                         <input type="number" name="salePrice" id="salePrice" class="form-control"
-                                            value="0" />
+                                            value="<c:out value='${product.salePrice}' default='0'/>" />
                                         <span class="input-group-text">원</span>
                                     </div>
                                 </td>
@@ -104,7 +122,7 @@
                                 <td>
                                     <div class="input-group input-group-sm">
                                         <input type="number" name="costPrice" id="costPrice" class="form-control"
-                                            value="0" />
+                                            value="<c:out value='${product.costPrice}' default='0'/>" />
                                         <span class="input-group-text">원</span>
                                     </div>
                                 </td>
@@ -114,16 +132,17 @@
                                 <td>
                                     <div class="input-group input-group-sm">
                                         <input type="number" name="vatAmount" id="vatAmount" class="form-control"
-                                            value="0" />
+                                            value="<c:out value='${product.vatAmount}' default='0'/>" />
                                         <span class="input-group-text">원</span>
                                     </div>
                                 </td>
                                 <th>노출여부</th>
                                 <td>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="displayYn" id="displayYn"
-                                            value="Y" checked>
-                                        <label class="form-check-label" for="displayYn">노출</label>
+                                        <input class="form-check-input" type="checkbox" id="displayYnCheckbox"
+                                            <c:if test="${product.displayYn ne 'N'}">checked</c:if>
+                                            onclick="fn_toggleDisplayYn(this)">
+                                        <label class="form-check-label" for="displayYnCheckbox">노출</label>
                                     </div>
                                 </td>
                             </tr>
@@ -148,14 +167,18 @@
                             <tr>
                                 <th>상품 요약</th>
                                 <td>
-                                    <input type="text" name="productSummary" class="form-control form-control-sm" />
+                                    <input type="text" name="productSummary" class="form-control form-control-sm"
+                                        value="<c:out value='${product.productSummary}'/>" />
                                 </td>
                                 <th>판매자</th>
                                 <td>
                                     <select name="sellerId" id="sellerId" class="form-select form-select-sm">
                                         <option value="">선택</option>
                                         <c:forEach var="seller" items="${sellers}">
-                                            <option value="${seller.memberNo}">${seller.companyName}</option>
+                                            <option value="${seller.memberNo}"
+                                                <c:if test="${seller.memberNo eq product.sellerId}">selected</c:if>>
+                                                ${seller.companyName}
+                                            </option>
                                         </c:forEach>
                                     </select>
                                 </td>
@@ -163,7 +186,8 @@
                             <tr>
                                 <th>MD 코멘트</th>
                                 <td colspan="3">
-                                    <input type="text" name="mdComment" class="form-control form-control-sm" />
+                                    <input type="text" name="mdComment" class="form-control form-control-sm"
+                                        value="<c:out value='${product.mdComment}'/>" />
                                 </td>
                             </tr>
                         </tbody>
@@ -208,37 +232,93 @@
                     <div class="row g-2 mb-4">
                         <c:forEach begin="1" end="5" varStatus="status">
                             <div class="col">
-                                <div class="image-upload-box"
-                                    onclick="document.getElementById('file${status.index}').click()">
-                                    <div class="text-center">
-                                        <i class="bi bi-plus-lg fs-3 text-secondary"></i>
-                                    </div>
-                                    <input type="file" name="files" id="file${status.index}" style="display:none;"
-                                        onchange="fn_previewImage(this, ${status.index})" accept="image/*" />
+                                <div class="image-upload-box" id="imageBox${status.index}" data-input-id="file${status.index}">
+                                    <div class="text-center text-muted small">이미지를 업로드하세요</div>
                                 </div>
+                                <input type="file" name="files" id="file${status.index}" style="display:none;"
+                                    onchange="fn_previewImage(this, 'imageBox${status.index}')" accept="image/*" />
                             </div>
                         </c:forEach>
                     </div>
 
                     <!-- 4. 상품 상세 설명 -->
                     <div class="section-header">상품 상세 설명</div>
-                    <div class="mb-4 bg-light p-3 border text-center" style="height: 200px;">
-                        에디터 영역 (추후 구현)
+                    <textarea id="detailContent" name="description" class="form-control" style="height: 300px;">
+<c:out value='${product.description}'/>
+</textarea>
+                    <div class="form-text">상세 설명은 네이버 스마트에디터가 적용되며, 이미지 삽입 후 미리보기로 확인할 수 있습니다.</div>
+
+                    <!-- 5. 안내 정보 -->
+                    <div class="section-header">안내 정보</div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-light fw-bold">상품 결제 정보</div>
+                                <div class="card-body">
+                                    <textarea class="form-control" name="paymentInfo" rows="5"
+                                        placeholder="결제 수단, 결제 시 유의사항 등을 입력하세요."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-light fw-bold">배송 정보</div>
+                                <div class="card-body">
+                                    <textarea class="form-control" name="shippingInfo" rows="5"
+                                        placeholder="배송 방법, 소요 기간, 배송비 등을 입력하세요."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-light fw-bold">교환 및 반품 정보</div>
+                                <div class="card-body">
+                                    <textarea class="form-control" name="exchangeReturnInfo" rows="5"
+                                        placeholder="교환/반품 조건, 절차, 비용 등을 입력하세요."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-light fw-bold">환불 정보</div>
+                                <div class="card-body">
+                                    <textarea class="form-control" name="refundInfo" rows="5"
+                                        placeholder="환불 소요 기간, 유의사항 등을 입력하세요."></textarea>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- 5. 하단 버튼 -->
-                    <div class="d-flex justify-content-end gap-2 mt-5 mb-5">
-                        <button type="button" class="btn btn-secondary px-4">미리보기</button>
-                        <button type="submit" class="btn btn-secondary px-4">저장</button>
-                        <button type="button" class="btn btn-secondary px-4" onclick="history.back()">취소</button>
+                <div class="d-flex justify-content-end gap-2 mt-5 mb-5">
+                    <button type="button" class="btn btn-secondary px-4">미리보기</button>
+                    <button type="submit" class="btn btn-secondary px-4">저장</button>
+                    <button type="button" class="btn btn-secondary px-4" onclick="history.back()">취소</button>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- 이미지 확대 뷰어 -->
+        <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body p-0">
+                        <img id="imagePreviewModalImg" src="" alt="이미지 미리보기" class="img-fluid w-100" />
                     </div>
-
-                </form>
+                </div>
             </div>
+        </div>
 
-            <script>
-                // === 구성상품 관련 로직 ===
-                let bundleList = [];
+        <script src="https://cdn.jsdelivr.net/gh/naver/smarteditor2@2.10.0/workspace/static/js/service/HuskyEZCreator.js"></script>
+        <script>
+            // === 구성상품 관련 로직 ===
+            let bundleList = [];
+            const previewImages = {};
+            const imageModalElement = document.getElementById('imagePreviewModal');
+            const imageModalInstance = (window.bootstrap && imageModalElement) ? new bootstrap.Modal(imageModalElement) : null;
+            let fallbackModalCloser = null;
+            let oEditors = [];
 
                 function fn_addBundlePopup() {
                     const url = '<c:url value="/admin/product/popup/bundleList.do"/>';
@@ -273,7 +353,7 @@
                         tr.innerHTML = `
                 <td>\${item.sellerName}</td>
                 <td>\${item.productName}</td>
-                <td>\${item.saleType}</td>
+                <td>\${item.saleTypeName || item.saleType}</td>
                 <td>\${item.saleStatusName}</td>
                 <td class="text-end">\${item.salePrice.toLocaleString()}</td>
                 <td class="text-end">\${item.costPrice.toLocaleString()}</td>
@@ -298,59 +378,198 @@
                     const salePriceInput = document.getElementById('salePrice');
                     const costPriceInput = document.getElementById('costPrice');
                     const vatAmountInput = document.getElementById('vatAmount');
-                    const displayYnInput = document.getElementById('displayYn');
                     const saleStartDateInput = document.getElementById('saleStartDate');
                     const saleEndDateInput = document.getElementById('saleEndDate');
                     const sellerSelect = document.getElementById('sellerId');
 
-                    if (bundleList.length > 0) {
-                        // 2. 가격 합계 계산 (수정금지)
-                        let totalSale = 0, totalCost = 0, totalVat = 0;
-                        let hasRawMaterial = false;
-                        let rawSellerId = null;
+                if (bundleList.length > 0) {
+                    // 2. 가격 합계 계산 (수정금지)
+                    let totalSale = 0, totalCost = 0, totalVat = 0;
+                    let rawSellerId = null;
+                    let defaultSellerId = null;
+                    let earliestSaleStart = null;
+                    let latestSaleEnd = null;
 
-                        bundleList.forEach(item => {
-                            totalSale += item.salePrice || 0;
-                            totalCost += item.costPrice || 0;
-                            totalVat += item.vatAmount || 0;
+                    bundleList.forEach(item => {
+                        totalSale += item.salePrice || 0;
+                        totalCost += item.costPrice || 0;
+                        totalVat += item.vatAmount || 0;
 
-                            // 5. 판매자: 원물이 있으면 원물의 판매자 우선
-                            if (item.saleType === '원물') { // 실제 코드값 확인 필요
-                                hasRawMaterial = true;
-                                rawSellerId = item.sellerId;
-                            }
-                        });
+                        const saleTypeCode = (item.saleType || '').toString();
+                        const saleTypeName = item.saleTypeName || '';
+                        const isRawMaterial = saleTypeName.indexOf('원물') > -1 || saleTypeCode.toLowerCase().indexOf('raw') > -1;
 
-                        salePriceInput.value = totalSale;
-                        costPriceInput.value = totalCost;
-                        vatAmountInput.value = totalVat;
-
-                        salePriceInput.readOnly = true;
-                        costPriceInput.readOnly = true;
-                        vatAmountInput.readOnly = true;
-
-                        // 5. 판매자 설정
-                        if (hasRawMaterial && rawSellerId) {
-                            sellerSelect.value = rawSellerId;
-                            // sellerSelect.disabled = true; // 필요시 비활성화하지만 submit시 값을 넘겨야 하므로 disabled보다는 CSS처리나 hidden값 사용 권장
+                        if (!defaultSellerId && item.sellerId) {
+                            defaultSellerId = item.sellerId;
                         }
 
-                        // 3, 4. 노출여부/기간 등은 복합적이므로 첫번째 상품 기준으로 예시 설정 하거나 로직 상세화 필요
-                        // 여기서는 첫번째 상품 기준으로 설정
-                        const first = bundleList[0];
-                        // 예시 로직
+                        if (!rawSellerId && isRawMaterial && item.sellerId) {
+                            rawSellerId = item.sellerId;
+                        }
 
-                    } else {
-                        // 구성상품 없으면 직접 입력 가능
-                        salePriceInput.readOnly = false;
-                        costPriceInput.readOnly = false;
-                        vatAmountInput.readOnly = false;
-                        // sellerSelect.disabled = false;
+                        const startDate = parseDate(item.saleStartDate);
+                        const endDate = parseDate(item.saleEndDate);
+
+                        if (startDate && (!earliestSaleStart || startDate < earliestSaleStart)) {
+                            earliestSaleStart = startDate;
+                        }
+
+                        if (endDate && (!latestSaleEnd || endDate > latestSaleEnd)) {
+                            latestSaleEnd = endDate;
+                        }
+                    });
+
+                    salePriceInput.value = totalSale;
+                    costPriceInput.value = totalCost;
+                    vatAmountInput.value = totalVat;
+
+                    salePriceInput.readOnly = true;
+                    costPriceInput.readOnly = true;
+                    vatAmountInput.readOnly = true;
+
+                    // 판매자는 원물 판매자 우선, 없으면 첫번째 구성 판매자로 설정
+                    if (rawSellerId) {
+                        sellerSelect.value = rawSellerId;
+                    } else if (defaultSellerId) {
+                        sellerSelect.value = defaultSellerId;
                     }
+
+                    // 판매기간: 구성 상품 중 가장 빠른 시작일과 가장 늦은 종료일 사용
+                    if (earliestSaleStart) {
+                        saleStartDateInput.value = formatDate(earliestSaleStart);
+                        saleStartDateInput.readOnly = true;
+                    } else {
+                        saleStartDateInput.readOnly = false;
+                    }
+
+                    if (latestSaleEnd) {
+                        saleEndDateInput.value = formatDate(latestSaleEnd);
+                        saleEndDateInput.readOnly = true;
+                    } else {
+                        saleEndDateInput.readOnly = false;
+                    }
+
+                } else {
+                    // 구성상품 없으면 직접 입력 가능
+                    salePriceInput.readOnly = false;
+                    costPriceInput.readOnly = false;
+                    vatAmountInput.readOnly = false;
+                    saleStartDateInput.readOnly = false;
+                    saleEndDateInput.readOnly = false;
+                    // sellerSelect.disabled = false;
+                }
+            }
+
+                function parseDate(value) {
+                    if (!value) return null;
+                    if (value instanceof Date) return value;
+                    const date = new Date(value);
+                    return isNaN(date.getTime()) ? null : date;
                 }
 
-                function fn_previewImage(input, index) {
-                    // 이미지 미리보기 로직 (생략 - 박스 안에 img 태그 생성)
+                function formatDate(date) {
+                    const yyyy = date.getFullYear();
+                    const mm = String(date.getMonth() + 1).padStart(2, '0');
+                    const dd = String(date.getDate()).padStart(2, '0');
+                    return `${yyyy}-${mm}-${dd}`;
                 }
+
+                function fn_previewImage(input, boxId) {
+                    const box = document.getElementById(boxId);
+                    if (!input.files || input.files.length === 0 || !box) return;
+
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const src = e.target.result;
+                        previewImages[boxId] = src;
+
+                        box.innerHTML = `
+                            <img src="${src}" alt="업로드 이미지" />
+                            <button type="button" class="btn btn-light btn-sm image-change-btn" onclick="event.stopPropagation(); document.getElementById('${input.id}').click();">변경</button>
+                        `;
+
+                        if (imageModalInstance) {
+                            box.onclick = function () {
+                                openImageModal(src);
+                            };
+                        }
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                }
+
+                function openImageModal(src) {
+                    const modalImg = document.getElementById('imagePreviewModalImg');
+                    if (!modalImg) return;
+                    modalImg.src = src;
+
+                    if (imageModalInstance) {
+                        imageModalInstance.show();
+                        return;
+                    }
+
+                    if (!imageModalElement) return;
+                    imageModalElement.classList.add('show');
+                    imageModalElement.style.display = 'block';
+                    imageModalElement.removeAttribute('aria-hidden');
+                    document.body.classList.add('modal-open');
+                    document.body.style.overflow = 'hidden';
+
+                    fallbackModalCloser = function () {
+                        imageModalElement.classList.remove('show');
+                        imageModalElement.style.display = 'none';
+                        imageModalElement.setAttribute('aria-hidden', 'true');
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = '';
+                    };
+
+                    imageModalElement.addEventListener('click', fallbackModalCloser, { once: true });
+                }
+
+                // 노출여부 동기화
+                function fn_toggleDisplayYn(checkbox) {
+                    document.getElementById('displayYnValue').value = checkbox.checked ? 'Y' : 'N';
+                }
+
+                document.addEventListener('DOMContentLoaded', function () {
+                    const displayYnCheckbox = document.getElementById('displayYnCheckbox');
+                    fn_toggleDisplayYn(displayYnCheckbox);
+
+                    document.querySelectorAll('.image-upload-box').forEach(box => {
+                        const inputId = box.getAttribute('data-input-id');
+                        box.addEventListener('click', function () {
+                            if (previewImages[box.id] && imageModalInstance) {
+                                openImageModal(previewImages[box.id]);
+                            } else if (inputId) {
+                                const inputEl = document.getElementById(inputId);
+                                if (inputEl) {
+                                    inputEl.click();
+                                }
+                            }
+                        });
+                    });
+
+                    if (window.nhn && window.nhn.husky && window.nhn.husky.EZCreator) {
+                        window.nhn.husky.EZCreator.createInIFrame({
+                            oAppRef: oEditors,
+                            elPlaceHolder: "detailContent",
+                            sSkinURI: "https://cdn.jsdelivr.net/gh/naver/smarteditor2@2.10.0/workspace/static/SmartEditor2Skin.html",
+                            htParams: {
+                                bUseToolbar: true,
+                                bUseVerticalResizer: true,
+                                bUseModeChanger: true
+                            },
+                            fCreator: "createSEditor2"
+                        });
+                    }
+
+                    const form = document.forms['productForm'];
+                    if (form) {
+                        form.addEventListener('submit', function () {
+                            if (oEditors && oEditors.getById && oEditors.getById["detailContent"]) {
+                                oEditors.getById["detailContent"].exec("UPDATE_CONTENTS_FIELD", []);
+                            }
+                        });
+                    }
+                });
 
             </script>
