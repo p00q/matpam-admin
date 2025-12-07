@@ -3,6 +3,8 @@
         <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
             <%@ taglib prefix="ui" uri="http://egovframework.gov/ctl/ui" %>
 
+<jsp:useBean id="today" class="java.util.Date" />
+
                 <div class="container-fluid p-4">
 
                     <!-- Breadcrumb -->
@@ -31,8 +33,10 @@
                                 </div>
                                 <div class="col-md-1 fw-bold bg-secondary text-white p-2 text-center">기간 조회</div>
                                 <div class="col-md-5 d-flex gap-2">
-                                    <input type="date" class="form-control" name="searchStartDate" />
-                                    <input type="date" class="form-control" name="searchEndDate" />
+                                    <input type="date" class="form-control" name="searchStartDate"
+                                        value="${searchVO.searchStartDate}" />
+                                    <input type="date" class="form-control" name="searchEndDate"
+                                        value="${searchVO.searchEndDate}" />
                                 </div>
                             </div>
                             <div class="row g-3 align-items-center">
@@ -115,7 +119,13 @@
                                         <td>
                                             <fmt:formatDate value="${item.regDt}" pattern="yyyy-MM-dd" />
                                         </td>
-                                        <td>판매중</td> <!-- 판매상태 데이터 없음 -->
+                                        <td>
+                                            <c:choose>
+                                                <c:when test="${not empty item.saleStartDate && item.saleStartDate.time > today.time}">판매예정</c:when>
+                                                <c:when test="${not empty item.saleEndDate && item.saleEndDate.time < today.time}">판매종료</c:when>
+                                                <c:otherwise>판매중</c:otherwise>
+                                            </c:choose>
+                                        </td>
                                         <td>
                                             <c:choose>
                                                 <c:when test="${item.displayYn eq 'Y'}">노출</c:when>
