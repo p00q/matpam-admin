@@ -155,8 +155,11 @@
                                                     <input type="checkbox" name="checkItem" value="${item.bundleId}"
                                                         data-json='{
                                         "bundleId": "${item.bundleId}",
+                                        "productNo": "${item.productNo}",
                                         "productName": "${item.productName}",
-                                        "saleType": "${item.saleTypeName}",
+                                        "saleType": "${item.saleType}",
+                                        "saleTypeName": "${item.saleTypeName}",
+                                        "sellerId": "${item.sellerId}",
                                         "sellerName": "${item.sellerName}",
                                         "salePrice": ${item.salePrice},
                                         "costPrice": ${item.costPrice},
@@ -166,6 +169,8 @@
                                         "divisionTypeName": "${item.divisionTypeName}",
                                         "saleStatusName": "${item.saleStatusName}",
                                         "displayYn": "${item.displayYn}",
+                                        "saleStartDate": "<fmt:formatDate value="${item.saleStartDate}" pattern="yyyy-MM-dd"/>",
+                                        "saleEndDate": "<fmt:formatDate value="${item.saleEndDate}" pattern="yyyy-MM-dd"/>",
                                         "regDt": "<fmt:formatDate value="${item.regDt}" pattern="yyyy-MM-dd"/>",
                                         "modDt": "<fmt:formatDate value="${item.modDt}" pattern="yyyy-MM-dd"/>"
                                     }' />
