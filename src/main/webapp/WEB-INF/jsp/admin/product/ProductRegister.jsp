@@ -615,6 +615,35 @@
                         fCreator: "createSEditor2"
                     });
                 }
+            }
+
+            function fn_toggleDisplayYn(checkbox) {
+                const hiddenField = document.getElementById('displayYnValue');
+                if (hiddenField && checkbox) {
+                    hiddenField.value = checkbox.checked ? 'Y' : 'N';
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                const displayYnCheckbox = document.getElementById('displayYnCheckbox');
+                fn_toggleDisplayYn(displayYnCheckbox);
+
+                document.querySelectorAll('.image-upload-box').forEach(box => {
+                    const inputId = box.getAttribute('data-input-id');
+                    box.addEventListener('click', function () {
+                        if (previewImages[box.id]) {
+                            openImageModal(previewImages[box.id]);
+                        } else if (inputId) {
+                            const inputEl = document.getElementById(inputId);
+                            if (inputEl) {
+                                inputEl.click();
+                            }
+                        }
+                    });
+                });
+
+                initProductImagePopup();
+                initSmartEditor();
 
                 if (window.jQuery) {
                     jQuery(function () {
@@ -623,6 +652,7 @@
                 } else {
                     document.addEventListener('DOMContentLoaded', createSmartEditor);
                 }
+            });
 
                 window.fn_save = function () {
                     if (oEditors && oEditors.getById && oEditors.getById["mdContent"]) {
