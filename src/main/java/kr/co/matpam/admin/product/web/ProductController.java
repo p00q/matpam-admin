@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import kr.co.matpam.admin.code.service.CodeManagementService;
 import kr.co.matpam.admin.member.service.MemberService;
@@ -36,10 +37,16 @@ public class ProductController {
      * 판매상품 등록 화면
      */
     @RequestMapping(value = "/admin/product/productRegist.do")
-    public String productRegistForm(ModelMap model) throws Exception {
+    public String productRegistForm(@RequestParam(value = "productNo", required = false) Long productNo, ModelMap model)
+            throws Exception {
 
-        ProductVO product = new ProductVO();
-        product.setSaleStartDate(new Date()); // 기본값: 오늘
+        ProductVO product = productNo != null ? productService.selectProduct(productNo) : null;
+
+        if (product == null) {
+            product = new ProductVO();
+            product.setDisplayYn("Y");
+            product.setSaleStartDate(new Date()); // 기본값: 오늘
+        }
 
         model.addAttribute("product", product);
 

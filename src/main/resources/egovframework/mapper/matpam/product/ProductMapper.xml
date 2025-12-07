@@ -57,4 +57,25 @@
         <include refid="selectProductListWhere"/>
     </select>
 
+    <!-- 단일 상품 조회 -->
+    <select id="selectProduct" parameterType="long" resultMap="productResultMap">
+        SELECT
+            PRODUCT_NO,
+            PRODUCT_NAME,
+            SALE_PRICE,
+            COST_PRICE,
+            VAT_AMOUNT,
+            SALE_START_DATE,
+            SALE_END_DATE,
+            DISPLAY_YN,
+            SELLER_ID,
+            PRODUCT_SUMMARY,
+            MD_COMMENT,
+            DESCRIPTION,
+            REG_DT,
+            MOD_DT
+        FROM TB_PRODUCT
+        WHERE PRODUCT_NO = #{value}
+    </select>
+
 </mapper>
