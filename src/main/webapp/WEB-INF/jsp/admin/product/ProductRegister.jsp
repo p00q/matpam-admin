@@ -600,6 +600,15 @@
                         loader.addEventListener('load', tryCreate, { once: true });
                         loader.addEventListener('error', () => createEditor(cdnSkin), { once: true });
                     }
+
+                    const script = document.createElement('script');
+                    script.id = 'smartEditorLoader';
+                    script.src = "https://cdn.jsdelivr.net/gh/naver/smarteditor2@2.10.0/workspace/static/js/service/HuskyEZCreator.js";
+                    script.onload = createEditor;
+                    script.onerror = function () {
+                        console.warn('스마트에디터 로딩에 실패했습니다. 네트워크 상태를 확인해주세요.');
+                    };
+                    document.head.appendChild(script);
                 }
             }
 
