@@ -196,8 +196,7 @@
                     <!-- 2. 상품 구성 목록 -->
                     <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
                         <div class="section-header" style="margin:0;">상품 구성 목록</div>
-                        <button type="button" class="btn btn-secondary btn-sm" onclick="fn_addBundlePopup()">구성
-                            추가</button>
+                        <button type="button" class="btn btn-secondary btn-sm" id="addBundleButton">구성 추가</button>
                     </div>
 
                     <table class="table table-bordered table-hover text-center align-middle bg-white" id="bundleTable">
@@ -312,16 +311,56 @@
 
         <script type="text/javascript" charset="utf-8"
             src="<c:url value='/smarteditor2/js/service/HuskyEZCreator.js' />"></script>
-        <script>
-            // === 구성상품 관련 로직 ===
+        <script type="text/javascript">
             let bundleList = [];
             const previewImages = {};
             const objectUrlMap = {};
             const imageModalElement = document.getElementById('imagePreviewModal');
             const imageModalInstance = (window.bootstrap && imageModalElement) ? new bootstrap.Modal(imageModalElement) : null;
             let fallbackModalCloser = null;
-            let oEditors = [];
+            var oEditors = [];
 
+            $(function () {
+                initSmartEditor();
+                initDisplayToggle();
+                initImagePreview();
+                initSalePeriodRecalc();
+                initBundlePopup();
+                initUnloadCleanup();
+            });
+
+            function initSmartEditor() {
+                if (!(window.nhn && window.nhn.husky && window.nhn.husky.EZCreator)) {
+                    return;
+                }
+
+                nhn.husky.EZCreator.createInIFrame({
+                    oAppRef: oEditors,
+                    elPlaceHolder: "mdContent",
+                    sSkinURI: "<c:url value='/smarteditor2/SmartEditor2Skin.html' />",
+                    fCreator: "createSEditor2"
+                });
+
+                const form = document.forms['productForm'];
+                if (form) {
+                    form.addEventListener('submit', function () {
+                        if (oEditors && oEditors.getById && oEditors.getById["mdContent"]) {
+                            oEditors.getById["mdContent"].exec("UPDATE_CONTENTS_FIELD", []);
+                        }
+                    });
+                }
+
+                window.fn_save = function () {
+                    if (oEditors && oEditors.getById && oEditors.getById["mdContent"]) {
+                        oEditors.getById["mdContent"].exec("UPDATE_CONTENTS_FIELD", []);
+                    }
+                    if (document.productForm) {
+                        document.productForm.submit();
+                    }
+                };
+            }
+
+            // === 구성상품 관련 로직 ===
             function calculateSalePeriod(components) {
                 if (!components || components.length === 0) {
                     return { start: '', end: '' };
@@ -493,6 +532,28 @@
                 if (prevUrl) {
                     URL.revokeObjectURL(prevUrl);
                 }
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                const displayYnCheckbox = document.getElementById('displayYnCheckbox');
+                fn_toggleDisplayYn(displayYnCheckbox);
+
+                document.querySelectorAll('.image-upload-box').forEach(box => {
+                    const inputId = box.getAttribute('data-input-id');
+                    box.addEventListener('click', function () {
+                        if (previewImages[box.id]) {
+                            openImageModal(previewImages[box.id]);
+                        } else if (inputId) {
+                            const inputEl = document.getElementById(inputId);
+                            if (inputEl) {
+                                inputEl.click();
+                            }
+                        }
+                    });
+                });
+
+                initProductImagePopup();
+                initSmartEditor();
 
                 const src = URL.createObjectURL(file);
                 objectUrlMap[boxId] = src;
@@ -519,6 +580,7 @@
                     imageModalInstance.show();
                     return;
                 }
+            });
 
                 if (!imageModalElement) return;
                 imageModalElement.classList.add('show');
@@ -559,17 +621,7 @@
                 });
             }
 
-            function fn_toggleDisplayYn(checkbox) {
-                const hiddenField = document.getElementById('displayYnValue');
-                if (hiddenField && checkbox) {
-                    hiddenField.value = checkbox.checked ? 'Y' : 'N';
-                }
-            }
-
-            document.addEventListener('DOMContentLoaded', function () {
-                const displayYnCheckbox = document.getElementById('displayYnCheckbox');
-                fn_toggleDisplayYn(displayYnCheckbox);
-
+            function initImagePreview() {
                 document.querySelectorAll('.image-upload-box').forEach(box => {
                     const inputId = box.getAttribute('data-input-id');
                     box.addEventListener('click', function () {
@@ -585,82 +637,42 @@
                 });
 
                 initProductImagePopup();
+            }
 
+            function initSalePeriodRecalc() {
+                updateProductInfo();
+            }
+
+            function fn_toggleDisplayYn(checkbox) {
+                const hiddenField = document.getElementById('displayYnValue');
+                if (hiddenField && checkbox) {
+                    hiddenField.value = checkbox.checked ? 'Y' : 'N';
+                }
+            }
+
+            function initDisplayToggle() {
+                const displayYnCheckbox = document.getElementById('displayYnCheckbox');
+                fn_toggleDisplayYn(displayYnCheckbox);
+                if (displayYnCheckbox) {
+                    displayYnCheckbox.addEventListener('change', function (e) {
+                        fn_toggleDisplayYn(e.target);
+                    });
+                }
+            }
+
+            function initBundlePopup() {
+                const addButton = document.getElementById('addBundleButton');
+                if (addButton) {
+                    addButton.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        fn_addBundlePopup();
+                    });
+                }
+            }
+
+            function initUnloadCleanup() {
                 window.addEventListener('beforeunload', function () {
                     Object.values(objectUrlMap).forEach((url) => URL.revokeObjectURL(url));
                 });
-
-                const form = document.forms['productForm'];
-                if (form) {
-                    form.addEventListener('submit', function () {
-                        if (oEditors && oEditors.getById && oEditors.getById["mdContent"]) {
-                            oEditors.getById["mdContent"].exec("UPDATE_CONTENTS_FIELD", []);
-                        }
-                    });
-                }
-            });
-
-        </script>
-        <script type="text/javascript">
-            (function () {
-                function createSmartEditor() {
-                    if (!(window.nhn && window.nhn.husky && window.nhn.husky.EZCreator)) {
-                        return;
-                    }
-
-                    window.nhn.husky.EZCreator.createInIFrame({
-                        oAppRef: oEditors,
-                        elPlaceHolder: "mdContent",
-                        sSkinURI: "<c:url value='/smarteditor2/SmartEditor2Skin.html' />",
-                        fCreator: "createSEditor2"
-                    });
-                }
             }
-
-            function fn_toggleDisplayYn(checkbox) {
-                const hiddenField = document.getElementById('displayYnValue');
-                if (hiddenField && checkbox) {
-                    hiddenField.value = checkbox.checked ? 'Y' : 'N';
-                }
-            }
-
-            document.addEventListener('DOMContentLoaded', function () {
-                const displayYnCheckbox = document.getElementById('displayYnCheckbox');
-                fn_toggleDisplayYn(displayYnCheckbox);
-
-                document.querySelectorAll('.image-upload-box').forEach(box => {
-                    const inputId = box.getAttribute('data-input-id');
-                    box.addEventListener('click', function () {
-                        if (previewImages[box.id]) {
-                            openImageModal(previewImages[box.id]);
-                        } else if (inputId) {
-                            const inputEl = document.getElementById(inputId);
-                            if (inputEl) {
-                                inputEl.click();
-                            }
-                        }
-                    });
-                });
-
-                initProductImagePopup();
-                initSmartEditor();
-
-                if (window.jQuery) {
-                    jQuery(function () {
-                        createSmartEditor();
-                    });
-                } else {
-                    document.addEventListener('DOMContentLoaded', createSmartEditor);
-                }
-            });
-
-                window.fn_save = function () {
-                    if (oEditors && oEditors.getById && oEditors.getById["mdContent"]) {
-                        oEditors.getById["mdContent"].exec("UPDATE_CONTENTS_FIELD", []);
-                    }
-                    if (document.productForm) {
-                        document.productForm.submit();
-                    }
-                };
-            })();
         </script>
