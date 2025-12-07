@@ -81,6 +81,12 @@ public class ProductVO implements Serializable {
     /** 상품상세설명 */
     private String description;
 
+    /** 안내 정보 */
+    private String paymentInfo;
+    private String shippingInfo;
+    private String exchangeReturnInfo;
+    private String refundInfo;
+
     /** 등록/수정일 */
     private Date regDt;
     private Date modDt;
@@ -272,6 +278,38 @@ public class ProductVO implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getPaymentInfo() {
+        return paymentInfo;
+    }
+
+    public void setPaymentInfo(String paymentInfo) {
+        this.paymentInfo = paymentInfo;
+    }
+
+    public String getShippingInfo() {
+        return shippingInfo;
+    }
+
+    public void setShippingInfo(String shippingInfo) {
+        this.shippingInfo = shippingInfo;
+    }
+
+    public String getExchangeReturnInfo() {
+        return exchangeReturnInfo;
+    }
+
+    public void setExchangeReturnInfo(String exchangeReturnInfo) {
+        this.exchangeReturnInfo = exchangeReturnInfo;
+    }
+
+    public String getRefundInfo() {
+        return refundInfo;
+    }
+
+    public void setRefundInfo(String refundInfo) {
+        this.refundInfo = refundInfo;
     }
 
     public Date getRegDt() {
