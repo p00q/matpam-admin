@@ -532,6 +532,28 @@
                 if (prevUrl) {
                     URL.revokeObjectURL(prevUrl);
                 }
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                const displayYnCheckbox = document.getElementById('displayYnCheckbox');
+                fn_toggleDisplayYn(displayYnCheckbox);
+
+                document.querySelectorAll('.image-upload-box').forEach(box => {
+                    const inputId = box.getAttribute('data-input-id');
+                    box.addEventListener('click', function () {
+                        if (previewImages[box.id]) {
+                            openImageModal(previewImages[box.id]);
+                        } else if (inputId) {
+                            const inputEl = document.getElementById(inputId);
+                            if (inputEl) {
+                                inputEl.click();
+                            }
+                        }
+                    });
+                });
+
+                initProductImagePopup();
+                initSmartEditor();
 
                 const src = URL.createObjectURL(file);
                 objectUrlMap[boxId] = src;
@@ -558,6 +580,7 @@
                     imageModalInstance.show();
                     return;
                 }
+            });
 
                 if (!imageModalElement) return;
                 imageModalElement.classList.add('show');
