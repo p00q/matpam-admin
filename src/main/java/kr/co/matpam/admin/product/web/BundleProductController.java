@@ -214,4 +214,59 @@ public class BundleProductController {
         model.addAttribute("saleStatuses", codeManagementService.selectDetailCodeList("007", "007001"));
         model.addAttribute("sellers", memberService.selectSellerList());
     }
+
+    /**
+     * 구성상품 조회 팝업
+     */
+    @RequestMapping(value = "/admin/product/popup/bundleList.do")
+    public String bundleProductPopup(@ModelAttribute("searchVO") BundleProductVO searchVO, ModelMap model)
+            throws Exception {
+
+        /* Pagination Info settings */
+        int currentPage = searchVO.getPageIndex() != null ? searchVO.getPageIndex() : 1;
+        int recordsPerPage = searchVO.getPageUnit() != null ? searchVO.getPageUnit() : 10;
+        int pageSize = searchVO.getPageSize() != null ? searchVO.getPageSize() : 5; // 팝업은 작게
+
+        org.egovframe.rte.ptl.mvc.tags.ui.pagination.PaginationInfo paginationInfo = new org.egovframe.rte.ptl.mvc.tags.ui.pagination.PaginationInfo();
+        paginationInfo.setCurrentPageNo(currentPage);
+        paginationInfo.setRecordCountPerPage(recordsPerPage);
+        paginationInfo.setPageSize(pageSize);
+
+        searchVO.setFirstIndex(paginationInfo.getFirstRecordIndex());
+        searchVO.setLastIndex(paginationInfo.getLastRecordIndex());
+        searchVO.setRecordCountPerPage(paginationInfo.getRecordCountPerPage());
+        searchVO.setPageIndex(currentPage);
+        searchVO.setPageUnit(recordsPerPage);
+        searchVO.setPageSize(pageSize);
+
+        int totCnt = bundleProductService.selectBundleProductListTotCnt(searchVO);
+        paginationInfo.setTotalRecordCount(totCnt);
+        model.addAttribute("paginationInfo", paginationInfo);
+
+        model.addAttribute("bundleList", bundleProductService.selectBundleProductList(searchVO));
+
+        addBundleDropdowns(model);
+
+        model.addAttribute("contentPage", "/WEB-INF/jsp/admin/product/popup/BundleProductPopup.jsp"); // 팝업용 jsp
+                                                                                                      // (layout/main을
+                                                                                                      // 안탈수도 있음. 보통 팝업은
+                                                                                                      // 별도 레이아웃)
+
+        // 팝업은 보통 레이아웃 없이 가거나 팝업용 레이아웃 사용. 여기서는 contentPage 방식이 layout/main을 타게 되므로,
+        // layout/popup 을 만들거나 그냥 main 안에서 띄우는 방식인지 확인 필요.
+        // 기존 코드 패턴상 layout/main 리턴하고 contentPage를 끼워넣는 방식이므로 일단 따름.
+        // 하지만 팝업창은 헤더/푸터가 없어야 하므로 별도 처리 필요.
+        // 여기서는 jsp 자체를 리턴하거나 layout/popup을 리턴해야 함.
+        // 우선 기존보단 jsp 직접 리턴 시도 (layout/popup이 없으므로)
+        // return "admin/product/popup/BundleProductPopup";
+
+        // 하지만 기존 Controller들이 모두 "layout/main"을 리턴하고 있음.
+        // 팝업은 "layout/popup" (미존재시 생성 필요) 혹은 그냥 JSP 경로 리턴 (InternalResourceViewResolver
+        // 설정에 따라 다름).
+        // 안전하게 tiles/layout 없는 jsp 직접 호출 경로가 있다면 그걸 써야함.
+        // 일단 layout/simple 또는 layout/popup이 있는지 확인 불가하므로,
+        // viewResolver 설정을 모르니 "admin/product/popup/BundleProductPopup" 로 리턴하고
+        // WEB-INF/jsp 아래에 배치를 가정.
+        return "admin/product/popup/BundleProductPopup";
+    }
 }

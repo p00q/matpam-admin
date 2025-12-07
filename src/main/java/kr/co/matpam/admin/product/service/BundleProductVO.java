@@ -18,6 +18,24 @@ public class BundleProductVO implements Serializable {
     /** 상품번호 (PK) */
     private Long productNo;
 
+    /** 페이지번호 */
+    private Integer pageIndex = 1;
+
+    /** 페이지사이즈 */
+    private Integer pageSize = 10;
+
+    /** firstIndex */
+    private Integer firstIndex = 0;
+
+    /** lastIndex */
+    private Integer lastIndex = 1;
+
+    /** recordCountPerPage */
+    private Integer recordCountPerPage = 10;
+
+    /** 페이지 유닛 */
+    private Integer pageUnit = 10;
+
     /** 상품명 */
     private String productName;
 
@@ -64,6 +82,9 @@ public class BundleProductVO implements Serializable {
     /** 노출상태 (Y/N) */
     private String displayYn;
 
+    /** 총 판매 수량 */
+    private Integer totalSalesQty;
+
     /** 판매 시작/종료일 */
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date saleStartDate;
@@ -76,11 +97,6 @@ public class BundleProductVO implements Serializable {
     private Date modDt;
 
     /** 페이징 */
-    private Integer recordCountPerPage;
-    private Integer firstIndex;
-    private Integer pageIndex = 1;
-    private Integer pageUnit = 10;
-    private Integer pageSize = 10;
 
     public Long getBundleId() {
         return bundleId;
@@ -258,6 +274,14 @@ public class BundleProductVO implements Serializable {
         this.displayYn = displayYn;
     }
 
+    public Integer getTotalSalesQty() {
+        return totalSalesQty;
+    }
+
+    public void setTotalSalesQty(Integer totalSalesQty) {
+        this.totalSalesQty = totalSalesQty;
+    }
+
     public Date getSaleStartDate() {
         return saleStartDate;
     }
@@ -328,5 +352,13 @@ public class BundleProductVO implements Serializable {
 
     public void setPageSize(Integer pageSize) {
         this.pageSize = pageSize;
+    }
+
+    public void setLastIndex(Integer lastIndex) {
+        this.lastIndex = lastIndex;
+    }
+
+    public Integer getLastIndex() {
+        return lastIndex;
     }
 }

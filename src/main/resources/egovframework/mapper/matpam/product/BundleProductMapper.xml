@@ -25,6 +25,7 @@
         <result property="saleStatus" column="SALE_STATUS" />
         <result property="saleStatusName" column="SALE_STATUS_NAME" />
         <result property="displayYn" column="DISPLAY_YN" />
+        <result property="totalSalesQty" column="TOTAL_SALES_QTY" />
         <result property="saleStartDate" column="SALE_START_DATE" jdbcType="DATE" />
         <result property="saleEndDate" column="SALE_END_DATE" jdbcType="DATE" />
         <result property="regDt" column="REG_DT" />
@@ -83,6 +84,7 @@
             p.SALE_STATUS,
             ss.DETAIL_CODE_NAME AS SALE_STATUS_NAME,
             p.DISPLAY_YN,
+            0 AS TOTAL_SALES_QTY,
             p.SALE_START_DATE,
             p.SALE_END_DATE,
             p.REG_DT,

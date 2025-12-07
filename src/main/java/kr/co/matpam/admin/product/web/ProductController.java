@@ -1,31 +1,87 @@
 package kr.co.matpam.admin.product.web;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.springframework.beans.propertyeditors.CustomDateEditor;
-import org.springframework.beans.propertyeditors.CustomNumberEditor;
-import org.springframework.beans.propertyeditors.StringTrimmerEditor;
+import javax.annotation.Resource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import kr.co.matpam.admin.code.service.CodeManagementService;
+import kr.co.matpam.admin.member.service.MemberService;
+import kr.co.matpam.admin.product.service.ProductVO;
 
 /**
- * 판매상품 처리를 위한 컨트롤러 (구성상품은 {@link BundleProductController} 사용)
+ * 판매상품 컨트롤러
  */
 @Controller
 public class ProductController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProductController.class);
+
+    @Resource(name = "codeManagementService")
+    private CodeManagementService codeManagementService;
+
+    @Resource(name = "memberService")
+    private MemberService memberService;
+
+    @Resource(name = "productService")
+    private kr.co.matpam.admin.product.service.ProductService productService;
+
     /**
-     * 빈 문자열을 null로 변환 (날짜/숫자 필드 바인딩 문제 해결)
+     * 판매상품 등록 화면
      */
-    @InitBinder
-    public void initBinder(WebDataBinder binder) {
-        binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
-        binder.registerCustomEditor(Long.class, new CustomNumberEditor(Long.class, true));
-        binder.registerCustomEditor(Integer.class, new CustomNumberEditor(Integer.class, true));
-        binder.registerCustomEditor(Date.class, new CustomDateEditor(new SimpleDateFormat("yyyy-MM-dd"), true));
+    @RequestMapping(value = "/admin/product/productRegist.do")
+    public String productRegistForm(ModelMap model) throws Exception {
+
+        ProductVO product = new ProductVO();
+        product.setSaleStartDate(new Date()); // 기본값: 오늘
+
+        model.addAttribute("product", product);
+
+        model.addAttribute("sellers", memberService.selectSellerList());
+
+        model.addAttribute("contentPage", "/WEB-INF/jsp/admin/product/ProductRegister.jsp");
+
+        return "layout/main";
     }
 
-    // TODO: 판매상품 관련 기능을 이 컨트롤러에 구현합니다.
+    /**
+     * 판매상품 목록 화면
+     */
+    @RequestMapping(value = "/admin/product/productList.do")
+    public String productList(@ModelAttribute("searchVO") ProductVO searchVO, ModelMap model) throws Exception {
+
+        /* Pagination Info settings */
+        int currentPage = searchVO.getPageIndex() != null ? searchVO.getPageIndex() : 1;
+        int recordsPerPage = searchVO.getPageUnit() != null ? searchVO.getPageUnit() : 10;
+        int pageSize = searchVO.getPageSize() != null ? searchVO.getPageSize() : 10;
+
+        org.egovframe.rte.ptl.mvc.tags.ui.pagination.PaginationInfo paginationInfo = new org.egovframe.rte.ptl.mvc.tags.ui.pagination.PaginationInfo();
+        paginationInfo.setCurrentPageNo(currentPage);
+        paginationInfo.setRecordCountPerPage(recordsPerPage);
+        paginationInfo.setPageSize(pageSize);
+
+        searchVO.setFirstIndex(paginationInfo.getFirstRecordIndex());
+        searchVO.setLastIndex(paginationInfo.getLastRecordIndex());
+        searchVO.setRecordCountPerPage(paginationInfo.getRecordCountPerPage());
+        searchVO.setPageIndex(currentPage);
+        searchVO.setPageUnit(recordsPerPage);
+        searchVO.setPageSize(pageSize);
+
+        java.util.List<ProductVO> productList = productService.selectProductList(searchVO);
+        model.addAttribute("productList", productList);
+
+        int totCnt = productService.selectProductListTotCnt(searchVO);
+        paginationInfo.setTotalRecordCount(totCnt);
+        model.addAttribute("paginationInfo", paginationInfo);
+
+        model.addAttribute("contentPage", "/WEB-INF/jsp/admin/product/ProductList.jsp");
+
+        return "layout/main";
+    }
 }
