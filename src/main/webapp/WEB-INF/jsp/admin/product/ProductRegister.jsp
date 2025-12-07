@@ -438,6 +438,15 @@
                         if (!rawSellerId && isRawMaterial && item.sellerId) {
                             rawSellerId = item.sellerId;
                         }
+                    });
+
+                    salePriceInput.value = totalSale;
+                    costPriceInput.value = totalCost;
+                    vatAmountInput.value = totalVat;
+
+                    salePriceInput.readOnly = true;
+                    costPriceInput.readOnly = true;
+                    vatAmountInput.readOnly = true;
 
                     });
 
@@ -577,6 +586,140 @@
                             loader.addEventListener('error', () => createEditor(cdnSkin), { once: true });
                         }
                     }
+
+                } else {
+                    // 구성상품 없으면 직접 입력 가능
+                    salePriceInput.readOnly = false;
+                    costPriceInput.readOnly = false;
+                    vatAmountInput.readOnly = false;
+                    saleStartDateInput.readOnly = false;
+                    saleEndDateInput.readOnly = false;
+                    // sellerSelect.disabled = false;
+                }
+            }
+
+            function normalizeBundleItem(item) {
+                const safeDate = (value) => {
+                    if (!value) return '';
+                    return value.toString();
+                };
+
+                return {
+                    ...item,
+                    salePrice: Number(item.salePrice) || 0,
+                    costPrice: Number(item.costPrice) || 0,
+                    vatAmount: Number(item.vatAmount) || 0,
+                    saleStartDate: safeDate(item.saleStartDate),
+                    saleEndDate: safeDate(item.saleEndDate)
+                };
+            }
+
+            function parseDate(value) {
+                    if (!value) return null;
+                    if (value instanceof Date) return value;
+                    const str = value.toString().trim();
+                    if (!str) return null;
+                    const match = str.match(/^(\d{4})[-.](\d{1,2})[-.](\d{1,2})/);
+                    if (match) {
+                        const [, y, m, d] = match;
+                        const date = new Date(Number(y), Number(m) - 1, Number(d));
+                        return isNaN(date.getTime()) ? null : date;
+                    }
+                    const direct = new Date(str);
+                    return isNaN(direct.getTime()) ? null : direct;
+                }
+
+                function formatDate(date) {
+                    const yyyy = date.getFullYear();
+                    const mm = String(date.getMonth() + 1).padStart(2, '0');
+                    const dd = String(date.getDate()).padStart(2, '0');
+                    return `${yyyy}-${mm}-${dd}`;
+                }
+
+                function fn_previewImage(input, boxId) {
+                    const box = document.getElementById(boxId);
+                    if (!input.files || input.files.length === 0 || !box) return;
+
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const src = e.target.result;
+                        previewImages[boxId] = src;
+
+                        box.innerHTML = `
+                            <img src="${src}" alt="업로드 이미지" />
+                            <button type="button" class="btn btn-light btn-sm image-change-btn" onclick="event.stopPropagation(); document.getElementById('${input.id}').click();">변경</button>
+                        `;
+
+                        box.onclick = function () {
+                            openImageModal(src);
+                        };
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                }
+
+            function openImageModal(src) {
+                const modalImg = document.getElementById('imagePreviewModalImg');
+                if (!modalImg) return;
+                modalImg.src = src;
+
+                    if (imageModalInstance) {
+                        imageModalInstance.show();
+                        return;
+                    }
+
+                    if (!imageModalElement) return;
+                    imageModalElement.classList.add('show');
+                    imageModalElement.style.display = 'block';
+                    imageModalElement.removeAttribute('aria-hidden');
+                    document.body.classList.add('modal-open');
+                    document.body.style.overflow = 'hidden';
+
+                    fallbackModalCloser = function () {
+                        imageModalElement.classList.remove('show');
+                        imageModalElement.style.display = 'none';
+                        imageModalElement.setAttribute('aria-hidden', 'true');
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = '';
+                    };
+
+                    imageModalElement.addEventListener('click', fallbackModalCloser, { once: true });
+                }
+
+                function initSmartEditor() {
+                    const createEditor = function () {
+                        if (!(window.nhn && window.nhn.husky && window.nhn.husky.EZCreator)) return;
+                        window.nhn.husky.EZCreator.createInIFrame({
+                            oAppRef: oEditors,
+                            elPlaceHolder: "detailContent",
+                            sSkinURI: "https://cdn.jsdelivr.net/gh/naver/smarteditor2@2.10.0/workspace/static/SmartEditor2Skin.html",
+                            htParams: {
+                                bUseToolbar: true,
+                                bUseVerticalResizer: true,
+                                bUseModeChanger: true
+                            },
+                            fCreator: "createSEditor2"
+                        });
+                    };
+
+                    if (window.nhn && window.nhn.husky && window.nhn.husky.EZCreator) {
+                        createEditor();
+                        return;
+                    }
+
+                    const existingLoader = document.getElementById('smartEditorLoader');
+                    if (existingLoader) {
+                        existingLoader.addEventListener('load', createEditor, { once: true });
+                        return;
+                    }
+
+                    const script = document.createElement('script');
+                    script.id = 'smartEditorLoader';
+                    script.src = "https://cdn.jsdelivr.net/gh/naver/smarteditor2@2.10.0/workspace/static/js/service/HuskyEZCreator.js";
+                    script.onload = createEditor;
+                    script.onerror = function () {
+                        console.warn('스마트에디터 로딩에 실패했습니다. 네트워크 상태를 확인해주세요.');
+                    };
+                    document.head.appendChild(script);
                 }
 
                 // 노출여부 동기화
