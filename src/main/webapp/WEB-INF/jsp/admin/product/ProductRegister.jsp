@@ -248,18 +248,15 @@
 </textarea>
                     <div class="form-text">상세 설명은 네이버 스마트에디터가 적용되며, 이미지 삽입 후 미리보기로 확인할 수 있습니다.</div>
 
-                    <!-- 5. 추가 안내 이미지 -->
-                    <div class="section-header">추가 안내 이미지</div>
+                    <!-- 5. 안내 정보 -->
+                    <div class="section-header">안내 정보</div>
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <div class="card h-100">
                                 <div class="card-header bg-light fw-bold">상품 결제 정보</div>
                                 <div class="card-body">
-                                    <div class="image-upload-box" id="infoImageBoxPayment" data-input-id="paymentInfoImage">
-                                        <div class="text-center text-muted small">결제 관련 이미지를 업로드하세요</div>
-                                    </div>
-                                    <input type="file" id="paymentInfoImage" name="paymentInfoImage" style="display:none;"
-                                        accept="image/*" onchange="fn_previewImage(this, 'infoImageBoxPayment')" />
+                                    <textarea class="form-control" name="paymentInfo" rows="5"
+                                        placeholder="결제 수단, 결제 시 유의사항 등을 입력하세요."></textarea>
                                 </div>
                             </div>
                         </div>
@@ -267,35 +264,26 @@
                             <div class="card h-100">
                                 <div class="card-header bg-light fw-bold">배송 정보</div>
                                 <div class="card-body">
-                                    <div class="image-upload-box" id="infoImageBoxShipping" data-input-id="shippingInfoImage">
-                                        <div class="text-center text-muted small">배송 안내 이미지를 업로드하세요</div>
-                                    </div>
-                                    <input type="file" id="shippingInfoImage" name="shippingInfoImage" style="display:none;"
-                                        accept="image/*" onchange="fn_previewImage(this, 'infoImageBoxShipping')" />
+                                    <textarea class="form-control" name="shippingInfo" rows="5"
+                                        placeholder="배송 방법, 소요 기간, 배송비 등을 입력하세요."></textarea>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="card h-100">
-                                <div class="card-header bg-light fw-bold">교환 및 반품정보</div>
+                                <div class="card-header bg-light fw-bold">교환 및 반품 정보</div>
                                 <div class="card-body">
-                                    <div class="image-upload-box" id="infoImageBoxReturn" data-input-id="returnInfoImage">
-                                        <div class="text-center text-muted small">교환/반품 안내 이미지를 업로드하세요</div>
-                                    </div>
-                                    <input type="file" id="returnInfoImage" name="returnInfoImage" style="display:none;"
-                                        accept="image/*" onchange="fn_previewImage(this, 'infoImageBoxReturn')" />
+                                    <textarea class="form-control" name="exchangeReturnInfo" rows="5"
+                                        placeholder="교환/반품 조건, 절차, 비용 등을 입력하세요."></textarea>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="card h-100">
-                                <div class="card-header bg-light fw-bold">회원정보</div>
+                                <div class="card-header bg-light fw-bold">환불 정보</div>
                                 <div class="card-body">
-                                    <div class="image-upload-box" id="infoImageBoxMember" data-input-id="memberInfoImage">
-                                        <div class="text-center text-muted small">회원 안내 이미지를 업로드하세요</div>
-                                    </div>
-                                    <input type="file" id="memberInfoImage" name="memberInfoImage" style="display:none;"
-                                        accept="image/*" onchange="fn_previewImage(this, 'infoImageBoxMember')" />
+                                    <textarea class="form-control" name="refundInfo" rows="5"
+                                        placeholder="환불 소요 기간, 유의사항 등을 입력하세요."></textarea>
                                 </div>
                             </div>
                         </div>
@@ -329,6 +317,7 @@
             const previewImages = {};
             const imageModalElement = document.getElementById('imagePreviewModal');
             const imageModalInstance = (window.bootstrap && imageModalElement) ? new bootstrap.Modal(imageModalElement) : null;
+            let fallbackModalCloser = null;
             let oEditors = [];
 
                 function fn_addBundlePopup() {
@@ -448,14 +437,17 @@
                     // 판매기간: 구성 상품 중 가장 빠른 시작일과 가장 늦은 종료일 사용
                     if (earliestSaleStart) {
                         saleStartDateInput.value = formatDate(earliestSaleStart);
+                        saleStartDateInput.readOnly = true;
+                    } else {
+                        saleStartDateInput.readOnly = false;
                     }
 
                     if (latestSaleEnd) {
                         saleEndDateInput.value = formatDate(latestSaleEnd);
+                        saleEndDateInput.readOnly = true;
+                    } else {
+                        saleEndDateInput.readOnly = false;
                     }
-
-                    saleStartDateInput.readOnly = true;
-                    saleEndDateInput.readOnly = true;
 
                 } else {
                     // 구성상품 없으면 직접 입력 가능
@@ -507,9 +499,30 @@
 
                 function openImageModal(src) {
                     const modalImg = document.getElementById('imagePreviewModalImg');
-                    if (!modalImg || !imageModalInstance) return;
+                    if (!modalImg) return;
                     modalImg.src = src;
-                    imageModalInstance.show();
+
+                    if (imageModalInstance) {
+                        imageModalInstance.show();
+                        return;
+                    }
+
+                    if (!imageModalElement) return;
+                    imageModalElement.classList.add('show');
+                    imageModalElement.style.display = 'block';
+                    imageModalElement.removeAttribute('aria-hidden');
+                    document.body.classList.add('modal-open');
+                    document.body.style.overflow = 'hidden';
+
+                    fallbackModalCloser = function () {
+                        imageModalElement.classList.remove('show');
+                        imageModalElement.style.display = 'none';
+                        imageModalElement.setAttribute('aria-hidden', 'true');
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = '';
+                    };
+
+                    imageModalElement.addEventListener('click', fallbackModalCloser, { once: true });
                 }
 
                 // 노출여부 동기화
@@ -540,6 +553,11 @@
                             oAppRef: oEditors,
                             elPlaceHolder: "detailContent",
                             sSkinURI: "https://cdn.jsdelivr.net/gh/naver/smarteditor2@2.10.0/workspace/static/SmartEditor2Skin.html",
+                            htParams: {
+                                bUseToolbar: true,
+                                bUseVerticalResizer: true,
+                                bUseModeChanger: true
+                            },
                             fCreator: "createSEditor2"
                         });
                     }
