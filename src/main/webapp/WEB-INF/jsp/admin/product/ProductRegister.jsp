@@ -243,7 +243,7 @@
 
                     <!-- 4. 상품 상세 설명 -->
                     <div class="section-header">상품 상세 설명</div>
-                    <textarea id="detailContent" name="description" class="form-control" style="height: 300px;">
+                    <textarea id="mdContent" name="description" class="form-control" style="width:100%; height:300px;">
 <c:out value='${product.description}'/>
 </textarea>
                     <div class="form-text">상세 설명은 네이버 스마트에디터가 적용되며, 이미지 삽입 후 미리보기로 확인할 수 있습니다.</div>
@@ -310,15 +310,46 @@
             </div>
         </div>
 
-        <script src="https://cdn.jsdelivr.net/gh/naver/smarteditor2@2.10.0/workspace/static/js/service/HuskyEZCreator.js"></script>
+        <script id="smartEditorScript" type="text/javascript" charset="utf-8"
+            src="<c:url value='/smarteditor/js/service/HuskyEZCreator.js'/>"
+            onerror="this.onerror=null; this.src='https://cdn.jsdelivr.net/gh/naver/smarteditor2@2.10.0/workspace/static/js/service/HuskyEZCreator.js';"></script>
         <script>
             // === 구성상품 관련 로직 ===
             let bundleList = [];
             const previewImages = {};
+            const objectUrlMap = {};
             const imageModalElement = document.getElementById('imagePreviewModal');
             const imageModalInstance = (window.bootstrap && imageModalElement) ? new bootstrap.Modal(imageModalElement) : null;
             let fallbackModalCloser = null;
             let oEditors = [];
+
+            function calculateSalePeriod(components) {
+                if (!components || components.length === 0) {
+                    return { start: '', end: '' };
+                }
+
+                const starts = components
+                    .map(c => c.saleStartDate)
+                    .filter(Boolean)
+                    .sort();
+                const ends = components
+                    .map(c => c.saleEndDate)
+                    .filter(Boolean)
+                    .sort();
+
+                if (starts.length === 0 || ends.length === 0) {
+                    return { start: '', end: '' };
+                }
+
+                const latestStart = starts[starts.length - 1];
+                const earliestEnd = ends[0];
+
+                if (latestStart > earliestEnd) {
+                    return { start: '', end: '' };
+                }
+
+                return { start: latestStart, end: earliestEnd };
+            }
 
                 function fn_addBundlePopup() {
                     const url = '<c:url value="/admin/product/popup/bundleList.do"/>';
@@ -390,8 +421,6 @@
                     let totalSale = 0, totalCost = 0, totalVat = 0;
                     let rawSellerId = null;
                     let defaultSellerId = null;
-                    let earliestSaleStart = null;
-                    let latestSaleEnd = null;
 
                     bundleList.forEach(item => {
                         totalSale += Number(item.salePrice) || 0;
@@ -409,17 +438,16 @@
                         if (!rawSellerId && isRawMaterial && item.sellerId) {
                             rawSellerId = item.sellerId;
                         }
+                    });
 
-                        const startDate = parseDate(item.saleStartDate);
-                        const endDate = parseDate(item.saleEndDate);
+                    salePriceInput.value = totalSale;
+                    costPriceInput.value = totalCost;
+                    vatAmountInput.value = totalVat;
 
-                        if (startDate && (!earliestSaleStart || startDate < earliestSaleStart)) {
-                            earliestSaleStart = startDate;
-                        }
+                    salePriceInput.readOnly = true;
+                    costPriceInput.readOnly = true;
+                    vatAmountInput.readOnly = true;
 
-                        if (endDate && (!latestSaleEnd || endDate > latestSaleEnd)) {
-                            latestSaleEnd = endDate;
-                        }
                     });
 
                     salePriceInput.value = totalSale;
@@ -437,19 +465,126 @@
                         sellerSelect.value = defaultSellerId;
                     }
 
-                    // 판매기간: 구성 상품 중 가장 빠른 시작일과 가장 늦은 종료일 사용
-                    if (earliestSaleStart) {
-                        saleStartDateInput.value = formatDate(earliestSaleStart);
-                        saleStartDateInput.readOnly = true;
-                    } else {
-                        saleStartDateInput.readOnly = false;
+                    const { start, end } = calculateSalePeriod(bundleList);
+
+                    saleStartDateInput.value = start;
+                    saleEndDateInput.value = end;
+                    const hasCalculatedPeriod = !!(start && end);
+                    saleStartDateInput.readOnly = hasCalculatedPeriod;
+                    saleEndDateInput.readOnly = hasCalculatedPeriod;
+
+                } else {
+                    // 구성상품 없으면 직접 입력 가능
+                    salePriceInput.readOnly = false;
+                    costPriceInput.readOnly = false;
+                    vatAmountInput.readOnly = false;
+                    saleStartDateInput.readOnly = false;
+                    saleEndDateInput.readOnly = false;
+                    // sellerSelect.disabled = false;
+                }
+            }
+
+            function normalizeBundleItem(item) {
+                const safeDate = (value) => {
+                    if (!value) return '';
+                    return value.toString();
+                };
+
+                return {
+                    ...item,
+                    salePrice: Number(item.salePrice) || 0,
+                    costPrice: Number(item.costPrice) || 0,
+                    vatAmount: Number(item.vatAmount) || 0,
+                    saleStartDate: safeDate(item.saleStartDate),
+                    saleEndDate: safeDate(item.saleEndDate)
+                };
+            }
+
+                function fn_previewImage(input, boxId) {
+                    const box = document.getElementById(boxId);
+                    if (!input.files || input.files.length === 0 || !box) return;
+
+                    const file = input.files[0];
+                    const prevUrl = objectUrlMap[boxId];
+                    if (prevUrl) {
+                        URL.revokeObjectURL(prevUrl);
                     }
 
-                    if (latestSaleEnd) {
-                        saleEndDateInput.value = formatDate(latestSaleEnd);
-                        saleEndDateInput.readOnly = true;
+                    const src = URL.createObjectURL(file);
+                    objectUrlMap[boxId] = src;
+                    previewImages[boxId] = src;
+
+                    box.innerHTML = `
+                        <img src="${src}" alt="업로드 이미지" />
+                        <button type="button" class="btn btn-light btn-sm image-change-btn" onclick="event.stopPropagation(); document.getElementById('${input.id}').click();">변경</button>
+                    `;
+
+                    box.onclick = function () {
+                        openImageModal(src);
+                    };
+                }
+
+            function openImageModal(src) {
+                const modalImg = document.getElementById('imagePreviewModalImg');
+                if (!modalImg) return;
+                modalImg.src = src;
+
+                    if (imageModalInstance) {
+                        imageModalInstance.show();
+                        return;
+                    }
+
+                    if (!imageModalElement) return;
+                    imageModalElement.classList.add('show');
+                    imageModalElement.style.display = 'block';
+                    imageModalElement.removeAttribute('aria-hidden');
+                    document.body.classList.add('modal-open');
+                    document.body.style.overflow = 'hidden';
+
+                    fallbackModalCloser = function () {
+                        imageModalElement.classList.remove('show');
+                        imageModalElement.style.display = 'none';
+                        imageModalElement.setAttribute('aria-hidden', 'true');
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = '';
+                    };
+
+                    imageModalElement.addEventListener('click', fallbackModalCloser, { once: true });
+                }
+
+                function initSmartEditor() {
+                    const localSkin = "<c:url value='/smarteditor/SmartEditor2Skin.html'/>";
+                    const cdnSkin = "https://cdn.jsdelivr.net/gh/naver/smarteditor2@2.10.0/workspace/static/SmartEditor2Skin.html";
+
+                    const createEditor = function (skinUrl) {
+                        if (!(window.nhn && window.nhn.husky && window.nhn.husky.EZCreator)) return;
+                        window.nhn.husky.EZCreator.createInIFrame({
+                            oAppRef: oEditors,
+                            elPlaceHolder: "mdContent",
+                            sSkinURI: skinUrl,
+                            fCreator: "createSEditor2",
+                            htParams: {
+                                bUseToolbar: true,
+                                bUseVerticalResizer: true,
+                                bUseModeChanger: true
+                            }
+                        });
+                    };
+
+                    const tryCreate = () => {
+                        fetch(localSkin, { method: 'HEAD' })
+                            .then(res => createEditor(res.ok ? localSkin : cdnSkin))
+                            .catch(() => createEditor(cdnSkin));
+                    };
+
+                    if (window.nhn && window.nhn.husky && window.nhn.husky.EZCreator) {
+                        tryCreate();
                     } else {
-                        saleEndDateInput.readOnly = false;
+                        const loader = document.getElementById('smartEditorScript');
+                        if (loader) {
+                            loader.addEventListener('load', tryCreate, { once: true });
+                            loader.addEventListener('error', () => createEditor(cdnSkin), { once: true });
+                        }
                     }
 
                 } else {
@@ -612,11 +747,15 @@
 
                     initSmartEditor();
 
+                    window.addEventListener('beforeunload', function () {
+                        Object.values(objectUrlMap).forEach((url) => URL.revokeObjectURL(url));
+                    });
+
                     const form = document.forms['productForm'];
                     if (form) {
                         form.addEventListener('submit', function () {
-                            if (oEditors && oEditors.getById && oEditors.getById["detailContent"]) {
-                                oEditors.getById["detailContent"].exec("UPDATE_CONTENTS_FIELD", []);
+                            if (oEditors && oEditors.getById && oEditors.getById["mdContent"]) {
+                                oEditors.getById["mdContent"].exec("UPDATE_CONTENTS_FIELD", []);
                             }
                         });
                     }
