@@ -322,6 +322,7 @@
             const imageModalInstance = (window.bootstrap && imageModalElement) ? new bootstrap.Modal(imageModalElement) : null;
             let fallbackModalCloser = null;
             let oEditors = [];
+            let smartEditorInitialized = false;
 
             function calculateSalePeriod(components) {
                 if (!components || components.length === 0) {
@@ -434,10 +435,6 @@
                         if (!defaultSellerId && item.sellerId) {
                             defaultSellerId = item.sellerId;
                         }
-
-                        if (!rawSellerId && isRawMaterial && item.sellerId) {
-                            rawSellerId = item.sellerId;
-                        }
                     });
 
                     salePriceInput.value = totalSale;
@@ -524,68 +521,34 @@
                     };
                 }
 
-            function openImageModal(src) {
-                const modalImg = document.getElementById('imagePreviewModalImg');
-                if (!modalImg) return;
-                modalImg.src = src;
-
-                    if (imageModalInstance) {
-                        imageModalInstance.show();
-                        return;
-                    }
-
-                    if (!imageModalElement) return;
-                    imageModalElement.classList.add('show');
-                    imageModalElement.style.display = 'block';
-                    imageModalElement.removeAttribute('aria-hidden');
-                    document.body.classList.add('modal-open');
-                    document.body.style.overflow = 'hidden';
-
-                    fallbackModalCloser = function () {
-                        imageModalElement.classList.remove('show');
-                        imageModalElement.style.display = 'none';
-                        imageModalElement.setAttribute('aria-hidden', 'true');
-                        document.body.classList.remove('modal-open');
-                        document.body.style.overflow = '';
-                    };
-
-                    imageModalElement.addEventListener('click', fallbackModalCloser, { once: true });
-                }
-
-                function initSmartEditor() {
-                    const localSkin = "<c:url value='/smarteditor/SmartEditor2Skin.html'/>";
-                    const cdnSkin = "https://cdn.jsdelivr.net/gh/naver/smarteditor2@2.10.0/workspace/static/SmartEditor2Skin.html";
-
-                    const createEditor = function (skinUrl) {
-                        if (!(window.nhn && window.nhn.husky && window.nhn.husky.EZCreator)) return;
-                        window.nhn.husky.EZCreator.createInIFrame({
-                            oAppRef: oEditors,
-                            elPlaceHolder: "mdContent",
-                            sSkinURI: skinUrl,
-                            fCreator: "createSEditor2",
-                            htParams: {
-                                bUseToolbar: true,
-                                bUseVerticalResizer: true,
-                                bUseModeChanger: true
-                            }
-                        });
-                    };
-
-                    const tryCreate = () => {
-                        fetch(localSkin, { method: 'HEAD' })
-                            .then(res => createEditor(res.ok ? localSkin : cdnSkin))
-                            .catch(() => createEditor(cdnSkin));
-                    };
-
-                    if (window.nhn && window.nhn.husky && window.nhn.husky.EZCreator) {
-                        tryCreate();
-                    } else {
-                        const loader = document.getElementById('smartEditorScript');
-                        if (loader) {
-                            loader.addEventListener('load', tryCreate, { once: true });
-                            loader.addEventListener('error', () => createEditor(cdnSkin), { once: true });
+                        if (!rawSellerId && isRawMaterial && item.sellerId) {
+                            rawSellerId = item.sellerId;
                         }
+
+                    });
+
+                    salePriceInput.value = totalSale;
+                    costPriceInput.value = totalCost;
+                    vatAmountInput.value = totalVat;
+
+                    salePriceInput.readOnly = true;
+                    costPriceInput.readOnly = true;
+                    vatAmountInput.readOnly = true;
+
+                    // 판매자는 원물 판매자 우선, 없으면 첫번째 구성 판매자로 설정
+                    if (rawSellerId) {
+                        sellerSelect.value = rawSellerId;
+                    } else if (defaultSellerId) {
+                        sellerSelect.value = defaultSellerId;
                     }
+
+                    const { start, end } = calculateSalePeriod(bundleList);
+
+                    saleStartDateInput.value = start;
+                    saleEndDateInput.value = end;
+                    const hasCalculatedPeriod = !!(start && end);
+                    saleStartDateInput.readOnly = hasCalculatedPeriod;
+                    saleEndDateInput.readOnly = hasCalculatedPeriod;
 
                 } else {
                     // 구성상품 없으면 직접 입력 가능
@@ -614,47 +577,30 @@
                 };
             }
 
-            function parseDate(value) {
-                    if (!value) return null;
-                    if (value instanceof Date) return value;
-                    const str = value.toString().trim();
-                    if (!str) return null;
-                    const match = str.match(/^(\d{4})[-.](\d{1,2})[-.](\d{1,2})/);
-                    if (match) {
-                        const [, y, m, d] = match;
-                        const date = new Date(Number(y), Number(m) - 1, Number(d));
-                        return isNaN(date.getTime()) ? null : date;
-                    }
-                    const direct = new Date(str);
-                    return isNaN(direct.getTime()) ? null : direct;
-                }
-
-                function formatDate(date) {
-                    const yyyy = date.getFullYear();
-                    const mm = String(date.getMonth() + 1).padStart(2, '0');
-                    const dd = String(date.getDate()).padStart(2, '0');
-                    return `${yyyy}-${mm}-${dd}`;
-                }
-
                 function fn_previewImage(input, boxId) {
                     const box = document.getElementById(boxId);
                     if (!input.files || input.files.length === 0 || !box) return;
 
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        const src = e.target.result;
-                        previewImages[boxId] = src;
+                    const file = input.files[0];
+                    const prevUrl = objectUrlMap[boxId];
+                    if (prevUrl) {
+                        URL.revokeObjectURL(prevUrl);
+                    }
 
-                        box.innerHTML = `
-                            <img src="${src}" alt="업로드 이미지" />
-                            <button type="button" class="btn btn-light btn-sm image-change-btn" onclick="event.stopPropagation(); document.getElementById('${input.id}').click();">변경</button>
-                        `;
+                    const src = URL.createObjectURL(file);
+                    objectUrlMap[boxId] = src;
+                    previewImages[boxId] = src;
 
-                        box.onclick = function () {
-                            openImageModal(src);
-                        };
+                    box.innerHTML = `
+                        <img src="${src}" alt="업로드 이미지" class="product-image-thumb" data-full-url="${src}" />
+                        <button type="button" class="btn btn-light btn-sm image-change-btn" onclick="event.stopPropagation(); document.getElementById('${input.id}').click();">변경</button>
+                    `;
+
+                    box.onclick = function () {
+                        openImageModal(src);
                     };
-                    reader.readAsDataURL(input.files[0]);
+
+                    initProductImagePopup();
                 }
 
             function openImageModal(src) {
@@ -665,6 +611,86 @@
                     if (imageModalInstance) {
                         imageModalInstance.show();
                         return;
+                    }
+
+                    if (!imageModalElement) return;
+                    imageModalElement.classList.add('show');
+                    imageModalElement.style.display = 'block';
+                    imageModalElement.removeAttribute('aria-hidden');
+                    document.body.classList.add('modal-open');
+                    document.body.style.overflow = 'hidden';
+
+                    fallbackModalCloser = function () {
+                        imageModalElement.classList.remove('show');
+                        imageModalElement.style.display = 'none';
+                        imageModalElement.setAttribute('aria-hidden', 'true');
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = '';
+                    };
+
+                    imageModalElement.addEventListener('click', fallbackModalCloser, { once: true });
+                }
+
+                function initProductImagePopup() {
+                    const thumbs = document.querySelectorAll('.product-image-thumb');
+                    if (!thumbs.length) return;
+
+                    const modal = document.getElementById('imagePreviewModal');
+                    const modalImg = document.getElementById('imagePreviewModalImg');
+                    if (!modal || !modalImg) return;
+
+                    thumbs.forEach((thumb) => {
+                        if (thumb.dataset.popupBound === 'true') return;
+
+                        thumb.addEventListener('click', function (e) {
+                            e.stopPropagation();
+                            const fullUrl = thumb.getAttribute('data-full-url') || thumb.getAttribute('src');
+                            openImageModal(fullUrl);
+                        });
+
+                        thumb.dataset.popupBound = 'true';
+                    });
+                }
+
+                function initSmartEditor() {
+                    const localSkin = "<c:url value='/smarteditor/SmartEditor2Skin.html'/>";
+                    const cdnSkin = "https://cdn.jsdelivr.net/gh/naver/smarteditor2@2.10.0/workspace/static/SmartEditor2Skin.html";
+
+                    const createEditor = function (skinUrl) {
+                        if (smartEditorInitialized) return;
+                        if (!(window.nhn && window.nhn.husky && window.nhn.husky.EZCreator)) return;
+
+                        window.nhn.husky.EZCreator.createInIFrame({
+                            oAppRef: oEditors,
+                            elPlaceHolder: "mdContent",
+                            sSkinURI: skinUrl,
+                            fCreator: "createSEditor2",
+                            htParams: {
+                                bUseToolbar: true,
+                                bUseVerticalResizer: true,
+                                bUseModeChanger: true
+                            }
+                        });
+                        smartEditorInitialized = true;
+                    };
+
+                    const tryCreate = () => {
+                        createEditor(localSkin);
+                        setTimeout(() => {
+                            if (!smartEditorInitialized) {
+                                createEditor(cdnSkin);
+                            }
+                        }, 400);
+                    };
+
+                    if (window.nhn && window.nhn.husky && window.nhn.husky.EZCreator) {
+                        tryCreate();
+                    } else {
+                        const loader = document.getElementById('smartEditorScript');
+                        if (loader) {
+                            loader.addEventListener('load', tryCreate, { once: true });
+                            loader.addEventListener('error', () => createEditor(cdnSkin), { once: true });
+                        }
                     }
 
                     if (!imageModalElement) return;
@@ -745,6 +771,7 @@
                         });
                     });
 
+                    initProductImagePopup();
                     initSmartEditor();
 
                     window.addEventListener('beforeunload', function () {
