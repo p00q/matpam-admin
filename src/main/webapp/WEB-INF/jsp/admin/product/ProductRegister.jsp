@@ -558,6 +558,61 @@
                     imageModalInstance.show();
                     return;
                 }
+            });
+
+                if (!imageModalElement) return;
+                imageModalElement.classList.add('show');
+                imageModalElement.style.display = 'block';
+                imageModalElement.removeAttribute('aria-hidden');
+                document.body.classList.add('modal-open');
+                document.body.style.overflow = 'hidden';
+
+                fallbackModalCloser = function () {
+                    imageModalElement.classList.remove('show');
+                    imageModalElement.style.display = 'none';
+                    imageModalElement.setAttribute('aria-hidden', 'true');
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                };
+
+                imageModalElement.addEventListener('click', fallbackModalCloser, { once: true });
+            }
+
+            function initProductImagePopup() {
+                const thumbs = document.querySelectorAll('.product-image-thumb');
+                if (!thumbs.length) return;
+
+                const modal = document.getElementById('imagePreviewModal');
+                const modalImg = document.getElementById('imagePreviewModalImg');
+                if (!modal || !modalImg) return;
+
+                thumbs.forEach((thumb) => {
+                    if (thumb.dataset.popupBound === 'true') return;
+
+                    thumb.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        const fullUrl = thumb.getAttribute('data-full-url') || thumb.getAttribute('src');
+                        openImageModal(fullUrl);
+                    });
+
+                    thumb.dataset.popupBound = 'true';
+                });
+            }
+
+            function initImagePreview() {
+                document.querySelectorAll('.image-upload-box').forEach(box => {
+                    const inputId = box.getAttribute('data-input-id');
+                    box.addEventListener('click', function () {
+                        if (previewImages[box.id]) {
+                            openImageModal(previewImages[box.id]);
+                        } else if (inputId) {
+                            const inputEl = document.getElementById(inputId);
+                            if (inputEl) {
+                                inputEl.click();
+                            }
+                        }
+                    });
+                });
 
                 if (!imageModalElement) return;
                 imageModalElement.classList.add('show');
