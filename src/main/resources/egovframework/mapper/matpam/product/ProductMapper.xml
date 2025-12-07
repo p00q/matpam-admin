@@ -13,6 +13,12 @@
         <result property="displayYn" column="DISPLAY_YN"/>
         <result property="sellerId" column="SELLER_ID"/>
         <result property="productSummary" column="PRODUCT_SUMMARY"/>
+        <result property="mdComment" column="MD_COMMENT"/>
+        <result property="description" column="DESCRIPTION"/>
+        <result property="paymentInfo" column="PAYMENT_INFO"/>
+        <result property="shippingInfo" column="SHIPPING_INFO"/>
+        <result property="exchangeReturnInfo" column="EXCHANGE_RETURN_INFO"/>
+        <result property="refundInfo" column="REFUND_INFO"/>
         <result property="regDt" column="REG_DT"/>
         <result property="modDt" column="MOD_DT"/>
         <!-- 조회수, 주문수 등은 별도 테이블 조인 필요하나 현재는 컬럼 없음 or 임시 -->
@@ -42,6 +48,13 @@
             A.SALE_END_DATE,
             A.DISPLAY_YN,
             A.SELLER_ID,
+            A.PRODUCT_SUMMARY,
+            A.MD_COMMENT,
+            A.DESCRIPTION,
+            A.PAYMENT_INFO,
+            A.SHIPPING_INFO,
+            A.EXCHANGE_RETURN_INFO,
+            A.REFUND_INFO,
             A.REG_DT,
             A.MOD_DT
         FROM TB_PRODUCT A
@@ -55,6 +68,31 @@
         SELECT COUNT(*)
         FROM TB_PRODUCT A
         <include refid="selectProductListWhere"/>
+    </select>
+
+    <!-- 단일 상품 조회 -->
+    <select id="selectProduct" parameterType="long" resultMap="productResultMap">
+        SELECT
+            PRODUCT_NO,
+            PRODUCT_NAME,
+            SALE_PRICE,
+            COST_PRICE,
+            VAT_AMOUNT,
+            SALE_START_DATE,
+            SALE_END_DATE,
+            DISPLAY_YN,
+            SELLER_ID,
+            PRODUCT_SUMMARY,
+            MD_COMMENT,
+            DESCRIPTION,
+            PAYMENT_INFO,
+            SHIPPING_INFO,
+            EXCHANGE_RETURN_INFO,
+            REFUND_INFO,
+            REG_DT,
+            MOD_DT
+        FROM TB_PRODUCT
+        WHERE PRODUCT_NO = #{value}
     </select>
 
 </mapper>

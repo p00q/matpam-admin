@@ -25,4 +25,9 @@ public class ProductServiceImpl extends EgovAbstractServiceImpl implements Produ
     public int selectProductListTotCnt(ProductVO vo) throws Exception {
         return productDAO.selectProductListTotCnt(vo);
     }
+
+    @Override
+    public ProductVO selectProduct(Long productNo) throws Exception {
+        return productDAO.selectProduct(productNo);
+    }
 }
