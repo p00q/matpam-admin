@@ -68,9 +68,9 @@
                                                 <select name="saleType" class="form-select form-select-sm">
                                                     <option value="">전체</option>
                                                     <c:forEach var="code" items="${saleTypes}">
-                                                        <option value="${code.code}" <c:if
-                                                            test="${searchVO.saleType eq code.code}">selected</c:if>
-                                                            >${code.codeName}</option>
+                                                        <option value="${code.detailCode}" <c:if
+                                                            test="${searchVO.saleType eq code.detailCode}">selected</c:if>
+                                                            >${code.detailCodeName}</option>
                                                     </c:forEach>
                                                 </select>
                                             </td>
@@ -94,9 +94,9 @@
                                                 <select name="storageType" class="form-select form-select-sm">
                                                     <option value="">전체</option>
                                                     <c:forEach var="code" items="${storageTypes}">
-                                                        <option value="${code.code}" <c:if
-                                                            test="${searchVO.storageType eq code.code}">selected</c:if>
-                                                            >${code.codeName}</option>
+                                                        <option value="${code.detailCode}" <c:if
+                                                            test="${searchVO.storageType eq code.detailCode}">selected</c:if>
+                                                            >${code.detailCodeName}</option>
                                                     </c:forEach>
                                                 </select>
                                             </td>
@@ -105,9 +105,9 @@
                                                 <select name="saleStatus" class="form-select form-select-sm">
                                                     <option value="">전체</option>
                                                     <c:forEach var="code" items="${saleStatuses}">
-                                                        <option value="${code.code}" <c:if
-                                                            test="${searchVO.saleStatus eq code.code}">selected</c:if>
-                                                            >${code.codeName}</option>
+                                                        <option value="${code.detailCode}" <c:if
+                                                            test="${searchVO.saleStatus eq code.detailCode}">selected</c:if>
+                                                            >${code.detailCodeName}</option>
                                                     </c:forEach>
                                                 </select>
                                             </td>
@@ -155,8 +155,11 @@
                                                     <input type="checkbox" name="checkItem" value="${item.bundleId}"
                                                         data-json='{
                                         "bundleId": "${item.bundleId}",
+                                        "productNo": "${item.productNo}",
                                         "productName": "${item.productName}",
-                                        "saleType": "${item.saleTypeName}",
+                                        "saleType": "${item.saleType}",
+                                        "saleTypeName": "${item.saleTypeName}",
+                                        "sellerId": "${item.sellerId}",
                                         "sellerName": "${item.sellerName}",
                                         "salePrice": ${item.salePrice},
                                         "costPrice": ${item.costPrice},
@@ -166,6 +169,8 @@
                                         "divisionTypeName": "${item.divisionTypeName}",
                                         "saleStatusName": "${item.saleStatusName}",
                                         "displayYn": "${item.displayYn}",
+                                        "saleStartDate": "<fmt:formatDate value="${item.saleStartDate}" pattern="yyyy-MM-dd"/>",
+                                        "saleEndDate": "<fmt:formatDate value="${item.saleEndDate}" pattern="yyyy-MM-dd"/>",
                                         "regDt": "<fmt:formatDate value="${item.regDt}" pattern="yyyy-MM-dd"/>",
                                         "modDt": "<fmt:formatDate value="${item.modDt}" pattern="yyyy-MM-dd"/>"
                                     }' />
