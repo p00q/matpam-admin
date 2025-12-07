@@ -254,9 +254,9 @@
                         <div class="col-md-6">
                             <div class="card h-100">
                                 <div class="card-header bg-light fw-bold">상품 결제 정보</div>
-                                <div class="card-body">
+                        <div class="card-body">
                                     <textarea class="form-control" name="paymentInfo" rows="5"
-                                        placeholder="결제 수단, 결제 시 유의사항 등을 입력하세요."></textarea>
+                                        placeholder="결제 수단, 결제 시 유의사항 등을 입력하세요."><c:out value='${product.paymentInfo}'/></textarea>
                                 </div>
                             </div>
                         </div>
@@ -265,7 +265,7 @@
                                 <div class="card-header bg-light fw-bold">배송 정보</div>
                                 <div class="card-body">
                                     <textarea class="form-control" name="shippingInfo" rows="5"
-                                        placeholder="배송 방법, 소요 기간, 배송비 등을 입력하세요."></textarea>
+                                        placeholder="배송 방법, 소요 기간, 배송비 등을 입력하세요."><c:out value='${product.shippingInfo}'/></textarea>
                                 </div>
                             </div>
                         </div>
@@ -274,7 +274,7 @@
                                 <div class="card-header bg-light fw-bold">교환 및 반품 정보</div>
                                 <div class="card-body">
                                     <textarea class="form-control" name="exchangeReturnInfo" rows="5"
-                                        placeholder="교환/반품 조건, 절차, 비용 등을 입력하세요."></textarea>
+                                        placeholder="교환/반품 조건, 절차, 비용 등을 입력하세요."><c:out value='${product.exchangeReturnInfo}'/></textarea>
                                 </div>
                             </div>
                         </div>
@@ -283,7 +283,7 @@
                                 <div class="card-header bg-light fw-bold">환불 정보</div>
                                 <div class="card-body">
                                     <textarea class="form-control" name="refundInfo" rows="5"
-                                        placeholder="환불 소요 기간, 유의사항 등을 입력하세요."></textarea>
+                                        placeholder="환불 소요 기간, 유의사항 등을 입력하세요."><c:out value='${product.refundInfo}'/></textarea>
                                 </div>
                             </div>
                         </div>
@@ -328,7 +328,7 @@
                 }
 
                 function addBundleRow(item) {
-                    bundleList.push(item);
+                    bundleList.push(normalizeBundleItem(item));
                     renderBundleTable();
                     updateProductInfo();
                 }
@@ -349,15 +349,18 @@
                     }
 
                     bundleList.forEach((item, index) => {
+                        const salePrice = Number(item.salePrice) || 0;
+                        const costPrice = Number(item.costPrice) || 0;
+                        const vatAmount = Number(item.vatAmount) || 0;
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
                 <td>\${item.sellerName}</td>
                 <td>\${item.productName}</td>
                 <td>\${item.saleTypeName || item.saleType}</td>
                 <td>\${item.saleStatusName}</td>
-                <td class="text-end">\${item.salePrice.toLocaleString()}</td>
-                <td class="text-end">\${item.costPrice.toLocaleString()}</td>
-                <td class="text-end">\${item.vatAmount.toLocaleString()}</td>
+                <td class="text-end">\${salePrice.toLocaleString()}</td>
+                <td class="text-end">\${costPrice.toLocaleString()}</td>
+                <td class="text-end">\${vatAmount.toLocaleString()}</td>
                 <td>\${item.storageTypeName}</td>
                 <td>\${item.processTypeName}</td>
                 <td>\${item.divisionTypeName}</td>
@@ -391,9 +394,9 @@
                     let latestSaleEnd = null;
 
                     bundleList.forEach(item => {
-                        totalSale += item.salePrice || 0;
-                        totalCost += item.costPrice || 0;
-                        totalVat += item.vatAmount || 0;
+                        totalSale += Number(item.salePrice) || 0;
+                        totalCost += Number(item.costPrice) || 0;
+                        totalVat += Number(item.vatAmount) || 0;
 
                         const saleTypeCode = (item.saleType || '').toString();
                         const saleTypeName = item.saleTypeName || '';
@@ -460,11 +463,35 @@
                 }
             }
 
-                function parseDate(value) {
+            function normalizeBundleItem(item) {
+                const safeDate = (value) => {
+                    if (!value) return '';
+                    return value.toString();
+                };
+
+                return {
+                    ...item,
+                    salePrice: Number(item.salePrice) || 0,
+                    costPrice: Number(item.costPrice) || 0,
+                    vatAmount: Number(item.vatAmount) || 0,
+                    saleStartDate: safeDate(item.saleStartDate),
+                    saleEndDate: safeDate(item.saleEndDate)
+                };
+            }
+
+            function parseDate(value) {
                     if (!value) return null;
                     if (value instanceof Date) return value;
-                    const date = new Date(value);
-                    return isNaN(date.getTime()) ? null : date;
+                    const str = value.toString().trim();
+                    if (!str) return null;
+                    const match = str.match(/^(\d{4})[-.](\d{1,2})[-.](\d{1,2})/);
+                    if (match) {
+                        const [, y, m, d] = match;
+                        const date = new Date(Number(y), Number(m) - 1, Number(d));
+                        return isNaN(date.getTime()) ? null : date;
+                    }
+                    const direct = new Date(str);
+                    return isNaN(direct.getTime()) ? null : direct;
                 }
 
                 function formatDate(date) {
@@ -488,19 +515,17 @@
                             <button type="button" class="btn btn-light btn-sm image-change-btn" onclick="event.stopPropagation(); document.getElementById('${input.id}').click();">변경</button>
                         `;
 
-                        if (imageModalInstance) {
-                            box.onclick = function () {
-                                openImageModal(src);
-                            };
-                        }
+                        box.onclick = function () {
+                            openImageModal(src);
+                        };
                     };
                     reader.readAsDataURL(input.files[0]);
                 }
 
-                function openImageModal(src) {
-                    const modalImg = document.getElementById('imagePreviewModalImg');
-                    if (!modalImg) return;
-                    modalImg.src = src;
+            function openImageModal(src) {
+                const modalImg = document.getElementById('imagePreviewModalImg');
+                if (!modalImg) return;
+                modalImg.src = src;
 
                     if (imageModalInstance) {
                         imageModalInstance.show();
@@ -525,6 +550,43 @@
                     imageModalElement.addEventListener('click', fallbackModalCloser, { once: true });
                 }
 
+                function initSmartEditor() {
+                    const createEditor = function () {
+                        if (!(window.nhn && window.nhn.husky && window.nhn.husky.EZCreator)) return;
+                        window.nhn.husky.EZCreator.createInIFrame({
+                            oAppRef: oEditors,
+                            elPlaceHolder: "detailContent",
+                            sSkinURI: "https://cdn.jsdelivr.net/gh/naver/smarteditor2@2.10.0/workspace/static/SmartEditor2Skin.html",
+                            htParams: {
+                                bUseToolbar: true,
+                                bUseVerticalResizer: true,
+                                bUseModeChanger: true
+                            },
+                            fCreator: "createSEditor2"
+                        });
+                    };
+
+                    if (window.nhn && window.nhn.husky && window.nhn.husky.EZCreator) {
+                        createEditor();
+                        return;
+                    }
+
+                    const existingLoader = document.getElementById('smartEditorLoader');
+                    if (existingLoader) {
+                        existingLoader.addEventListener('load', createEditor, { once: true });
+                        return;
+                    }
+
+                    const script = document.createElement('script');
+                    script.id = 'smartEditorLoader';
+                    script.src = "https://cdn.jsdelivr.net/gh/naver/smarteditor2@2.10.0/workspace/static/js/service/HuskyEZCreator.js";
+                    script.onload = createEditor;
+                    script.onerror = function () {
+                        console.warn('스마트에디터 로딩에 실패했습니다. 네트워크 상태를 확인해주세요.');
+                    };
+                    document.head.appendChild(script);
+                }
+
                 // 노출여부 동기화
                 function fn_toggleDisplayYn(checkbox) {
                     document.getElementById('displayYnValue').value = checkbox.checked ? 'Y' : 'N';
@@ -537,7 +599,7 @@
                     document.querySelectorAll('.image-upload-box').forEach(box => {
                         const inputId = box.getAttribute('data-input-id');
                         box.addEventListener('click', function () {
-                            if (previewImages[box.id] && imageModalInstance) {
+                            if (previewImages[box.id]) {
                                 openImageModal(previewImages[box.id]);
                             } else if (inputId) {
                                 const inputEl = document.getElementById(inputId);
@@ -548,19 +610,7 @@
                         });
                     });
 
-                    if (window.nhn && window.nhn.husky && window.nhn.husky.EZCreator) {
-                        window.nhn.husky.EZCreator.createInIFrame({
-                            oAppRef: oEditors,
-                            elPlaceHolder: "detailContent",
-                            sSkinURI: "https://cdn.jsdelivr.net/gh/naver/smarteditor2@2.10.0/workspace/static/SmartEditor2Skin.html",
-                            htParams: {
-                                bUseToolbar: true,
-                                bUseVerticalResizer: true,
-                                bUseModeChanger: true
-                            },
-                            fCreator: "createSEditor2"
-                        });
-                    }
+                    initSmartEditor();
 
                     const form = document.forms['productForm'];
                     if (form) {
