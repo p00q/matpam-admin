@@ -23,4 +23,11 @@ public class ProductDAO extends EgovAbstractMapper {
     public int selectProductListTotCnt(ProductVO vo) throws Exception {
         return selectOne("kr.co.matpam.admin.product.service.impl.ProductMapper.selectProductListTotCnt", vo);
     }
+
+    /**
+     * 단일 상품 조회
+     */
+    public ProductVO selectProduct(Long productNo) throws Exception {
+        return selectOne("kr.co.matpam.admin.product.service.impl.ProductMapper.selectProduct", productNo);
+    }
 }
