@@ -63,11 +63,15 @@
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h4>판매상품 등록</h4>
                     <div>
-                        <button type="button" class="btn btn-secondary">목록</button>
+                        <button type="button" class="btn btn-secondary"
+                            onclick="location.href='<c:url value="/admin/product/productList.do"/>'">목록</button>
                     </div>
                 </div>
 
                 <form name="productForm" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="productNo" value="<c:out value='${product.productNo}'/>" />
+                    <input type="hidden" name="displayYn" id="displayYnValue"
+                        value="<c:out value='${product.displayYn}' default='Y'/>" />
 
                     <!-- 1. 상품일반정보 -->
                     <div class="section-header">상품일반정보</div>
@@ -83,12 +87,12 @@
                                 <th>상품명</th>
                                 <td>
                                     <input type="text" name="productName" class="form-control form-control-sm"
-                                        required />
+                                        value="<c:out value='${product.productName}'/>" required />
                                 </td>
                                 <th>상품 번호</th>
                                 <td>
-                                    <input type="text" class="form-control form-control-sm" placeholder="자동 생성" readonly
-                                        disabled />
+                                    <input type="text" class="form-control form-control-sm" placeholder="자동 생성"
+                                        value="<c:out value='${product.productNo}'/>" readonly disabled />
                                 </td>
                             </tr>
                             <tr>
@@ -96,7 +100,7 @@
                                 <td>
                                     <div class="input-group input-group-sm">
                                         <input type="number" name="salePrice" id="salePrice" class="form-control"
-                                            value="0" />
+                                            value="<c:out value='${product.salePrice}' default='0'/>" />
                                         <span class="input-group-text">원</span>
                                     </div>
                                 </td>
@@ -104,7 +108,7 @@
                                 <td>
                                     <div class="input-group input-group-sm">
                                         <input type="number" name="costPrice" id="costPrice" class="form-control"
-                                            value="0" />
+                                            value="<c:out value='${product.costPrice}' default='0'/>" />
                                         <span class="input-group-text">원</span>
                                     </div>
                                 </td>
@@ -114,16 +118,17 @@
                                 <td>
                                     <div class="input-group input-group-sm">
                                         <input type="number" name="vatAmount" id="vatAmount" class="form-control"
-                                            value="0" />
+                                            value="<c:out value='${product.vatAmount}' default='0'/>" />
                                         <span class="input-group-text">원</span>
                                     </div>
                                 </td>
                                 <th>노출여부</th>
                                 <td>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="displayYn" id="displayYn"
-                                            value="Y" checked>
-                                        <label class="form-check-label" for="displayYn">노출</label>
+                                        <input class="form-check-input" type="checkbox" id="displayYnCheckbox"
+                                            <c:if test="${product.displayYn ne 'N'}">checked</c:if>
+                                            onclick="fn_toggleDisplayYn(this)">
+                                        <label class="form-check-label" for="displayYnCheckbox">노출</label>
                                     </div>
                                 </td>
                             </tr>
@@ -148,14 +153,18 @@
                             <tr>
                                 <th>상품 요약</th>
                                 <td>
-                                    <input type="text" name="productSummary" class="form-control form-control-sm" />
+                                    <input type="text" name="productSummary" class="form-control form-control-sm"
+                                        value="<c:out value='${product.productSummary}'/>" />
                                 </td>
                                 <th>판매자</th>
                                 <td>
                                     <select name="sellerId" id="sellerId" class="form-select form-select-sm">
                                         <option value="">선택</option>
                                         <c:forEach var="seller" items="${sellers}">
-                                            <option value="${seller.memberNo}">${seller.companyName}</option>
+                                            <option value="${seller.memberNo}"
+                                                <c:if test="${seller.memberNo eq product.sellerId}">selected</c:if>>
+                                                ${seller.companyName}
+                                            </option>
                                         </c:forEach>
                                     </select>
                                 </td>
@@ -163,7 +172,8 @@
                             <tr>
                                 <th>MD 코멘트</th>
                                 <td colspan="3">
-                                    <input type="text" name="mdComment" class="form-control form-control-sm" />
+                                    <input type="text" name="mdComment" class="form-control form-control-sm"
+                                        value="<c:out value='${product.mdComment}'/>" />
                                 </td>
                             </tr>
                         </tbody>
@@ -298,7 +308,6 @@
                     const salePriceInput = document.getElementById('salePrice');
                     const costPriceInput = document.getElementById('costPrice');
                     const vatAmountInput = document.getElementById('vatAmount');
-                    const displayYnInput = document.getElementById('displayYn');
                     const saleStartDateInput = document.getElementById('saleStartDate');
                     const saleEndDateInput = document.getElementById('saleEndDate');
                     const sellerSelect = document.getElementById('sellerId');
@@ -352,5 +361,15 @@
                 function fn_previewImage(input, index) {
                     // 이미지 미리보기 로직 (생략 - 박스 안에 img 태그 생성)
                 }
+
+                // 노출여부 동기화
+                function fn_toggleDisplayYn(checkbox) {
+                    document.getElementById('displayYnValue').value = checkbox.checked ? 'Y' : 'N';
+                }
+
+                document.addEventListener('DOMContentLoaded', function () {
+                    const displayYnCheckbox = document.getElementById('displayYnCheckbox');
+                    fn_toggleDisplayYn(displayYnCheckbox);
+                });
 
             </script>
