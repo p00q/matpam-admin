@@ -75,10 +75,14 @@
                 </nav>
 
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4>판매상품 등록</h4>
+                    <h4>
+                        <c:choose>
+                            <c:when test="${product.productNo != null}">판매상품 상세</c:when>
+                            <c:otherwise>판매상품 등록</c:otherwise>
+                        </c:choose>
+                    </h4>
                     <div>
-                        <button type="button" class="btn btn-secondary" onclick="location.href='<c:url value="
-                            /admin/product/productList.do" />'">목록</button>
+                        <button type="button" class="btn btn-secondary" onclick="location.href='<c:url value="/admin/product/productList.do" />'">목록</button>
                     </div>
                 </div>
 
@@ -695,6 +699,38 @@
                     window.addEventListener('beforeunload', function () {
                         Object.values(objectUrlMap).forEach((url) => URL.revokeObjectURL(url));
                     });
+                }
+
+                // ===== 기존 구성상품 로딩 =====
+                function loadExistingCompositions() {
+                    // JSP에서 서버 데이터를 JavaScript 배열로 변환
+                    <c:if test="${product.compositionList != null && not empty product.compositionList}">
+                        <c:forEach var="comp" items="${product.compositionList}" varStatus="status">
+                            bundleList.push({
+                                bundleId: ${comp.bundleId},
+                                productName: '<c:out value="${comp.productName}" escapeXml="true"/>',
+                                saleType: '<c:out value="${comp.saleType}"/>',
+                                saleTypeName: '<c:out value="${comp.saleTypeName}"/>',
+                                salePrice: ${comp.salePrice != null ? comp.salePrice : 0},
+                                costPrice: ${comp.costPrice != null ? comp.costPrice : 0},
+                                vatAmount: ${comp.vatAmount != null ? comp.vatAmount : 0},
+                                displayYn: '<c:out value="${comp.displayYn}"/>',
+                                sellerName: '<c:out value="${comp.sellerName}"/>',
+                                saleStatusName: '',
+                                storageTypeName: '',
+                                processTypeName: '',
+                                divisionTypeName: '',
+                                regDt: '',
+                                modDt: ''
+                            });
+                        </c:forEach>
+                        
+                        // 테이블 렌더링
+                        renderBundleTable();
+                        
+                        // 상품 정보 자동 계산 (가격, 판매기간)
+                        updateProductInfo();
+                    </c:if>
                 }
 
                 // ===== 저장 버튼 처리 =====

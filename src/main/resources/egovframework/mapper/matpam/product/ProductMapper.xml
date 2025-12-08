@@ -12,6 +12,7 @@
         <result property="saleEndDate" column="SALE_END_DATE"/>
         <result property="displayYn" column="DISPLAY_YN"/>
         <result property="sellerId" column="SELLER_ID"/>
+        <result property="sellerName" column="SELLER_NAME"/>
         <result property="productSummary" column="PRODUCT_SUMMARY"/>
         <result property="mdComment" column="MD_COMMENT"/>
         <result property="description" column="DESCRIPTION"/>
@@ -21,7 +22,51 @@
         <result property="refundInfo" column="REFUND_INFO"/>
         <result property="regDt" column="REG_DT"/>
         <result property="modDt" column="MOD_DT"/>
-        <!-- 조회수, 주문수 등은 별도 테이블 조인 필요하나 현재는 컬럼 없음 or 임시 -->
+        <!-- 구성상품 목록 -->
+        <collection property="compositionList" ofType="kr.co.matpam.admin.product.service.ProductCompositionVO">
+            <id property="compositionId" column="COMPOSITION_ID"/>
+            <result property="productNo" column="PRODUCT_NO"/>
+            <result property="bundleId" column="BUNDLE_ID"/>
+            <result property="sortOrder" column="SORT_ORDER"/>
+        </collection>
+    </resultMap>
+    
+    <!-- 구성상품 상세 정보 포함 ResultMap -->
+    <resultMap id="productWithCompositionDetailMap" type="kr.co.matpam.admin.product.service.ProductVO">
+        <id property="productNo" column="PRODUCT_NO"/>
+        <result property="productName" column="PRODUCT_NAME"/>
+        <result property="salePrice" column="SALE_PRICE"/>
+        <result property="costPrice" column="COST_PRICE"/>
+        <result property="vatAmount" column="VAT_AMOUNT"/>
+        <result property="saleStartDate" column="SALE_START_DATE"/>
+        <result property="saleEndDate" column="SALE_END_DATE"/>
+        <result property="displayYn" column="DISPLAY_YN"/>
+        <result property="sellerId" column="SELLER_ID"/>
+        <result property="sellerName" column="SELLER_NAME"/>
+        <result property="productSummary" column="PRODUCT_SUMMARY"/>
+        <result property="mdComment" column="MD_COMMENT"/>
+        <result property="description" column="DESCRIPTION"/>
+        <result property="paymentInfo" column="PAYMENT_INFO"/>
+        <result property="shippingInfo" column="SHIPPING_INFO"/>
+        <result property="exchangeReturnInfo" column="EXCHANGE_RETURN_INFO"/>
+        <result property="refundInfo" column="REFUND_INFO"/>
+        <result property="regDt" column="REG_DT"/>
+        <result property="modDt" column="MOD_DT"/>
+        <!-- 구성상품 상세 정보 -->
+        <collection property="compositionList" ofType="kr.co.matpam.admin.product.service.ProductCompositionVO">
+            <id property="compositionId" column="COMPOSITION_ID"/>
+            <result property="productNo" column="PRODUCT_NO"/>
+            <result property="bundleId" column="BUNDLE_ID"/>
+            <result property="productName" column="BUNDLE_PRODUCT_NAME"/>
+            <result property="saleType" column="BUNDLE_SALE_TYPE"/>
+            <result property="saleTypeName" column="BUNDLE_SALE_TYPE_NAME"/>
+            <result property="salePrice" column="BUNDLE_SALE_PRICE"/>
+            <result property="costPrice" column="BUNDLE_COST_PRICE"/>
+            <result property="vatAmount" column="BUNDLE_VAT_AMOUNT"/>
+            <result property="displayYn" column="BUNDLE_DISPLAY_YN"/>
+            <result property="sellerName" column="BUNDLE_SELLER_NAME"/>
+            <result property="sortOrder" column="SORT_ORDER"/>
+        </collection>
     </resultMap>
 
     <sql id="selectProductListWhere">
@@ -70,29 +115,48 @@
         <include refid="selectProductListWhere"/>
     </select>
 
-    <!-- 단일 상품 조회 -->
-    <select id="selectProduct" parameterType="long" resultMap="productResultMap">
+    <!-- 단일 상품 조회 (구성상품 상세 포함) -->
+    <select id="selectProduct" parameterType="long" resultMap="productWithCompositionDetailMap">
         SELECT
-            PRODUCT_NO,
-            PRODUCT_NAME,
-            SALE_PRICE,
-            COST_PRICE,
-            VAT_AMOUNT,
-            SALE_START_DATE,
-            SALE_END_DATE,
-            DISPLAY_YN,
-            SELLER_ID,
-            PRODUCT_SUMMARY,
-            MD_COMMENT,
-            DESCRIPTION,
-            PAYMENT_INFO,
-            SHIPPING_INFO,
-            EXCHANGE_RETURN_INFO,
-            REFUND_INFO,
-            REG_DT,
-            MOD_DT
-        FROM TB_PRODUCT
-        WHERE PRODUCT_NO = #{value}
+            P.PRODUCT_NO,
+            P.PRODUCT_NAME,
+            P.SALE_PRICE,
+            P.COST_PRICE,
+            P.VAT_AMOUNT,
+            P.SALE_START_DATE,
+            P.SALE_END_DATE,
+            P.DISPLAY_YN,
+            P.SELLER_ID,
+            SM.COMPANY_NAME AS SELLER_NAME,
+            P.PRODUCT_SUMMARY,
+            P.MD_COMMENT,
+            P.DESCRIPTION,
+            P.PAYMENT_INFO,
+            P.SHIPPING_INFO,
+            P.EXCHANGE_RETURN_INFO,
+            P.REFUND_INFO,
+            P.REG_DT,
+            P.MOD_DT,
+            -- 구성상품 정보
+            PC.COMPOSITION_ID,
+            PC.BUNDLE_ID,
+            PC.SORT_ORDER,
+            BP.PRODUCT_NAME AS BUNDLE_PRODUCT_NAME,
+            BP.SALE_TYPE AS BUNDLE_SALE_TYPE,
+            ST.CODE_NAME AS BUNDLE_SALE_TYPE_NAME,
+            BP.SALE_PRICE AS BUNDLE_SALE_PRICE,
+            BP.COST_PRICE AS BUNDLE_COST_PRICE,
+            BP.VAT_AMOUNT AS BUNDLE_VAT_AMOUNT,
+            BP.DISPLAY_YN AS BUNDLE_DISPLAY_YN,
+            BM.COMPANY_NAME AS BUNDLE_SELLER_NAME
+        FROM TB_PRODUCT P
+        LEFT JOIN TB_MEMBER SM ON P.SELLER_ID = SM.MEMBER_NO
+        LEFT JOIN TB_PRODUCT_COMPOSITION PC ON P.PRODUCT_NO = PC.PRODUCT_NO
+        LEFT JOIN TB_BUNDLE_PRODUCT BP ON PC.BUNDLE_ID = BP.BUNDLE_ID
+        LEFT JOIN TB_MEMBER BM ON BP.SELLER_ID = BM.MEMBER_NO
+        LEFT JOIN TB_CODE ST ON BP.SALE_TYPE = ST.CODE_VALUE AND ST.CODE_TYPE = 'SALE_TYPE'
+        WHERE P.PRODUCT_NO = #{value}
+        ORDER BY PC.SORT_ORDER
     </select>
 
 
