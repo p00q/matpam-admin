@@ -62,13 +62,22 @@ public class ProductController {
             @ModelAttribute("product") ProductVO product,
             HttpServletRequest request) throws Exception {
 
-        System.out.println("== saveProduct() 진입 ==");
-        System.out.println("VO.getProductName() = " + product.getProductName());
+        LOGGER.debug("== saveProduct() 진입 ==");
+        LOGGER.debug("상품명: {}", product.getProductName());
+        LOGGER.debug("판매가격: {}", product.getSalePrice());
+        LOGGER.debug("판매 시작일: {}", product.getSaleStartDate());
+        LOGGER.debug("판매 종료일: {}", product.getSaleEndDate());
+        LOGGER.debug("판매자ID: {}", product.getSellerId());
+        LOGGER.debug("노출여부: {}", product.getDisplayYn());
 
         if (product.getProductNo() == null) {
+            LOGGER.info("신규 상품 등록 시작");
             productService.insertProduct(product);
+            LOGGER.info("신규 상품 등록 완료");
         } else {
+            LOGGER.info("상품 수정 시작 - productNo: {}", product.getProductNo());
             productService.updateProduct(product);
+            LOGGER.info("상품 수정 완료");
         }
 
         return "redirect:/admin/product/productList.do";

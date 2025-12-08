@@ -1,6 +1,8 @@
 package kr.co.matpam.admin.product.service;
 
 import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -223,6 +225,19 @@ public class ProductVO implements Serializable {
     public void setSaleStartDate(Date saleStartDate) {
         this.saleStartDate = saleStartDate;
     }
+    
+    // 문자열로 날짜를 받을 수 있는 setter 추가
+    public void setSaleStartDate(String dateString) {
+        if (dateString != null && !dateString.trim().isEmpty()) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                this.saleStartDate = sdf.parse(dateString);
+            } catch (ParseException e) {
+                // 파싱 실패 시 null로 유지
+                this.saleStartDate = null;
+            }
+        }
+    }
 
     public Date getSaleEndDate() {
         return saleEndDate;
@@ -230,6 +245,19 @@ public class ProductVO implements Serializable {
 
     public void setSaleEndDate(Date saleEndDate) {
         this.saleEndDate = saleEndDate;
+    }
+    
+    // 문자열로 날짜를 받을 수 있는 setter 추가
+    public void setSaleEndDate(String dateString) {
+        if (dateString != null && !dateString.trim().isEmpty()) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                this.saleEndDate = sdf.parse(dateString);
+            } catch (ParseException e) {
+                // 파싱 실패 시 null로 유지
+                this.saleEndDate = null;
+            }
+        }
     }
 
     public String getDisplayYn() {

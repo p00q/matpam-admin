@@ -699,13 +699,38 @@
 
                 // ===== 저장 버튼 처리 =====
                 function fn_save() {
-                    // 1) 스마트에디터 내용 textarea로 반영
+                    // 1) 필수 입력 검증
+                    const productName = document.querySelector('input[name="productName"]');
+                    if (!productName || !productName.value.trim()) {
+                        alert('상품명을 입력해주세요.');
+                        if (productName) productName.focus();
+                        return false;
+                    }
+
+                    // 2) 스마트에디터 내용 textarea로 반영
                     syncEditorContent();
 
-                    // 2) 페이지 나갈 때 뜨는 beforeunload 경고 끄기
+                    // 3) 숫자 필드 빈 값 처리 (null 대신 0으로)
+                    ['salePrice', 'costPrice', 'vatAmount'].forEach(fieldId => {
+                        const field = document.getElementById(fieldId);
+                        if (field && !field.value.trim()) {
+                            field.value = '0';
+                        }
+                    });
+
+                    // 4) 날짜 필드 빈 값 처리 (빈 문자열을 그냥 제출하지 않도록)
+                    ['saleStartDate', 'saleEndDate'].forEach(fieldId => {
+                        const field = document.getElementById(fieldId);
+                        if (field && !field.value.trim()) {
+                            // 빈 값인 경우 name 속성 제거하여 전송하지 않음
+                            field.removeAttribute('name');
+                        }
+                    });
+
+                    // 5) 페이지 나갈 때 뜨는 beforeunload 경고 끄기
                     window.onbeforeunload = null;
 
-                    // 3) 실제 폼 제출
+                    // 6) 실제 폼 제출
                     if (document.productForm) {
                         document.productForm.submit();
                     }
