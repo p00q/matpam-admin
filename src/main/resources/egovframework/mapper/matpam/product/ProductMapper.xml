@@ -95,4 +95,68 @@
         WHERE PRODUCT_NO = #{value}
     </select>
 
+
+    <insert id="insertProduct" parameterType="kr.co.matpam.admin.product.service.ProductVO">
+        INSERT INTO TB_PRODUCT (
+            PRODUCT_NAME,
+            SALE_PRICE,
+            COST_PRICE,
+            VAT_AMOUNT,
+            SALE_START_DATE,
+            SALE_END_DATE,
+            DISPLAY_YN,
+            SELLER_ID,
+            PRODUCT_SUMMARY,
+            MD_COMMENT,
+            DESCRIPTION,
+            PAYMENT_INFO,
+            SHIPPING_INFO,
+            EXCHANGE_RETURN_INFO,
+            REFUND_INFO,
+            REG_DT,
+            MOD_DT
+        ) VALUES (
+            #{productName},
+            #{salePrice},
+            #{costPrice},
+            #{vatAmount},
+            #{saleStartDate},
+            #{saleEndDate},
+            #{displayYn},
+            #{sellerId},
+            #{productSummary},
+            #{mdComment},
+            #{description},
+            #{paymentInfo},
+            #{shippingInfo},
+            #{exchangeReturnInfo},
+            #{refundInfo},
+            NOW(),
+            NOW()
+        )
+    </insert>
+
+    <update id="updateProduct" parameterType="kr.co.matpam.admin.product.service.ProductVO">
+        UPDATE TB_PRODUCT
+        SET
+            PRODUCT_NAME          = #{productName},
+            SALE_PRICE            = #{salePrice},
+            COST_PRICE            = #{costPrice},
+            VAT_AMOUNT            = #{vatAmount},
+            SALE_START_DATE       = #{saleStartDate},
+            SALE_END_DATE         = #{saleEndDate},
+            DISPLAY_YN            = #{displayYn},
+            SELLER_ID             = #{sellerId},
+            PRODUCT_SUMMARY       = #{productSummary},
+            MD_COMMENT            = #{mdComment},
+            DESCRIPTION           = #{description},
+            PAYMENT_INFO          = #{paymentInfo},
+            SHIPPING_INFO         = #{shippingInfo},
+            EXCHANGE_RETURN_INFO  = #{exchangeReturnInfo},
+            REFUND_INFO           = #{refundInfo},
+            MOD_DT                = NOW()
+        WHERE PRODUCT_NO = #{productNo}
+    </update>
+
+
 </mapper>

@@ -30,4 +30,18 @@ public class ProductDAO extends EgovAbstractMapper {
     public ProductVO selectProduct(Long productNo) throws Exception {
         return selectOne("kr.co.matpam.admin.product.service.impl.ProductMapper.selectProduct", productNo);
     }
+
+    /**
+     * 상품 등록
+     */
+    public void insertProduct(ProductVO vo) throws Exception {
+        insert("kr.co.matpam.admin.product.service.impl.ProductMapper.insertProduct", vo);
+    }
+
+    /**
+     * 상품 수정
+     */
+    public void updateProduct(ProductVO vo) throws Exception {
+        update("kr.co.matpam.admin.product.service.impl.ProductMapper.updateProduct", vo);
+    }
 }

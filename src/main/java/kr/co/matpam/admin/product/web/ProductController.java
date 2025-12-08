@@ -1,8 +1,8 @@
 package kr.co.matpam.admin.product.web;
 
 import java.util.Date;
-
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,10 +10,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import kr.co.matpam.admin.code.service.CodeManagementService;
 import kr.co.matpam.admin.member.service.MemberService;
+import kr.co.matpam.admin.product.service.ProductService;
 import kr.co.matpam.admin.product.service.ProductVO;
 
 /**
@@ -31,30 +33,45 @@ public class ProductController {
     private MemberService memberService;
 
     @Resource(name = "productService")
-    private kr.co.matpam.admin.product.service.ProductService productService;
+    private ProductService productService;
 
-    /**
-     * 판매상품 등록 화면
-     */
-    @RequestMapping(value = "/admin/product/productRegist.do")
-    public String productRegistForm(@RequestParam(value = "productNo", required = false) Long productNo, ModelMap model)
-            throws Exception {
+    // ① 등록 화면 (GET)
+    @RequestMapping(value = "/admin/product/productRegist.do", method = RequestMethod.GET)
+    public String productRegistForm(
+            @RequestParam(value = "productNo", required = false) Long productNo,
+            ModelMap model) throws Exception {
 
-        ProductVO product = productNo != null ? productService.selectProduct(productNo) : null;
+        ProductVO product = productNo != null
+                ? productService.selectProduct(productNo)
+                : new ProductVO();
 
-        if (product == null) {
-            product = new ProductVO();
+        if (product.getDisplayYn() == null) {
             product.setDisplayYn("Y");
-            product.setSaleStartDate(new Date()); // 기본값: 오늘
+            product.setSaleStartDate(new Date());
         }
 
         model.addAttribute("product", product);
-
         model.addAttribute("sellers", memberService.selectSellerList());
-
         model.addAttribute("contentPage", "/WEB-INF/jsp/admin/product/ProductRegister.jsp");
-
         return "layout/main";
+    }
+
+    // ② 저장 처리 (POST)
+    @RequestMapping(value = "/admin/product/productRegist.do", method = RequestMethod.POST)
+    public String saveProduct(
+            @ModelAttribute("product") ProductVO product,
+            HttpServletRequest request) throws Exception {
+
+        System.out.println("== saveProduct() 진입 ==");
+        System.out.println("VO.getProductName() = " + product.getProductName());
+
+        if (product.getProductNo() == null) {
+            productService.insertProduct(product);
+        } else {
+            productService.updateProduct(product);
+        }
+
+        return "redirect:/admin/product/productList.do";
     }
 
     /**

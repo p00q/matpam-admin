@@ -77,12 +77,14 @@
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h4>판매상품 등록</h4>
                     <div>
-                        <button type="button" class="btn btn-secondary"
-                            onclick="location.href='<c:url value="/admin/product/productList.do"/>'">목록</button>
+                        <button type="button" class="btn btn-secondary" onclick="location.href='<c:url value="
+                            /admin/product/productList.do" />'">목록</button>
                     </div>
                 </div>
 
-                <form name="productForm" method="post" enctype="multipart/form-data">
+                <form name="productForm" method="post"
+                    action="${pageContext.request.contextPath}/admin/product/productRegist.do"
+                    enctype="multipart/form-data">
                     <input type="hidden" name="productNo" value="<c:out value='${product.productNo}'/>" />
                     <input type="hidden" name="displayYn" id="displayYnValue"
                         value="<c:out value='${product.displayYn}' default='Y'/>" />
@@ -139,9 +141,9 @@
                                 <th>노출여부</th>
                                 <td>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="displayYnCheckbox"
-                                            <c:if test="${product.displayYn ne 'N'}">checked</c:if>
-                                            onclick="fn_toggleDisplayYn(this)">
+                                        <input class="form-check-input" type="checkbox" id="displayYnCheckbox" <c:if
+                                            test="${product.displayYn ne 'N'}">checked</c:if>
+                                        onclick="fn_toggleDisplayYn(this)">
                                         <label class="form-check-label" for="displayYnCheckbox">노출</label>
                                     </div>
                                 </td>
@@ -175,8 +177,8 @@
                                     <select name="sellerId" id="sellerId" class="form-select form-select-sm">
                                         <option value="">선택</option>
                                         <c:forEach var="seller" items="${sellers}">
-                                            <option value="${seller.memberNo}"
-                                                <c:if test="${seller.memberNo eq product.sellerId}">selected</c:if>>
+                                            <option value="${seller.memberNo}" <c:if
+                                                test="${seller.memberNo eq product.sellerId}">selected</c:if>>
                                                 ${seller.companyName}
                                             </option>
                                         </c:forEach>
@@ -231,7 +233,8 @@
                     <div class="row g-2 mb-4">
                         <c:forEach begin="1" end="5" varStatus="status">
                             <div class="col">
-                                <div class="image-upload-box" id="imageBox${status.index}" data-input-id="file${status.index}">
+                                <div class="image-upload-box" id="imageBox${status.index}"
+                                    data-input-id="file${status.index}">
                                     <div class="text-center text-muted small">이미지를 업로드하세요</div>
                                 </div>
                                 <input type="file" name="files" id="file${status.index}" style="display:none;"
@@ -243,8 +246,8 @@
                     <!-- 4. 상품 상세 설명 -->
                     <div class="section-header">상품 상세 설명</div>
                     <textarea id="mdContent" name="description" class="form-control" style="width:100%; height:300px;">
-<c:out value='${product.description}'/>
-</textarea>
+                        <c:out value='${product.description}'/>
+                    </textarea>
                     <div class="form-text">상세 설명은 네이버 스마트에디터가 적용되며, 이미지 삽입 후 미리보기로 확인할 수 있습니다.</div>
 
                     <!-- 5. 안내 정보 -->
@@ -253,7 +256,7 @@
                         <div class="col-md-6">
                             <div class="card h-100">
                                 <div class="card-header bg-light fw-bold">상품 결제 정보</div>
-                        <div class="card-body">
+                                <div class="card-body">
                                     <textarea class="form-control" name="paymentInfo" rows="5"
                                         placeholder="결제 수단, 결제 시 유의사항 등을 입력하세요."><c:out value='${product.paymentInfo}'/></textarea>
                                 </div>
@@ -289,422 +292,422 @@
                     </div>
 
                     <!-- 5. 하단 버튼 -->
-                <div class="d-flex justify-content-end gap-2 mt-5 mb-5">
-                    <button type="button" class="btn btn-secondary px-4">미리보기</button>
-                    <button type="submit" class="btn btn-secondary px-4">저장</button>
-                    <button type="button" class="btn btn-secondary px-4" onclick="history.back()">취소</button>
-                </div>
+                    <div class="d-flex justify-content-end gap-2 mt-5 mb-5">
+                        <button type="button" class="btn btn-secondary px-4">미리보기</button>
+                        <button type="button" class="btn btn-secondary px-4" onclick="fn_save();">
+                            저장
+                        </button>
+                        <button type="button" class="btn btn-secondary px-4" onclick="history.back()">취소</button>
+                    </div>
 
-            </form>
-        </div>
+                </form>
+            </div>
 
-        <!-- 이미지 확대 뷰어 -->
-        <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-body p-0">
-                        <img id="imagePreviewModalImg" src="" alt="이미지 미리보기" class="img-fluid w-100" />
+            <!-- 이미지 확대 뷰어 -->
+            <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-body p-0">
+                            <img id="imagePreviewModalImg" src="" alt="이미지 미리보기" class="img-fluid w-100" />
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <script type="text/javascript" charset="utf-8"
-            src="<c:url value='/smarteditor2/js/service/HuskyEZCreator.js' />"></script>
-        <script type="text/javascript">
-            var oEditors = [];
-            let bundleList = [];
-            const previewImages = {};
-            const objectUrlMap = {};
-            const imageModalElement = document.getElementById('imagePreviewModal');
-            const imageModalInstance = (window.bootstrap && imageModalElement) ? new bootstrap.Modal(imageModalElement) : null;
-            let fallbackModalCloser = null;
+            <!-- SmartEditor2 필수 스크립트 -->
+            <script type="text/javascript" charset="utf-8"
+                src="<c:url value='/smarteditor2/js/service/HuskyEZCreator.js' />"></script>
 
-            $(function () {
-                initSmartEditor();
-                initImagePreview();
-                initSalePeriodRecalc();
-                initBundlePopup();
-                initDisplayToggle();
-                initUnloadCleanup();
-            });
+            <script type="text/javascript">
+                var oEditors = [];
 
-            function initSmartEditor() {
-                if (!(window.nhn && window.nhn.husky && window.nhn.husky.EZCreator)) {
-                    return;
-                }
+                // ★ 전역 변수 추가
+                let bundleList = [];
+                const previewImages = {};
+                const objectUrlMap = {};
+                let imageModalInstance = null;
 
-                nhn.husky.EZCreator.createInIFrame({
-                    oAppRef: oEditors,
-                    elPlaceHolder: "mdContent",
-                    sSkinURI: "<c:url value='/smarteditor2/SmartEditor2Skin.html' />",
-                    fCreator: "createSEditor2"
+                // 페이지 로딩 시 한 번만 호출
+                document.addEventListener('DOMContentLoaded', function () {
+                    initSmartEditor();
+                    initImagePreview();
+                    initSalePeriodRecalc();
+                    initBundlePopup();
+                    initDisplayToggle();
+                    initUnloadCleanup();
+
                 });
 
-                const form = document.forms['productForm'];
-                if (form) {
-                    form.addEventListener('submit', syncEditorContent);
+                function initSmartEditor() {
+                    if (!(window.nhn && window.nhn.husky && window.nhn.husky.EZCreator)) {
+                        // 로딩이 조금 늦을 수 있으니 300ms 뒤 재시도
+                        setTimeout(initSmartEditor, 300);
+                        return;
+                    }
+
+                    nhn.husky.EZCreator.createInIFrame({
+                        oAppRef: oEditors,
+                        elPlaceHolder: "mdContent",   // textarea id
+                        sSkinURI: "<c:url value='/smarteditor2/SmartEditor2Skin.html' />",
+                        fCreator: "createSEditor2"
+                    });
                 }
 
-                window.fn_save = function () {
+                function syncEditorContent() {
+                    if (oEditors && oEditors.getById && oEditors.getById["mdContent"]) {
+                        oEditors.getById["mdContent"].exec("UPDATE_CONTENTS_FIELD", []);
+                    }
+                }
+
+
+
+                // ===== 구성상품 / 판매기간 계산 =====
+                function calculateSalePeriod(components) {
+                    if (!components || components.length === 0) {
+                        return { start: '', end: '' };
+                    }
+
+                    const starts = components
+                        .map(c => c.saleStartDate)
+                        .filter(Boolean)
+                        .sort();
+                    const ends = components
+                        .map(c => c.saleEndDate)
+                        .filter(Boolean)
+                        .sort();
+
+                    if (starts.length === 0 || ends.length === 0) {
+                        return { start: '', end: '' };
+                    }
+
+                    const latestStart = starts[starts.length - 1];
+                    const earliestEnd = ends[0];
+
+                    if (latestStart > earliestEnd) {
+                        return { start: '', end: '' };
+                    }
+
+                    return { start: latestStart, end: earliestEnd };
+                }
+
+                function fn_addBundlePopup() {
+                    const url = '<c:url value="/admin/product/popup/bundleList.do"/>';
+                    const name = 'bundlePopup';
+                    const option = 'width=1000,height=800,scrollbars=yes';
+                    window.open(url, name, option);
+                }
+
+                function addBundleRow(item) {
+                    bundleList.push(normalizeBundleItem(item));
+                    renderBundleTable();
+                    updateProductInfo();
+                }
+
+                function removeBundleRow(index) {
+                    bundleList.splice(index, 1);
+                    renderBundleTable();
+                    updateProductInfo();
+                }
+
+                function renderBundleTable() {
+                    const tbody = document.getElementById('bundleTableBody');
+                    tbody.innerHTML = '';
+
+                    if (bundleList.length === 0) {
+                        tbody.innerHTML = '<tr id="emptyRow"><td colspan="14" class="text-muted py-4">구성 상품이 없습니다.</td></tr>';
+                        return;
+                    }
+
+                    bundleList.forEach((item, index) => {
+                        const salePrice = Number(item.salePrice) || 0;
+                        const costPrice = Number(item.costPrice) || 0;
+                        const vatAmount = Number(item.vatAmount) || 0;
+
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>\${item.sellerName}</td>
+                            <td>\${item.productName}</td>
+                            <td>\${item.saleTypeName || item.saleType}</td>
+                            <td>\${item.saleStatusName}</td>
+                            <td class="text-end">\${salePrice.toLocaleString()}</td>
+                            <td class="text-end">\${costPrice.toLocaleString()}</td>
+                            <td class="text-end">\${vatAmount.toLocaleString()}</td>
+                            <td>\${item.storageTypeName}</td>
+                            <td>\${item.processTypeName}</td>
+                            <td>\${item.divisionTypeName}</td>
+                            <td>\${item.regDt}</td>
+                            <td>\${item.modDt}</td>
+                            <td>\${item.displayYn == 'Y' ? '노출' : '비노출'}</td>
+                            <td>
+                                <button type="button" class="btn btn-secondary btn-sm" style="font-size:0.8rem;" disabled>수정</button>
+                                <button type="button" class="btn btn-secondary btn-sm" style="font-size:0.8rem;" onclick="removeBundleRow(\${index})">삭제</button>
+                                <input type="hidden" name="compositionList[\${index}].bundleId" value="\${item.bundleId}">
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+
+                function updateProductInfo() {
+                    const salePriceInput = document.getElementById('salePrice');
+                    const costPriceInput = document.getElementById('costPrice');
+                    const vatAmountInput = document.getElementById('vatAmount');
+                    const saleStartDateInput = document.getElementById('saleStartDate');
+                    const saleEndDateInput = document.getElementById('saleEndDate');
+                    const sellerSelect = document.getElementById('sellerId');
+
+                    if (bundleList.length > 0) {
+                        let totalSale = 0, totalCost = 0, totalVat = 0;
+                        let rawSellerId = null;
+                        let defaultSellerId = null;
+
+                        bundleList.forEach(item => {
+                            totalSale += Number(item.salePrice) || 0;
+                            totalCost += Number(item.costPrice) || 0;
+                            totalVat += Number(item.vatAmount) || 0;
+
+                            const saleTypeCode = (item.saleType || '').toString();
+                            const saleTypeName = item.saleTypeName || '';
+                            const isRawMaterial =
+                                saleTypeName.indexOf('원물') > -1 ||
+                                saleTypeCode.toLowerCase().indexOf('raw') > -1;
+
+                            if (!defaultSellerId && item.sellerId) {
+                                defaultSellerId = item.sellerId;
+                            }
+                            if (!rawSellerId && isRawMaterial && item.sellerId) {
+                                rawSellerId = item.sellerId;
+                            }
+                        });
+
+                        salePriceInput.value = totalSale;
+                        costPriceInput.value = totalCost;
+                        vatAmountInput.value = totalVat;
+
+                        salePriceInput.readOnly = true;
+                        costPriceInput.readOnly = true;
+                        vatAmountInput.readOnly = true;
+
+                        if (rawSellerId) {
+                            sellerSelect.value = rawSellerId;
+                        } else if (defaultSellerId) {
+                            sellerSelect.value = defaultSellerId;
+                        }
+
+                        const { start, end } = calculateSalePeriod(bundleList);
+                        saleStartDateInput.value = start;
+                        saleEndDateInput.value = end;
+
+                        const hasCalculatedPeriod = !!(start && end);
+                        saleStartDateInput.readOnly = hasCalculatedPeriod;
+                        saleEndDateInput.readOnly = hasCalculatedPeriod;
+                    } else {
+                        salePriceInput.readOnly = false;
+                        costPriceInput.readOnly = false;
+                        vatAmountInput.readOnly = false;
+                        saleStartDateInput.readOnly = false;
+                        saleEndDateInput.readOnly = false;
+                    }
+                }
+
+                function normalizeBundleItem(item) {
+                    const safeDate = (value) => {
+                        if (!value) return '';
+                        return value.toString();
+                    };
+
+                    return {
+                        ...item,
+                        salePrice: Number(item.salePrice) || 0,
+                        costPrice: Number(item.costPrice) || 0,
+                        vatAmount: Number(item.vatAmount) || 0,
+                        saleStartDate: safeDate(item.saleStartDate),
+                        saleEndDate: safeDate(item.saleEndDate)
+                    };
+                }
+
+                // ===== 이미지 업로드 & 팝업 =====
+                // 파일 업로드 후 박스에 썸네일 넣기
+                function fn_previewImage(input, boxId) {
+                    const box = document.getElementById(boxId);
+                    if (!input.files || input.files.length === 0 || !box) return;
+
+                    const file = input.files[0];
+
+                    // 이전 blob URL 정리
+                    const prevUrl = objectUrlMap[boxId];
+                    if (prevUrl) {
+                        URL.revokeObjectURL(prevUrl);
+                    }
+
+                    const src = URL.createObjectURL(file);
+                    objectUrlMap[boxId] = src;
+                    previewImages[boxId] = src;
+
+                    // ★ JSP EL이 건드리지 못하게 문자열 + 연산으로 작성
+                    box.innerHTML =
+                        '<img src="' + src + '" alt="업로드 이미지" ' +
+                        'class="product-image-thumb" ' +
+                        'data-full-url="' + src + '" />' +
+                        '<button type="button" ' +
+                        'class="btn btn-light btn-sm image-change-btn" ' +
+                        'onclick="event.stopPropagation(); document.getElementById(\'' + input.id + '\').click();">' +
+                        '변경' +
+                        '</button>';
+
+                    // 새로 생긴 썸네일에 팝업 이벤트 다시 바인딩
+                    initProductImagePopup();
+                }
+
+
+
+                function getImageModalInstance() {
+                    // 부트스트랩 JS가 있으면 Modal 인스턴스 사용
+                    if (window.bootstrap && window.bootstrap.Modal) {
+                        if (!imageModalInstance) {
+                            const el = document.getElementById('imagePreviewModal');
+                            if (el) {
+                                imageModalInstance = new bootstrap.Modal(el);
+                            }
+                        }
+                        return imageModalInstance;
+                    }
+                    // 부트스트랩 JS 없으면 null 반환 (수동 처리로 fallback)
+                    return null;
+                }
+
+                function openImageModal(src) {
+                    const el = document.getElementById('imagePreviewModal');
+                    const img = document.getElementById('imagePreviewModalImg');
+                    if (!el || !img) return;
+
+                    img.src = src;
+
+                    const modal = getImageModalInstance();
+                    if (modal) {
+                        // 부트스트랩 모달 사용
+                        modal.show();
+                        return;
+                    }
+
+                    // ✅ 부트스트랩 JS 없는 환경용 수동 모달 처리
+                    el.classList.add('show');
+                    el.style.display = 'block';
+                    el.removeAttribute('aria-hidden');
+                    document.body.classList.add('modal-open');
+                    document.body.style.overflow = 'hidden';
+
+                    function handleClick(e) {
+                        // 바깥 영역 클릭 시 닫기
+                        if (e.target === el) {
+                            el.classList.remove('show');
+                            el.style.display = 'none';
+                            el.setAttribute('aria-hidden', 'true');
+                            document.body.classList.remove('modal-open');
+                            document.body.style.overflow = '';
+                            el.removeEventListener('click', handleClick);
+                        }
+                    }
+
+                    el.addEventListener('click', handleClick);
+                }
+
+                function initProductImagePopup() {
+                    const thumbs = document.querySelectorAll('.product-image-thumb');
+                    if (!thumbs.length) return;
+
+                    thumbs.forEach((thumb) => {
+                        if (thumb.dataset.popupBound === 'true') return;
+                        thumb.dataset.popupBound = 'true';
+
+                        thumb.addEventListener('click', function (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            const fullUrl = thumb.getAttribute('data-full-url') || thumb.getAttribute('src');
+                            if (!fullUrl) return;
+                            openImageModal(fullUrl);
+                        });
+                    });
+                }
+
+                function initImagePreview() {
+                    // 업로드 박스 클릭 시 : 이미지 있으면 팝업, 없으면 파일 선택
+                    document.querySelectorAll('.image-upload-box').forEach((box) => {
+                        const inputId = box.getAttribute('data-input-id');
+
+                        // 이미 서버에서 내려온 이미지가 있을 경우 미리 등록
+                        const innerImg = box.querySelector('.product-image-thumb, img');
+                        if (innerImg) {
+                            const fullUrl = innerImg.getAttribute('data-full-url') || innerImg.getAttribute('src');
+                            if (fullUrl) {
+                                previewImages[box.id] = fullUrl;
+                            }
+                        }
+
+                        box.addEventListener('click', function () {
+                            if (previewImages[box.id]) {
+                                openImageModal(previewImages[box.id]);
+                            } else if (inputId) {
+                                const inputEl = document.getElementById(inputId);
+                                if (inputEl) inputEl.click();
+                            }
+                        });
+                    });
+
+                    // 썸네일이 이미 있는 경우도 팝업 이벤트 연결
+                    initProductImagePopup();
+                }
+
+                // ===== 기타 초기화 =====
+                function initSalePeriodRecalc() {
+                    updateProductInfo();
+                }
+
+                function fn_toggleDisplayYn(checkbox) {
+                    const hiddenField = document.getElementById('displayYnValue');
+                    if (hiddenField && checkbox) {
+                        hiddenField.value = checkbox.checked ? 'Y' : 'N';
+                    }
+                }
+
+                function initDisplayToggle() {
+                    const displayYnCheckbox = document.getElementById('displayYnCheckbox');
+                    fn_toggleDisplayYn(displayYnCheckbox);
+                    if (displayYnCheckbox) {
+                        displayYnCheckbox.addEventListener('change', function (e) {
+                            fn_toggleDisplayYn(e.target);
+                        });
+                    }
+                }
+
+                function initBundlePopup() {
+                    const addButton = document.getElementById('addBundleButton');
+                    if (addButton) {
+                        addButton.addEventListener('click', function (e) {
+                            e.preventDefault();
+                            fn_addBundlePopup();
+                        });
+                    }
+                }
+
+                function initUnloadCleanup() {
+                    window.addEventListener('beforeunload', function () {
+                        Object.values(objectUrlMap).forEach((url) => URL.revokeObjectURL(url));
+                    });
+                }
+
+                // ===== 저장 버튼 처리 =====
+                function fn_save() {
+                    // 1) 스마트에디터 내용 textarea로 반영
                     syncEditorContent();
+
+                    // 2) 페이지 나갈 때 뜨는 beforeunload 경고 끄기
+                    window.onbeforeunload = null;
+
+                    // 3) 실제 폼 제출
                     if (document.productForm) {
                         document.productForm.submit();
                     }
-                };
-            }
-
-            function syncEditorContent() {
-                if (oEditors && oEditors.getById && oEditors.getById["mdContent"]) {
-                    oEditors.getById["mdContent"].exec("UPDATE_CONTENTS_FIELD", []);
                 }
-            }
-
-            // === 구성상품 관련 로직 ===
-            function calculateSalePeriod(components) {
-                if (!components || components.length === 0) {
-                    return { start: '', end: '' };
-                }
-
-                const starts = components
-                    .map(c => c.saleStartDate)
-                    .filter(Boolean)
-                    .sort();
-                const ends = components
-                    .map(c => c.saleEndDate)
-                    .filter(Boolean)
-                    .sort();
-
-                if (starts.length === 0 || ends.length === 0) {
-                    return { start: '', end: '' };
-                }
-
-                const latestStart = starts[starts.length - 1];
-                const earliestEnd = ends[0];
-
-                if (latestStart > earliestEnd) {
-                    return { start: '', end: '' };
-                }
-
-                return { start: latestStart, end: earliestEnd };
-            }
-
-            function fn_addBundlePopup() {
-                const url = '<c:url value="/admin/product/popup/bundleList.do"/>';
-                const name = 'bundlePopup';
-                const option = 'width=1000,height=800,scrollbars=yes';
-                window.open(url, name, option);
-            }
-
-            function addBundleRow(item) {
-                bundleList.push(normalizeBundleItem(item));
-                renderBundleTable();
-                updateProductInfo();
-            }
-
-            function removeBundleRow(index) {
-                bundleList.splice(index, 1);
-                renderBundleTable();
-                updateProductInfo();
-            }
-
-            function renderBundleTable() {
-                const tbody = document.getElementById('bundleTableBody');
-                tbody.innerHTML = '';
-
-                if (bundleList.length === 0) {
-                    tbody.innerHTML = '<tr id="emptyRow"><td colspan="14" class="text-muted py-4">구성 상품이 없습니다.</td></tr>';
-                    return;
-                }
-
-                bundleList.forEach((item, index) => {
-                    const salePrice = Number(item.salePrice) || 0;
-                    const costPrice = Number(item.costPrice) || 0;
-                    const vatAmount = Number(item.vatAmount) || 0;
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>\${item.sellerName}</td>
-                        <td>\${item.productName}</td>
-                        <td>\${item.saleTypeName || item.saleType}</td>
-                        <td>\${item.saleStatusName}</td>
-                        <td class="text-end">\${salePrice.toLocaleString()}</td>
-                        <td class="text-end">\${costPrice.toLocaleString()}</td>
-                        <td class="text-end">\${vatAmount.toLocaleString()}</td>
-                        <td>\${item.storageTypeName}</td>
-                        <td>\${item.processTypeName}</td>
-                        <td>\${item.divisionTypeName}</td>
-                        <td>\${item.regDt}</td>
-                        <td>\${item.modDt}</td>
-                        <td>\${item.displayYn == 'Y' ? '노출' : '비노출'}</td>
-                        <td>
-                            <button type="button" class="btn btn-secondary btn-sm" style="font-size:0.8rem;" disabled>수정</button>
-                            <button type="button" class="btn btn-secondary btn-sm" style="font-size:0.8rem;" onclick="removeBundleRow(\${index})">삭제</button>
-                            <input type="hidden" name="compositionList[\${index}].bundleId" value="\${item.bundleId}">
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            }
-
-            function updateProductInfo() {
-                const salePriceInput = document.getElementById('salePrice');
-                const costPriceInput = document.getElementById('costPrice');
-                const vatAmountInput = document.getElementById('vatAmount');
-                const saleStartDateInput = document.getElementById('saleStartDate');
-                const saleEndDateInput = document.getElementById('saleEndDate');
-                const sellerSelect = document.getElementById('sellerId');
-
-                if (bundleList.length > 0) {
-                    let totalSale = 0, totalCost = 0, totalVat = 0;
-                    let rawSellerId = null;
-                    let defaultSellerId = null;
-
-                    bundleList.forEach(item => {
-                        totalSale += Number(item.salePrice) || 0;
-                        totalCost += Number(item.costPrice) || 0;
-                        totalVat += Number(item.vatAmount) || 0;
-
-                        const saleTypeCode = (item.saleType || '').toString();
-                        const saleTypeName = item.saleTypeName || '';
-                        const isRawMaterial = saleTypeName.indexOf('원물') > -1 || saleTypeCode.toLowerCase().indexOf('raw') > -1;
-
-                        if (!defaultSellerId && item.sellerId) {
-                            defaultSellerId = item.sellerId;
-                        }
-
-                        if (!rawSellerId && isRawMaterial && item.sellerId) {
-                            rawSellerId = item.sellerId;
-                        }
-                    });
-
-                    salePriceInput.value = totalSale;
-                    costPriceInput.value = totalCost;
-                    vatAmountInput.value = totalVat;
-
-                    salePriceInput.readOnly = true;
-                    costPriceInput.readOnly = true;
-                    vatAmountInput.readOnly = true;
-
-                    if (rawSellerId) {
-                        sellerSelect.value = rawSellerId;
-                    } else if (defaultSellerId) {
-                        sellerSelect.value = defaultSellerId;
-                    }
-
-                    const { start, end } = calculateSalePeriod(bundleList);
-
-                    saleStartDateInput.value = start;
-                    saleEndDateInput.value = end;
-                    const hasCalculatedPeriod = !!(start && end);
-                    saleStartDateInput.readOnly = hasCalculatedPeriod;
-                    saleEndDateInput.readOnly = hasCalculatedPeriod;
-                } else {
-                    salePriceInput.readOnly = false;
-                    costPriceInput.readOnly = false;
-                    vatAmountInput.readOnly = false;
-                    saleStartDateInput.readOnly = false;
-                    saleEndDateInput.readOnly = false;
-                }
-            }
-
-            function normalizeBundleItem(item) {
-                const safeDate = (value) => {
-                    if (!value) return '';
-                    return value.toString();
-                };
-
-                return {
-                    ...item,
-                    salePrice: Number(item.salePrice) || 0,
-                    costPrice: Number(item.costPrice) || 0,
-                    vatAmount: Number(item.vatAmount) || 0,
-                    saleStartDate: safeDate(item.saleStartDate),
-                    saleEndDate: safeDate(item.saleEndDate)
-                };
-            }
-
-            function fn_previewImage(input, boxId) {
-                const box = document.getElementById(boxId);
-                if (!input.files || input.files.length === 0 || !box) return;
-
-                const file = input.files[0];
-                const prevUrl = objectUrlMap[boxId];
-                if (prevUrl) {
-                    URL.revokeObjectURL(prevUrl);
-                }
-
-                const src = URL.createObjectURL(file);
-                objectUrlMap[boxId] = src;
-                previewImages[boxId] = src;
-
-                box.innerHTML = `
-                    <img src="${src}" alt="업로드 이미지" class="product-image-thumb" data-full-url="${src}" />
-                    <button type="button" class="btn btn-light btn-sm image-change-btn" onclick="event.stopPropagation(); document.getElementById('${input.id}').click();">변경</button>
-                `;
-
-                box.onclick = function () {
-                    openImageModal(src);
-                };
-
-                initProductImagePopup();
-            }
-
-            function openImageModal(src) {
-                const modalImg = document.getElementById('imagePreviewModalImg');
-                if (!modalImg) return;
-                modalImg.src = src;
-
-                if (imageModalInstance) {
-                    imageModalInstance.show();
-                    return;
-                }
-            });
-
-                if (!imageModalElement) return;
-                imageModalElement.classList.add('show');
-                imageModalElement.style.display = 'block';
-                imageModalElement.removeAttribute('aria-hidden');
-                document.body.classList.add('modal-open');
-                document.body.style.overflow = 'hidden';
-
-                fallbackModalCloser = function () {
-                    imageModalElement.classList.remove('show');
-                    imageModalElement.style.display = 'none';
-                    imageModalElement.setAttribute('aria-hidden', 'true');
-                    document.body.classList.remove('modal-open');
-                    document.body.style.overflow = '';
-                };
-
-                imageModalElement.addEventListener('click', fallbackModalCloser, { once: true });
-            }
-
-            function initProductImagePopup() {
-                const thumbs = document.querySelectorAll('.product-image-thumb');
-                if (!thumbs.length) return;
-
-                const modal = document.getElementById('imagePreviewModal');
-                const modalImg = document.getElementById('imagePreviewModalImg');
-                if (!modal || !modalImg) return;
-
-                thumbs.forEach((thumb) => {
-                    if (thumb.dataset.popupBound === 'true') return;
-
-                    thumb.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                        const fullUrl = thumb.getAttribute('data-full-url') || thumb.getAttribute('src');
-                        openImageModal(fullUrl);
-                    });
-
-                    thumb.dataset.popupBound = 'true';
-                });
-            }
-
-            function initImagePreview() {
-                document.querySelectorAll('.image-upload-box').forEach(box => {
-                    const inputId = box.getAttribute('data-input-id');
-                    box.addEventListener('click', function () {
-                        if (previewImages[box.id]) {
-                            openImageModal(previewImages[box.id]);
-                        } else if (inputId) {
-                            const inputEl = document.getElementById(inputId);
-                            if (inputEl) {
-                                inputEl.click();
-                            }
-                        }
-                    });
-                });
-
-                if (!imageModalElement) return;
-                imageModalElement.classList.add('show');
-                imageModalElement.style.display = 'block';
-                imageModalElement.removeAttribute('aria-hidden');
-                document.body.classList.add('modal-open');
-                document.body.style.overflow = 'hidden';
-
-                fallbackModalCloser = function () {
-                    imageModalElement.classList.remove('show');
-                    imageModalElement.style.display = 'none';
-                    imageModalElement.setAttribute('aria-hidden', 'true');
-                    document.body.classList.remove('modal-open');
-                    document.body.style.overflow = '';
-                };
-
-                imageModalElement.addEventListener('click', fallbackModalCloser, { once: true });
-            }
-
-            function initProductImagePopup() {
-                const thumbs = document.querySelectorAll('.product-image-thumb');
-                if (!thumbs.length) return;
-
-                const modal = document.getElementById('imagePreviewModal');
-                const modalImg = document.getElementById('imagePreviewModalImg');
-                if (!modal || !modalImg) return;
-
-                thumbs.forEach((thumb) => {
-                    if (thumb.dataset.popupBound === 'true') return;
-
-                    thumb.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                        const fullUrl = thumb.getAttribute('data-full-url') || thumb.getAttribute('src');
-                        openImageModal(fullUrl);
-                    });
-
-                    thumb.dataset.popupBound = 'true';
-                });
-            }
-
-            function initImagePreview() {
-                document.querySelectorAll('.image-upload-box').forEach((box) => {
-                    const inputId = box.getAttribute('data-input-id');
-                    box.addEventListener('click', function () {
-                        if (previewImages[box.id]) {
-                            openImageModal(previewImages[box.id]);
-                        } else if (inputId) {
-                            const inputEl = document.getElementById(inputId);
-                            if (inputEl) {
-                                inputEl.click();
-                            }
-                        }
-                    });
-                });
-
-                initProductImagePopup();
-            }
-
-            function initSalePeriodRecalc() {
-                updateProductInfo();
-            }
-
-            function fn_toggleDisplayYn(checkbox) {
-                const hiddenField = document.getElementById('displayYnValue');
-                if (hiddenField && checkbox) {
-                    hiddenField.value = checkbox.checked ? 'Y' : 'N';
-                }
-            }
-
-            function initDisplayToggle() {
-                const displayYnCheckbox = document.getElementById('displayYnCheckbox');
-                fn_toggleDisplayYn(displayYnCheckbox);
-                if (displayYnCheckbox) {
-                    displayYnCheckbox.addEventListener('change', function (e) {
-                        fn_toggleDisplayYn(e.target);
-                    });
-                }
-            }
-
-            function initBundlePopup() {
-                const addButton = document.getElementById('addBundleButton');
-                if (addButton) {
-                    addButton.addEventListener('click', function (e) {
-                        e.preventDefault();
-                        fn_addBundlePopup();
-                    });
-                }
-            }
-
-            function initUnloadCleanup() {
-                window.addEventListener('beforeunload', function () {
-                    Object.values(objectUrlMap).forEach((url) => URL.revokeObjectURL(url));
-                });
-            }
-        </script>
+            </script>

@@ -4,9 +4,9 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.egovframe.rte.fdl.cmmn.EgovAbstractServiceImpl;
 import org.springframework.stereotype.Service;
 
-import org.egovframe.rte.fdl.cmmn.EgovAbstractServiceImpl;
 import kr.co.matpam.admin.product.service.ProductService;
 import kr.co.matpam.admin.product.service.ProductVO;
 
@@ -29,5 +29,15 @@ public class ProductServiceImpl extends EgovAbstractServiceImpl implements Produ
     @Override
     public ProductVO selectProduct(Long productNo) throws Exception {
         return productDAO.selectProduct(productNo);
+    }
+
+    @Override
+    public void insertProduct(ProductVO vo) throws Exception {
+        productDAO.insertProduct(vo);
+    }
+
+    @Override
+    public void updateProduct(ProductVO vo) throws Exception {
+        productDAO.updateProduct(vo);
     }
 }
