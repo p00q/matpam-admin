@@ -1,6 +1,7 @@
 package kr.co.matpam.admin.product.web;
 
 import java.util.Date;
+import java.util.List;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import kr.co.matpam.admin.code.service.CodeManagementService;
 import kr.co.matpam.admin.member.service.MemberService;
@@ -59,25 +61,56 @@ public class ProductController {
     // ② 저장 처리 (POST)
     @RequestMapping(value = "/admin/product/productRegist.do", method = RequestMethod.POST)
     public String saveProduct(
-            @ModelAttribute("product") ProductVO product,
+            ProductVO product,
+            @RequestParam(value = "files", required = false) List<MultipartFile> files,
             HttpServletRequest request) throws Exception {
 
-        LOGGER.debug("== saveProduct() 진입 ==");
-        LOGGER.debug("상품명: {}", product.getProductName());
-        LOGGER.debug("판매가격: {}", product.getSalePrice());
-        LOGGER.debug("판매 시작일: {}", product.getSaleStartDate());
-        LOGGER.debug("판매 종료일: {}", product.getSaleEndDate());
-        LOGGER.debug("판매자ID: {}", product.getSellerId());
-        LOGGER.debug("노출여부: {}", product.getDisplayYn());
-
-        if (product.getProductNo() == null) {
-            LOGGER.info("신규 상품 등록 시작");
-            productService.insertProduct(product);
-            LOGGER.info("신규 상품 등록 완료");
+        LOGGER.info("== saveProduct() 진입 ==");
+        LOGGER.info("상품명: {}", product.getProductName());
+        LOGGER.info("판매가격: {}", product.getSalePrice());
+        LOGGER.info("원가: {}", product.getCostPrice());
+        LOGGER.info("부가세: {}", product.getVatAmount());
+        LOGGER.info("판매 시작일: {}", product.getSaleStartDate());
+        LOGGER.info("판매 종료일: {}", product.getSaleEndDate());
+        LOGGER.info("판매자ID: {}", product.getSellerId());
+        LOGGER.info("노출여부: {}", product.getDisplayYn());
+        
+        // 파일 로깅
+        if (files != null && !files.isEmpty()) {
+            LOGGER.info("업로드된 파일 개수: {}", files.size());
+            for (int i = 0; i < files.size(); i++) {
+                MultipartFile file = files.get(i);
+                if (file != null && !file.isEmpty()) {
+                    LOGGER.info("파일[{}]: {}, size: {}", i, file.getOriginalFilename(), file.getSize());
+                }
+            }
         } else {
-            LOGGER.info("상품 수정 시작 - productNo: {}", product.getProductNo());
-            productService.updateProduct(product);
-            LOGGER.info("상품 수정 완료");
+            LOGGER.info("업로드된 파일 없음");
+        }
+        
+        // compositionList 로깅
+        if (product.getCompositionList() != null) {
+            LOGGER.info("구성상품 개수: {}", product.getCompositionList().size());
+            for (int i = 0; i < product.getCompositionList().size(); i++) {
+                LOGGER.info("구성상품[{}] bundleId: {}", i, product.getCompositionList().get(i).getBundleId());
+            }
+        } else {
+            LOGGER.info("구성상품 목록: null");
+        }
+
+        try {
+            if (product.getProductNo() == null) {
+                LOGGER.info("신규 상품 등록 시작");
+                productService.insertProduct(product);
+                LOGGER.info("신규 상품 등록 완료");
+            } else {
+                LOGGER.info("상품 수정 시작 - productNo: {}", product.getProductNo());
+                productService.updateProduct(product);
+                LOGGER.info("상품 수정 완료");
+            }
+        } catch (Exception e) {
+            LOGGER.error("상품 저장 중 오류 발생", e);
+            throw e;
         }
 
         return "redirect:/admin/product/productList.do";
