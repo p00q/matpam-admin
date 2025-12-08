@@ -61,19 +61,35 @@ public class ProductController {
     // ② 저장 처리 (POST)
     @RequestMapping(value = "/admin/product/productRegist.do", method = RequestMethod.POST)
     public String saveProduct(
-            ProductVO product,
+            @RequestParam(value = "productNo", required = false) Integer productNo,
+            @RequestParam(value = "productName", required = false) String productName,
+            @RequestParam(value = "salePrice", required = false) Integer salePrice,
+            @RequestParam(value = "costPrice", required = false) Integer costPrice,
+            @RequestParam(value = "vatAmount", required = false) Integer vatAmount,
+            @RequestParam(value = "saleStartDate", required = false) String saleStartDate,
+            @RequestParam(value = "saleEndDate", required = false) String saleEndDate,
+            @RequestParam(value = "displayYn", required = false) String displayYn,
+            @RequestParam(value = "sellerId", required = false) Long sellerId,
+            @RequestParam(value = "productSummary", required = false) String productSummary,
+            @RequestParam(value = "mdComment", required = false) String mdComment,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "paymentInfo", required = false) String paymentInfo,
+            @RequestParam(value = "shippingInfo", required = false) String shippingInfo,
+            @RequestParam(value = "exchangeReturnInfo", required = false) String exchangeReturnInfo,
+            @RequestParam(value = "refundInfo", required = false) String refundInfo,
             @RequestParam(value = "files", required = false) List<MultipartFile> files,
             HttpServletRequest request) throws Exception {
 
         LOGGER.info("== saveProduct() 진입 ==");
-        LOGGER.info("상품명: {}", product.getProductName());
-        LOGGER.info("판매가격: {}", product.getSalePrice());
-        LOGGER.info("원가: {}", product.getCostPrice());
-        LOGGER.info("부가세: {}", product.getVatAmount());
-        LOGGER.info("판매 시작일: {}", product.getSaleStartDate());
-        LOGGER.info("판매 종료일: {}", product.getSaleEndDate());
-        LOGGER.info("판매자ID: {}", product.getSellerId());
-        LOGGER.info("노출여부: {}", product.getDisplayYn());
+        LOGGER.info("productNo: {}", productNo);
+        LOGGER.info("상품명: {}", productName);
+        LOGGER.info("판매가격: {}", salePrice);
+        LOGGER.info("원가: {}", costPrice);
+        LOGGER.info("부가세: {}", vatAmount);
+        LOGGER.info("판매 시작일: {}", saleStartDate);
+        LOGGER.info("판매 종료일: {}", saleEndDate);
+        LOGGER.info("판매자ID: {}", sellerId);
+        LOGGER.info("노출여부: {}", displayYn);
         
         // 파일 로깅
         if (files != null && !files.isEmpty()) {
@@ -87,15 +103,30 @@ public class ProductController {
         } else {
             LOGGER.info("업로드된 파일 없음");
         }
+
+        // ProductVO 수동 생성
+        ProductVO product = new ProductVO();
+        product.setProductNo(productNo);
+        product.setProductName(productName);
+        product.setSalePrice(salePrice);
+        product.setCostPrice(costPrice);
+        product.setVatAmount(vatAmount);
+        product.setDisplayYn(displayYn);
+        product.setSellerId(sellerId);
+        product.setProductSummary(productSummary);
+        product.setMdComment(mdComment);
+        product.setDescription(description);
+        product.setPaymentInfo(paymentInfo);
+        product.setShippingInfo(shippingInfo);
+        product.setExchangeReturnInfo(exchangeReturnInfo);
+        product.setRefundInfo(refundInfo);
         
-        // compositionList 로깅
-        if (product.getCompositionList() != null) {
-            LOGGER.info("구성상품 개수: {}", product.getCompositionList().size());
-            for (int i = 0; i < product.getCompositionList().size(); i++) {
-                LOGGER.info("구성상품[{}] bundleId: {}", i, product.getCompositionList().get(i).getBundleId());
-            }
-        } else {
-            LOGGER.info("구성상품 목록: null");
+        // 날짜 파싱
+        if (saleStartDate != null && !saleStartDate.trim().isEmpty()) {
+            product.setSaleStartDate(saleStartDate);
+        }
+        if (saleEndDate != null && !saleEndDate.trim().isEmpty()) {
+            product.setSaleEndDate(saleEndDate);
         }
 
         try {
