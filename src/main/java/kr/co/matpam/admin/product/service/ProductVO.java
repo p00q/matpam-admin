@@ -44,7 +44,7 @@ public class ProductVO implements Serializable {
     private String searchEndDate;
 
     /** 상품번호 (PK) */
-    private Long productNo;
+    private Integer productNo;
 
     /** 상품명 */
     private String productName;
@@ -176,11 +176,11 @@ public class ProductVO implements Serializable {
         this.searchEndDate = searchEndDate;
     }
 
-    public Long getProductNo() {
+    public Integer getProductNo() {
         return productNo;
     }
 
-    public void setProductNo(Long productNo) {
+    public void setProductNo(Integer productNo) {
         this.productNo = productNo;
     }
 
