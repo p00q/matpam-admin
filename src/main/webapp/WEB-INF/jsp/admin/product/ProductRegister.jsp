@@ -87,6 +87,25 @@
                     </div>
                 </div>
 
+                <!-- 구성상품 데이터를 JSON으로 전달 -->
+                <script type="application/json" id="compositionData">
+                    [
+                        <c:forEach var="comp" items="${product.compositionList}" varStatus="status">
+                        {
+                            "bundleId": <c:out value="${comp.bundleId}" default="0"/>,
+                            "productName": "<c:out value='${comp.productName}' escapeXml='true'/>",
+                            "saleType": "<c:out value='${comp.saleType}'/>",
+                            "saleTypeName": "<c:out value='${comp.saleTypeName}'/>",
+                            "salePrice": <c:out value="${comp.salePrice}" default="0"/>,
+                            "costPrice": <c:out value="${comp.costPrice}" default="0"/>,
+                            "vatAmount": <c:out value="${comp.vatAmount}" default="0"/>,
+                            "displayYn": "<c:out value='${comp.displayYn}' default='Y'/>",
+                            "sellerName": "<c:out value='${comp.sellerName}'/>"
+                        }<c:if test="${!status.last}">,</c:if>
+                        </c:forEach>
+                    ]
+                </script>
+
                 <form name="productForm" method="post"
                     action="${pageContext.request.contextPath}/admin/product/productRegist.do"
                     enctype="multipart/form-data">
@@ -704,31 +723,53 @@
                 // ===== 기존 구성상품 로딩 =====
                 function loadExistingCompositions() {
                     console.log('loadExistingCompositions called');
-                    <c:if test="${not empty product.compositionList}">
-                    console.log('Composition list exists');
-                    <c:forEach var="comp" items="${product.compositionList}" varStatus="status">
-                    bundleList.push({
-                        bundleId: <c:out value="${comp.bundleId}" default="0"/>,
-                        productName: "<c:out value='${comp.productName}' escapeXml='true'/>",
-                        saleType: "<c:out value='${comp.saleType}' default=''/>",
-                        saleTypeName: "<c:out value='${comp.saleTypeName}' default=''/>",
-                        salePrice: <c:out value="${comp.salePrice}" default="0"/>,
-                        costPrice: <c:out value="${comp.costPrice}" default="0"/>,
-                        vatAmount: <c:out value="${comp.vatAmount}" default="0"/>,
-                        displayYn: "<c:out value='${comp.displayYn}' default='Y'/>",
-                        sellerName: "<c:out value='${comp.sellerName}' default=''/>",
-                        saleStatusName: '',
-                        storageTypeName: '',
-                        processTypeName: '',
-                        divisionTypeName: '',
-                        regDt: '',
-                        modDt: ''
-                    });
-                    </c:forEach>
-                    console.log('Final bundleList:', bundleList);
-                    renderBundleTable();
-                    updateProductInfo();
-                    </c:if>
+                    
+                    try {
+                        const dataElement = document.getElementById('compositionData');
+                        if (!dataElement) {
+                            console.log('No composition data element found');
+                            return;
+                        }
+                        
+                        const jsonText = dataElement.textContent || dataElement.innerText;
+                        console.log('JSON text:', jsonText);
+                        
+                        const compositions = JSON.parse(jsonText);
+                        console.log('Parsed compositions:', compositions);
+                        
+                        if (compositions && compositions.length > 0) {
+                            compositions.forEach(function(comp) {
+                                if (comp.bundleId > 0) {
+                                    bundleList.push({
+                                        bundleId: comp.bundleId,
+                                        productName: comp.productName || '',
+                                        saleType: comp.saleType || '',
+                                        saleTypeName: comp.saleTypeName || '',
+                                        salePrice: comp.salePrice || 0,
+                                        costPrice: comp.costPrice || 0,
+                                        vatAmount: comp.vatAmount || 0,
+                                        displayYn: comp.displayYn || 'Y',
+                                        sellerName: comp.sellerName || '',
+                                        saleStatusName: '',
+                                        storageTypeName: '',
+                                        processTypeName: '',
+                                        divisionTypeName: '',
+                                        regDt: '',
+                                        modDt: ''
+                                    });
+                                    console.log('Added composition:', comp.bundleId, comp.productName);
+                                }
+                            });
+                            
+                            console.log('Final bundleList:', bundleList);
+                            renderBundleTable();
+                            updateProductInfo();
+                        } else {
+                            console.log('No compositions found');
+                        }
+                    } catch (e) {
+                        console.error('Error loading compositions:', e);
+                    }
                 }
 
                 // ===== 저장 버튼 처리 =====
