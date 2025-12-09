@@ -702,33 +702,51 @@
 
                 // ===== 기존 구성상품 로딩 =====
                 function loadExistingCompositions() {
+                    console.log('loadExistingCompositions 호출됨');
+                    
                     // JSP에서 서버 데이터를 JavaScript 배열로 변환
-                    <c:if test="${product.compositionList != null && not empty product.compositionList}">
+                    <c:if test="${not empty product.compositionList}">
+                        console.log('구성상품 목록 있음');
                         <c:forEach var="comp" items="${product.compositionList}" varStatus="status">
-                            bundleList.push({
-                                bundleId: ${comp.bundleId},
-                                productName: '<c:out value="${comp.productName}" escapeXml="true"/>',
-                                saleType: '<c:out value="${comp.saleType}"/>',
-                                saleTypeName: '<c:out value="${comp.saleTypeName}"/>',
-                                salePrice: ${comp.salePrice != null ? comp.salePrice : 0},
-                                costPrice: ${comp.costPrice != null ? comp.costPrice : 0},
-                                vatAmount: ${comp.vatAmount != null ? comp.vatAmount : 0},
-                                displayYn: '<c:out value="${comp.displayYn}"/>',
-                                sellerName: '<c:out value="${comp.sellerName}"/>',
-                                saleStatusName: '',
-                                storageTypeName: '',
-                                processTypeName: '',
-                                divisionTypeName: '',
-                                regDt: '',
-                                modDt: ''
-                            });
+                            var bundleId = <c:out value="${comp.bundleId}" default="0"/>;
+                            var productName = '<c:out value="${comp.productName}" escapeXml="true"/>';
+                            var salePrice = <c:out value="${comp.salePrice}" default="0"/>;
+                            var costPrice = <c:out value="${comp.costPrice}" default="0"/>;
+                            var vatAmount = <c:out value="${comp.vatAmount}" default="0"/>;
+                            
+                            console.log('구성상품 추가:', bundleId, productName);
+                            
+                            if (bundleId > 0) {
+                                bundleList.push({
+                                    bundleId: bundleId,
+                                    productName: productName,
+                                    saleType: '<c:out value="${comp.saleType}" default=""/>',
+                                    saleTypeName: '<c:out value="${comp.saleTypeName}" default=""/>',
+                                    salePrice: salePrice,
+                                    costPrice: costPrice,
+                                    vatAmount: vatAmount,
+                                    displayYn: '<c:out value="${comp.displayYn}" default="Y"/>',
+                                    sellerName: '<c:out value="${comp.sellerName}" default=""/>',
+                                    saleStatusName: '',
+                                    storageTypeName: '',
+                                    processTypeName: '',
+                                    divisionTypeName: '',
+                                    regDt: '',
+                                    modDt: ''
+                                });
+                            }
                         </c:forEach>
+                        
+                        console.log('최종 bundleList:', bundleList);
                         
                         // 테이블 렌더링
                         renderBundleTable();
                         
                         // 상품 정보 자동 계산 (가격, 판매기간)
                         updateProductInfo();
+                    </c:if>
+                    <c:if test="${empty product.compositionList}">
+                        console.log('구성상품 목록 없음');
                     </c:if>
                 }
 

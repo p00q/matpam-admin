@@ -54,6 +54,22 @@ public class ProductController {
             product.setSaleStartDate(new Date());
         }
 
+        // 구성상품 로깅
+        if (productNo != null) {
+            LOGGER.info("상품 조회 - productNo: {}", productNo);
+            if (product.getCompositionList() != null) {
+                LOGGER.info("구성상품 개수: {}", product.getCompositionList().size());
+                for (int i = 0; i < product.getCompositionList().size(); i++) {
+                    LOGGER.info("구성상품[{}]: bundleId={}, productName={}", 
+                        i, 
+                        product.getCompositionList().get(i).getBundleId(),
+                        product.getCompositionList().get(i).getProductName());
+                }
+            } else {
+                LOGGER.warn("구성상품 목록이 null입니다");
+            }
+        }
+
         model.addAttribute("product", product);
         model.addAttribute("sellers", memberService.selectSellerList());
         model.addAttribute("contentPage", "/WEB-INF/jsp/admin/product/ProductRegister.jsp");
