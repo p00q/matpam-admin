@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import org.egovframe.rte.psl.dataaccess.EgovAbstractMapper;
 import kr.co.matpam.admin.product.service.ProductVO;
+import kr.co.matpam.admin.product.service.ProductCompositionVO;
 
 @Repository("productDAO")
 public class ProductDAO extends EgovAbstractMapper {
@@ -43,5 +44,19 @@ public class ProductDAO extends EgovAbstractMapper {
      */
     public void updateProduct(ProductVO vo) throws Exception {
         update("kr.co.matpam.admin.product.service.impl.ProductMapper.updateProduct", vo);
+    }
+
+    /**
+     * 구성상품 저장
+     */
+    public void insertProductComposition(ProductCompositionVO vo) throws Exception {
+        insert("kr.co.matpam.admin.product.service.impl.ProductMapper.insertProductComposition", vo);
+    }
+
+    /**
+     * 구성상품 삭제 (상품번호로)
+     */
+    public void deleteProductCompositionsByProductNo(Long productNo) throws Exception {
+        delete("kr.co.matpam.admin.product.service.impl.ProductMapper.deleteProductCompositionsByProductNo", productNo);
     }
 }

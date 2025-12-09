@@ -78,6 +78,7 @@ public class ProductController {
             @RequestParam(value = "exchangeReturnInfo", required = false) String exchangeReturnInfo,
             @RequestParam(value = "refundInfo", required = false) String refundInfo,
             @RequestParam(value = "files", required = false) List<MultipartFile> files,
+            @RequestParam(value = "compositionList[0].bundleId", required = false) List<Long> compositionBundleIds,
             HttpServletRequest request) throws Exception {
 
         LOGGER.info("== saveProduct() 진입 ==");
@@ -128,6 +129,23 @@ public class ProductController {
         if (saleEndDate != null && !saleEndDate.trim().isEmpty()) {
             product.setSaleEndDate(saleEndDate);
         }
+
+        // 구성상품 목록 설정
+        List<ProductCompositionVO> compositionList = new ArrayList<>();
+        if (compositionBundleIds != null && !compositionBundleIds.isEmpty()) {
+            LOGGER.info("구성상품 개수: {}", compositionBundleIds.size());
+            for (int i = 0; i < compositionBundleIds.size(); i++) {
+                Long bundleId = compositionBundleIds.get(i);
+                if (bundleId != null && bundleId > 0) {
+                    ProductCompositionVO comp = new ProductCompositionVO();
+                    comp.setBundleId(bundleId);
+                    comp.setSortOrder(i + 1);
+                    compositionList.add(comp);
+                    LOGGER.info("구성상품[{}] bundleId: {}", i, bundleId);
+                }
+            }
+        }
+        product.setCompositionList(compositionList);
 
         try {
             if (product.getProductNo() == null) {

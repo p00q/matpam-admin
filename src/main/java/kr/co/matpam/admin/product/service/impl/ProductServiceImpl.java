@@ -6,9 +6,11 @@ import javax.annotation.Resource;
 
 import org.egovframe.rte.fdl.cmmn.EgovAbstractServiceImpl;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import kr.co.matpam.admin.product.service.ProductService;
 import kr.co.matpam.admin.product.service.ProductVO;
+import kr.co.matpam.admin.product.service.ProductCompositionVO;
 
 @Service("productService")
 public class ProductServiceImpl extends EgovAbstractServiceImpl implements ProductService {

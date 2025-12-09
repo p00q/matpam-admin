@@ -160,7 +160,7 @@
     </select>
 
 
-    <insert id="insertProduct" parameterType="kr.co.matpam.admin.product.service.ProductVO">
+    <insert id="insertProduct" parameterType="kr.co.matpam.admin.product.service.ProductVO" useGeneratedKeys="true" keyProperty="productNo">
         INSERT INTO TB_PRODUCT (
             PRODUCT_NAME,
             SALE_PRICE,
@@ -221,6 +221,25 @@
             MOD_DT                = NOW()
         WHERE PRODUCT_NO = #{productNo}
     </update>
+
+    <!-- 구성상품 저장 -->
+    <insert id="insertProductComposition" parameterType="kr.co.matpam.admin.product.service.ProductCompositionVO">
+        INSERT INTO TB_PRODUCT_COMPOSITION (
+            PRODUCT_NO,
+            BUNDLE_ID,
+            SORT_ORDER
+        ) VALUES (
+            #{productNo},
+            #{bundleId},
+            #{sortOrder}
+        )
+    </insert>
+
+    <!-- 구성상품 삭제 (상품번호로) -->
+    <delete id="deleteProductCompositionsByProductNo" parameterType="long">
+        DELETE FROM TB_PRODUCT_COMPOSITION
+        WHERE PRODUCT_NO = #{value}
+    </delete>
 
 
 </mapper>
