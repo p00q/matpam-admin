@@ -445,7 +445,6 @@
                             <td>
                                 <button type="button" class="btn btn-secondary btn-sm" style="font-size:0.8rem;" disabled>수정</button>
                                 <button type="button" class="btn btn-secondary btn-sm" style="font-size:0.8rem;" onclick="removeBundleRow(\${index})">삭제</button>
-                                <input type="hidden" name="compositionList[\${index}].bundleId" value="\${item.bundleId}">
                             </td>
                         `;
                         tbody.appendChild(tr);
@@ -763,12 +762,27 @@
                         }
                     });
 
-                    // 5) 페이지 나갈 때 뜨는 beforeunload 경고 끄기
+                    // 5) 구성상품 목록을 hidden input으로 추가
+                    // 기존 구성상품 hidden input 제거
+                    const form = document.productForm;
+                    const oldInputs = form.querySelectorAll('input[name^="compositionList"]');
+                    oldInputs.forEach(input => input.remove());
+
+                    // bundleList를 기반으로 새로운 hidden input 생성
+                    bundleList.forEach((item, index) => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'compositionList[' + index + '].bundleId';
+                        input.value = item.bundleId;
+                        form.appendChild(input);
+                    });
+
+                    // 6) 페이지 나갈 때 뜨는 beforeunload 경고 끄기
                     window.onbeforeunload = null;
 
-                    // 6) 실제 폼 제출
-                    if (document.productForm) {
-                        document.productForm.submit();
+                    // 7) 실제 폼 제출
+                    if (form) {
+                        form.submit();
                     }
                 }
             </script>
