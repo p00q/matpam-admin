@@ -87,25 +87,6 @@
                     </div>
                 </div>
 
-                <!-- 구성상품 데이터를 JSON으로 전달 -->
-                <script type="application/json" id="compositionData">
-                    [
-                        <c:forEach var="comp" items="${product.compositionList}" varStatus="status">
-                        {
-                            "bundleId": <c:out value="${comp.bundleId}" default="0"/>,
-                            "productName": "<c:out value='${comp.productName}' escapeXml='true'/>",
-                            "saleType": "<c:out value='${comp.saleType}'/>",
-                            "saleTypeName": "<c:out value='${comp.saleTypeName}'/>",
-                            "salePrice": <c:out value="${comp.salePrice}" default="0"/>,
-                            "costPrice": <c:out value="${comp.costPrice}" default="0"/>,
-                            "vatAmount": <c:out value="${comp.vatAmount}" default="0"/>,
-                            "displayYn": "<c:out value='${comp.displayYn}' default='Y'/>",
-                            "sellerName": "<c:out value='${comp.sellerName}'/>"
-                        }<c:if test="${!status.last}">,</c:if>
-                        </c:forEach>
-                    ]
-                </script>
-
                 <form name="productForm" method="post"
                     action="${pageContext.request.contextPath}/admin/product/productRegist.do"
                     enctype="multipart/form-data">
