@@ -1,7 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-    <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-        <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-            <!-- 판매상품 등록 화면 -->
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<!-- 판매상품 등록 화면 -->
 
             <style>
                 .form-table th,
@@ -702,51 +703,47 @@
 
                 // ===== 기존 구성상품 로딩 =====
                 function loadExistingCompositions() {
-                    console.log('loadExistingCompositions 호출됨');
+                    console.log('loadExistingCompositions called');
                     
-                    // JSP에서 서버 데이터를 JavaScript 배열로 변환
                     <c:if test="${not empty product.compositionList}">
-                        console.log('구성상품 목록 있음');
-                        <c:forEach var="comp" items="${product.compositionList}" varStatus="status">
-                            var bundleId = <c:out value="${comp.bundleId}" default="0"/>;
-                            var productName = '<c:out value="${comp.productName}" escapeXml="true"/>';
-                            var salePrice = <c:out value="${comp.salePrice}" default="0"/>;
-                            var costPrice = <c:out value="${comp.costPrice}" default="0"/>;
-                            var vatAmount = <c:out value="${comp.vatAmount}" default="0"/>;
-                            
-                            console.log('구성상품 추가:', bundleId, productName);
-                            
-                            if (bundleId > 0) {
-                                bundleList.push({
-                                    bundleId: bundleId,
-                                    productName: productName,
-                                    saleType: '<c:out value="${comp.saleType}" default=""/>',
-                                    saleTypeName: '<c:out value="${comp.saleTypeName}" default=""/>',
-                                    salePrice: salePrice,
-                                    costPrice: costPrice,
-                                    vatAmount: vatAmount,
-                                    displayYn: '<c:out value="${comp.displayYn}" default="Y"/>',
-                                    sellerName: '<c:out value="${comp.sellerName}" default=""/>',
-                                    saleStatusName: '',
-                                    storageTypeName: '',
-                                    processTypeName: '',
-                                    divisionTypeName: '',
-                                    regDt: '',
-                                    modDt: ''
-                                });
-                            }
-                        </c:forEach>
+                    console.log('Composition list exists');
+                    <c:forEach var="comp" items="${product.compositionList}" varStatus="status">
+                    try {
+                        var item = {
+                            bundleId: ${comp.bundleId != null ? comp.bundleId : 0},
+                            productName: '${fn:escapeXml(comp.productName)}',
+                            saleType: '${comp.saleType}',
+                            saleTypeName: '${comp.saleTypeName}',
+                            salePrice: ${comp.salePrice != null ? comp.salePrice : 0},
+                            costPrice: ${comp.costPrice != null ? comp.costPrice : 0},
+                            vatAmount: ${comp.vatAmount != null ? comp.vatAmount : 0},
+                            displayYn: '${comp.displayYn}',
+                            sellerName: '${comp.sellerName}',
+                            saleStatusName: '',
+                            storageTypeName: '',
+                            processTypeName: '',
+                            divisionTypeName: '',
+                            regDt: '',
+                            modDt: ''
+                        };
                         
-                        console.log('최종 bundleList:', bundleList);
+                        console.log('Adding composition:', item.bundleId, item.productName);
                         
-                        // 테이블 렌더링
-                        renderBundleTable();
-                        
-                        // 상품 정보 자동 계산 (가격, 판매기간)
-                        updateProductInfo();
+                        if (item.bundleId > 0) {
+                            bundleList.push(item);
+                        }
+                    } catch (e) {
+                        console.error('Error loading composition:', e);
+                    }
+                    </c:forEach>
+                    
+                    console.log('Final bundleList:', bundleList);
+                    renderBundleTable();
+                    updateProductInfo();
                     </c:if>
+                    
                     <c:if test="${empty product.compositionList}">
-                        console.log('구성상품 목록 없음');
+                    console.log('No composition list');
                     </c:if>
                 }
 
