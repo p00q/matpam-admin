@@ -235,12 +235,21 @@
 
                     <!-- 3. 상품 이미지 -->
                     <div class="section-header">상품 이미지</div>
+                    <div class="alert alert-info small mb-2">
+                        <i class="bi bi-info-circle me-1"></i>
+                        이미지는 로컬 환경에서만 미리보기가 가능합니다. 저장 후 다시 열면 이미지가 표시되지 않습니다. (서버 이미지 저장 기능 개발 예정)
+                    </div>
                     <div class="row g-2 mb-4">
                         <c:forEach begin="1" end="5" varStatus="status">
                             <div class="col">
                                 <div class="image-upload-box" id="imageBox${status.index}"
-                                    data-input-id="file${status.index}">
-                                    <div class="text-center text-muted small">이미지를 업로드하세요</div>
+                                    data-input-id="file${status.index}"
+                                    onclick="document.getElementById('file${status.index}').click();"
+                                    style="cursor: pointer;">
+                                    <div class="text-center text-muted small">
+                                        <i class="bi bi-cloud-upload fs-3 d-block mb-2"></i>
+                                        클릭하여 이미지 업로드
+                                    </div>
                                 </div>
                                 <input type="file" name="files" id="file${status.index}" style="display:none;"
                                     onchange="fn_previewImage(this, 'imageBox${status.index}')" accept="image/*" />
@@ -334,13 +343,24 @@
 
                 // 페이지 로딩 시 한 번만 호출
                 document.addEventListener('DOMContentLoaded', function () {
+                    console.log('DOMContentLoaded - 페이지 초기화 시작');
+                    
                     initSmartEditor();
                     initImagePreview();
                     initSalePeriodRecalc();
                     initBundlePopup();
                     initDisplayToggle();
                     initUnloadCleanup();
-
+                    
+                    // 구성상품 로딩 (수정 모드일 때만)
+                    loadExistingCompositions();
+                    
+                    // 이미지 미리보기 초기화 (썸네일이 있으면)
+                    setTimeout(function() {
+                        initProductImagePopup();
+                    }, 500);
+                    
+                    console.log('페이지 초기화 완료');
                 });
 
                 function initSmartEditor() {
@@ -581,23 +601,33 @@
                 }
 
                 function openImageModal(src) {
-                    // Blob URL 또는 빈 이미지는 모달 열지 않음
-                    if (!src || src.startsWith('blob:')) {
-                        console.warn('Invalid image source:', src);
+                    // 빈 이미지는 모달 열지 않음
+                    if (!src) {
+                        console.warn('이미지 소스가 없습니다');
                         return;
                     }
 
                     const el = document.getElementById('imagePreviewModal');
                     const img = document.getElementById('imagePreviewModalImg');
-                    if (!el || !img) return;
+                    if (!el || !img) {
+                        console.error('모달 요소를 찾을 수 없습니다');
+                        return;
+                    }
 
-                    img.src = src;
-                    
                     // 이미지 로드 실패 시 처리
                     img.onerror = function() {
-                        console.error('Failed to load image:', src);
-                        img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2VlZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSIgZmlsbD0iIzk5OSI+7J2066+47KeA66W8IOyImCDsl4bsnYw8L3RleHQ+PC9zdmc+';
+                        console.error('이미지 로드 실패:', src);
+                        // 기본 플레이스홀더 이미지
+                        img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+                            '<svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">' +
+                            '<rect width="400" height="400" fill="#f0f0f0"/>' +
+                            '<text x="50%" y="50%" font-size="20" text-anchor="middle" dy=".3em" fill="#999">' +
+                            '이미지를 불러올 수 없습니다' +
+                            '</text></svg>'
+                        );
                     };
+                    
+                    img.src = src;
 
                     const modal = getImageModalInstance();
                     if (modal) {
@@ -632,7 +662,10 @@
                     const thumbs = document.querySelectorAll('.product-image-thumb');
                     console.log('initProductImagePopup - 썸네일 개수:', thumbs.length);
                     
-                    if (!thumbs.length) return;
+                    if (!thumbs.length) {
+                        console.log('업로드된 이미지 없음');
+                        return;
+                    }
 
                     thumbs.forEach((thumb, index) => {
                         if (thumb.dataset.popupBound === 'true') return;
@@ -650,11 +683,10 @@
                                 return;
                             }
                             
-                            // Blob URL 체크
+                            // Blob URL 체크 - 경고만 표시하고 계속 진행
                             if (fullUrl.startsWith('blob:')) {
-                                console.error('Blob URL은 모달로 열 수 없습니다:', fullUrl);
-                                alert('이미지를 표시할 수 없습니다. 새로 업로드해주세요.');
-                                return;
+                                console.warn('Blob URL - 페이지 새로고침 시 사라질 수 있습니다:', fullUrl);
+                                // Blob URL도 현재 세션에서는 작동하므로 계속 진행
                             }
                             
                             openImageModal(fullUrl);
