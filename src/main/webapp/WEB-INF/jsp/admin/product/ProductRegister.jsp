@@ -630,9 +630,11 @@
 
                 function initProductImagePopup() {
                     const thumbs = document.querySelectorAll('.product-image-thumb');
+                    console.log('initProductImagePopup - 썸네일 개수:', thumbs.length);
+                    
                     if (!thumbs.length) return;
 
-                    thumbs.forEach((thumb) => {
+                    thumbs.forEach((thumb, index) => {
                         if (thumb.dataset.popupBound === 'true') return;
                         thumb.dataset.popupBound = 'true';
 
@@ -641,7 +643,20 @@
                             e.stopPropagation();
 
                             const fullUrl = thumb.getAttribute('data-full-url') || thumb.getAttribute('src');
-                            if (!fullUrl) return;
+                            console.log(`썸네일[${index}] 클릭 - URL:`, fullUrl);
+                            
+                            if (!fullUrl) {
+                                console.warn('이미지 URL이 없습니다');
+                                return;
+                            }
+                            
+                            // Blob URL 체크
+                            if (fullUrl.startsWith('blob:')) {
+                                console.error('Blob URL은 모달로 열 수 없습니다:', fullUrl);
+                                alert('이미지를 표시할 수 없습니다. 새로 업로드해주세요.');
+                                return;
+                            }
+                            
                             openImageModal(fullUrl);
                         });
                     });

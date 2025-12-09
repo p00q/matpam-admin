@@ -99,6 +99,18 @@ public class ProductController {
             HttpServletRequest request,
             org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) throws Exception {
 
+        System.out.println("========================================");
+        System.out.println("== saveProduct() 진입 ==");
+        System.out.println("productNo: " + productNo);
+        System.out.println("상품명: " + productName);
+        System.out.println("판매가격: " + salePrice);
+        System.out.println("원가: " + costPrice);
+        System.out.println("부가세: " + vatAmount);
+        System.out.println("판매 시작일: " + saleStartDate);
+        System.out.println("판매 종료일: " + saleEndDate);
+        System.out.println("판매자ID: " + sellerId);
+        System.out.println("노출여부: " + displayYn);
+        
         LOGGER.info("== saveProduct() 진입 ==");
         LOGGER.info("productNo: {}", productNo);
         LOGGER.info("상품명: {}", productName);
@@ -174,6 +186,9 @@ public class ProductController {
             
             index++;
         }
+        
+        System.out.println("총 구성상품 개수: " + compositionList.size());
+        System.out.println("========================================");
         
         LOGGER.info("총 구성상품 개수: {}", compositionList.size());
         product.setCompositionList(compositionList);
