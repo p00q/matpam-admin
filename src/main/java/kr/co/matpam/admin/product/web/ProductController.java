@@ -96,7 +96,8 @@ public class ProductController {
             @RequestParam(value = "exchangeReturnInfo", required = false) String exchangeReturnInfo,
             @RequestParam(value = "refundInfo", required = false) String refundInfo,
             @RequestParam(value = "files", required = false) List<MultipartFile> files,
-            HttpServletRequest request) throws Exception {
+            HttpServletRequest request,
+            org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) throws Exception {
 
         LOGGER.info("== saveProduct() 진입 ==");
         LOGGER.info("productNo: {}", productNo);
@@ -182,13 +183,16 @@ public class ProductController {
                 LOGGER.info("신규 상품 등록 시작");
                 productService.insertProduct(product);
                 LOGGER.info("신규 상품 등록 완료");
+                redirectAttributes.addFlashAttribute("message", "상품이 정상적으로 등록되었습니다.");
             } else {
                 LOGGER.info("상품 수정 시작 - productNo: {}", product.getProductNo());
                 productService.updateProduct(product);
                 LOGGER.info("상품 수정 완료");
+                redirectAttributes.addFlashAttribute("message", "상품이 정상적으로 수정되었습니다.");
             }
         } catch (Exception e) {
             LOGGER.error("상품 저장 중 오류 발생", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "상품 저장 중 오류가 발생했습니다: " + e.getMessage());
             throw e;
         }
 

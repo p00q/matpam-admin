@@ -581,11 +581,23 @@
                 }
 
                 function openImageModal(src) {
+                    // Blob URL 또는 빈 이미지는 모달 열지 않음
+                    if (!src || src.startsWith('blob:')) {
+                        console.warn('Invalid image source:', src);
+                        return;
+                    }
+
                     const el = document.getElementById('imagePreviewModal');
                     const img = document.getElementById('imagePreviewModalImg');
                     if (!el || !img) return;
 
                     img.src = src;
+                    
+                    // 이미지 로드 실패 시 처리
+                    img.onerror = function() {
+                        console.error('Failed to load image:', src);
+                        img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2VlZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSIgZmlsbD0iIzk5OSI+7J2066+47KeA66W8IOyImCDsl4bsnYw8L3RleHQ+PC9zdmc+';
+                    };
 
                     const modal = getImageModalInstance();
                     if (modal) {
