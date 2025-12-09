@@ -1,5 +1,6 @@
 package kr.co.matpam.admin.product.web;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.annotation.Resource;
@@ -17,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import kr.co.matpam.admin.code.service.CodeManagementService;
 import kr.co.matpam.admin.member.service.MemberService;
+import kr.co.matpam.admin.product.service.ProductCompositionVO;
 import kr.co.matpam.admin.product.service.ProductService;
 import kr.co.matpam.admin.product.service.ProductVO;
 
