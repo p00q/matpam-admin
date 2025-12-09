@@ -704,46 +704,30 @@
                 // ===== 기존 구성상품 로딩 =====
                 function loadExistingCompositions() {
                     console.log('loadExistingCompositions called');
-                    
                     <c:if test="${not empty product.compositionList}">
                     console.log('Composition list exists');
                     <c:forEach var="comp" items="${product.compositionList}" varStatus="status">
-                    try {
-                        var item = {
-                            bundleId: ${comp.bundleId != null ? comp.bundleId : 0},
-                            productName: '${fn:escapeXml(comp.productName)}',
-                            saleType: '${comp.saleType}',
-                            saleTypeName: '${comp.saleTypeName}',
-                            salePrice: ${comp.salePrice != null ? comp.salePrice : 0},
-                            costPrice: ${comp.costPrice != null ? comp.costPrice : 0},
-                            vatAmount: ${comp.vatAmount != null ? comp.vatAmount : 0},
-                            displayYn: '${comp.displayYn}',
-                            sellerName: '${comp.sellerName}',
-                            saleStatusName: '',
-                            storageTypeName: '',
-                            processTypeName: '',
-                            divisionTypeName: '',
-                            regDt: '',
-                            modDt: ''
-                        };
-                        
-                        console.log('Adding composition:', item.bundleId, item.productName);
-                        
-                        if (item.bundleId > 0) {
-                            bundleList.push(item);
-                        }
-                    } catch (e) {
-                        console.error('Error loading composition:', e);
-                    }
+                    bundleList.push({
+                        bundleId: <c:out value="${comp.bundleId}" default="0"/>,
+                        productName: "<c:out value='${comp.productName}' escapeXml='true'/>",
+                        saleType: "<c:out value='${comp.saleType}' default=''/>",
+                        saleTypeName: "<c:out value='${comp.saleTypeName}' default=''/>",
+                        salePrice: <c:out value="${comp.salePrice}" default="0"/>,
+                        costPrice: <c:out value="${comp.costPrice}" default="0"/>,
+                        vatAmount: <c:out value="${comp.vatAmount}" default="0"/>,
+                        displayYn: "<c:out value='${comp.displayYn}' default='Y'/>",
+                        sellerName: "<c:out value='${comp.sellerName}' default=''/>",
+                        saleStatusName: '',
+                        storageTypeName: '',
+                        processTypeName: '',
+                        divisionTypeName: '',
+                        regDt: '',
+                        modDt: ''
+                    });
                     </c:forEach>
-                    
                     console.log('Final bundleList:', bundleList);
                     renderBundleTable();
                     updateProductInfo();
-                    </c:if>
-                    
-                    <c:if test="${empty product.compositionList}">
-                    console.log('No composition list');
                     </c:if>
                 }
 
