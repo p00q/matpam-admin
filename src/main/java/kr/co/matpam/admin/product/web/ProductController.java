@@ -96,7 +96,6 @@ public class ProductController {
             @RequestParam(value = "exchangeReturnInfo", required = false) String exchangeReturnInfo,
             @RequestParam(value = "refundInfo", required = false) String refundInfo,
             @RequestParam(value = "files", required = false) List<MultipartFile> files,
-            @RequestParam(value = "compositionList[0].bundleId", required = false) List<Long> compositionBundleIds,
             HttpServletRequest request) throws Exception {
 
         LOGGER.info("== saveProduct() 진입 ==");
@@ -148,21 +147,34 @@ public class ProductController {
             product.setSaleEndDate(saleEndDate);
         }
 
-        // 구성상품 목록 설정
+        // 구성상품 목록 설정 - request에서 직접 파라미터 추출
         List<ProductCompositionVO> compositionList = new ArrayList<>();
-        if (compositionBundleIds != null && !compositionBundleIds.isEmpty()) {
-            LOGGER.info("구성상품 개수: {}", compositionBundleIds.size());
-            for (int i = 0; i < compositionBundleIds.size(); i++) {
-                Long bundleId = compositionBundleIds.get(i);
-                if (bundleId != null && bundleId > 0) {
+        int index = 0;
+        while (true) {
+            String paramName = "compositionList[" + index + "].bundleId";
+            String bundleIdStr = request.getParameter(paramName);
+            
+            if (bundleIdStr == null || bundleIdStr.trim().isEmpty()) {
+                break; // 더 이상 파라미터가 없으면 종료
+            }
+            
+            try {
+                Long bundleId = Long.parseLong(bundleIdStr);
+                if (bundleId > 0) {
                     ProductCompositionVO comp = new ProductCompositionVO();
                     comp.setBundleId(bundleId);
-                    comp.setSortOrder(i + 1);
+                    comp.setSortOrder(index + 1);
                     compositionList.add(comp);
-                    LOGGER.info("구성상품[{}] bundleId: {}", i, bundleId);
+                    LOGGER.info("구성상품[{}] bundleId: {}", index, bundleId);
                 }
+            } catch (NumberFormatException e) {
+                LOGGER.warn("Invalid bundleId format: {}", bundleIdStr);
             }
+            
+            index++;
         }
+        
+        LOGGER.info("총 구성상품 개수: {}", compositionList.size());
         product.setCompositionList(compositionList);
 
         try {
