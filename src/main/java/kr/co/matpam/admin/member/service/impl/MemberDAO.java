@@ -1,6 +1,7 @@
 package kr.co.matpam.admin.member.service.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Repository;
 
@@ -21,6 +22,14 @@ public class MemberDAO extends EgovAbstractMapper {
 
     public void insertMember(MemberVO memberVO) {
         insert("matpam.member.MemberMapper.insertMember", memberVO);
+    }
+
+    public void insertMemberCredit(MemberVO memberVO) {
+        insert("matpam.member.MemberMapper.insertMemberCredit", memberVO);
+    }
+
+    public void insertMemberAgreement(Map<String, Object> paramMap) {
+        insert("matpam.member.MemberMapper.insertMemberAgreement", paramMap);
     }
 
     public MemberVO selectMember(Long memberNo) {

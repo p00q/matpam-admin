@@ -1,7 +1,9 @@
 package kr.co.matpam.admin.member.service.impl;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -44,7 +46,15 @@ public class MemberServiceImpl extends EgovAbstractServiceImpl implements Member
     @Transactional
     public void insertMember(MemberVO memberVO) throws Exception {
         LOGGER.debug("Insert member: {}", memberVO.getMemberId());
+        if (!StringUtils.hasText(memberVO.getUseYn())) {
+            memberVO.setUseYn("Y");
+        }
+        memberVO.setAgreeYn("Y".equalsIgnoreCase(memberVO.getAgreeMarketing())
+                || "Y".equalsIgnoreCase(memberVO.getAgreeSms()) ? "Y" : "N");
         memberDAO.insertMember(memberVO);
+        memberDAO.insertMemberCredit(memberVO);
+        createAgreementRecord(memberVO, "MARKETING", memberVO.getAgreeMarketing());
+        createAgreementRecord(memberVO, "SMS", memberVO.getAgreeSms());
 
         List<MemberManagerVO> managers = sanitizeManagers(memberVO.getMemberManagers());
         if (!managers.isEmpty()) {
@@ -105,5 +115,19 @@ public class MemberServiceImpl extends EgovAbstractServiceImpl implements Member
         if (!mainAssigned && !managers.isEmpty()) {
             managers.get(0).setMainYn("Y");
         }
+    }
+
+    private void createAgreementRecord(MemberVO memberVO, String agreeType, String agreeYn) {
+        if (!StringUtils.hasText(agreeYn)) {
+            return;
+        }
+
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("memberId", memberVO.getMemberNo());
+        paramMap.put("agreeType", agreeType);
+        paramMap.put("agreeYn", agreeYn);
+        paramMap.put("agreeDt", memberVO.getJoinDate());
+
+        memberDAO.insertMemberAgreement(paramMap);
     }
 }

@@ -3,56 +3,62 @@
 <mapper namespace="matpam.member.MemberManagerMapper">
 
     <resultMap id="memberManagerResultMap" type="kr.co.matpam.admin.member.service.manager.MemberManagerVO">
-        <id property="managerNo" column="MANAGER_NO" />
-        <result property="memberNo" column="MEMBER_NO" />
-        <result property="managerName" column="MANAGER_NAME" />
-        <result property="mobileNumber" column="MOBILE_NUMBER" />
-        <result property="phoneNumber" column="PHONE_NUMBER" />
+        <id property="managerNo" column="CONTACT_ID" />
+        <result property="memberNo" column="MEMBER_ID" />
+        <result property="managerName" column="NAME" />
+        <result property="mobileNumber" column="MOBILE_NO" />
+        <result property="phoneNumber" column="PHONE_NO" />
         <result property="email" column="EMAIL" />
         <result property="mainYn" column="MAIN_YN" />
         <result property="useYn" column="USE_YN" />
     </resultMap>
 
     <insert id="insertMemberManagers" parameterType="java.util.List">
-        INSERT INTO TB_MEMBER_MANAGER (
-            MEMBER_NO,
-            MANAGER_NAME,
-            MOBILE_NUMBER,
-            PHONE_NUMBER,
+        INSERT INTO TB_MEMBER_CONTACT (
+            MEMBER_ID,
+            CONTACT_TYPE_CD,
+            NAME,
+            MOBILE_NO,
+            PHONE_NO,
             EMAIL,
-            MAIN_YN,
-            USE_YN
+            USE_YN,
+            REG_DT
         ) VALUES
         <foreach collection="list" item="manager" separator=",">
             (
             #{manager.memberNo},
+            <choose>
+                <when test="manager.mainYn != null and manager.mainYn.toUpperCase() == 'Y'">'MAIN'</when>
+                <otherwise>'SUB'</otherwise>
+            </choose>,
             #{manager.managerName},
             #{manager.mobileNumber},
             #{manager.phoneNumber},
             #{manager.email},
-            #{manager.mainYn},
-            #{manager.useYn}
+            #{manager.useYn},
+            CURRENT_TIMESTAMP
             )
         </foreach>
     </insert>
 
     <delete id="deleteMemberManagersByMemberNo" parameterType="long">
-        DELETE FROM TB_MEMBER_MANAGER
-        WHERE MEMBER_NO = #{value}
+        DELETE FROM TB_MEMBER_CONTACT
+        WHERE MEMBER_ID = #{value}
     </delete>
 
     <select id="selectMemberManagers" resultMap="memberManagerResultMap" parameterType="long">
-        SELECT MANAGER_NO,
-               MEMBER_NO,
-               MANAGER_NAME,
-               MOBILE_NUMBER,
-               PHONE_NUMBER,
+        SELECT CONTACT_ID,
+               MEMBER_ID,
+               NAME,
+               MOBILE_NO,
+               PHONE_NO,
                EMAIL,
-               MAIN_YN,
+               CASE WHEN CONTACT_TYPE_CD = 'MAIN' THEN 'Y' ELSE 'N' END AS MAIN_YN,
                USE_YN
-          FROM TB_MEMBER_MANAGER
-         WHERE MEMBER_NO = #{value}
-         ORDER BY MAIN_YN DESC, MANAGER_NO ASC
+          FROM TB_MEMBER_CONTACT
+         WHERE MEMBER_ID = #{value}
+           AND USE_YN = 'Y'
+         ORDER BY CONTACT_TYPE_CD DESC, CONTACT_ID ASC
     </select>
 
 </mapper>

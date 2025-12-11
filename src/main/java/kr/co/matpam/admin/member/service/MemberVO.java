@@ -19,6 +19,8 @@ public class MemberVO implements Serializable {
     private String businessNumber;
     private String ceoName;
     private String contactNumber;
+    private String agreeYn;
+    private String useYn;
     private String email;
     private String companyPhone;
     private String postcode;
@@ -119,6 +121,22 @@ public class MemberVO implements Serializable {
 
     public void setContactNumber(String contactNumber) {
         this.contactNumber = contactNumber;
+    }
+
+    public String getAgreeYn() {
+        return agreeYn;
+    }
+
+    public void setAgreeYn(String agreeYn) {
+        this.agreeYn = agreeYn;
+    }
+
+    public String getUseYn() {
+        return useYn;
+    }
+
+    public void setUseYn(String useYn) {
+        this.useYn = useYn;
     }
 
     public String getManagerName() {
