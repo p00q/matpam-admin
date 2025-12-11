@@ -86,8 +86,8 @@
             m.POSTCODE,
             m.ADDRESS,
             m.ADDRESS_DETAIL,
-            mgr.NAME AS MANAGER_NAME,
-            mgr.MOBILE_NO AS MANAGER_CONTACT,
+            mgr.CONTACT_NAME AS MANAGER_NAME,
+            mgr.PHONE_NO AS MANAGER_CONTACT,
             mgr.MOBILE_NO AS MANAGER_MOBILE,
             mgr.PHONE_NO AS MANAGER_PHONE,
             mgr.EMAIL AS MANAGER_EMAIL,
@@ -104,7 +104,7 @@
             m.USE_YN
         FROM TB_MEMBER m
             LEFT JOIN (
-                SELECT MEMBER_ID, NAME, MOBILE_NO, PHONE_NO, EMAIL
+                SELECT MEMBER_ID, CONTACT_NAME, MOBILE_NO, PHONE_NO, EMAIL
                   FROM TB_MEMBER_CONTACT
                  WHERE USE_YN = 'Y'
                    AND CONTACT_TYPE_CD = 'MAIN'
@@ -155,8 +155,8 @@
             m.POSTCODE,
             m.ADDRESS,
             m.ADDRESS_DETAIL,
-            mgr.NAME AS MANAGER_NAME,
-            mgr.MOBILE_NO AS MANAGER_CONTACT,
+            mgr.CONTACT_NAME AS MANAGER_NAME,
+            mgr.PHONE_NO AS MANAGER_CONTACT,
             mgr.MOBILE_NO AS MANAGER_MOBILE,
             mgr.PHONE_NO AS MANAGER_PHONE,
             mgr.EMAIL AS MANAGER_EMAIL,
@@ -173,7 +173,7 @@
             m.USE_YN
         FROM TB_MEMBER m
             LEFT JOIN (
-                SELECT MEMBER_ID, NAME, MOBILE_NO, PHONE_NO, EMAIL
+                SELECT MEMBER_ID, CONTACT_NAME, MOBILE_NO, PHONE_NO, EMAIL
                   FROM TB_MEMBER_CONTACT
                  WHERE USE_YN = 'Y'
                    AND CONTACT_TYPE_CD = 'MAIN'
@@ -215,8 +215,8 @@
             m.POSTCODE,
             m.ADDRESS,
             m.ADDRESS_DETAIL,
-            mgr.NAME AS MANAGER_NAME,
-            mgr.MOBILE_NO AS MANAGER_CONTACT,
+            mgr.CONTACT_NAME AS MANAGER_NAME,
+            mgr.PHONE_NO AS MANAGER_CONTACT,
             mgr.MOBILE_NO AS MANAGER_MOBILE,
             mgr.PHONE_NO AS MANAGER_PHONE,
             mgr.EMAIL AS MANAGER_EMAIL,
@@ -233,7 +233,7 @@
             m.USE_YN
         FROM TB_MEMBER m
             LEFT JOIN (
-                SELECT MEMBER_ID, NAME, MOBILE_NO, PHONE_NO, EMAIL
+                SELECT MEMBER_ID, CONTACT_NAME, MOBILE_NO, PHONE_NO, EMAIL
                   FROM TB_MEMBER_CONTACT
                  WHERE USE_YN = 'Y'
                    AND CONTACT_TYPE_CD = 'MAIN'
