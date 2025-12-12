@@ -28,7 +28,7 @@
             (
             #{manager.memberNo},
             <choose>
-                <when test="manager.mainYn != null and manager.mainYn.toUpperCase() == 'Y'">'MAIN'</when>
+                <when test='manager.mainYn != null and manager.mainYn.toUpperCase() == "Y"'>'MAIN'</when>
                 <otherwise>'SUB'</otherwise>
             </choose>,
             #{manager.managerName},

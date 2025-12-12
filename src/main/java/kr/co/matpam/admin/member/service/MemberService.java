@@ -12,6 +12,8 @@ public interface MemberService {
 
     void insertMember(MemberVO memberVO) throws Exception;
 
+    void updateMember(MemberVO memberVO) throws Exception;
+
     List<MemberManagerVO> selectMemberManagers(Long memberNo) throws Exception;
 
     MemberVO selectMember(Long memberNo) throws Exception;

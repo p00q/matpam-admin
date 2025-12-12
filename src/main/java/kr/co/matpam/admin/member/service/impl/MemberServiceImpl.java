@@ -1,5 +1,6 @@
 package kr.co.matpam.admin.member.service.impl;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -46,25 +47,84 @@ public class MemberServiceImpl extends EgovAbstractServiceImpl implements Member
     @Transactional
     public void insertMember(MemberVO memberVO) throws Exception {
         LOGGER.debug("Insert member: {}", memberVO.getMemberId());
+
+        // 0. 기본값 세팅 (NPE / 제약조건 방어)
         if (!StringUtils.hasText(memberVO.getUseYn())) {
             memberVO.setUseYn("Y");
         }
-        memberVO.setAgreeYn("Y".equalsIgnoreCase(memberVO.getAgreeMarketing())
-                || "Y".equalsIgnoreCase(memberVO.getAgreeSms()) ? "Y" : "N");
-        memberDAO.insertMember(memberVO);
-        memberDAO.insertMemberCredit(memberVO);
-        createAgreementRecord(memberVO, "MARKETING", memberVO.getAgreeMarketing());
-        createAgreementRecord(memberVO, "SMS", memberVO.getAgreeSms());
+        if (!StringUtils.hasText(memberVO.getJoinDate())) {
+            memberVO.setJoinDate(LocalDate.now().toString());
+        }
+        if (!StringUtils.hasText(memberVO.getAgreeMarketing())) {
+            memberVO.setAgreeMarketing("N");
+        }
+        if (!StringUtils.hasText(memberVO.getAgreeSms())) {
+            memberVO.setAgreeSms("N");
+        }
+
+        // 🔥 1) 로그인 아이디 중복 체크 — 여기 추가!
+        if (memberDAO.selectMemberCountByLoginId(memberVO.getMemberId()) > 0) {
+            throw new IllegalStateException("이미 사용 중인 아이디입니다.");
+        }
+
+        LOGGER.debug("Insert member: {}", memberVO.getMemberId());
+
+        // 전체 동의 여부(Y/N) 파생
+        memberVO.setAgreeYn(
+                ("Y".equalsIgnoreCase(memberVO.getAgreeMarketing())
+                        || "Y".equalsIgnoreCase(memberVO.getAgreeSms())) ? "Y" : "N");
+
+        // 1. 회원 기본정보 저장
+        memberDAO.insertMember(memberVO); // 여기서 memberNo(PK) 세팅
+        Long memberId = memberVO.getMemberNo();
+
+        // 2. (선택) 여신정보 저장 안 함
+        // memberDAO.insertMemberCredit(memberVO);
+
+        // 3. 동의 정보 저장 (TB_MEMBER_AGREE)
+        createAgreementRecord(memberId, "MARKETING",
+                memberVO.getAgreeMarketing(),
+                memberVO.getJoinDate());
+
+        createAgreementRecord(memberId, "SMS",
+                memberVO.getAgreeSms(),
+                memberVO.getJoinDate());
+
+        // 4. 담당자 정보 저장
+        List<MemberManagerVO> managers = sanitizeManagers(memberVO.getMemberManagers());
+        if (!managers.isEmpty()) {
+            ensureSingleMainManager(managers);
+            for (MemberManagerVO manager : managers) {
+                manager.setMemberNo(memberId);
+                if (!StringUtils.hasText(manager.getUseYn())) {
+                    manager.setUseYn("Y");
+                }
+            }
+            memberManagerDAO.insertMemberManagers(managers);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void updateMember(MemberVO memberVO) throws Exception {
+        LOGGER.debug("Update member: {}", memberVO.getMemberId());
+
+        // 1. 회원 기본정보 수정
+        memberDAO.updateMember(memberVO);
+        Long memberId = memberVO.getMemberNo();
+
+        // 2. 담당자 정보 수정 (All Delete -> Insert)
+        memberManagerDAO.deleteMemberManagersByMemberNo(memberId);
 
         List<MemberManagerVO> managers = sanitizeManagers(memberVO.getMemberManagers());
         if (!managers.isEmpty()) {
             ensureSingleMainManager(managers);
-            managers.forEach(manager -> {
-                manager.setMemberNo(memberVO.getMemberNo());
+            for (MemberManagerVO manager : managers) {
+                manager.setMemberNo(memberId);
                 if (!StringUtils.hasText(manager.getUseYn())) {
                     manager.setUseYn("Y");
                 }
-            });
+            }
             memberManagerDAO.insertMemberManagers(managers);
         }
     }
@@ -117,17 +177,23 @@ public class MemberServiceImpl extends EgovAbstractServiceImpl implements Member
         }
     }
 
-    private void createAgreementRecord(MemberVO memberVO, String agreeType, String agreeYn) {
+    private void createAgreementRecord(Long memberId,
+            String agreeTypeCd, // MARKETING / SMS
+            String agreeYn, // Y / N / null
+            String agreeDt) throws Exception {
+
+        // 동의값이 비어있으면 기본은 N
         if (!StringUtils.hasText(agreeYn)) {
-            return;
+            agreeYn = "N";
         }
 
-        Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put("memberId", memberVO.getMemberNo());
-        paramMap.put("agreeType", agreeType);
-        paramMap.put("agreeYn", agreeYn);
-        paramMap.put("agreeDt", memberVO.getJoinDate());
+        Map<String, Object> param = new HashMap<>();
+        param.put("memberId", memberId);
+        param.put("agreeTypeCd", agreeTypeCd);
+        param.put("agreeYn", "Y".equalsIgnoreCase(agreeYn) ? "Y" : "N");
+        param.put("agreeDt", agreeDt); // 가입일자 기준으로 사용
 
-        memberDAO.insertMemberAgreement(paramMap);
+        memberDAO.insertMemberAgreement(param);
     }
+
 }

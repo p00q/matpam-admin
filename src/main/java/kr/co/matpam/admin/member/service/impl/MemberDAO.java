@@ -43,4 +43,12 @@ public class MemberDAO extends EgovAbstractMapper {
     public List<MemberVO> selectSellerList() {
         return selectList("matpam.member.MemberMapper.selectSellerList", null);
     }
+
+    public int selectMemberCountByLoginId(String loginId) {
+        return selectOne("matpam.member.MemberMapper.selectMemberCountByLoginId", loginId);
+    }
+
+    public void updateMember(MemberVO memberVO) {
+        update("matpam.member.MemberMapper.updateMember", memberVO);
+    }
 }

@@ -6,10 +6,9 @@
         <id property="memberNo" column="MEMBER_NO" />
         <result property="memberType" column="MEMBER_TYPE" />
         <result property="memberTypeName" column="MEMBER_TYPE_NAME" />
-        <result property="region" column="REGION" />
         <result property="memberId" column="MEMBER_ID" />
         <result property="companyName" column="COMPANY_NAME" />
-        <result property="businessNumber" column="BUSINESS_NUMBER" />
+        <result property="businessNumber" column="BIZ_REG_NO" />
         <result property="ceoName" column="CEO_NAME" />
         <result property="contactNumber" column="CONTACT_NUMBER" />
         <result property="email" column="EMAIL" />
@@ -28,6 +27,7 @@
         <result property="memberGradeName" column="MEMBER_GRADE_NAME" />
         <result property="status" column="STATUS" />
         <result property="statusName" column="STATUS_NAME" />
+        <!-- TB_MEMBER 에 AGREE_YN 컬럼이 없으므로, 일단 컬럼 매핑은 남겨두되 SELECT 에서는 별도 컬럼을 만들지 않음(널 매핑) -->
         <result property="agreeYn" column="AGREE_YN" />
         <result property="useYn" column="USE_YN" />
         <result property="agreeMarketing" column="AGREE_MARKETING" />
@@ -35,24 +35,30 @@
         <result property="joinDate" column="JOIN_DATE" jdbcType="DATE" />
     </resultMap>
 
+    <!-- 검색 조건 -->
     <sql id="memberWhere">
         <where>
+            <!-- 가입상태 : TB_MEMBER.join_status_cd -->
             <if test="status != null and status != ''">
-                AND m.MEMBER_STATUS_CD = #{status}
+                AND m.JOIN_STATUS_CD = #{status}
             </if>
+
+            <!-- 회원타입 : TB_MEMBER.member_type_cd -->
             <if test="memberType != null and memberType != ''">
                 AND m.MEMBER_TYPE_CD = #{memberType}
             </if>
-            <if test="region != null and region != ''">
-                AND m.BRTC_CD = #{region}
-            </if>
+
+            <!-- 가입일자 FROM/TO : TB_MEMBER.join_dt -->
             <if test="joinDateFrom != null and joinDateFrom != ''">
                 AND m.JOIN_DT <![CDATA[>=]]> #{joinDateFrom}
             </if>
             <if test="joinDateTo != null and joinDateTo != ''">
                 AND m.JOIN_DT <![CDATA[<=]]> #{joinDateTo}
             </if>
-            <if test="searchKeyword != null and searchKeyword != '' and searchCondition != null and searchCondition != ''">
+
+            <!-- 검색조건(아이디/업체명) -->
+            <if test="searchKeyword != null and searchKeyword != '' 
+                      and searchCondition != null and searchCondition != ''">
                 <choose>
                     <when test="searchCondition == 'memberId'">
                         AND m.LOGIN_ID LIKE CONCAT('%', #{searchKeyword}, '%')
@@ -61,229 +67,224 @@
                         AND m.COMPANY_NAME LIKE CONCAT('%', #{searchKeyword}, '%')
                     </when>
                     <otherwise>
-                        AND (m.LOGIN_ID LIKE CONCAT('%', #{searchKeyword}, '%')
-                             OR m.COMPANY_NAME LIKE CONCAT('%', #{searchKeyword}, '%'))
+                        AND (
+                            m.LOGIN_ID    LIKE CONCAT('%', #{searchKeyword}, '%')
+                            OR m.COMPANY_NAME LIKE CONCAT('%', #{searchKeyword}, '%')
+                        )
                     </otherwise>
                 </choose>
             </if>
         </where>
     </sql>
 
+    <!-- 회원 목록 -->
     <select id="selectMemberList" resultMap="memberResultMap"
-        parameterType="kr.co.matpam.admin.member.service.MemberDefaultVO">
+            parameterType="kr.co.matpam.admin.member.service.MemberDefaultVO">
         SELECT
-            m.MEMBER_ID AS MEMBER_NO,
-            m.MEMBER_TYPE_CD AS MEMBER_TYPE,
+            m.MEMBER_ID        AS MEMBER_NO,
+            m.MEMBER_TYPE_CD   AS MEMBER_TYPE,
             mt.DETAIL_CODE_NAME AS MEMBER_TYPE_NAME,
-            m.BRTC_CD AS REGION,
-            m.LOGIN_ID AS MEMBER_ID,
+            m.LOGIN_ID         AS MEMBER_ID,
             m.COMPANY_NAME,
-            m.BUSINESS_NUMBER,
+            m.BIZ_REG_NO,
             m.CEO_NAME,
-            m.CEO_MOBILE_NO AS CONTACT_NUMBER,
+            m.CEO_MOBILE_NO    AS CONTACT_NUMBER,
             m.EMAIL,
-            m.COMPANY_PHONE_NO AS COMPANY_PHONE,
-            m.POSTCODE,
-            m.ADDRESS,
-            m.ADDRESS_DETAIL,
-            mgr.CONTACT_NAME AS MANAGER_NAME,
-            mgr.PHONE_NO AS MANAGER_CONTACT,
-            mgr.MOBILE_NO AS MANAGER_MOBILE,
-            mgr.PHONE_NO AS MANAGER_PHONE,
-            mgr.EMAIL AS MANAGER_EMAIL,
-            cr.CREDIT_LIMIT,
-            cr.MEAT_MONEY,
-            NULL AS MEMBER_GRADE,
-            NULL AS MEMBER_GRADE_NAME,
-            m.MEMBER_STATUS_CD AS STATUS,
+            m.COMPANY_TEL_NO   AS COMPANY_PHONE,
+            m.ZIP_CODE         AS POSTCODE,
+            m.ADDR1            AS ADDRESS,
+            m.ADDR2            AS ADDRESS_DETAIL,
+            mgr.NAME           AS MANAGER_NAME,
+            mgr.PHONE_NO       AS MANAGER_CONTACT,
+            mgr.MOBILE_NO      AS MANAGER_MOBILE,
+            mgr.PHONE_NO       AS MANAGER_PHONE,
+            mgr.EMAIL          AS MANAGER_EMAIL,
+            m.CREDIT_LIMIT,
+            m.MEAT_MONEY,
+            m.MEMBER_GRADE_CD  AS MEMBER_GRADE,
+            mg.DETAIL_CODE_NAME AS MEMBER_GRADE_NAME,
+            m.JOIN_STATUS_CD   AS STATUS,
             st.DETAIL_CODE_NAME AS STATUS_NAME,
-            m.AGREE_YN,
+            /* m.AGREE_YN 컬럼 없음 → 필요하면 나중에 파생 컬럼으로 추가 */
+            NULL               AS AGREE_YN,
             ag.AGREE_MARKETING,
             ag.AGREE_SMS,
-            m.JOIN_DT AS JOIN_DATE,
+            m.JOIN_DT          AS JOIN_DATE,
             m.USE_YN
         FROM TB_MEMBER m
             LEFT JOIN (
-                SELECT MEMBER_ID, CONTACT_NAME, MOBILE_NO, PHONE_NO, EMAIL
+                SELECT MEMBER_ID, NAME, MOBILE_NO, PHONE_NO, EMAIL
                   FROM TB_MEMBER_CONTACT
                  WHERE USE_YN = 'Y'
                    AND CONTACT_TYPE_CD = 'MAIN'
             ) mgr ON mgr.MEMBER_ID = m.MEMBER_ID
             LEFT JOIN (
-                SELECT MEMBER_ID, MAX(CREDIT_LIMIT) AS CREDIT_LIMIT, MAX(MEAT_MONEY) AS MEAT_MONEY
-                  FROM TB_MEMBER_CREDIT
-                 WHERE USE_YN = 'Y'
-                 GROUP BY MEMBER_ID
-            ) cr ON cr.MEMBER_ID = m.MEMBER_ID
-            LEFT JOIN (
                 SELECT MEMBER_ID,
                        MAX(CASE WHEN AGREE_TYPE_CD = 'MARKETING' THEN AGREE_YN END) AS AGREE_MARKETING,
-                       MAX(CASE WHEN AGREE_TYPE_CD = 'SMS' THEN AGREE_YN END) AS AGREE_SMS
+                       MAX(CASE WHEN AGREE_TYPE_CD = 'SMS'       THEN AGREE_YN END) AS AGREE_SMS
                   FROM TB_MEMBER_AGREE
                  WHERE USE_YN = 'Y'
                  GROUP BY MEMBER_ID
             ) ag ON ag.MEMBER_ID = m.MEMBER_ID
-            LEFT JOIN TB_DETAIL_CODE mt ON m.MEMBER_TYPE_CD = mt.DETAIL_CODE
-                AND mt.GROUP_CODE = '003' AND mt.CODE = '003001'
-            LEFT JOIN TB_DETAIL_CODE st ON m.MEMBER_STATUS_CD = st.DETAIL_CODE
-                AND st.GROUP_CODE = '004' AND st.CODE = '004001'
+            LEFT JOIN TB_DETAIL_CODE mt ON m.MEMBER_TYPE_CD = mt.DETAIL_CODE_ID
+                AND mt.CODE_GROUP_ID = 'MEMBER_TYPE'
+                AND mt.CODE_ID       = 'MEMBER_ROLE'
+            LEFT JOIN TB_DETAIL_CODE st ON m.JOIN_STATUS_CD = st.DETAIL_CODE_ID
+                AND st.CODE_GROUP_ID = 'JOIN_STATUS'
+                AND st.CODE_ID       = 'JOIN_STATUS'
+            LEFT JOIN TB_DETAIL_CODE mg ON m.MEMBER_GRADE_CD = mg.DETAIL_CODE_ID
+                AND mg.CODE_GROUP_ID = 'MEMBER_GRADE'
+                AND mg.CODE_ID       = 'MEMBER_GRADE'
         <include refid="memberWhere" />
         ORDER BY m.JOIN_DT DESC
         LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
     </select>
 
+    <!-- 목록 카운트 -->
     <select id="selectMemberListTotCnt" resultType="int"
-        parameterType="kr.co.matpam.admin.member.service.MemberDefaultVO">
+            parameterType="kr.co.matpam.admin.member.service.MemberDefaultVO">
         SELECT COUNT(1)
         FROM TB_MEMBER m
         <include refid="memberWhere" />
     </select>
 
+    <!-- 단건 조회 (PK) -->
     <select id="selectMember" resultMap="memberResultMap" parameterType="long">
         SELECT
-            m.MEMBER_ID AS MEMBER_NO,
-            m.MEMBER_TYPE_CD AS MEMBER_TYPE,
+            m.MEMBER_ID        AS MEMBER_NO,
+            m.MEMBER_TYPE_CD   AS MEMBER_TYPE,
             mt.DETAIL_CODE_NAME AS MEMBER_TYPE_NAME,
-            m.BRTC_CD AS REGION,
-            m.LOGIN_ID AS MEMBER_ID,
+            m.LOGIN_ID         AS MEMBER_ID,
             m.COMPANY_NAME,
-            m.BUSINESS_NUMBER,
+            m.BIZ_REG_NO,
             m.CEO_NAME,
-            m.CEO_MOBILE_NO AS CONTACT_NUMBER,
+            m.CEO_MOBILE_NO    AS CONTACT_NUMBER,
             m.EMAIL,
-            m.COMPANY_PHONE_NO AS COMPANY_PHONE,
-            m.POSTCODE,
-            m.ADDRESS,
-            m.ADDRESS_DETAIL,
-            mgr.CONTACT_NAME AS MANAGER_NAME,
-            mgr.PHONE_NO AS MANAGER_CONTACT,
-            mgr.MOBILE_NO AS MANAGER_MOBILE,
-            mgr.PHONE_NO AS MANAGER_PHONE,
-            mgr.EMAIL AS MANAGER_EMAIL,
-            cr.CREDIT_LIMIT,
-            cr.MEAT_MONEY,
-            NULL AS MEMBER_GRADE,
-            NULL AS MEMBER_GRADE_NAME,
-            m.MEMBER_STATUS_CD AS STATUS,
+            m.COMPANY_TEL_NO   AS COMPANY_PHONE,
+            m.ZIP_CODE         AS POSTCODE,
+            m.ADDR1            AS ADDRESS,
+            m.ADDR2            AS ADDRESS_DETAIL,
+            mgr.NAME           AS MANAGER_NAME,
+            mgr.PHONE_NO       AS MANAGER_CONTACT,
+            mgr.MOBILE_NO      AS MANAGER_MOBILE,
+            mgr.PHONE_NO       AS MANAGER_PHONE,
+            mgr.EMAIL          AS MANAGER_EMAIL,
+            m.CREDIT_LIMIT,
+            m.MEAT_MONEY,
+            m.MEMBER_GRADE_CD  AS MEMBER_GRADE,
+            NULL               AS MEMBER_GRADE_NAME,
+            m.JOIN_STATUS_CD   AS STATUS,
             st.DETAIL_CODE_NAME AS STATUS_NAME,
-            m.AGREE_YN,
+            NULL               AS AGREE_YN,
             ag.AGREE_MARKETING,
             ag.AGREE_SMS,
-            m.JOIN_DT AS JOIN_DATE,
+            m.JOIN_DT          AS JOIN_DATE,
             m.USE_YN
         FROM TB_MEMBER m
             LEFT JOIN (
-                SELECT MEMBER_ID, CONTACT_NAME, MOBILE_NO, PHONE_NO, EMAIL
+                SELECT MEMBER_ID, NAME, MOBILE_NO, PHONE_NO, EMAIL
                   FROM TB_MEMBER_CONTACT
                  WHERE USE_YN = 'Y'
                    AND CONTACT_TYPE_CD = 'MAIN'
             ) mgr ON mgr.MEMBER_ID = m.MEMBER_ID
             LEFT JOIN (
-                SELECT MEMBER_ID, MAX(CREDIT_LIMIT) AS CREDIT_LIMIT, MAX(MEAT_MONEY) AS MEAT_MONEY
-                  FROM TB_MEMBER_CREDIT
-                 WHERE USE_YN = 'Y'
-                 GROUP BY MEMBER_ID
-            ) cr ON cr.MEMBER_ID = m.MEMBER_ID
-            LEFT JOIN (
                 SELECT MEMBER_ID,
                        MAX(CASE WHEN AGREE_TYPE_CD = 'MARKETING' THEN AGREE_YN END) AS AGREE_MARKETING,
-                       MAX(CASE WHEN AGREE_TYPE_CD = 'SMS' THEN AGREE_YN END) AS AGREE_SMS
+                       MAX(CASE WHEN AGREE_TYPE_CD = 'SMS'       THEN AGREE_YN END) AS AGREE_SMS
                   FROM TB_MEMBER_AGREE
                  WHERE USE_YN = 'Y'
                  GROUP BY MEMBER_ID
             ) ag ON ag.MEMBER_ID = m.MEMBER_ID
-            LEFT JOIN TB_DETAIL_CODE mt ON m.MEMBER_TYPE_CD = mt.DETAIL_CODE
-                AND mt.GROUP_CODE = '003' AND mt.CODE = '003001'
-            LEFT JOIN TB_DETAIL_CODE st ON m.MEMBER_STATUS_CD = st.DETAIL_CODE
-                AND st.GROUP_CODE = '004' AND st.CODE = '004001'
+            LEFT JOIN TB_DETAIL_CODE mt ON m.MEMBER_TYPE_CD = mt.DETAIL_CODE_ID
+                AND mt.CODE_GROUP_ID = 'MEMBER_TYPE'
+                AND mt.CODE_ID       = 'MEMBER_ROLE'
+            LEFT JOIN TB_DETAIL_CODE st ON m.JOIN_STATUS_CD = st.DETAIL_CODE_ID
+                AND st.CODE_GROUP_ID = 'JOIN_STATUS'
+                AND st.CODE_ID       = 'JOIN_STATUS'
         WHERE m.MEMBER_ID = #{value}
     </select>
 
+    <!-- 단건 조회 (LOGIN_ID) -->
     <select id="selectMemberById" resultMap="memberResultMap" parameterType="string">
         SELECT
-            m.MEMBER_ID AS MEMBER_NO,
-            m.MEMBER_TYPE_CD AS MEMBER_TYPE,
+            m.MEMBER_ID        AS MEMBER_NO,
+            m.MEMBER_TYPE_CD   AS MEMBER_TYPE,
             mt.DETAIL_CODE_NAME AS MEMBER_TYPE_NAME,
-            m.BRTC_CD AS REGION,
-            m.LOGIN_ID AS MEMBER_ID,
+            m.LOGIN_ID         AS MEMBER_ID,
             m.COMPANY_NAME,
-            m.BUSINESS_NUMBER,
+            m.BIZ_REG_NO,
             m.CEO_NAME,
-            m.CEO_MOBILE_NO AS CONTACT_NUMBER,
+            m.CEO_MOBILE_NO    AS CONTACT_NUMBER,
             m.EMAIL,
-            m.COMPANY_PHONE_NO AS COMPANY_PHONE,
-            m.POSTCODE,
-            m.ADDRESS,
-            m.ADDRESS_DETAIL,
-            mgr.CONTACT_NAME AS MANAGER_NAME,
-            mgr.PHONE_NO AS MANAGER_CONTACT,
-            mgr.MOBILE_NO AS MANAGER_MOBILE,
-            mgr.PHONE_NO AS MANAGER_PHONE,
-            mgr.EMAIL AS MANAGER_EMAIL,
-            cr.CREDIT_LIMIT,
-            cr.MEAT_MONEY,
-            NULL AS MEMBER_GRADE,
-            NULL AS MEMBER_GRADE_NAME,
-            m.MEMBER_STATUS_CD AS STATUS,
+            m.COMPANY_TEL_NO   AS COMPANY_PHONE,
+            m.ZIP_CODE         AS POSTCODE,
+            m.ADDR1            AS ADDRESS,
+            m.ADDR2            AS ADDRESS_DETAIL,
+            mgr.NAME           AS MANAGER_NAME,
+            mgr.PHONE_NO       AS MANAGER_CONTACT,
+            mgr.MOBILE_NO      AS MANAGER_MOBILE,
+            mgr.PHONE_NO       AS MANAGER_PHONE,
+            mgr.EMAIL          AS MANAGER_EMAIL,
+            m.CREDIT_LIMIT,
+            m.MEAT_MONEY,
+            m.MEMBER_GRADE_CD  AS MEMBER_GRADE,
+            NULL               AS MEMBER_GRADE_NAME,
+            m.JOIN_STATUS_CD   AS STATUS,
             st.DETAIL_CODE_NAME AS STATUS_NAME,
-            m.AGREE_YN,
+            NULL               AS AGREE_YN,
             ag.AGREE_MARKETING,
             ag.AGREE_SMS,
-            m.JOIN_DT AS JOIN_DATE,
+            m.JOIN_DT          AS JOIN_DATE,
             m.USE_YN
         FROM TB_MEMBER m
             LEFT JOIN (
-                SELECT MEMBER_ID, CONTACT_NAME, MOBILE_NO, PHONE_NO, EMAIL
+                SELECT MEMBER_ID, NAME, MOBILE_NO, PHONE_NO, EMAIL
                   FROM TB_MEMBER_CONTACT
                  WHERE USE_YN = 'Y'
                    AND CONTACT_TYPE_CD = 'MAIN'
             ) mgr ON mgr.MEMBER_ID = m.MEMBER_ID
             LEFT JOIN (
-                SELECT MEMBER_ID, MAX(CREDIT_LIMIT) AS CREDIT_LIMIT, MAX(MEAT_MONEY) AS MEAT_MONEY
-                  FROM TB_MEMBER_CREDIT
-                 WHERE USE_YN = 'Y'
-                 GROUP BY MEMBER_ID
-            ) cr ON cr.MEMBER_ID = m.MEMBER_ID
-            LEFT JOIN (
                 SELECT MEMBER_ID,
                        MAX(CASE WHEN AGREE_TYPE_CD = 'MARKETING' THEN AGREE_YN END) AS AGREE_MARKETING,
-                       MAX(CASE WHEN AGREE_TYPE_CD = 'SMS' THEN AGREE_YN END) AS AGREE_SMS
+                       MAX(CASE WHEN AGREE_TYPE_CD = 'SMS'       THEN AGREE_YN END) AS AGREE_SMS
                   FROM TB_MEMBER_AGREE
                  WHERE USE_YN = 'Y'
                  GROUP BY MEMBER_ID
             ) ag ON ag.MEMBER_ID = m.MEMBER_ID
-            LEFT JOIN TB_DETAIL_CODE mt ON m.MEMBER_TYPE_CD = mt.DETAIL_CODE
-                AND mt.GROUP_CODE = '003' AND mt.CODE = '003001'
-            LEFT JOIN TB_DETAIL_CODE st ON m.MEMBER_STATUS_CD = st.DETAIL_CODE
-                AND st.GROUP_CODE = '004' AND st.CODE = '004001'
+            LEFT JOIN TB_DETAIL_CODE mt ON m.MEMBER_TYPE_CD = mt.DETAIL_CODE_ID
+                AND mt.CODE_GROUP_ID = 'MEMBER_TYPE'
+                AND mt.CODE_ID       = 'MEMBER_ROLE'
+            LEFT JOIN TB_DETAIL_CODE st ON m.JOIN_STATUS_CD = st.DETAIL_CODE_ID
+                AND st.CODE_GROUP_ID = 'JOIN_STATUS'
+                AND st.CODE_ID       = 'JOIN_STATUS'
         WHERE m.LOGIN_ID = #{value}
     </select>
 
+    <!-- 회원 등록 -->
     <insert id="insertMember" parameterType="kr.co.matpam.admin.member.service.MemberVO"
-        useGeneratedKeys="true" keyProperty="memberNo" keyColumn="MEMBER_ID">
+            useGeneratedKeys="true" keyProperty="memberNo">
         INSERT INTO TB_MEMBER (
             MEMBER_TYPE_CD,
-            BRTC_CD,
             LOGIN_ID,
-            LOGIN_PW,
+            LOGIN_PWD,
             COMPANY_NAME,
-            BUSINESS_NUMBER,
+            BIZ_REG_NO,
             CEO_NAME,
             CEO_MOBILE_NO,
             EMAIL,
-            COMPANY_PHONE_NO,
-            POSTCODE,
-            ADDRESS,
-            ADDRESS_DETAIL,
-            MEMBER_STATUS_CD,
+            COMPANY_TEL_NO,
+            ZIP_CODE,
+            ADDR1,
+            ADDR2,
+            JOIN_STATUS_CD,
+            MEMBER_GRADE_CD,
             JOIN_DT,
             USE_YN,
-            AGREE_YN
+            REG_ID
         ) VALUES (
-            #{memberType},
-            #{region},
-            #{memberId},
-            #{loginPw},
+            #{memberType},          -- 회원타입
+            #{memberId},            -- 로그인 아이디
+            #{loginPw},             -- 비밀번호(암호화 전/후는 서비스단에서 처리)
             #{companyName},
             #{businessNumber},
             #{ceoName},
@@ -293,35 +294,60 @@
             #{postcode},
             #{address},
             #{addressDetail},
-            #{status},
-            #{joinDate},
-            #{useYn},
-            #{agreeYn}
+            #{status},              -- 가입상태 코드
+            #{memberGrade},         -- 회원등급 코드
+            #{joinDate},            -- 가입일자 (컨트롤러에서 default today 세팅)
+            'Y',                    -- USE_YN
+            'SYSTEM'                -- REG_ID (로그인한 관리자 ID로 바꾸고 싶으면 여기만 변경)
         )
     </insert>
 
+    <update id="updateMember" parameterType="kr.co.matpam.admin.member.service.MemberVO">
+        UPDATE TB_MEMBER
+           SET MEMBER_TYPE_CD  = #{memberType},
+               COMPANY_NAME    = #{companyName},
+               BIZ_REG_NO      = #{businessNumber},
+               CEO_NAME        = #{ceoName},
+               CEO_MOBILE_NO   = #{contactNumber},
+               EMAIL           = #{email},
+               COMPANY_TEL_NO  = #{companyPhone},
+               ZIP_CODE        = #{postcode},
+               ADDR1           = #{address},
+               ADDR2           = #{addressDetail},
+               JOIN_STATUS_CD  = #{status},
+               MEMBER_GRADE_CD = #{memberGrade},
+               MOD_ID          = 'SYSTEM',
+               MOD_DT          = CURRENT_TIMESTAMP
+         WHERE MEMBER_ID       = #{memberNo}
+    </update>
+
+    <!-- 여신/미트머니 초기값 기록용 크레딧 이력 (테이블이 존재한다는 전제) -->
     <insert id="insertMemberCredit" parameterType="kr.co.matpam.admin.member.service.MemberVO">
         INSERT INTO TB_MEMBER_CREDIT (
             MEMBER_ID,
-            CREDIT_TYPE_CD,
             MEAT_MONEY,
             CREDIT_LIMIT,
             CREDIT_BALANCE,
             USE_YN,
+            REG_ID,
             REG_DT,
+            MOD_ID,
             MOD_DT
         ) VALUES (
-            #{memberNo},
-            'DEFAULT',
-            #{meatMoney, jdbcType=DECIMAL},
-            #{creditLimit, jdbcType=DECIMAL},
-            #{creditLimit, jdbcType=DECIMAL},
+            #{memberNo},            -- 위 insertMember에서 생성된 PK
+            #{meatMoney},          -- 0L으로 기본 세팅됨 (컨트롤러에서)
+            #{creditLimit},        -- 0L으로 기본 세팅됨 (컨트롤러에서)
+            #{creditLimit},        -- 초기 잔액 = 한도
             'Y',
+            'SYSTEM',              -- REG_ID
             CURRENT_TIMESTAMP,
+            'SYSTEM',              -- MOD_ID
             CURRENT_TIMESTAMP
         )
     </insert>
 
+
+    <!-- 동의 내역 -->
     <insert id="insertMemberAgreement" parameterType="map">
         INSERT INTO TB_MEMBER_AGREE (
             MEMBER_ID,
@@ -329,29 +355,41 @@
             AGREE_YN,
             AGREE_DT,
             USE_YN,
+            REG_ID,
             REG_DT,
+            MOD_ID,
             MOD_DT
         ) VALUES (
-            #{memberId},
-            #{agreeType},
-            #{agreeYn},
-            #{agreeDt},
+            #{memberId},           -- Long or String, 실제 MEMBER_ID PK
+            #{agreeTypeCd},        -- 'MARKETING' 또는 'SMS'
+            #{agreeYn},            -- 'Y' / 'N'
+            #{agreeDt},            -- 동의일자(java.time.LocalDate → String 변환해서 넘기거나, CURRENT_TIMESTAMP 써도 됨)
             'Y',
+            'SYSTEM',              -- REG_ID
             CURRENT_TIMESTAMP,
+            'SYSTEM',              -- MOD_ID
             CURRENT_TIMESTAMP
         )
     </insert>
 
+
     <!-- 판매자 목록 조회 (회원타입이 '003001002' = 판매자인 회원만) -->
     <select id="selectSellerList" resultType="kr.co.matpam.admin.member.service.MemberVO">
         SELECT
-            m.MEMBER_ID as memberNo,
-            m.LOGIN_ID as memberId,
-            m.COMPANY_NAME as companyName,
-            m.CEO_NAME as ceoName
+            m.MEMBER_ID     AS memberNo,
+            m.LOGIN_ID      AS memberId,
+            m.COMPANY_NAME  AS companyName,
+            m.CEO_NAME      AS ceoName
         FROM TB_MEMBER m
-        WHERE m.MEMBER_TYPE_CD = '003001002'
+        WHERE m.MEMBER_TYPE_CD = 'ROLE_SELLER'
         ORDER BY m.COMPANY_NAME
     </select>
+
+    <select id="selectMemberCountByLoginId" parameterType="string" resultType="int">
+        SELECT COUNT(1)
+        FROM TB_MEMBER
+        WHERE LOGIN_ID = #{loginId}
+    </select>
+
 
 </mapper>

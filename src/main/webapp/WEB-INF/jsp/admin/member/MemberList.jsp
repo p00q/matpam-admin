@@ -46,14 +46,14 @@
                                                 <select name="status" class="form-select form-select-sm"
                                                     style="max-width: 200px;">
                                                     <option value="">전체</option>
-                                                    <option value="ACTIVE" <c:if test="${searchVO.status eq 'ACTIVE'}">
-                                                        selected</c:if>>가입완료</option>
-                                                    <option value="PENDING" <c:if
-                                                        test="${searchVO.status eq 'PENDING'}">selected</c:if>>승인대기
-                                                    </option>
-                                                    <option value="INACTIVE" <c:if
-                                                        test="${searchVO.status eq 'INACTIVE'}">selected</c:if>>탈퇴
-                                                    </option>
+                                                    <c:forEach var="st" items="${statusCodes}">
+                                                        <option value="${st.detailCode}" <c:if
+                                                            test="${searchVO.status eq st.detailCode}">
+                                                            selected="selected"
+                                                            </c:if>>
+                                                            ${st.detailCodeName}
+                                                        </option>
+                                                    </c:forEach>
                                                 </select>
                                             </td>
                                             <th class="text-center" style="background-color: #e9ecef;">가입일</th>
@@ -93,16 +93,14 @@
                                                 <select name="memberGrade" class="form-select form-select-sm"
                                                     style="max-width: 200px;">
                                                     <option value="">전체</option>
-                                                    <option value="VIP" <c:if test="${searchVO.memberGrade eq 'VIP'}">
-                                                        selected</c:if>>VIP</option>
-                                                    <option value="GOLD" <c:if test="${searchVO.memberGrade eq 'GOLD'}">
-                                                        selected</c:if>>Gold</option>
-                                                    <option value="SILVER" <c:if
-                                                        test="${searchVO.memberGrade eq 'SILVER'}">selected</c:if>
-                                                        >Silver</option>
-                                                    <option value="GENERAL" <c:if
-                                                        test="${searchVO.memberGrade eq 'GENERAL'}">selected</c:if>>일반
-                                                    </option>
+                                                    <c:forEach var="grade" items="${memberGrades}">
+                                                        <option value="${grade.detailCode}" <c:if
+                                                            test="${searchVO.memberGrade eq grade.detailCode}">
+                                                            selected="selected"
+                                                            </c:if>>
+                                                            ${grade.detailCodeName}
+                                                        </option>
+                                                    </c:forEach>
                                                 </select>
                                             </td>
                                         </tr>
@@ -186,14 +184,14 @@
                                                 value="${paginationInfo.totalRecordCount - ((searchVO.pageIndex-1) * searchVO.pageUnit + status.index)}" />
                                         </td>
                                         <td>${member.memberTypeName}</td>
-                                    <td>
-                                        <c:url var="memberViewUrl" value='/admin/member/memberDetail.do'>
-                                            <c:param name='memberId' value='${member.memberId}' />
-                                            <c:param name='menu' value='member' />
-                                        </c:url>
-                                        <a class="text-primary text-decoration-underline" href="${memberViewUrl}">
-                                            ${member.memberId}</a>
-                                    </td>
+                                        <td>
+                                            <c:url var="memberViewUrl" value='/admin/member/memberDetail.do'>
+                                                <c:param name='memberId' value='${member.memberId}' />
+                                                <c:param name='menu' value='member' />
+                                            </c:url>
+                                            <a class="text-primary text-decoration-underline" href="${memberViewUrl}">
+                                                ${member.memberId}</a>
+                                        </td>
                                         <td>${member.contactNumber}</td>
                                         <td class="fw-bold">${member.companyName}</td>
                                         <td>${member.businessNumber}</td>
