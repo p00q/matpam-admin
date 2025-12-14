@@ -56,8 +56,16 @@
                                             </td>
                                             <th class="text-center" style="background-color: #e9ecef;">판매자명</th>
                                             <td>
-                                                <input type="text" name="sellerName" value="${param.sellerName}"
-                                                    class="form-control form-control-sm" style="max-width: 200px;" />
+                                                <select name="saleMemberNo" class="form-select form-select-sm"
+                                                    style="max-width: 200px;">
+                                                    <option value="">전체</option>
+                                                    <c:forEach var="item" items="${sellers}">
+                                                        <option value="${item.memberNo}" ${param.saleMemberNo eq
+                                                            item.memberNo ? 'selected' : '' }>${item.companyName}
+                                                            (${item.ceoName})
+                                                        </option>
+                                                    </c:forEach>
+                                                </select>
                                             </td>
                                         </tr>
                                         <tr>
@@ -173,7 +181,9 @@
                                             </c:url>
                                             <a href="${bundleViewUrl}">${item.goodsCd}</a>
                                         </td>
+
                                         <td>${item.sellerName}</td>
+
                                         <td>${item.storageTypeName}</td>
                                         <td>${item.processDivName}</td>
                                         <td>${item.stockUnitName}</td>
@@ -197,7 +207,7 @@
 
                                 <c:if test="${empty bundleList}">
                                     <tr>
-                                        <td colspan="14" class="py-4 text-center text-muted">
+                                        <td colspan="12" class="py-4 text-center text-muted">
                                             검색된 결과가 없습니다.
                                         </td>
                                     </tr>
