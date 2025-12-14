@@ -120,32 +120,13 @@ public class BundleProductController {
             @RequestParam(value = "displayStatus", required = false) String displayStatus,
             @RequestParam(value = "autoVat", required = false) String autoVat) throws Exception {
 
-        LOGGER.debug("Insert Bundle Product: {}", bundleProductVO.getProductName());
-        LOGGER.debug("sellerId: {}", bundleProductVO.getSellerId());
-        LOGGER.debug("displayStatus: {}, autoVat: {}", displayStatus, autoVat);
+        LOGGER.debug("Insert Bundle Product (component code): {}", bundleProductVO.getComponentCompCd());
+        LOGGER.debug("autoVat flag: {}", autoVat);
 
-        // === 체크박스 처리 ===
-        // 노출상태: 체크 시 'Y', 미체크 시 'N'
-        bundleProductVO.setDisplayYn("Y".equals(displayStatus) ? "Y" : "N");
-
-        // 부가세 자동계산: 체크 시 'Y', 미체크 시 'N'
-        bundleProductVO.setAutoVatYn(autoVat != null ? "Y" : "N");
-
-        // === 기본값 처리 ===
-        // 원가가 null이면 0으로 설정
-        if (bundleProductVO.getCostPrice() == null) {
-            bundleProductVO.setCostPrice(0);
-        }
-
-        // 부가세가 null이면 0으로 설정
-        if (bundleProductVO.getVatAmount() == null) {
-            bundleProductVO.setVatAmount(0);
-        }
-
-        // 판매가격이 null이거나 0이면 원가 + 부가세로 계산
-        if (bundleProductVO.getSalePrice() == null || bundleProductVO.getSalePrice() == 0) {
-            bundleProductVO.setSalePrice(bundleProductVO.getCostPrice() + bundleProductVO.getVatAmount());
-        }
+        bundleProductVO.setComponentCompCd(bundleProductVO.getComponentCompCd() != null ? bundleProductVO.getComponentCompCd()
+                : bundleProductVO.getProductNo());
+        bundleProductVO.setAutoVatCalYn(autoVat != null ? "Y" : "N");
+        bundleProductVO.setAutoVatYn(bundleProductVO.getAutoVatCalYn());
 
         bundleProductService.insertBundleProduct(bundleProductVO);
 
@@ -176,20 +157,10 @@ public class BundleProductController {
             @RequestParam(value = "displayStatus", required = false) String displayStatus,
             @RequestParam(value = "autoVat", required = false) String autoVat) throws Exception {
 
-        // 체크박스 처리
-        bundleProductVO.setDisplayYn("Y".equals(displayStatus) ? "Y" : "N");
-        bundleProductVO.setAutoVatYn(autoVat != null ? "Y" : "N");
-
-        // 기본값 처리
-        if (bundleProductVO.getCostPrice() == null) {
-            bundleProductVO.setCostPrice(0);
-        }
-        if (bundleProductVO.getVatAmount() == null) {
-            bundleProductVO.setVatAmount(0);
-        }
-        if (bundleProductVO.getSalePrice() == null || bundleProductVO.getSalePrice() == 0) {
-            bundleProductVO.setSalePrice(bundleProductVO.getCostPrice() + bundleProductVO.getVatAmount());
-        }
+        bundleProductVO.setComponentCompCd(bundleProductVO.getComponentCompCd() != null ? bundleProductVO.getComponentCompCd()
+                : bundleProductVO.getProductNo());
+        bundleProductVO.setAutoVatCalYn(autoVat != null ? "Y" : "N");
+        bundleProductVO.setAutoVatYn(bundleProductVO.getAutoVatCalYn());
 
         bundleProductService.updateBundleProduct(bundleProductVO);
 
@@ -208,10 +179,8 @@ public class BundleProductController {
     private void addBundleDropdowns(ModelMap model) throws Exception {
         model.addAttribute("saleTypes", codeManagementService.selectDetailCodeList("007", "007002"));
         model.addAttribute("storageTypes", codeManagementService.selectDetailCodeList("001", "001001"));
-        model.addAttribute("divisionTypes", codeManagementService.selectDetailCodeList("001", "001002"));
         model.addAttribute("processTypes", codeManagementService.selectDetailCodeList("001", "001003"));
         model.addAttribute("unitTypes", codeManagementService.selectDetailCodeList("001", "001004"));
-        model.addAttribute("saleStatuses", codeManagementService.selectDetailCodeList("007", "007001"));
         model.addAttribute("sellers", memberService.selectSellerList());
     }
 

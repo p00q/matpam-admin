@@ -1,6 +1,7 @@
 package kr.co.matpam.admin.product.service;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 판매상품 구성 VO
@@ -22,9 +23,12 @@ public class ProductCompositionVO implements Serializable {
     private String productName;
     private String saleType;
     private String saleTypeName;
+    private String saleStatusName;
     private Integer salePrice;
     private Integer costPrice;
     private Integer vatAmount;
+    private Date saleStartDate;
+    private Date saleEndDate;
     private String displayYn;
     private String sellerName;
 
@@ -81,6 +85,14 @@ public class ProductCompositionVO implements Serializable {
         this.saleTypeName = saleTypeName;
     }
 
+    public String getSaleStatusName() {
+        return saleStatusName;
+    }
+
+    public void setSaleStatusName(String saleStatusName) {
+        this.saleStatusName = saleStatusName;
+    }
+
     public Integer getSalePrice() {
         return salePrice;
     }
@@ -103,6 +115,22 @@ public class ProductCompositionVO implements Serializable {
 
     public void setVatAmount(Integer vatAmount) {
         this.vatAmount = vatAmount;
+    }
+
+    public Date getSaleStartDate() {
+        return saleStartDate;
+    }
+
+    public void setSaleStartDate(Date saleStartDate) {
+        this.saleStartDate = saleStartDate;
+    }
+
+    public Date getSaleEndDate() {
+        return saleEndDate;
+    }
+
+    public void setSaleEndDate(Date saleEndDate) {
+        this.saleEndDate = saleEndDate;
     }
 
     public String getDisplayYn() {
