@@ -56,8 +56,8 @@ public class ProductDAO extends EgovAbstractMapper {
      * 구성상품 저장
      */
     public void insertProductComposition(ProductCompositionVO vo) throws Exception {
-        LOGGER.info("[DAO] insertProductComposition - productNo: {}, bundleId: {}, sortOrder: {}", 
-            vo.getProductNo(), vo.getBundleId(), vo.getSortOrder());
+        LOGGER.info("[DAO] insertProductComposition - productNo: {}, bundleId: {}, sortOrder: {}",
+                vo.getProductNo(), vo.getBundleId(), vo.getSortOrder());
         insert("kr.co.matpam.admin.product.service.impl.ProductMapper.insertProductComposition", vo);
     }
 
@@ -67,5 +67,26 @@ public class ProductDAO extends EgovAbstractMapper {
     public void deleteProductCompositionsByProductNo(Long productNo) throws Exception {
         LOGGER.info("[DAO] deleteProductCompositionsByProductNo - productNo: {}", productNo);
         delete("kr.co.matpam.admin.product.service.impl.ProductMapper.deleteProductCompositionsByProductNo", productNo);
+    }
+
+    /**
+     * 상품 이미지 등록
+     */
+    public void insertProductImage(kr.co.matpam.admin.product.service.ProductImageVO vo) throws Exception {
+        insert("kr.co.matpam.admin.product.service.impl.ProductMapper.insertProductImage", vo);
+    }
+
+    /**
+     * 상품 상세 정보 등록
+     */
+    public void insertProductDetail(kr.co.matpam.admin.product.service.ProductVO vo) throws Exception {
+        insert("kr.co.matpam.admin.product.service.impl.ProductMapper.insertProductDetail", vo);
+    }
+
+    /**
+     * 상품 상세 정보 수정
+     */
+    public void updateProductDetail(kr.co.matpam.admin.product.service.ProductVO vo) throws Exception {
+        update("kr.co.matpam.admin.product.service.impl.ProductMapper.updateProductDetail", vo);
     }
 }
