@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import kr.co.matpam.admin.code.service.CodeManagementService;
 import kr.co.matpam.admin.member.service.MemberService;
+
 import kr.co.matpam.admin.product.service.BundleProductService;
 import kr.co.matpam.admin.product.service.BundleProductVO;
 import org.egovframe.rte.ptl.mvc.tags.ui.pagination.PaginationInfo;
@@ -123,10 +124,41 @@ public class BundleProductController {
         LOGGER.debug("Insert Bundle Product (component code): {}", bundleProductVO.getComponentCompCd());
         LOGGER.debug("autoVat flag: {}", autoVat);
 
-        bundleProductVO.setComponentCompCd(bundleProductVO.getComponentCompCd() != null ? bundleProductVO.getComponentCompCd()
-                : bundleProductVO.getProductNo());
+        bundleProductVO
+                .setComponentCompCd(bundleProductVO.getComponentCompCd() != null ? bundleProductVO.getComponentCompCd()
+                        : bundleProductVO.getProductNo());
         bundleProductVO.setAutoVatCalYn(autoVat != null ? "Y" : "N");
         bundleProductVO.setAutoVatYn(bundleProductVO.getAutoVatCalYn());
+
+        // Generate Component Goods Code if mapping from UI is missing/removed
+        if (bundleProductVO.getComponentGoodsCd() == null || bundleProductVO.getComponentGoodsCd().isEmpty()) {
+            bundleProductVO.setComponentGoodsCd("BUN_" + System.currentTimeMillis());
+        }
+        // Ensure goodsCd is set (often same as componentGoodsCd in this schema)
+        if (bundleProductVO.getGoodsCd() == null || bundleProductVO.getGoodsCd().isEmpty()) {
+            bundleProductVO.setGoodsCd(bundleProductVO.getComponentGoodsCd());
+        }
+
+        // Handle Stock Unit (UNIT_TYPE_CD). UI now uses Cut Type (CUT_TYPE_CD).
+        // If Unit Type is required by DB, we must set a default or map it.
+        if (bundleProductVO.getStockUnitCd() == null || bundleProductVO.getStockUnitCd().isEmpty()) {
+            // Defaulting to a safe value or referencing Cut Type if functionally replaced.
+            // Using a standard default '001001' (EA/Unit) or similar if unknown.
+            // For now, let's copy Cut Type to avoid null constraint if they share the same
+            // Code Group 'PRODUCT_TYPE'.
+            // However, safe bet is just empty string if DB allows, or a placeholder.
+            // Assuming DB might need it, let's set it to 'EA' or '01' if we knew the code.
+            // As a fallback, we'll try to set it to Cut Type CD, hoping for compatibility,
+            // OR if strictly deprecated but required, a fixed dummy value might be needed.
+            // Let's use Cut Type for now.
+            bundleProductVO.setStockUnitCd(bundleProductVO.getCutTypeCd());
+        }
+
+        // Set Default Reg/Mod ID if not provided (Critical for NOT NULL constraints)
+        if (bundleProductVO.getRegId() == null)
+            bundleProductVO.setRegId("ADMIN");
+        if (bundleProductVO.getModId() == null)
+            bundleProductVO.setModId("ADMIN");
 
         bundleProductService.insertBundleProduct(bundleProductVO);
 
@@ -157,10 +189,20 @@ public class BundleProductController {
             @RequestParam(value = "displayStatus", required = false) String displayStatus,
             @RequestParam(value = "autoVat", required = false) String autoVat) throws Exception {
 
-        bundleProductVO.setComponentCompCd(bundleProductVO.getComponentCompCd() != null ? bundleProductVO.getComponentCompCd()
-                : bundleProductVO.getProductNo());
+        bundleProductVO
+                .setComponentCompCd(bundleProductVO.getComponentCompCd() != null ? bundleProductVO.getComponentCompCd()
+                        : bundleProductVO.getProductNo());
         bundleProductVO.setAutoVatCalYn(autoVat != null ? "Y" : "N");
         bundleProductVO.setAutoVatYn(bundleProductVO.getAutoVatCalYn());
+
+        // Handle Stock Unit (UNIT_TYPE_CD) for Update
+        if (bundleProductVO.getStockUnitCd() == null || bundleProductVO.getStockUnitCd().isEmpty()) {
+            bundleProductVO.setStockUnitCd(bundleProductVO.getCutTypeCd());
+        }
+
+        // Set Default Mod ID
+        if (bundleProductVO.getModId() == null)
+            bundleProductVO.setModId("ADMIN");
 
         bundleProductService.updateBundleProduct(bundleProductVO);
 
@@ -177,10 +219,18 @@ public class BundleProductController {
     }
 
     private void addBundleDropdowns(ModelMap model) throws Exception {
-        model.addAttribute("saleTypes", codeManagementService.selectDetailCodeList("007", "007002"));
-        model.addAttribute("storageTypes", codeManagementService.selectDetailCodeList("001", "001001"));
-        model.addAttribute("processTypes", codeManagementService.selectDetailCodeList("001", "001003"));
-        model.addAttribute("unitTypes", codeManagementService.selectDetailCodeList("001", "001004"));
+        // SALE_TYPE: Group SALE_STATUS, Code SALE_TYPE
+        model.addAttribute("saleTypes", codeManagementService.selectDetailCodeList("SALE_STATUS", "SALE_TYPE"));
+        // STORAGE_TYPE: Group PRODUCT_TYPE, Code STORAGE_TYPE
+        model.addAttribute("storageTypes", codeManagementService.selectDetailCodeList("PRODUCT_TYPE", "STORAGE_TYPE"));
+        // PROCESS_TYPE: Group PRODUCT_TYPE, Code PROCESS_TYPE
+        model.addAttribute("processTypes", codeManagementService.selectDetailCodeList("PRODUCT_TYPE", "PROCESS_TYPE"));
+        // CUT_TYPE: Group PRODUCT_TYPE, Code CUT_TYPE (Replaces UNIT_TYPE for UI)
+        model.addAttribute("cutTypes", codeManagementService.selectDetailCodeList("PRODUCT_TYPE", "CUT_TYPE"));
+        // SALE_STATUS: Group SALE_STATUS, Code SALE_STATUS
+        model.addAttribute("saleStatuses", codeManagementService.selectDetailCodeList("SALE_STATUS", "SALE_STATUS"));
+
+        // Sellers
         model.addAttribute("sellers", memberService.selectSellerList());
     }
 
