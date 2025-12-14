@@ -119,6 +119,14 @@ public class BundleProductVO implements Serializable {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date modDt;
 
+    /** 분리유형 코드 */
+    private String cutTypeCd;
+    private String cutTypeName;
+
+    /** 노출상태 코드 */
+    private String exposureStatusCd;
+    private String exposureStatusName;
+
     /** 페이징 */
 
     public Long getBundleId() {
@@ -487,5 +495,37 @@ public class BundleProductVO implements Serializable {
 
     public Integer getLastIndex() {
         return lastIndex;
+    }
+
+    public String getCutTypeCd() {
+        return cutTypeCd;
+    }
+
+    public void setCutTypeCd(String cutTypeCd) {
+        this.cutTypeCd = cutTypeCd;
+    }
+
+    public String getCutTypeName() {
+        return cutTypeName;
+    }
+
+    public void setCutTypeName(String cutTypeName) {
+        this.cutTypeName = cutTypeName;
+    }
+
+    public String getExposureStatusCd() {
+        return exposureStatusCd;
+    }
+
+    public void setExposureStatusCd(String exposureStatusCd) {
+        this.exposureStatusCd = exposureStatusCd;
+    }
+
+    public String getExposureStatusName() {
+        return exposureStatusName;
+    }
+
+    public void setExposureStatusName(String exposureStatusName) {
+        this.exposureStatusName = exposureStatusName;
     }
 }
