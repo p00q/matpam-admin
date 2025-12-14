@@ -24,6 +24,8 @@ public class ProductCompositionVO implements Serializable {
     private String saleType;
     private String saleTypeName;
     private String saleStatusName;
+    private String storageTypeCd;
+    private String storageTypeName;
     private Integer salePrice;
     private Integer costPrice;
     private Integer vatAmount;
@@ -91,6 +93,22 @@ public class ProductCompositionVO implements Serializable {
 
     public void setSaleStatusName(String saleStatusName) {
         this.saleStatusName = saleStatusName;
+    }
+
+    public String getStorageTypeCd() {
+        return storageTypeCd;
+    }
+
+    public void setStorageTypeCd(String storageTypeCd) {
+        this.storageTypeCd = storageTypeCd;
+    }
+
+    public String getStorageTypeName() {
+        return storageTypeName;
+    }
+
+    public void setStorageTypeName(String storageTypeName) {
+        this.storageTypeName = storageTypeName;
     }
 
     public Integer getSalePrice() {
