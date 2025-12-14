@@ -34,26 +34,29 @@
             <result property="productName" column="BUNDLE_PRODUCT_NAME"/>
             <result property="saleType" column="BUNDLE_SALE_TYPE"/>
             <result property="saleTypeName" column="BUNDLE_SALE_TYPE_NAME"/>
-            <result property="salePrice" column="BUNDLE_SALE_PRICE"/>
-            <result property="costPrice" column="BUNDLE_COST_PRICE"/>
-            <result property="vatAmount" column="BUNDLE_VAT_AMOUNT"/>
-            <result property="saleStartDate" column="BUNDLE_SALE_START_DT"/>
-            <result property="saleEndDate" column="BUNDLE_SALE_END_DT"/>
-            <result property="displayYn" column="BUNDLE_DISPLAY_YN"/>
-            <result property="sellerName" column="BUNDLE_SELLER_NAME"/>
             <result property="saleStatusName" column="BUNDLE_SALE_STATUS_NAME"/>
             <result property="storageTypeName" column="BUNDLE_STORAGE_TYPE_NAME"/>
             <result property="processTypeName" column="BUNDLE_PROCESS_TYPE_NAME"/>
             <result property="divisionTypeName" column="BUNDLE_DIVISION_TYPE_NAME"/>
+            <result property="salePrice" column="BUNDLE_SALE_PRICE"/>
+            <result property="costPrice" column="BUNDLE_COST_PRICE"/>
+            <result property="vatAmount" column="BUNDLE_VAT_AMOUNT"/>
+            <result property="saleStartDate" column="BUNDLE_SALE_START_DATE"/>
+            <result property="saleEndDate" column="BUNDLE_SALE_END_DATE"/>
+            <result property="displayYn" column="BUNDLE_DISPLAY_YN"/>
+            <result property="sellerId" column="BUNDLE_SELLER_ID"/>
+            <result property="sellerName" column="BUNDLE_SELLER_NAME"/>
             <result property="regDt" column="BUNDLE_REG_DT"/>
             <result property="modDt" column="BUNDLE_MOD_DT"/>
+            <result property="sortOrder" column="SORT_ORDER"/>
         </collection>
         <collection property="imageList" ofType="kr.co.matpam.admin.product.service.ProductImageVO">
-             <id property="imgId" column="IMG_ID"/>
-             <result property="salesProdId" column="SALES_PROD_ID"/>
-             <result property="imgUrl" column="IMG_URL"/>
-             <result property="sortOrder" column="IMG_SORT_ORDER"/>
-             <result property="isMainYn" column="IS_MAIN_YN"/>
+            <id property="imageId" column="IMAGE_ID"/>
+            <result property="productNo" column="IMAGE_PRODUCT_NO"/>
+            <result property="imageType" column="IMAGE_TYPE"/>
+            <result property="imagePath" column="IMAGE_PATH"/>
+            <result property="originalName" column="ORIGINAL_NAME"/>
+            <result property="sortOrder" column="IMAGE_SORT_ORDER"/>
         </collection>
     </resultMap>
 
@@ -136,50 +139,52 @@
             P.MD_COMMENT,
             P.REG_DT,
             P.MOD_DT,
-            -- Detail Info
-            D.DETAIL_HTML,
-            D.PAYMENT_INFO,
-            D.DELIVERY_INFO,
-            D.RETURN_INFO,
-            D.REFUND_INFO,
-            -- Composition Info
-            PC.COMPONENT_PROD_ID,
-            PC.SORT_ORDER AS COMP_SORT_ORDER,
-            BP.COMPONENT_PROD_NAME AS BUNDLE_PRODUCT_NAME,
-            BP.SALE_TYPE_CD AS BUNDLE_SALE_TYPE,
-            ST_SALE.CODE_NAME AS BUNDLE_SALE_TYPE_NAME,
-            BP.LIST_PRICE AS BUNDLE_SALE_PRICE,
+            -- 구성상품 정보
+            PC.COMPOSITION_ID,
+            PC.BUNDLE_ID,
+            PC.SORT_ORDER,
+            BP.PRODUCT_NAME AS BUNDLE_PRODUCT_NAME,
+            BP.SALE_TYPE AS BUNDLE_SALE_TYPE,
+            ST.CODE_NAME AS BUNDLE_SALE_TYPE_NAME,
+            BP.SALE_STATUS AS BUNDLE_SALE_STATUS,
+            SS.CODE_NAME AS BUNDLE_SALE_STATUS_NAME,
+            CG.STORAGE_TYPE_CD AS BUNDLE_STORAGE_TYPE,
+            STC.DETAIL_CODE_NAME AS BUNDLE_STORAGE_TYPE_NAME,
+            CG.PROCESS_DIV_CD AS BUNDLE_PROCESS_TYPE,
+            PTC.DETAIL_CODE_NAME AS BUNDLE_PROCESS_TYPE_NAME,
+            CG.SALE_DIV_CD AS BUNDLE_DIVISION_TYPE,
+            DVC.DETAIL_CODE_NAME AS BUNDLE_DIVISION_TYPE_NAME,
+            BP.SALE_PRICE AS BUNDLE_SALE_PRICE,
             BP.COST_PRICE AS BUNDLE_COST_PRICE,
-            CAST(BP.LIST_PRICE * BP.VAT_RATE / 100 AS UNSIGNED) AS BUNDLE_VAT_AMOUNT,
-            BP.SALE_START_DT AS BUNDLE_SALE_START_DT,
-            BP.SALE_END_DT AS BUNDLE_SALE_END_DT,
-            BP.EXPOSURE_STATUS_CD AS BUNDLE_DISPLAY_YN,
+            BP.VAT_AMOUNT AS BUNDLE_VAT_AMOUNT,
+            BP.SALE_START_DATE AS BUNDLE_SALE_START_DATE,
+            BP.SALE_END_DATE AS BUNDLE_SALE_END_DATE,
+            COALESCE(BP.DISPLAY_YN, CG.USE_YN) AS BUNDLE_DISPLAY_YN,
+            COALESCE(BP.SELLER_ID, CG.SALE_MEMBER_NO) AS BUNDLE_SELLER_ID,
             BM.COMPANY_NAME AS BUNDLE_SELLER_NAME,
-            ST_STAT.CODE_NAME AS BUNDLE_SALE_STATUS_NAME,
-            ST_STORE.CODE_NAME AS BUNDLE_STORAGE_TYPE_NAME,
-            ST_PROC.CODE_NAME AS BUNDLE_PROCESS_TYPE_NAME,
-            ST_CUT.CODE_NAME AS BUNDLE_DIVISION_TYPE_NAME,
-            BP.REG_DT AS BUNDLE_REG_DT,
-            BP.MOD_DT AS BUNDLE_MOD_DT,
-            -- Image Info
-            IMG.IMG_ID,
-            IMG.IMG_URL,
-            IMG.SORT_ORDER AS IMG_SORT_ORDER,
-            IMG.IS_MAIN_YN
-        FROM TB_SALES_PRODUCT P
-        LEFT JOIN TB_MEMBER SM ON P.SELLER_MEMBER_ID = SM.MEMBER_ID
-        LEFT JOIN TB_SALES_PRODUCT_DETAIL D ON P.SALES_PROD_ID = D.SALES_PROD_ID
-        LEFT JOIN TB_SALES_PRODUCT_COMP PC ON P.SALES_PROD_ID = PC.SALES_PROD_ID AND PC.USE_YN = 'Y' AND PC.DEL_YN = 'N'
-        LEFT JOIN TB_COMPONENT_PRODUCT BP ON PC.COMPONENT_PROD_ID = BP.COMPONENT_PROD_ID
-        LEFT JOIN TB_MEMBER BM ON BP.SELLER_MEMBER_ID = BM.MEMBER_ID
-        LEFT JOIN TB_CODE ST_SALE ON BP.SALE_TYPE_CD = ST_SALE.CODE_ID AND ST_SALE.CODE_GROUP_ID = 'SALE_TYPE'
-        LEFT JOIN TB_CODE ST_STAT ON BP.SALE_STATUS_CD = ST_STAT.CODE_ID AND ST_STAT.CODE_GROUP_ID = 'SALE_STATUS'
-        LEFT JOIN TB_CODE ST_STORE ON BP.STORAGE_TYPE_CD = ST_STORE.CODE_ID AND ST_STORE.CODE_GROUP_ID = 'STORAGE_TYPE'
-        LEFT JOIN TB_CODE ST_PROC ON BP.PROCESS_TYPE_CD = ST_PROC.CODE_ID AND ST_PROC.CODE_GROUP_ID = 'PROCESS_TYPE'
-        LEFT JOIN TB_CODE ST_CUT ON BP.CUT_TYPE_CD = ST_CUT.CODE_ID AND ST_CUT.CODE_GROUP_ID = 'CUT_TYPE'
-        LEFT JOIN TB_SALES_PRODUCT_IMAGE IMG ON P.SALES_PROD_ID = IMG.SALES_PROD_ID AND IMG.USE_YN = 'Y' AND IMG.DEL_YN = 'N'
-        WHERE P.SALES_PROD_ID = #{value}
-        ORDER BY PC.SORT_ORDER, IMG.SORT_ORDER
+            CG.REG_DT AS BUNDLE_REG_DT,
+            CG.MOD_DT AS BUNDLE_MOD_DT,
+            -- 이미지 정보
+            PI.IMAGE_ID,
+            PI.PRODUCT_NO AS IMAGE_PRODUCT_NO,
+            PI.IMAGE_TYPE,
+            PI.IMAGE_PATH,
+            PI.ORIGINAL_NAME,
+            PI.SORT_ORDER AS IMAGE_SORT_ORDER
+        FROM TB_PRODUCT P
+        LEFT JOIN TB_MEMBER SM ON P.SELLER_ID = SM.MEMBER_NO
+        LEFT JOIN TB_PRODUCT_COMPOSITION PC ON P.PRODUCT_NO = PC.PRODUCT_NO
+        LEFT JOIN TB_BUNDLE_PRODUCT BP ON PC.BUNDLE_ID = BP.BUNDLE_ID
+        LEFT JOIN TB_COMPONENT_GOODS CG ON PC.BUNDLE_ID = CG.COMPONENT_COMP_CD
+        LEFT JOIN TB_MEMBER BM ON BP.SELLER_ID = BM.MEMBER_NO
+        LEFT JOIN TB_CODE ST ON BP.SALE_TYPE = ST.CODE AND ST.GROUP_CODE = 'SALE_TYPE'
+        LEFT JOIN TB_CODE SS ON BP.SALE_STATUS = SS.CODE AND SS.GROUP_CODE = 'SALE_STATUS'
+        LEFT JOIN TB_DETAIL_CODE STC ON CG.STORAGE_TYPE_CD = STC.DETAIL_CODE AND STC.GROUP_CODE = '001' AND STC.CODE = '001001'
+        LEFT JOIN TB_DETAIL_CODE PTC ON CG.PROCESS_DIV_CD = PTC.DETAIL_CODE AND PTC.GROUP_CODE = '001' AND PTC.CODE = '001003'
+        LEFT JOIN TB_DETAIL_CODE DVC ON CG.SALE_DIV_CD = DVC.DETAIL_CODE AND DVC.GROUP_CODE = '007' AND DVC.CODE = '007002'
+        LEFT JOIN TB_PRODUCT_IMAGE PI ON P.PRODUCT_NO = PI.PRODUCT_NO
+        WHERE P.PRODUCT_NO = #{value}
+        ORDER BY PC.SORT_ORDER
     </select>
 
     <!-- 상품 마스터 등록 -->
