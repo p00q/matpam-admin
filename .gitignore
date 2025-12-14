@@ -15,3 +15,16 @@ buildNumber.properties
 .project
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
+
+# Node/Yarn dependencies
+node_modules/
+src/package/node_modules/
+
+# Local build/package outputs
+build.log
+build_output.txt
+build_final.txt
+build_package.log
+compile_errors.txt
+package_output.txt
+package_final.txt
