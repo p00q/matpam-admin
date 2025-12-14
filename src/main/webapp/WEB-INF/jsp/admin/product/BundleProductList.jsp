@@ -42,13 +42,13 @@
                                     </colgroup>
                                     <tbody>
                                         <tr>
-                                            <th class="text-center" style="background-color: #e9ecef;">판매유형</th>
+                                            <th class="text-center" style="background-color: #e9ecef;">판매구분</th>
                                             <td>
-                                                <select name="saleType" class="form-select form-select-sm"
+                                                <select name="saleDivCd" class="form-select form-select-sm"
                                                     style="max-width: 200px;">
                                                     <option value="">전체</option>
                                                     <c:forEach var="code" items="${saleTypes}">
-                                                        <option value="${code.detailCode}" ${param.saleType eq
+                                                        <option value="${code.detailCode}" ${param.saleDivCd eq
                                                             code.detailCode ? 'selected' : '' }>${code.detailCodeName}
                                                         </option>
                                                     </c:forEach>
@@ -63,70 +63,45 @@
                                         <tr>
                                             <th class="text-center" style="background-color: #e9ecef;">저장유형</th>
                                             <td>
-                                                <select name="storageType" class="form-select form-select-sm"
+                                                <select name="storageTypeCd" class="form-select form-select-sm"
                                                     style="max-width: 200px;">
                                                     <option value="">전체</option>
                                                     <c:forEach var="code" items="${storageTypes}">
-                                                        <option value="${code.detailCode}" ${param.storageType eq
+                                                        <option value="${code.detailCode}" ${param.storageTypeCd eq
                                                             code.detailCode ? 'selected' : '' }>${code.detailCodeName}
                                                         </option>
                                                     </c:forEach>
                                                 </select>
                                             </td>
-                                            <th class="text-center" style="background-color: #e9ecef;">판매상태</th>
+                                            <th class="text-center" style="background-color: #e9ecef;">처리구분</th>
                                             <td>
-                                                <select name="saleStatus" class="form-select form-select-sm"
-                                                    style="max-width: 200px;">
-                                                    <option value="">전체</option>
-                                                    <c:forEach var="code" items="${saleStatuses}">
-                                                        <option value="${code.detailCode}" ${param.saleStatus eq
-                                                            code.detailCode ? 'selected' : '' }>${code.detailCodeName}
-                                                        </option>
-                                                    </c:forEach>
-                                                </select>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th class="text-center" style="background-color: #e9ecef;">분리유형</th>
-                                            <td>
-                                                <select name="divisionType" class="form-select form-select-sm"
-                                                    style="max-width: 200px;">
-                                                    <option value="">전체</option>
-                                                    <c:forEach var="code" items="${divisionTypes}">
-                                                        <option value="${code.detailCode}" ${param.divisionType eq
-                                                            code.detailCode ? 'selected' : '' }>${code.detailCodeName}
-                                                        </option>
-                                                    </c:forEach>
-                                                </select>
-                                            </td>
-                                            <th class="text-center" style="background-color: #e9ecef;">노출상태</th>
-                                            <td>
-                                                <select name="displayYn" class="form-select form-select-sm"
-                                                    style="max-width: 200px;">
-                                                    <option value="">전체</option>
-                                                    <option value="Y" ${param.displayYn eq 'Y' ? 'selected' : '' }>노출
-                                                    </option>
-                                                    <option value="N" ${param.displayYn eq 'N' ? 'selected' : '' }>비노출
-                                                    </option>
-                                                </select>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th class="text-center" style="background-color: #e9ecef;">처리유형</th>
-                                            <td>
-                                                <select name="processType" class="form-select form-select-sm"
+                                                <select name="processDivCd" class="form-select form-select-sm"
                                                     style="max-width: 200px;">
                                                     <option value="">전체</option>
                                                     <c:forEach var="code" items="${processTypes}">
-                                                        <option value="${code.detailCode}" ${param.processType eq
+                                                        <option value="${code.detailCode}" ${param.processDivCd eq
                                                             code.detailCode ? 'selected' : '' }>${code.detailCodeName}
                                                         </option>
                                                     </c:forEach>
                                                 </select>
                                             </td>
-                                            <th class="text-center" style="background-color: #e9ecef;">상품명</th>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-center" style="background-color: #e9ecef;">재고단위</th>
                                             <td>
-                                                <input type="text" name="productName" value="${param.productName}"
+                                                <select name="stockUnitCd" class="form-select form-select-sm"
+                                                    style="max-width: 200px;">
+                                                    <option value="">전체</option>
+                                                    <c:forEach var="code" items="${unitTypes}">
+                                                        <option value="${code.detailCode}" ${param.stockUnitCd eq
+                                                            code.detailCode ? 'selected' : '' }>${code.detailCodeName}
+                                                        </option>
+                                                    </c:forEach>
+                                                </select>
+                                            </td>
+                                            <th class="text-center" style="background-color: #e9ecef;">구성상품코드</th>
+                                            <td>
+                                                <input type="text" name="componentGoodsCd" value="${param.componentGoodsCd}"
                                                     class="form-control form-control-sm" style="max-width: 200px;" />
                                             </td>
                                         </tr>
@@ -172,58 +147,50 @@
                             <thead class="table-light">
                                 <tr>
                                     <th scope="col">순번</th>
-                                    <th scope="col">판매유형</th>
-                                    <th scope="col">상품명</th>
-                                    <th scope="col">업체명</th>
+                                    <th scope="col">구성상품코드</th>
+                                    <th scope="col">상품코드</th>
+                                    <th scope="col">판매자명</th>
                                     <th scope="col">저장유형</th>
-                                    <th scope="col">분리유형</th>
-                                    <th scope="col">처리유형</th>
-                                    <th scope="col">판매상태</th>
-                                    <th scope="col">노출상태</th>
-                                    <th scope="col">판매가격</th>
-                                    <th scope="col">VAT</th>
-                                    <th scope="col">총판매수</th>
-                                    <th scope="col">판매시작일</th>
-                                    <th scope="col">판매종료일</th>
+                                    <th scope="col">처리구분</th>
+                                    <th scope="col">재고단위</th>
+                                    <th scope="col">판매구분</th>
+                                    <th scope="col">기준수량</th>
+                                    <th scope="col">구매단가</th>
+                                    <th scope="col">VAT포함</th>
+                                    <th scope="col">자동VAT계산</th>
+                                    <th scope="col">등록일</th>
+                                    <th scope="col">수정일</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <c:forEach var="item" items="${bundleList}" varStatus="status">
                                     <tr>
                                         <td>${status.index + 1}</td>
-                                        <td>${item.saleTypeName}</td>
+                                        <td class="text-start">${item.componentGoodsCd}</td>
                                         <td class="text-start">
                                             <c:url var="bundleViewUrl" value="/admin/product/bundleDetail.do">
                                                 <c:param name="productNo" value="${item.bundleId}" />
                                             </c:url>
-                                            <a href="${bundleViewUrl}">${item.productName}</a>
+                                            <a href="${bundleViewUrl}">${item.goodsCd}</a>
                                         </td>
                                         <td>${item.sellerName}</td>
                                         <td>${item.storageTypeName}</td>
-                                        <td>${item.divisionTypeName}</td>
-                                        <td>${item.processTypeName}</td>
-                                        <td>${item.saleStatusName}</td>
-                                        <td>
-                                            <c:choose>
-                                                <c:when test="${item.displayYn eq 'Y'}">노출</c:when>
-                                                <c:when test="${item.displayYn eq 'N'}">비노출</c:when>
-                                                <c:otherwise>-</c:otherwise>
-                                            </c:choose>
+                                        <td>${item.processDivName}</td>
+                                        <td>${item.stockUnitName}</td>
+                                        <td>${item.saleDivName}</td>
+                                        <td class="text-end">
+                                            <fmt:formatNumber value="${item.stdrQty}" type="number" />
                                         </td>
                                         <td class="text-end">
-                                            <fmt:formatNumber value="${item.salePrice}" type="number" />원
+                                            <fmt:formatNumber value="${item.poHubPurcUnitCost}" type="number" />
                                         </td>
-                                        <td class="text-end">
-                                            <fmt:formatNumber value="${item.vatAmount}" type="number" />원
-                                        </td>
-                                        <td class="text-end">
-                                            <fmt:formatNumber value="${item.totalSalesQty}" type="number" />
+                                        <td>${item.poHubPurcVatIncldYn}</td>
+                                        <td>${item.autoVatCalYn}</td>
+                                        <td>
+                                            <fmt:formatDate value="${item.regDt}" pattern="yyyy-MM-dd" />
                                         </td>
                                         <td>
-                                            <fmt:formatDate value="${item.saleStartDate}" pattern="yyyy-MM-dd" />
-                                        </td>
-                                        <td>
-                                            <fmt:formatDate value="${item.saleEndDate}" pattern="yyyy-MM-dd" />
+                                            <fmt:formatDate value="${item.updDt}" pattern="yyyy-MM-dd" />
                                         </td>
                                     </tr>
                                 </c:forEach>
@@ -252,28 +219,24 @@
                         <input type="hidden" name="menu" value="bundle" />
                         <input type="hidden" name="pageIndex"
                             value="${not empty paginationInfo ? paginationInfo.currentPageNo : 1}" />
-                        <input type="hidden" name="saleType" value="${param.saleType}" />
-                        <input type="hidden" name="storageType" value="${param.storageType}" />
-                        <input type="hidden" name="divisionType" value="${param.divisionType}" />
-                        <input type="hidden" name="processType" value="${param.processType}" />
+                        <input type="hidden" name="saleDivCd" value="${param.saleDivCd}" />
+                        <input type="hidden" name="storageTypeCd" value="${param.storageTypeCd}" />
+                        <input type="hidden" name="processDivCd" value="${param.processDivCd}" />
+                        <input type="hidden" name="stockUnitCd" value="${param.stockUnitCd}" />
                         <input type="hidden" name="sellerName" value="${param.sellerName}" />
-                        <input type="hidden" name="saleStatus" value="${param.saleStatus}" />
-                        <input type="hidden" name="displayYn" value="${param.displayYn}" />
-                        <input type="hidden" name="productName" value="${param.productName}" />
+                        <input type="hidden" name="componentGoodsCd" value="${param.componentGoodsCd}" />
                     </form>
                 </div>
 
                 <script>
                     function fn_reset() {
                         var form = document.getElementById('searchForm');
-                        form.saleType.value = "";
-                        form.storageType.value = "";
-                        form.divisionType.value = "";
-                        form.processType.value = "";
+                        form.saleDivCd.value = "";
+                        form.storageTypeCd.value = "";
+                        form.processDivCd.value = "";
+                        form.stockUnitCd.value = "";
                         form.sellerName.value = "";
-                        form.saleStatus.value = "";
-                        form.displayYn.value = "";
-                        form.productName.value = "";
+                        form.componentGoodsCd.value = "";
                     }
 
                     function fn_page(pageNo) {
