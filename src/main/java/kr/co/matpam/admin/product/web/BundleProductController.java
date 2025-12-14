@@ -129,12 +129,6 @@ public class BundleProductController {
         bundleProductVO.setAutoVatCalYn(autoVat != null ? "Y" : "N");
         bundleProductVO.setAutoVatYn(bundleProductVO.getAutoVatCalYn());
 
-        // Set Default Reg/Mod ID if not provided (Critical for NOT NULL constraints)
-        if (bundleProductVO.getRegId() == null)
-            bundleProductVO.setRegId("ADMIN");
-        if (bundleProductVO.getModId() == null)
-            bundleProductVO.setModId("ADMIN");
-
         bundleProductService.insertBundleProduct(bundleProductVO);
 
         return "redirect:/admin/product/bundleProductList.do?menu=bundle";
@@ -168,10 +162,6 @@ public class BundleProductController {
                 : bundleProductVO.getProductNo());
         bundleProductVO.setAutoVatCalYn(autoVat != null ? "Y" : "N");
         bundleProductVO.setAutoVatYn(bundleProductVO.getAutoVatCalYn());
-
-        // Set Default Mod ID
-        if (bundleProductVO.getModId() == null)
-            bundleProductVO.setModId("ADMIN");
 
         bundleProductService.updateBundleProduct(bundleProductVO);
 

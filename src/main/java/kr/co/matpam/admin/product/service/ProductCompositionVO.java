@@ -23,6 +23,7 @@ public class ProductCompositionVO implements Serializable {
     private String productName;
     private String saleType;
     private String saleTypeName;
+    private String saleStatusName;
     private Integer salePrice;
     private Integer costPrice;
     private Integer vatAmount;
@@ -82,6 +83,14 @@ public class ProductCompositionVO implements Serializable {
 
     public void setSaleTypeName(String saleTypeName) {
         this.saleTypeName = saleTypeName;
+    }
+
+    public String getSaleStatusName() {
+        return saleStatusName;
+    }
+
+    public void setSaleStatusName(String saleStatusName) {
+        this.saleStatusName = saleStatusName;
     }
 
     public Integer getSalePrice() {
