@@ -11,21 +11,129 @@
                         vertical-align: middle;
                     }
 
-                    .form-table th {
-                        background-color: #f8f9fa;
-                        font-weight: 600;
-                        width: 12%;
-                    }
+                <form name="productForm" method="post"
+                    action="${pageContext.request.contextPath}/admin/product/productRegist.do"
+                    enctype="multipart/form-data">
+                    <input type="hidden" name="productNo" value="<c:out value='${product.productNo}'/>" />
+                    <input type="hidden" name="displayYn" id="displayYnValue"
+                        value="<c:out value='${product.displayYn}' default='Y'/>" />
+                    <c:if test="${not empty compositionJson}">
+                        <script type="application/json" id="compositionData">
+                            <c:out value='${compositionJson}'/>
+                        </script>
+                    </c:if>
 
-                    .section-header {
-                        font-weight: 700;
-                        font-size: 1.1rem;
-                        margin-top: 2rem;
-                        margin-bottom: 0.5rem;
-                        display: flex;
-                        align-items: center;
-                        gap: 0.5rem;
-                    }
+                    <!-- 1. 상품일반정보 -->
+                    <div class="section-header">상품일반정보</div>
+                    <table class="table table-bordered form-table">
+                        <colgroup>
+                            <col style="width: 12%;">
+                            <col style="width: 38%;">
+                            <col style="width: 12%;">
+                            <col style="width: 38%;">
+                        </colgroup>
+                        <tbody>
+                            <tr>
+                                <th>상품명</th>
+                                <td>
+                                    <input type="text" name="productName" class="form-control form-control-sm"
+                                        value="<c:out value='${product.productName}'/>" required />
+                                </td>
+                                <th>상품 번호</th>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" placeholder="자동 생성"
+                                        value="<c:out value='${product.productNo}'/>" readonly disabled />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>판매 가격</th>
+                                <td>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="salePrice" id="salePrice" class="form-control"
+                                            value="<c:out value='${product.salePrice}' default='0'/>" />
+                                        <span class="input-group-text">원</span>
+                                    </div>
+                                </td>
+                                <th>원가</th>
+                                <td>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="costPrice" id="costPrice" class="form-control"
+                                            value="<c:out value='${product.costPrice}' default='0'/>" />
+                                        <span class="input-group-text">원</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>부가세</th>
+                                <td>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="vatAmount" id="vatAmount" class="form-control"
+                                            value="<c:out value='${product.vatAmount}' default='0'/>" />
+                                        <span class="input-group-text">원</span>
+                                    </div>
+                                </td>
+                                <th>노출여부</th>
+                                <td>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="displayYnCheckbox" <c:if
+                                            test="${product.displayYn ne 'N'}">checked</c:if>
+                                        onclick="fn_toggleDisplayYn(this)">
+                                        <label class="form-check-label" for="displayYnCheckbox">노출</label>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>판매기간</th>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="date" name="saleStartDate" id="saleStartDate"
+                                            class="form-control form-control-sm"
+                                            value="<fmt:formatDate value='${product.saleStartDate}' pattern='yyyy-MM-dd'/>" />
+                                        <span>~</span>
+                                        <input type="date" name="saleEndDate" id="saleEndDate"
+                                            class="form-control form-control-sm"
+                                            value="<fmt:formatDate value='${product.saleEndDate}' pattern='yyyy-MM-dd'/>" />
+                                    </div>
+                                </td>
+                                <th>조회수</th>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" value="0" readonly />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>상품 요약</th>
+                                <td>
+                                    <input type="text" name="productSummary" class="form-control form-control-sm"
+                                        value="<c:out value='${product.productSummary}'/>" />
+                                </td>
+                                <th>판매자</th>
+                                <td>
+                                    <select name="sellerId" id="sellerId" class="form-select form-select-sm">
+                                        <option value="">선택</option>
+                                        <c:forEach var="seller" items="${sellers}">
+                                            <option value="${seller.memberNo}" <c:if
+                                                test="${seller.memberNo eq product.sellerId}">selected</c:if>>
+                                                ${seller.companyName}
+                                            </option>
+                                        </c:forEach>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>MD 코멘트</th>
+                                <td colspan="3">
+                                    <input type="text" name="mdComment" class="form-control form-control-sm"
+                                        value="<c:out value='${product.mdComment}'/>" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- 2. 상품 구성 목록 -->
+                    <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+                        <div class="section-header" style="margin:0;">상품 구성 목록</div>
+                        <button type="button" class="btn btn-secondary btn-sm" id="addBundleButton">구성 추가</button>
+                    </div>
 
                     .section-header::before {
                         content: "";
@@ -87,185 +195,30 @@
                                 /admin/product/productList.do" />'">목록</button>
                         </div>
                     </div>
-
-                    <form name="productForm" method="post"
-                        action="${pageContext.request.contextPath}/admin/product/productRegist.do"
-                        enctype="multipart/form-data">
-                        <input type="hidden" name="productNo" value="<c:out value='${product.productNo}'/>" />
-                        <input type="hidden" name="displayYn" id="displayYnValue"
-                            value="<c:out value='${product.displayYn}' default='Y'/>" />
-
-                        <!-- 1. 상품일반정보 -->
-                        <div class="section-header">상품일반정보</div>
-                        <table class="table table-bordered form-table">
-                            <colgroup>
-                                <col style="width: 12%;">
-                                <col style="width: 38%;">
-                                <col style="width: 12%;">
-                                <col style="width: 38%;">
-                            </colgroup>
-                            <tbody>
-                                <tr>
-                                    <th>상품명</th>
-                                    <td>
-                                        <input type="text" name="productName" class="form-control form-control-sm"
-                                            value="<c:out value='${product.productName}'/>" required />
-                                    </td>
-                                    <th>상품 번호</th>
-                                    <td>
-                                        <input type="text" class="form-control form-control-sm" placeholder="자동 생성"
-                                            value="<c:out value='${product.productNo}'/>" readonly disabled />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>판매 가격</th>
-                                    <td>
-                                        <div class="input-group input-group-sm">
-                                            <input type="number" name="salePrice" id="salePrice" class="form-control"
-                                                value="<c:out value='${product.salePrice}' default='0'/>" />
-                                            <span class="input-group-text">원</span>
-                                        </div>
-                                    </td>
-                                    <th>원가</th>
-                                    <td>
-                                        <div class="input-group input-group-sm">
-                                            <input type="number" name="costPrice" id="costPrice" class="form-control"
-                                                value="<c:out value='${product.costPrice}' default='0'/>" />
-                                            <span class="input-group-text">원</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>부가세</th>
-                                    <td>
-                                        <div class="input-group input-group-sm">
-                                            <input type="number" name="vatAmount" id="vatAmount" class="form-control"
-                                                value="<c:out value='${product.vatAmount}' default='0'/>" />
-                                            <span class="input-group-text">원</span>
-                                        </div>
-                                    </td>
-                                    <th>노출여부</th>
-                                    <td>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="displayYnCheckbox" <c:if
-                                                test="${product.displayYn ne 'N'}">checked</c:if>
-                                            onclick="fn_toggleDisplayYn(this)">
-                                            <label class="form-check-label" for="displayYnCheckbox">노출</label>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>판매기간</th>
-                                    <td>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <input type="date" name="saleStartDate" id="saleStartDate"
-                                                class="form-control form-control-sm"
-                                                value="<fmt:formatDate value='${product.saleStartDate}' pattern='yyyy-MM-dd'/>" />
-                                            <span>~</span>
-                                            <input type="date" name="saleEndDate" id="saleEndDate"
-                                                class="form-control form-control-sm"
-                                                value="<fmt:formatDate value='${product.saleEndDate}' pattern='yyyy-MM-dd'/>" />
-                                        </div>
-                                    </td>
-                                    <th>조회수</th>
-                                    <td>
-                                        <input type="text" class="form-control form-control-sm" value="0" readonly />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>상품 요약</th>
-                                    <td>
-                                        <input type="text" name="productSummary" class="form-control form-control-sm"
-                                            value="<c:out value='${product.productSummary}'/>" />
-                                    </td>
-                                    <th>판매자</th>
-                                    <td>
-                                        <select name="sellerId" id="sellerId" class="form-select form-select-sm">
-                                            <option value="">선택</option>
-                                            <c:forEach var="seller" items="${sellers}">
-                                                <option value="${seller.memberNo}" <c:if
-                                                    test="${seller.memberNo eq product.sellerId}">selected</c:if>>
-                                                    ${seller.companyName}
-                                                </option>
-                                            </c:forEach>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>MD 코멘트</th>
-                                    <td colspan="3">
-                                        <input type="text" name="mdComment" class="form-control form-control-sm"
-                                            value="<c:out value='${product.mdComment}'/>" />
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <!-- 2. 상품 구성 목록 -->
-                        <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
-                            <div class="section-header" style="margin:0;">상품 구성 목록</div>
-                            <button type="button" class="btn btn-secondary btn-sm" id="addBundleButton">구성 추가</button>
-                        </div>
-
-                        <table class="table table-bordered table-hover text-center align-middle bg-white"
-                            id="bundleTable">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>판매 업체</th>
-                                    <th>상품명</th>
-                                    <th>판매유형</th>
-                                    <th>판매상태</th>
-                                    <th>판매가격</th>
-                                    <th>원가</th>
-                                    <th>VAT</th>
-                                    <th>저장유형</th>
-                                    <th>처리유형</th>
-                                    <th>분리유형</th>
-                                    <th>생성일</th>
-                                    <th>변경일</th>
-                                    <th>노출상태</th>
-                                    <th>관리</th>
-                                </tr>
-                            </thead>
-                            <tbody id="bundleTableBody">
-                                <!-- Javascript로 동적 추가 -->
-                                <tr id="emptyRow">
-                                    <td colspan="14" class="text-muted py-4">구성 상품이 없습니다.</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <!-- 3. 상품 이미지 -->
-                        <div class="section-header">상품 이미지</div>
-                        <div class="alert alert-info small mb-2">
-                            <i class="bi bi-info-circle me-1"></i>
-                            이미지는 로컬 환경에서만 미리보기가 가능합니다. 저장 후 다시 열면 이미지가 표시되지 않습니다. (서버 이미지 저장 기능 개발 예정)
-                        </div>
-                        <div class="row g-2 mb-4">
-                            <c:forEach begin="0" end="4" varStatus="status">
-                                <div class="col">
-                                    <div class="image-upload-box position-relative d-flex align-items-center justify-content-center border rounded bg-light"
-                                        id="preview-wrapper-${status.index}"
-                                        onclick="fn_triggerFileUpload('${status.index}')"
-                                        style="cursor: pointer; height: 150px; overflow: hidden;">
-
-                                        <!-- 업로드 안내 문구 -->
-                                        <div id="btn-upload-${status.index}" class="text-center text-muted small">
-                                            <i class="bi bi-cloud-upload fs-3 d-block mb-2"></i>
-                                            클릭하여 업로드
-                                        </div>
-
-                                        <!-- 미리보기 이미지 -->
-                                        <img id="preview${status.index}" class="product-image-thumb w-100 h-100"
-                                            style="display:none; object-fit: cover;" alt="상품이미지" />
-
-                                        <!-- 삭제 버튼 -->
-                                        <button type="button"
-                                            class="btn-close position-absolute top-0 end-0 m-2 bg-white"
-                                            style="z-index: 10;" onclick="fn_deleteImage('${status.index}');"></button>
-                                    </div>
-                                    <input type="file" name="files" id="file${status.index}" style="display:none;"
-                                        onchange="fn_previewImage(this, '${status.index}')" accept="image/*" />
+                    <div class="row g-2 mb-4">
+                        <c:forEach begin="1" end="5" varStatus="status">
+                            <c:set var="image" value="${product.imageList[status.index-1]}" />
+                            <div class="col">
+                                <div class="image-upload-box" id="imageBox${status.index}"
+                                    data-input-id="file${status.index}"
+                                    onclick="document.getElementById('file${status.index}').click();"
+                                    style="cursor: pointer;">
+                                    <c:choose>
+                                        <c:when test="${not empty image}">
+                                            <img src="${image.imagePath}" alt="상품 이미지 ${status.index}"
+                                                class="product-image-thumb"
+                                                data-full-url="${image.imagePath}" />
+                                            <button type="button" class="btn btn-light btn-sm image-change-btn"
+                                                onclick="event.stopPropagation(); document.getElementById('file${status.index}').click();">변경</button>
+                                            <input type="hidden" name="existingImages[${status.index-1}].imageId" value="${image.imageId}" />
+                                        </c:when>
+                                        <c:otherwise>
+                                            <div class="text-center text-muted small">
+                                                <i class="bi bi-cloud-upload fs-3 d-block mb-2"></i>
+                                                클릭하여 이미지 업로드
+                                            </div>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </div>
                             </c:forEach>
                         </div>
@@ -399,6 +352,27 @@
                     }
 
 
+                function formatDateValue(value) {
+                    if (!value) return '';
+
+                    if (value instanceof Date) {
+                        return value.toISOString().split('T')[0];
+                    }
+
+                    const text = value.toString();
+                    if (text.indexOf('T') > -1) {
+                        return text.split('T')[0];
+                    }
+
+                    return text.substring(0, 10);
+                }
+
+                function fn_addBundlePopup() {
+                    const url = '<c:url value="/admin/product/popup/bundleList.do"/>';
+                    const name = 'bundlePopup';
+                    const option = 'width=1000,height=800,scrollbars=yes';
+                    window.open(url, name, option);
+                }
 
                     // ===== 구성상품 / 판매기간 계산 =====
                     function calculateSalePeriod(components) {
@@ -780,34 +754,54 @@
                         initProductImagePopup();
                     }
 
-                    // ===== 기타 초기화 =====
-                    function initSalePeriodRecalc() {
-                        updateProductInfo();
-                    }
+                function initUnloadCleanup() {
+                    window.addEventListener('beforeunload', function () {
+                        Object.values(objectUrlMap).forEach((url) => URL.revokeObjectURL(url));
+                    });
+                }
 
-                    function fn_toggleDisplayYn(checkbox) {
-                        const hiddenField = document.getElementById('displayYnValue');
-                        if (hiddenField && checkbox) {
-                            hiddenField.value = checkbox.checked ? 'Y' : 'N';
+                // ===== 기존 구성상품 로딩 =====
+                function loadExistingCompositions() {
+                    console.log('loadExistingCompositions called');
+
+                    try {
+                        const dataElement = document.getElementById('compositionData');
+                        if (!dataElement) {
+                            console.log('No composition data element found');
+                            return;
                         }
-                    }
 
-                    function initDisplayToggle() {
-                        const displayYnCheckbox = document.getElementById('displayYnCheckbox');
-                        fn_toggleDisplayYn(displayYnCheckbox);
-                        if (displayYnCheckbox) {
-                            displayYnCheckbox.addEventListener('change', function (e) {
-                                fn_toggleDisplayYn(e.target);
-                            });
-                        }
-                    }
+                        const jsonText = (dataElement.textContent || dataElement.innerText || '').trim();
+                        console.log('JSON text:', jsonText);
 
-                    function initBundlePopup() {
-                        const addButton = document.getElementById('addBundleButton');
-                        if (addButton) {
-                            addButton.addEventListener('click', function (e) {
-                                e.preventDefault();
-                                fn_addBundlePopup();
+                        const compositions = jsonText ? JSON.parse(jsonText) : [];
+                        console.log('Parsed compositions:', compositions);
+
+                        if (compositions && compositions.length > 0) {
+                            compositions.forEach(function(comp) {
+                                if (comp.bundleId > 0) {
+                                    bundleList.push({
+                                        bundleId: comp.bundleId,
+                                        productName: comp.productName || '',
+                                        saleType: comp.saleType || '',
+                                        saleTypeName: comp.saleTypeName || '',
+                                        saleStatusName: comp.saleStatusName || '',
+                                        storageTypeName: comp.storageTypeName || '',
+                                        processTypeName: comp.processTypeName || '',
+                                        divisionTypeName: comp.divisionTypeName || '',
+                                        salePrice: comp.salePrice || 0,
+                                        costPrice: comp.costPrice || 0,
+                                        vatAmount: comp.vatAmount || 0,
+                                        displayYn: comp.displayYn || 'Y',
+                                        sellerId: comp.sellerId || null,
+                                        sellerName: comp.sellerName || '',
+                                        saleStartDate: formatDateValue(comp.saleStartDate),
+                                        saleEndDate: formatDateValue(comp.saleEndDate),
+                                        regDt: formatDateValue(comp.regDt),
+                                        modDt: formatDateValue(comp.modDt)
+                                    });
+                                    console.log('Added composition:', comp.bundleId, comp.productName);
+                                }
                             });
                         }
                     }

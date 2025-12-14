@@ -26,6 +26,9 @@ public class ProductCompositionVO implements Serializable {
     private String saleStatusName;
     private String storageTypeCd;
     private String storageTypeName;
+    private String processTypeName;
+    private String divisionTypeName;
+    private Long sellerId;
     private Integer salePrice;
     private Integer costPrice;
     private Integer vatAmount;
@@ -115,6 +118,30 @@ public class ProductCompositionVO implements Serializable {
         this.storageTypeName = storageTypeName;
     }
 
+    public String getProcessTypeName() {
+        return processTypeName;
+    }
+
+    public void setProcessTypeName(String processTypeName) {
+        this.processTypeName = processTypeName;
+    }
+
+    public String getDivisionTypeName() {
+        return divisionTypeName;
+    }
+
+    public void setDivisionTypeName(String divisionTypeName) {
+        this.divisionTypeName = divisionTypeName;
+    }
+
+    public Long getSellerId() {
+        return sellerId;
+    }
+
+    public void setSellerId(Long sellerId) {
+        this.sellerId = sellerId;
+    }
+
     public Integer getSalePrice() {
         return salePrice;
     }
@@ -169,6 +196,22 @@ public class ProductCompositionVO implements Serializable {
 
     public void setSellerName(String sellerName) {
         this.sellerName = sellerName;
+    }
+
+    public Date getRegDt() {
+        return regDt;
+    }
+
+    public void setRegDt(Date regDt) {
+        this.regDt = regDt;
+    }
+
+    public Date getModDt() {
+        return modDt;
+    }
+
+    public void setModDt(Date modDt) {
+        this.modDt = modDt;
     }
 
     public Integer getSortOrder() {

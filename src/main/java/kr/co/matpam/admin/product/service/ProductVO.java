@@ -396,12 +396,4 @@ public class ProductVO implements Serializable {
     public void setImageList(List<ProductImageVO> imageList) {
         this.imageList = imageList;
     }
-
-    public String getRegId() {
-        return regId;
-    }
-
-    public void setRegId(String regId) {
-        this.regId = regId;
-    }
 }
