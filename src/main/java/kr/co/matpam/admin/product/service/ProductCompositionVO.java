@@ -219,4 +219,5 @@ public class ProductCompositionVO implements Serializable {
     public void setSortOrder(Integer sortOrder) {
         this.sortOrder = sortOrder;
     }
+
 }
