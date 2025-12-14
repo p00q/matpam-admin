@@ -15,6 +15,8 @@ public class ProductImageVO implements Serializable {
     private String imagePath;
     private String originalName;
     private Integer sortOrder;
+    private String imgUrl;
+    private String isMainYn;
 
     public Long getImageId() {
         return imageId;
@@ -62,5 +64,21 @@ public class ProductImageVO implements Serializable {
 
     public void setSortOrder(Integer sortOrder) {
         this.sortOrder = sortOrder;
+    }
+
+    public String getImgUrl() {
+        return imgUrl;
+    }
+
+    public void setImgUrl(String imgUrl) {
+        this.imgUrl = imgUrl;
+    }
+
+    public String getIsMainYn() {
+        return isMainYn;
+    }
+
+    public void setIsMainYn(String isMainYn) {
+        this.isMainYn = isMainYn;
     }
 }
