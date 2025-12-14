@@ -33,6 +33,10 @@ public class ProductCompositionVO implements Serializable {
     private Date saleEndDate;
     private String displayYn;
     private String sellerName;
+    private String processTypeName;
+    private String divisionTypeName; // cutType
+    private Date regDt;
+    private Date modDt;
 
     /** 정렬순서 */
     private Integer sortOrder;
@@ -173,5 +177,37 @@ public class ProductCompositionVO implements Serializable {
 
     public void setSortOrder(Integer sortOrder) {
         this.sortOrder = sortOrder;
+    }
+
+    public String getProcessTypeName() {
+        return processTypeName;
+    }
+
+    public void setProcessTypeName(String processTypeName) {
+        this.processTypeName = processTypeName;
+    }
+
+    public String getDivisionTypeName() {
+        return divisionTypeName;
+    }
+
+    public void setDivisionTypeName(String divisionTypeName) {
+        this.divisionTypeName = divisionTypeName;
+    }
+
+    public Date getRegDt() {
+        return regDt;
+    }
+
+    public void setRegDt(Date regDt) {
+        this.regDt = regDt;
+    }
+
+    public Date getModDt() {
+        return modDt;
+    }
+
+    public void setModDt(Date modDt) {
+        this.modDt = modDt;
     }
 }
