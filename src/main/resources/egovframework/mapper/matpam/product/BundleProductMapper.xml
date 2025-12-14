@@ -3,50 +3,35 @@
 <mapper namespace="matpam.product.BundleProductMapper">
 
     <resultMap id="bundleProductResultMap" type="kr.co.matpam.admin.product.service.BundleProductVO">
-        <id property="componentCompCd" column="COMPONENT_PROD_ID" />
-        <result property="bundleId" column="COMPONENT_PROD_ID" />
-        <result property="productNo" column="COMPONENT_PROD_ID" />
-        <result property="componentGoodsCd" column="COMPONENT_PROD_CODE" />
-        <result property="goodsCd" column="COMPONENT_PROD_CODE" />
-        <!-- 상품명 (구성상품명) -->
-        <result property="productName" column="COMPONENT_PROD_NAME" />
-        
-        <result property="saleMemberNo" column="SELLER_MEMBER_ID" />
-        <result property="sellerId" column="SELLER_MEMBER_ID" />
+        <id property="componentCompCd" column="COMPONENT_COMP_CD" />
+        <result property="bundleId" column="COMPONENT_COMP_CD" />
+        <result property="productNo" column="COMPONENT_COMP_CD" />
+        <result property="componentGoodsCd" column="COMPONENT_GOODS_CD" />
+        <result property="productName" column="COMPONENT_GOODS_CD" />
+        <result property="goodsCd" column="GOODS_CD" />
+        <result property="saleMemberNo" column="SALE_MEMBER_NO" />
+        <result property="sellerId" column="SALE_MEMBER_NO" />
         <result property="sellerName" column="SELLER_NAME" />
-        
-        <!-- 저장유형 -->
         <result property="storageTypeCd" column="STORAGE_TYPE_CD" />
         <result property="storageTypeName" column="STORAGE_TYPE_NAME" />
-        
-        <!-- 처리구분 -->
-        <result property="processDivCd" column="PROCESS_TYPE_CD" />
+        <result property="processDivCd" column="PROCESS_DIV_CD" />
         <result property="processDivName" column="PROCESS_DIV_NAME" />
-        
-        <!-- 분리유형 (기존 재고단위 대체) -->
-        <result property="cutTypeCd" column="CUT_TYPE_CD" />
-        <result property="cutTypeName" column="CUT_TYPE_NAME" />
-        <!-- 호환용 (DB UNIT_TYPE_CD는 쿼리에서 사용 안하지만 VO 호환 위해 남겨둠, 필요시 추가) -->
-        <result property="stockUnitCd" column="UNIT_TYPE_CD" />
-        
-        <!-- 판매구분 -->
-        <result property="saleDivCd" column="SALE_TYPE_CD" />
+        <result property="stockUnitCd" column="STOCK_UNIT_CD" />
+        <result property="stockUnitName" column="STOCK_UNIT_NAME" />
+        <result property="saleDivCd" column="SALE_DIV_CD" />
         <result property="saleDivName" column="SALE_DIV_NAME" />
-        
-        <result property="salePrice" column="LIST_PRICE" />
-        <result property="costPrice" column="COST_PRICE" />
-        
-        <!-- 판매상태 -->
-        <result property="saleStatus" column="SALE_STATUS_CD" />
-        <result property="saleStatusName" column="SALE_STATUS_NAME" />
-        
-        <!-- 노출상태 -->
-        <result property="exposureStatusCd" column="EXPOSURE_STATUS_CD" />
-        
+        <result property="stdrQty" column="STDR_QTY" />
+        <result property="poHubPurcCmpnyCd" column="PO_HUB_PURC_CMPNY_CD" />
+        <result property="poHubPurcSuplrDlvPlcCd" column="PO_HUB_PURC_SUPLR_DLV_PLC_CD" />
+        <result property="poHubPurcSuplrCd" column="PO_HUB_PURC_SUPLR_CD" />
+        <result property="poHubPurcUnitCost" column="PO_HUB_PURC_UNIT_COST" />
+        <result property="poHubPurcVatIncldYn" column="PO_HUB_PURC_VAT_INCLD_YN" />
+        <result property="autoVatCalYn" column="AUTO_VAT_CAL_YN" />
+        <result property="autoVatYn" column="AUTO_VAT_CAL_YN" />
         <result property="regId" column="REG_ID" />
         <result property="regDt" column="REG_DT" />
-        <result property="updId" column="MOD_ID" />
-        <result property="updDt" column="MOD_DT" />
+        <result property="updId" column="UPD_ID" />
+        <result property="updDt" column="UPD_DT" />
         <result property="modId" column="MOD_ID" />
         <result property="modDt" column="MOD_DT" />
     </resultMap>
@@ -55,43 +40,25 @@
     <sql id="bundleProductWhere">
         <where>
             <if test="componentCompCd != null">
-                AND c.COMPONENT_PROD_ID = #{componentCompCd}
+                AND c.COMPONENT_COMP_CD = #{componentCompCd}
             </if>
-            <!-- 저장유형 -->
             <if test="storageTypeCd != null and storageTypeCd != ''">
                 AND c.STORAGE_TYPE_CD = #{storageTypeCd}
             </if>
-            <!-- 처리구분 -->
             <if test="processDivCd != null and processDivCd != ''">
-                AND c.PROCESS_TYPE_CD = #{processDivCd}
+                AND c.PROCESS_DIV_CD = #{processDivCd}
             </if>
-            <!-- 분리유형 (신규 검색조건) -->
-            <if test="cutTypeCd != null and cutTypeCd != ''">
-                AND c.CUT_TYPE_CD = #{cutTypeCd}
+            <if test="stockUnitCd != null and stockUnitCd != ''">
+                AND c.STOCK_UNIT_CD = #{stockUnitCd}
             </if>
-            <!-- 판매구분 -->
             <if test="saleDivCd != null and saleDivCd != ''">
-                AND c.SALE_TYPE_CD = #{saleDivCd}
+                AND c.SALE_DIV_CD = #{saleDivCd}
             </if>
-            <!-- 판매자명 검색 -->
             <if test="sellerName != null and sellerName != ''">
                 AND m.COMPANY_NAME LIKE CONCAT('%', #{sellerName}, '%')
             </if>
-             <!-- 판매자 ID 검색 (콤보박스 선택 시) -->
-            <if test="saleMemberNo != null">
-                AND c.SELLER_MEMBER_ID = #{saleMemberNo}
-            </if>
-            <!-- 구성상품코드 검색 (기존 유지) -->
             <if test="componentGoodsCd != null and componentGoodsCd != ''">
-                AND c.COMPONENT_PROD_CODE LIKE CONCAT('%', #{componentGoodsCd}, '%')
-            </if>
-            <!-- 상품명 검색 (주요 검색 조건) -->
-            <if test="productName != null and productName != ''">
-                AND c.COMPONENT_PROD_NAME LIKE CONCAT('%', #{productName}, '%')
-            </if>
-             <!-- 판매상태 검색 -->
-            <if test="saleStatus != null and saleStatus != ''">
-                AND c.SALE_STATUS_CD = #{saleStatus}
+                AND c.COMPONENT_GOODS_CD LIKE CONCAT('%', #{componentGoodsCd}, '%')
             </if>
         </where>
     </sql>
@@ -100,51 +67,42 @@
     <select id="selectBundleProductList" resultMap="bundleProductResultMap"
         parameterType="kr.co.matpam.admin.product.service.BundleProductVO">
         SELECT
-            c.COMPONENT_PROD_ID,
-            c.COMPONENT_PROD_CODE,
-            c.COMPONENT_PROD_NAME,
-            c.SELLER_MEMBER_ID,
+            c.COMPONENT_COMP_CD,
+            c.COMPONENT_GOODS_CD,
+            c.GOODS_CD,
+            c.SALE_MEMBER_NO,
             m.COMPANY_NAME AS SELLER_NAME,
             c.STORAGE_TYPE_CD,
             st.DETAIL_CODE_NAME AS STORAGE_TYPE_NAME,
-            c.PROCESS_TYPE_CD,
+            c.PROCESS_DIV_CD,
             pt.DETAIL_CODE_NAME AS PROCESS_DIV_NAME,
-            c.UNIT_TYPE_CD,
-            
-            c.CUT_TYPE_CD,
-            ct.DETAIL_CODE_NAME AS CUT_TYPE_NAME,
-            
-            c.SALE_TYPE_CD,
+            c.STOCK_UNIT_CD,
+            ut.DETAIL_CODE_NAME AS STOCK_UNIT_NAME,
+            c.SALE_DIV_CD,
             slt.DETAIL_CODE_NAME AS SALE_DIV_NAME,
-            c.LIST_PRICE,
-            c.COST_PRICE,
-            
-            c.SALE_STATUS_CD,
-            ss.DETAIL_CODE_NAME AS SALE_STATUS_NAME,
-            
-            c.EXPOSURE_STATUS_CD,
-            
+            c.STDR_QTY,
+            c.PO_HUB_PURC_CMPNY_CD,
+            c.PO_HUB_PURC_SUPLR_DLV_PLC_CD,
+            c.PO_HUB_PURC_SUPLR_CD,
+            c.PO_HUB_PURC_UNIT_COST,
+            c.PO_HUB_PURC_VAT_INCLD_YN,
+            c.AUTO_VAT_CAL_YN,
             c.REG_ID,
             c.REG_DT,
+            c.UPD_ID,
+            c.UPD_DT,
             c.MOD_ID,
             c.MOD_DT
-        FROM TB_COMPONENT_PRODUCT c
-            LEFT JOIN TB_MEMBER m ON c.SELLER_MEMBER_ID = m.MEMBER_ID
-            /* Storage Type: PRODUCT_TYPE / STORAGE_TYPE */
-            LEFT JOIN TB_DETAIL_CODE st ON c.STORAGE_TYPE_CD = st.DETAIL_CODE_ID
-                AND st.CODE_GROUP_ID = 'PRODUCT_TYPE' AND st.CODE_ID = 'STORAGE_TYPE'
-            /* Process Type: PRODUCT_TYPE / PROCESS_TYPE */
-            LEFT JOIN TB_DETAIL_CODE pt ON c.PROCESS_TYPE_CD = pt.DETAIL_CODE_ID
-                AND pt.CODE_GROUP_ID = 'PRODUCT_TYPE' AND pt.CODE_ID = 'PROCESS_TYPE'
-            /* Cut Type (분리유형): PRODUCT_TYPE / CUT_TYPE */
-            LEFT JOIN TB_DETAIL_CODE ct ON c.CUT_TYPE_CD = ct.DETAIL_CODE_ID
-                AND ct.CODE_GROUP_ID = 'PRODUCT_TYPE' AND ct.CODE_ID = 'CUT_TYPE'
-            /* Sale Type: SALE_STATUS / SALE_TYPE */
-            LEFT JOIN TB_DETAIL_CODE slt ON c.SALE_TYPE_CD = slt.DETAIL_CODE_ID
-                AND slt.CODE_GROUP_ID = 'SALE_STATUS' AND slt.CODE_ID = 'SALE_TYPE'
-            /* Sale Status: SALE_STATUS / SALE_STATUS */
-            LEFT JOIN TB_DETAIL_CODE ss ON c.SALE_STATUS_CD = ss.DETAIL_CODE_ID
-                AND ss.CODE_GROUP_ID = 'SALE_STATUS' AND ss.CODE_ID = 'SALE_STATUS'
+        FROM TB_COMPONENT_GOODS c
+            LEFT JOIN TB_MEMBER m ON c.SALE_MEMBER_NO = m.MEMBER_NO
+            LEFT JOIN TB_DETAIL_CODE st ON c.STORAGE_TYPE_CD = st.DETAIL_CODE
+                AND st.GROUP_CODE = '001' AND st.CODE = '001001'
+            LEFT JOIN TB_DETAIL_CODE pt ON c.PROCESS_DIV_CD = pt.DETAIL_CODE
+                AND pt.GROUP_CODE = '001' AND pt.CODE = '001003'
+            LEFT JOIN TB_DETAIL_CODE ut ON c.STOCK_UNIT_CD = ut.DETAIL_CODE
+                AND ut.GROUP_CODE = '001' AND ut.CODE = '001004'
+            LEFT JOIN TB_DETAIL_CODE slt ON c.SALE_DIV_CD = slt.DETAIL_CODE
+                AND slt.GROUP_CODE = '007' AND slt.CODE = '007002'
         <include refid="bundleProductWhere" />
         ORDER BY c.REG_DT DESC
         <if test="recordCountPerPage != null and firstIndex != null">
@@ -156,125 +114,134 @@
     <select id="selectBundleProductListTotCnt" resultType="int"
         parameterType="kr.co.matpam.admin.product.service.BundleProductVO">
         SELECT COUNT(1)
-        FROM TB_COMPONENT_PRODUCT c
-            LEFT JOIN TB_MEMBER m ON c.SELLER_MEMBER_ID = m.MEMBER_ID
+        FROM TB_COMPONENT_GOODS c
         <include refid="bundleProductWhere" />
     </select>
 
     <!-- 구성상품 상세 조회 -->
     <select id="selectBundleProduct" resultMap="bundleProductResultMap" parameterType="long">
         SELECT
-            c.COMPONENT_PROD_ID,
-            c.COMPONENT_PROD_CODE,
-            c.COMPONENT_PROD_NAME,
-            c.SELLER_MEMBER_ID,
+            c.COMPONENT_COMP_CD,
+            c.COMPONENT_GOODS_CD,
+            c.GOODS_CD,
+            c.SALE_MEMBER_NO,
             m.COMPANY_NAME AS SELLER_NAME,
             c.STORAGE_TYPE_CD,
             st.DETAIL_CODE_NAME AS STORAGE_TYPE_NAME,
-            c.PROCESS_TYPE_CD,
+            c.PROCESS_DIV_CD,
             pt.DETAIL_CODE_NAME AS PROCESS_DIV_NAME,
-            c.UNIT_TYPE_CD,
-            
-            c.CUT_TYPE_CD,
-            ct.DETAIL_CODE_NAME AS CUT_TYPE_NAME,
-            
-            c.SALE_TYPE_CD,
+            c.STOCK_UNIT_CD,
+            ut.DETAIL_CODE_NAME AS STOCK_UNIT_NAME,
+            c.SALE_DIV_CD,
             slt.DETAIL_CODE_NAME AS SALE_DIV_NAME,
-            c.LIST_PRICE,
-            c.COST_PRICE,
-            
-            c.SALE_STATUS_CD,
-            ss.DETAIL_CODE_NAME AS SALE_STATUS_NAME,
-            
-            c.EXPOSURE_STATUS_CD,
-            
+            c.STDR_QTY,
+            c.PO_HUB_PURC_CMPNY_CD,
+            c.PO_HUB_PURC_SUPLR_DLV_PLC_CD,
+            c.PO_HUB_PURC_SUPLR_CD,
+            c.PO_HUB_PURC_UNIT_COST,
+            c.PO_HUB_PURC_VAT_INCLD_YN,
+            c.AUTO_VAT_CAL_YN,
             c.REG_ID,
             c.REG_DT,
+            c.UPD_ID,
+            c.UPD_DT,
             c.MOD_ID,
             c.MOD_DT
-        FROM TB_COMPONENT_PRODUCT c
-            LEFT JOIN TB_MEMBER m ON c.SELLER_MEMBER_ID = m.MEMBER_ID
-            LEFT JOIN TB_DETAIL_CODE st ON c.STORAGE_TYPE_CD = st.DETAIL_CODE_ID
-                AND st.CODE_GROUP_ID = 'PRODUCT_TYPE' AND st.CODE_ID = 'STORAGE_TYPE'
-            LEFT JOIN TB_DETAIL_CODE pt ON c.PROCESS_TYPE_CD = pt.DETAIL_CODE_ID
-                AND pt.CODE_GROUP_ID = 'PRODUCT_TYPE' AND pt.CODE_ID = 'PROCESS_TYPE'
-            LEFT JOIN TB_DETAIL_CODE ct ON c.CUT_TYPE_CD = ct.DETAIL_CODE_ID
-                AND ct.CODE_GROUP_ID = 'PRODUCT_TYPE' AND ct.CODE_ID = 'CUT_TYPE'
-            LEFT JOIN TB_DETAIL_CODE slt ON c.SALE_TYPE_CD = slt.DETAIL_CODE_ID
-                AND slt.CODE_GROUP_ID = 'SALE_STATUS' AND slt.CODE_ID = 'SALE_TYPE'
-            LEFT JOIN TB_DETAIL_CODE ss ON c.SALE_STATUS_CD = ss.DETAIL_CODE_ID
-                AND ss.CODE_GROUP_ID = 'SALE_STATUS' AND ss.CODE_ID = 'SALE_STATUS'
-        WHERE c.COMPONENT_PROD_ID = #{value}
+        FROM TB_COMPONENT_GOODS c
+            LEFT JOIN TB_MEMBER m ON c.SALE_MEMBER_NO = m.MEMBER_NO
+            LEFT JOIN TB_DETAIL_CODE st ON c.STORAGE_TYPE_CD = st.DETAIL_CODE
+                AND st.GROUP_CODE = '001' AND st.CODE = '001001'
+            LEFT JOIN TB_DETAIL_CODE pt ON c.PROCESS_DIV_CD = pt.DETAIL_CODE
+                AND pt.GROUP_CODE = '001' AND pt.CODE = '001003'
+            LEFT JOIN TB_DETAIL_CODE ut ON c.STOCK_UNIT_CD = ut.DETAIL_CODE
+                AND ut.GROUP_CODE = '001' AND ut.CODE = '001004'
+            LEFT JOIN TB_DETAIL_CODE slt ON c.SALE_DIV_CD = slt.DETAIL_CODE
+                AND slt.GROUP_CODE = '007' AND slt.CODE = '007002'
+        WHERE c.COMPONENT_COMP_CD = #{value}
     </select>
 
     <!-- 구성상품 등록 -->
     <insert id="insertBundleProduct" parameterType="kr.co.matpam.admin.product.service.BundleProductVO">
-        INSERT INTO TB_COMPONENT_PRODUCT (
-            COMPONENT_PROD_CODE,
-            COMPONENT_PROD_NAME,
-            SELLER_MEMBER_ID,
+        INSERT INTO TB_COMPONENT_GOODS (
+            COMPONENT_COMP_CD,
+            COMPONENT_GOODS_CD,
+            GOODS_CD,
+            SALE_MEMBER_NO,
             STORAGE_TYPE_CD,
-            PROCESS_TYPE_CD,
-            UNIT_TYPE_CD,
-            CUT_TYPE_CD,
-            SALE_TYPE_CD,
-            LIST_PRICE,
-            COST_PRICE,
-            SALE_STATUS_CD,
-            EXPOSURE_STATUS_CD,
+            PROCESS_DIV_CD,
+            STOCK_UNIT_CD,
+            SALE_DIV_CD,
+            STDR_QTY,
+            PO_HUB_PURC_CMPNY_CD,
+            PO_HUB_PURC_SUPLR_DLV_PLC_CD,
+            PO_HUB_PURC_SUPLR_CD,
+            PO_HUB_PURC_UNIT_COST,
+            PO_HUB_PURC_VAT_INCLD_YN,
+            AUTO_VAT_CAL_YN,
             REG_ID,
             REG_DT,
+            UPD_ID,
+            UPD_DT,
             MOD_ID,
             MOD_DT
         ) VALUES (
+            #{componentCompCd},
             #{componentGoodsCd},
-            #{productName},
+            #{goodsCd},
             #{saleMemberNo},
             #{storageTypeCd},
             #{processDivCd},
             #{stockUnitCd},
-            #{cutTypeCd},
             #{saleDivCd},
-            #{salePrice},
-            #{costPrice},
-            #{saleStatus},
-            #{exposureStatusCd},
+            #{stdrQty},
+            #{poHubPurcCmpnyCd},
+            #{poHubPurcSuplrDlvPlcCd},
+            #{poHubPurcSuplrCd},
+            #{poHubPurcUnitCost},
+            #{poHubPurcVatIncldYn},
+            #{autoVatCalYn},
             #{regId},
             NOW(),
+            #{updId},
+            NOW(),
             #{modId},
-            NOW()
+            #{modDt, jdbcType=TIMESTAMP}
         )
     </insert>
 
     <!-- 구성상품 수정 -->
     <update id="updateBundleProduct" parameterType="kr.co.matpam.admin.product.service.BundleProductVO">
-        UPDATE TB_COMPONENT_PRODUCT SET
-            COMPONENT_PROD_NAME = #{productName},
+        UPDATE TB_COMPONENT_GOODS SET
+            GOODS_CD = #{goodsCd},
             STORAGE_TYPE_CD = #{storageTypeCd},
-            PROCESS_TYPE_CD = #{processDivCd},
-            UNIT_TYPE_CD = #{stockUnitCd},
-            CUT_TYPE_CD = #{cutTypeCd},
-            SALE_TYPE_CD = #{saleDivCd},
-            LIST_PRICE = #{salePrice},
-            COST_PRICE = #{costPrice},
-            SALE_STATUS_CD = #{saleStatus},
-            EXPOSURE_STATUS_CD = #{exposureStatusCd},
+            PROCESS_DIV_CD = #{processDivCd},
+            STOCK_UNIT_CD = #{stockUnitCd},
+            SALE_DIV_CD = #{saleDivCd},
+            STDR_QTY = #{stdrQty},
+            PO_HUB_PURC_CMPNY_CD = #{poHubPurcCmpnyCd},
+            PO_HUB_PURC_SUPLR_DLV_PLC_CD = #{poHubPurcSuplrDlvPlcCd},
+            PO_HUB_PURC_SUPLR_CD = #{poHubPurcSuplrCd},
+            PO_HUB_PURC_UNIT_COST = #{poHubPurcUnitCost},
+            PO_HUB_PURC_VAT_INCLD_YN = #{poHubPurcVatIncldYn},
+            AUTO_VAT_CAL_YN = #{autoVatCalYn},
+            UPD_ID = #{updId},
+            UPD_DT = NOW(),
             MOD_ID = #{modId},
             MOD_DT = NOW()
-        WHERE COMPONENT_PROD_ID =
+        WHERE COMPONENT_COMP_CD =
             <choose>
                 <when test="componentCompCd != null">#{componentCompCd}</when>
                 <otherwise>#{productNo}</otherwise>
             </choose>
         <if test="componentGoodsCd != null and componentGoodsCd != ''">
-            AND COMPONENT_PROD_CODE = #{componentGoodsCd}
+            AND COMPONENT_GOODS_CD = #{componentGoodsCd}
         </if>
     </update>
 
     <!-- 구성상품 삭제 -->
     <delete id="deleteBundleProduct" parameterType="long">
-        DELETE FROM TB_COMPONENT_PRODUCT
-        WHERE COMPONENT_PROD_ID = #{value}
+        DELETE FROM TB_COMPONENT_GOODS
+        WHERE COMPONENT_COMP_CD = #{value}
     </delete>
 
 </mapper>
