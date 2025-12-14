@@ -21,7 +21,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.json.bind.Jsonb;
+import javax.json.bind.JsonbBuilder;
 
 import kr.co.matpam.admin.code.service.CodeManagementService;
 import kr.co.matpam.admin.member.service.MemberService;
@@ -86,9 +87,8 @@ public class ProductController {
     }
 
     private String buildCompositionJson(List<ProductCompositionVO> compositions) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.writeValueAsString(compositions != null ? compositions : Collections.emptyList());
+        try (Jsonb jsonb = JsonbBuilder.create()) {
+            return jsonb.toJson(compositions != null ? compositions : Collections.emptyList());
         } catch (Exception e) {
             LOGGER.warn("Failed to serialize composition list", e);
             return "[]";

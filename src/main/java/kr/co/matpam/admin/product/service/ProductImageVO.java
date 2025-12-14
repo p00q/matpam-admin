@@ -9,37 +9,51 @@ public class ProductImageVO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private Long imgId;
-    private Long salesProdId;
-    private String imgUrl;
+    private Long imageId;
+    private Long productNo;
+    private String imageType;
+    private String imagePath;
+    private String originalName;
     private Integer sortOrder;
-    private String isMainYn;
-    private String regId;
-    private String regDt;
-    private String modDt;
 
-    public Long getImgId() {
-        return imgId;
+    public Long getImageId() {
+        return imageId;
     }
 
-    public void setImgId(Long imgId) {
-        this.imgId = imgId;
+    public void setImageId(Long imageId) {
+        this.imageId = imageId;
     }
 
-    public Long getSalesProdId() {
-        return salesProdId;
+    public Long getProductNo() {
+        return productNo;
     }
 
-    public void setSalesProdId(Long salesProdId) {
-        this.salesProdId = salesProdId;
+    public void setProductNo(Long productNo) {
+        this.productNo = productNo;
     }
 
-    public String getImgUrl() {
-        return imgUrl;
+    public String getImageType() {
+        return imageType;
     }
 
-    public void setImgUrl(String imgUrl) {
-        this.imgUrl = imgUrl;
+    public void setImageType(String imageType) {
+        this.imageType = imageType;
+    }
+
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
+    }
+
+    public String getOriginalName() {
+        return originalName;
+    }
+
+    public void setOriginalName(String originalName) {
+        this.originalName = originalName;
     }
 
     public Integer getSortOrder() {
@@ -48,37 +62,5 @@ public class ProductImageVO implements Serializable {
 
     public void setSortOrder(Integer sortOrder) {
         this.sortOrder = sortOrder;
-    }
-
-    public String getIsMainYn() {
-        return isMainYn;
-    }
-
-    public void setIsMainYn(String isMainYn) {
-        this.isMainYn = isMainYn;
-    }
-
-    public String getRegId() {
-        return regId;
-    }
-
-    public void setRegId(String regId) {
-        this.regId = regId;
-    }
-
-    public String getRegDt() {
-        return regDt;
-    }
-
-    public void setRegDt(String regDt) {
-        this.regDt = regDt;
-    }
-
-    public String getModDt() {
-        return modDt;
-    }
-
-    public void setModDt(String modDt) {
-        this.modDt = modDt;
     }
 }
