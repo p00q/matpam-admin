@@ -56,8 +56,8 @@ public class ProductDAO extends EgovAbstractMapper {
      * 구성상품 저장
      */
     public void insertProductComposition(ProductCompositionVO vo) throws Exception {
-        LOGGER.info("[DAO] insertProductComposition - productNo: {}, bundleId: {}, sortOrder: {}", 
-            vo.getProductNo(), vo.getBundleId(), vo.getSortOrder());
+        LOGGER.info("[DAO] insertProductComposition - productNo: {}, bundleId: {}, compQty: {}",
+            vo.getProductNo(), vo.getBundleId(), vo.getCompQty());
         insert("kr.co.matpam.admin.product.service.impl.ProductMapper.insertProductComposition", vo);
     }
 
