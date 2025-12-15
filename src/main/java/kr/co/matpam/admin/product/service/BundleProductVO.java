@@ -1,6 +1,7 @@
 package kr.co.matpam.admin.product.service;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 import org.springframework.format.annotation.DateTimeFormat;
@@ -36,65 +37,91 @@ public class BundleProductVO implements Serializable {
     /** 페이지 유닛 */
     private Integer pageUnit = 10;
 
-    /** 상품명 */
-    private String productName;
+    /** 구성업체코드 */
+    private Long componentCompCd;
 
-    /** 저장유형 (냉장/냉동/상온 등) */
-    private String storageType;
-    private String storageTypeName;
+    /** 구성상품코드 */
+    private String componentGoodsCd;
 
-    /** 처리유형 (세척/전처리 등) */
-    private String processType;
-    private String processTypeName;
+    /** 상품코드 */
+    private String goodsCd;
 
-    /** 분리유형 (부위/손질 등) */
-    private String divisionType;
-    private String divisionTypeName;
+    /** 판매회원번호 */
+    private Long saleMemberNo;
 
-    /** 단위구분 (kg/팩/EA 등) */
-    private String unitType;
-    private String unitTypeName;
-
-    /** 판매유형 (원물/가공 등) */
-    private String saleType;
-    private String saleTypeName;
-
-    /** 판매자 회원번호 (FK: TB_MEMBER.MEMBER_NO) */
+    /** 기존 로직 호환용 판매자 식별자 */
     private Long sellerId;
+
+    /** 검색 및 표시용 판매자명 */
     private String sellerName;
 
-    /** 원가 */
-    private Integer costPrice;
+    /** 상품명 (구성상품코드 대체 표시용) */
+    private String productName;
 
-    /** 부가세 */
-    private Integer vatAmount;
+    /** 저장유형 코드 */
+    private String storageTypeCd;
+    private String storageTypeName;
 
-    /** 부가세 자동 계산 여부 (Y/N) */
+    /** 처리구분 코드 */
+    private String processDivCd;
+    private String processDivName;
+
+    /** 재고단위 코드 */
+    private String stockUnitCd;
+    private String stockUnitName;
+
+    /** 판매구분 코드 */
+    private String saleDivCd;
+    private String saleDivName;
+
+    /** 기준수량 */
+    private BigDecimal stdrQty;
+
+    /** 구매정보 */
+    private String poHubPurcCmpnyCd;
+    private String poHubPurcSuplrDlvPlcCd;
+    private String poHubPurcSuplrCd;
+    private BigDecimal poHubPurcUnitCost;
+    private String poHubPurcVatIncldYn;
+
+    /** 부가세 자동 계산 여부 */
+    private String autoVatCalYn;
+
+    /** 기존 화면 호환용 부가세 자동 계산 여부 */
     private String autoVatYn;
 
-    /** 판매가격 (원가 + 부가세) */
+    /** 가격 및 상태 (기존 화면 호환용) */
+    private Integer costPrice;
+    private Integer vatAmount;
     private Integer salePrice;
-
-    /** 판매상태 (판매중/중지/삭제 등) */
     private String saleStatus;
     private String saleStatusName;
-
-    /** 노출상태 (Y/N) */
+    private String cutTypeCd;
+    private String cutTypeName;
+    private String exposureStatusCd;
+    private String exposureStatusName;
     private String displayYn;
-
-    /** 총 판매 수량 */
     private Integer totalSalesQty;
 
-    /** 판매 시작/종료일 */
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date saleStartDate;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date saleEndDate;
 
-    /** 등록/수정일 */
+    /** 등록/수정자 및 일시 */
+    private String regId;
+    private String modId;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date regDt;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date modDt;
+
+    /** 기존 호환용 수정 일시 */
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date updDt;
 
     /** 페이징 */
 
@@ -114,92 +141,36 @@ public class BundleProductVO implements Serializable {
         this.productNo = productNo;
     }
 
-    public String getProductName() {
-        return productName;
+    public Long getComponentCompCd() {
+        return componentCompCd;
     }
 
-    public void setProductName(String productName) {
-        this.productName = productName;
+    public void setComponentCompCd(Long componentCompCd) {
+        this.componentCompCd = componentCompCd;
     }
 
-    public String getStorageType() {
-        return storageType;
+    public String getComponentGoodsCd() {
+        return componentGoodsCd;
     }
 
-    public void setStorageType(String storageType) {
-        this.storageType = storageType;
+    public void setComponentGoodsCd(String componentGoodsCd) {
+        this.componentGoodsCd = componentGoodsCd;
     }
 
-    public String getStorageTypeName() {
-        return storageTypeName;
+    public String getGoodsCd() {
+        return goodsCd;
     }
 
-    public void setStorageTypeName(String storageTypeName) {
-        this.storageTypeName = storageTypeName;
+    public void setGoodsCd(String goodsCd) {
+        this.goodsCd = goodsCd;
     }
 
-    public String getProcessType() {
-        return processType;
+    public Long getSaleMemberNo() {
+        return saleMemberNo;
     }
 
-    public void setProcessType(String processType) {
-        this.processType = processType;
-    }
-
-    public String getProcessTypeName() {
-        return processTypeName;
-    }
-
-    public void setProcessTypeName(String processTypeName) {
-        this.processTypeName = processTypeName;
-    }
-
-    public String getDivisionType() {
-        return divisionType;
-    }
-
-    public void setDivisionType(String divisionType) {
-        this.divisionType = divisionType;
-    }
-
-    public String getDivisionTypeName() {
-        return divisionTypeName;
-    }
-
-    public void setDivisionTypeName(String divisionTypeName) {
-        this.divisionTypeName = divisionTypeName;
-    }
-
-    public String getUnitType() {
-        return unitType;
-    }
-
-    public void setUnitType(String unitType) {
-        this.unitType = unitType;
-    }
-
-    public String getUnitTypeName() {
-        return unitTypeName;
-    }
-
-    public void setUnitTypeName(String unitTypeName) {
-        this.unitTypeName = unitTypeName;
-    }
-
-    public String getSaleType() {
-        return saleType;
-    }
-
-    public void setSaleType(String saleType) {
-        this.saleType = saleType;
-    }
-
-    public String getSaleTypeName() {
-        return saleTypeName;
-    }
-
-    public void setSaleTypeName(String saleTypeName) {
-        this.saleTypeName = saleTypeName;
+    public void setSaleMemberNo(Long saleMemberNo) {
+        this.saleMemberNo = saleMemberNo;
     }
 
     public Long getSellerId() {
@@ -218,6 +189,142 @@ public class BundleProductVO implements Serializable {
         this.sellerName = sellerName;
     }
 
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public String getStorageTypeCd() {
+        return storageTypeCd;
+    }
+
+    public void setStorageTypeCd(String storageTypeCd) {
+        this.storageTypeCd = storageTypeCd;
+    }
+
+    public String getStorageTypeName() {
+        return storageTypeName;
+    }
+
+    public void setStorageTypeName(String storageTypeName) {
+        this.storageTypeName = storageTypeName;
+    }
+
+    public String getProcessDivCd() {
+        return processDivCd;
+    }
+
+    public void setProcessDivCd(String processDivCd) {
+        this.processDivCd = processDivCd;
+    }
+
+    public String getProcessDivName() {
+        return processDivName;
+    }
+
+    public void setProcessDivName(String processDivName) {
+        this.processDivName = processDivName;
+    }
+
+    public String getStockUnitCd() {
+        return stockUnitCd;
+    }
+
+    public void setStockUnitCd(String stockUnitCd) {
+        this.stockUnitCd = stockUnitCd;
+    }
+
+    public String getStockUnitName() {
+        return stockUnitName;
+    }
+
+    public void setStockUnitName(String stockUnitName) {
+        this.stockUnitName = stockUnitName;
+    }
+
+    public String getSaleDivCd() {
+        return saleDivCd;
+    }
+
+    public void setSaleDivCd(String saleDivCd) {
+        this.saleDivCd = saleDivCd;
+    }
+
+    public String getSaleDivName() {
+        return saleDivName;
+    }
+
+    public void setSaleDivName(String saleDivName) {
+        this.saleDivName = saleDivName;
+    }
+
+    public BigDecimal getStdrQty() {
+        return stdrQty;
+    }
+
+    public void setStdrQty(BigDecimal stdrQty) {
+        this.stdrQty = stdrQty;
+    }
+
+    public String getPoHubPurcCmpnyCd() {
+        return poHubPurcCmpnyCd;
+    }
+
+    public void setPoHubPurcCmpnyCd(String poHubPurcCmpnyCd) {
+        this.poHubPurcCmpnyCd = poHubPurcCmpnyCd;
+    }
+
+    public String getPoHubPurcSuplrDlvPlcCd() {
+        return poHubPurcSuplrDlvPlcCd;
+    }
+
+    public void setPoHubPurcSuplrDlvPlcCd(String poHubPurcSuplrDlvPlcCd) {
+        this.poHubPurcSuplrDlvPlcCd = poHubPurcSuplrDlvPlcCd;
+    }
+
+    public String getPoHubPurcSuplrCd() {
+        return poHubPurcSuplrCd;
+    }
+
+    public void setPoHubPurcSuplrCd(String poHubPurcSuplrCd) {
+        this.poHubPurcSuplrCd = poHubPurcSuplrCd;
+    }
+
+    public BigDecimal getPoHubPurcUnitCost() {
+        return poHubPurcUnitCost;
+    }
+
+    public void setPoHubPurcUnitCost(BigDecimal poHubPurcUnitCost) {
+        this.poHubPurcUnitCost = poHubPurcUnitCost;
+    }
+
+    public String getPoHubPurcVatIncldYn() {
+        return poHubPurcVatIncldYn;
+    }
+
+    public void setPoHubPurcVatIncldYn(String poHubPurcVatIncldYn) {
+        this.poHubPurcVatIncldYn = poHubPurcVatIncldYn;
+    }
+
+    public String getAutoVatCalYn() {
+        return autoVatCalYn;
+    }
+
+    public void setAutoVatCalYn(String autoVatCalYn) {
+        this.autoVatCalYn = autoVatCalYn;
+    }
+
+    public String getAutoVatYn() {
+        return autoVatYn;
+    }
+
+    public void setAutoVatYn(String autoVatYn) {
+        this.autoVatYn = autoVatYn;
+    }
+
     public Integer getCostPrice() {
         return costPrice;
     }
@@ -232,14 +339,6 @@ public class BundleProductVO implements Serializable {
 
     public void setVatAmount(Integer vatAmount) {
         this.vatAmount = vatAmount;
-    }
-
-    public String getAutoVatYn() {
-        return autoVatYn;
-    }
-
-    public void setAutoVatYn(String autoVatYn) {
-        this.autoVatYn = autoVatYn;
     }
 
     public Integer getSalePrice() {
@@ -264,6 +363,38 @@ public class BundleProductVO implements Serializable {
 
     public void setSaleStatusName(String saleStatusName) {
         this.saleStatusName = saleStatusName;
+    }
+
+    public String getCutTypeCd() {
+        return cutTypeCd;
+    }
+
+    public void setCutTypeCd(String cutTypeCd) {
+        this.cutTypeCd = cutTypeCd;
+    }
+
+    public String getCutTypeName() {
+        return cutTypeName;
+    }
+
+    public void setCutTypeName(String cutTypeName) {
+        this.cutTypeName = cutTypeName;
+    }
+
+    public String getExposureStatusCd() {
+        return exposureStatusCd;
+    }
+
+    public void setExposureStatusCd(String exposureStatusCd) {
+        this.exposureStatusCd = exposureStatusCd;
+    }
+
+    public String getExposureStatusName() {
+        return exposureStatusName;
+    }
+
+    public void setExposureStatusName(String exposureStatusName) {
+        this.exposureStatusName = exposureStatusName;
     }
 
     public String getDisplayYn() {
@@ -298,6 +429,22 @@ public class BundleProductVO implements Serializable {
         this.saleEndDate = saleEndDate;
     }
 
+    public String getRegId() {
+        return regId;
+    }
+
+    public void setRegId(String regId) {
+        this.regId = regId;
+    }
+
+    public String getModId() {
+        return modId;
+    }
+
+    public void setModId(String modId) {
+        this.modId = modId;
+    }
+
     public Date getRegDt() {
         return regDt;
     }
@@ -312,6 +459,14 @@ public class BundleProductVO implements Serializable {
 
     public void setModDt(Date modDt) {
         this.modDt = modDt;
+    }
+
+    public Date getUpdDt() {
+        return updDt;
+    }
+
+    public void setUpdDt(Date updDt) {
+        this.updDt = updDt;
     }
 
     public Integer getRecordCountPerPage() {
