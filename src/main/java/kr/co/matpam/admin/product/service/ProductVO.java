@@ -46,7 +46,7 @@ public class ProductVO implements Serializable {
     private String searchEndDate;
 
     /** 상품번호 (PK) */
-    private Integer productNo;
+    private Long productNo;
 
     /** 상품명 */
     private String productName;
@@ -59,6 +59,9 @@ public class ProductVO implements Serializable {
 
     /** 부가세 */
     private Integer vatAmount;
+
+    /** 부가세율 */
+    private Double vatRate;
 
     /** 판매 시작/종료일 */
     @DateTimeFormat(pattern = "yyyy-MM-dd")
@@ -183,12 +186,20 @@ public class ProductVO implements Serializable {
         this.searchEndDate = searchEndDate;
     }
 
-    public Integer getProductNo() {
+    public Long getProductNo() {
         return productNo;
     }
 
-    public void setProductNo(Integer productNo) {
+    public void setProductNo(Long productNo) {
         this.productNo = productNo;
+    }
+
+    public void setProductNo(Integer productNo) {
+        if (productNo != null) {
+            this.productNo = productNo.longValue();
+        } else {
+            this.productNo = null;
+        }
     }
 
     public String getProductName() {
@@ -223,6 +234,14 @@ public class ProductVO implements Serializable {
         this.vatAmount = vatAmount;
     }
 
+    public Double getVatRate() {
+        return vatRate;
+    }
+
+    public void setVatRate(Double vatRate) {
+        this.vatRate = vatRate;
+    }
+
     public Date getSaleStartDate() {
         return saleStartDate;
     }
@@ -230,7 +249,7 @@ public class ProductVO implements Serializable {
     public void setSaleStartDate(Date saleStartDate) {
         this.saleStartDate = saleStartDate;
     }
-    
+
     // 문자열로 날짜를 받을 수 있는 setter 추가
     public void setSaleStartDate(String dateString) {
         if (dateString != null && !dateString.trim().isEmpty()) {
@@ -251,7 +270,7 @@ public class ProductVO implements Serializable {
     public void setSaleEndDate(Date saleEndDate) {
         this.saleEndDate = saleEndDate;
     }
-    
+
     // 문자열로 날짜를 받을 수 있는 setter 추가
     public void setSaleEndDate(String dateString) {
         if (dateString != null && !dateString.trim().isEmpty()) {

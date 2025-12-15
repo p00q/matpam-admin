@@ -516,4 +516,5 @@ public class BundleProductVO implements Serializable {
     public Integer getLastIndex() {
         return lastIndex;
     }
+
 }

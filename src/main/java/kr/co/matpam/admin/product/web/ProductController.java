@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.io.File;
+import java.io.IOException;
+import java.util.UUID;
+import java.util.Base64;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
@@ -25,6 +29,7 @@ import kr.co.matpam.admin.member.service.MemberService;
 import kr.co.matpam.admin.product.service.ProductCompositionVO;
 import kr.co.matpam.admin.product.service.ProductService;
 import kr.co.matpam.admin.product.service.ProductVO;
+import kr.co.matpam.admin.product.service.ProductImageVO;
 
 /**
  * 판매상품 컨트롤러
@@ -64,10 +69,10 @@ public class ProductController {
             if (product.getCompositionList() != null) {
                 LOGGER.info("구성상품 개수: {}", product.getCompositionList().size());
                 for (int i = 0; i < product.getCompositionList().size(); i++) {
-                    LOGGER.info("구성상품[{}]: bundleId={}, productName={}", 
-                        i, 
-                        product.getCompositionList().get(i).getBundleId(),
-                        product.getCompositionList().get(i).getProductName());
+                    LOGGER.info("구성상품[{}]: bundleId={}, productName={}",
+                            i,
+                            product.getCompositionList().get(i).getBundleId(),
+                            product.getCompositionList().get(i).getProductName());
                 }
             } else {
                 LOGGER.warn("구성상품 목록이 null입니다");
@@ -124,7 +129,7 @@ public class ProductController {
         System.out.println("판매 종료일: " + saleEndDate);
         System.out.println("판매자ID: " + sellerId);
         System.out.println("노출여부: " + displayYn);
-        
+
         LOGGER.info("== saveProduct() 진입 ==");
         LOGGER.info("productNo: {}", productNo);
         LOGGER.info("상품명: {}", productName);
@@ -135,18 +140,38 @@ public class ProductController {
         LOGGER.info("판매 종료일: {}", saleEndDate);
         LOGGER.info("판매자ID: {}", sellerId);
         LOGGER.info("노출여부: {}", displayYn);
-        
-        // 파일 로깅
+
+        // 파일 처리 및 저장
+        List<ProductImageVO> imageList = new ArrayList<>();
         if (files != null && !files.isEmpty()) {
-            LOGGER.info("업로드된 파일 개수: {}", files.size());
+            String uploadPath = request.getSession().getServletContext().getRealPath("/images/product/");
+            File uploadDir = new File(uploadPath);
+            if (!uploadDir.exists()) {
+                uploadDir.mkdirs();
+            }
+
             for (int i = 0; i < files.size(); i++) {
                 MultipartFile file = files.get(i);
                 if (file != null && !file.isEmpty()) {
-                    LOGGER.info("파일[{}]: {}, size: {}", i, file.getOriginalFilename(), file.getSize());
+                    String originalFileName = file.getOriginalFilename();
+                    String ext = "";
+                    if (originalFileName != null && originalFileName.contains(".")) {
+                        ext = originalFileName.substring(originalFileName.lastIndexOf("."));
+                    }
+                    String savedFileName = UUID.randomUUID().toString() + ext;
+
+                    File dest = new File(uploadPath, savedFileName);
+                    file.transferTo(dest);
+
+                    ProductImageVO imageVO = new ProductImageVO();
+                    imageVO.setImgUrl("/images/product/" + savedFileName);
+                    imageVO.setSortOrder(i + 1);
+                    imageVO.setIsMainYn(i == 0 ? "Y" : "N");
+                    imageList.add(imageVO);
+
+                    LOGGER.info("파일 저장 완료: {}", dest.getAbsolutePath());
                 }
             }
-        } else {
-            LOGGER.info("업로드된 파일 없음");
         }
 
         // ProductVO 수동 생성
@@ -156,6 +181,14 @@ public class ProductController {
         product.setSalePrice(salePrice);
         product.setCostPrice(costPrice);
         product.setVatAmount(vatAmount);
+
+        // 부가세율 설정 (10% 고정 혹은 계산)
+        if (vatAmount != null && vatAmount > 0) {
+            product.setVatRate(10.0);
+        } else {
+            product.setVatRate(0.0);
+        }
+
         product.setDisplayYn(displayYn);
         product.setSellerId(sellerId);
         product.setProductSummary(productSummary);
@@ -165,7 +198,8 @@ public class ProductController {
         product.setShippingInfo(shippingInfo);
         product.setExchangeReturnInfo(exchangeReturnInfo);
         product.setRefundInfo(refundInfo);
-        
+        product.setImageList(imageList); // 이미지 목록 설정
+
         // 날짜 파싱
         if (saleStartDate != null && !saleStartDate.trim().isEmpty()) {
             product.setSaleStartDate(saleStartDate);
@@ -180,11 +214,11 @@ public class ProductController {
         while (true) {
             String paramName = "compositionList[" + index + "].bundleId";
             String bundleIdStr = request.getParameter(paramName);
-            
+
             if (bundleIdStr == null || bundleIdStr.trim().isEmpty()) {
                 break; // 더 이상 파라미터가 없으면 종료
             }
-            
+
             try {
                 Long bundleId = Long.parseLong(bundleIdStr);
                 if (bundleId > 0) {
@@ -198,13 +232,13 @@ public class ProductController {
             } catch (NumberFormatException e) {
                 LOGGER.warn("Invalid bundleId format: {}", bundleIdStr);
             }
-            
+
             index++;
         }
-        
+
         System.out.println("총 구성상품 개수: " + compositionList.size());
         System.out.println("========================================");
-        
+
         LOGGER.info("총 구성상품 개수: {}", compositionList.size());
         product.setCompositionList(compositionList);
 
@@ -262,5 +296,49 @@ public class ProductController {
         model.addAttribute("contentPage", "/WEB-INF/jsp/admin/product/ProductList.jsp");
 
         return "layout/main";
+    }
+
+    /**
+     * 상품 미리보기 (POPUP)
+     */
+    @RequestMapping(value = "/admin/product/preview.do", method = RequestMethod.POST)
+    public String previewProduct(
+            @ModelAttribute("product") ProductVO product,
+            @RequestParam(value = "files", required = false) List<MultipartFile> files,
+            ModelMap model,
+            HttpServletRequest request) throws Exception {
+
+        // 이미지 미리보기 처리 (Base64)
+        List<ProductImageVO> imageList = new ArrayList<>();
+        if (files != null && !files.isEmpty()) {
+            for (int i = 0; i < files.size(); i++) {
+                MultipartFile file = files.get(i);
+                if (file != null && !file.isEmpty()) {
+                    byte[] bytes = file.getBytes();
+                    String base64 = Base64.getEncoder().encodeToString(bytes);
+                    String mimeType = file.getContentType();
+
+                    ProductImageVO imageVO = new ProductImageVO();
+                    imageVO.setImgUrl("data:" + mimeType + ";base64," + base64);
+                    imageVO.setSortOrder(i + 1);
+                    imageVO.setIsMainYn(i == 0 ? "Y" : "N");
+                    imageList.add(imageVO);
+                }
+            }
+        }
+        product.setImageList(imageList);
+
+        // 날짜 바인딩 보완 (ModelAttribtue가 자동으로 못 잡을 경우를 대비)
+        String saleStartDate = request.getParameter("saleStartDate");
+        if (saleStartDate != null)
+            product.setSaleStartDate(saleStartDate);
+
+        String saleEndDate = request.getParameter("saleEndDate");
+        if (saleEndDate != null)
+            product.setSaleEndDate(saleEndDate);
+
+        model.addAttribute("product", product);
+
+        return "admin/product/popup/ProductPreview";
     }
 }
