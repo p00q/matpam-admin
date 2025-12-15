@@ -3,60 +3,34 @@
 <mapper namespace="kr.co.matpam.admin.product.service.impl.ProductMapper">
 
     <resultMap id="productResultMap" type="kr.co.matpam.admin.product.service.ProductVO">
-        <id property="productNo" column="PRODUCT_NO"/>
-        <result property="productName" column="PRODUCT_NAME"/>
-        <result property="salePrice" column="SALE_PRICE"/>
+        <id property="productNo" column="SALES_PROD_ID"/>
+        <result property="productName" column="SALES_PROD_NAME"/>
+        <result property="salePrice" column="LIST_PRICE"/>
         <result property="costPrice" column="COST_PRICE"/>
-        <result property="vatAmount" column="VAT_AMOUNT"/>
-        <result property="saleStartDate" column="SALE_START_DATE"/>
-        <result property="saleEndDate" column="SALE_END_DATE"/>
-        <result property="displayYn" column="DISPLAY_YN"/>
-        <result property="sellerId" column="SELLER_ID"/>
+        <result property="vatRate" column="VAT_RATE"/>
+        <result property="saleStartDate" column="SALE_START_DT"/>
+        <result property="saleEndDate" column="SALE_END_DT"/>
+        <result property="displayYn" column="EXPOSURE_STATUS_CD"/>
+        <result property="sellerId" column="SELLER_MEMBER_ID"/>
         <result property="sellerName" column="SELLER_NAME"/>
-        <result property="productSummary" column="PRODUCT_SUMMARY"/>
+        <result property="productSummary" column="SUMMARY"/>
         <result property="mdComment" column="MD_COMMENT"/>
-        <result property="description" column="DESCRIPTION"/>
-        <result property="paymentInfo" column="PAYMENT_INFO"/>
-        <result property="shippingInfo" column="SHIPPING_INFO"/>
-        <result property="exchangeReturnInfo" column="EXCHANGE_RETURN_INFO"/>
-        <result property="refundInfo" column="REFUND_INFO"/>
         <result property="regDt" column="REG_DT"/>
         <result property="modDt" column="MOD_DT"/>
-        <!-- 구성상품 목록 -->
-        <collection property="compositionList" ofType="kr.co.matpam.admin.product.service.ProductCompositionVO">
-            <id property="compositionId" column="COMPOSITION_ID"/>
-            <result property="productNo" column="PRODUCT_NO"/>
-            <result property="bundleId" column="BUNDLE_ID"/>
-            <result property="sortOrder" column="SORT_ORDER"/>
-        </collection>
+        <!-- Detail Info (Joined) -->
+        <result property="description" column="DETAIL_HTML"/>
+        <result property="paymentInfo" column="PAYMENT_INFO"/>
+        <result property="shippingInfo" column="DELIVERY_INFO"/>
+        <result property="exchangeReturnInfo" column="RETURN_INFO"/>
+        <result property="refundInfo" column="REFUND_INFO"/>
     </resultMap>
     
-    <!-- 구성상품 상세 정보 포함 ResultMap -->
-    <resultMap id="productWithCompositionDetailMap" type="kr.co.matpam.admin.product.service.ProductVO">
-        <id property="productNo" column="PRODUCT_NO"/>
-        <result property="productName" column="PRODUCT_NAME"/>
-        <result property="salePrice" column="SALE_PRICE"/>
-        <result property="costPrice" column="COST_PRICE"/>
+    <resultMap id="productWithCompositionDetailMap" type="kr.co.matpam.admin.product.service.ProductVO" extends="productResultMap">
         <result property="vatAmount" column="VAT_AMOUNT"/>
-        <result property="saleStartDate" column="SALE_START_DATE"/>
-        <result property="saleEndDate" column="SALE_END_DATE"/>
-        <result property="displayYn" column="DISPLAY_YN"/>
-        <result property="sellerId" column="SELLER_ID"/>
-        <result property="sellerName" column="SELLER_NAME"/>
-        <result property="productSummary" column="PRODUCT_SUMMARY"/>
-        <result property="mdComment" column="MD_COMMENT"/>
-        <result property="description" column="DESCRIPTION"/>
-        <result property="paymentInfo" column="PAYMENT_INFO"/>
-        <result property="shippingInfo" column="SHIPPING_INFO"/>
-        <result property="exchangeReturnInfo" column="EXCHANGE_RETURN_INFO"/>
-        <result property="refundInfo" column="REFUND_INFO"/>
-        <result property="regDt" column="REG_DT"/>
-        <result property="modDt" column="MOD_DT"/>
-        <!-- 구성상품 상세 정보 -->
         <collection property="compositionList" ofType="kr.co.matpam.admin.product.service.ProductCompositionVO">
-            <id property="compositionId" column="COMPOSITION_ID"/>
-            <result property="productNo" column="PRODUCT_NO"/>
-            <result property="bundleId" column="BUNDLE_ID"/>
+            <result property="productNo" column="SALES_PROD_ID"/>
+            <result property="bundleId" column="COMPONENT_PROD_ID"/>
+            <result property="sortOrder" column="COMP_SORT_ORDER"/>
             <result property="productName" column="BUNDLE_PRODUCT_NAME"/>
             <result property="saleType" column="BUNDLE_SALE_TYPE"/>
             <result property="saleTypeName" column="BUNDLE_SALE_TYPE_NAME"/>
@@ -89,69 +63,80 @@
     <sql id="selectProductListWhere">
         <where>
             <if test="searchKeyword != null and searchKeyword != ''">
-                AND PRODUCT_NAME LIKE CONCAT('%', #{searchKeyword}, '%')
+                <choose>
+                    <when test="searchCondition == 'productName'">
+                        AND A.SALES_PROD_NAME LIKE CONCAT('%', #{searchKeyword}, '%')
+                    </when>
+                    <when test="searchCondition == 'sellerName'">
+                        AND M.COMPANY_NAME LIKE CONCAT('%', #{searchKeyword}, '%')
+                    </when>
+                    <otherwise>
+                        AND (A.SALES_PROD_NAME LIKE CONCAT('%', #{searchKeyword}, '%') 
+                             OR M.COMPANY_NAME LIKE CONCAT('%', #{searchKeyword}, '%'))
+                    </otherwise>
+                </choose>
             </if>
             <if test="displayYn != null and displayYn != ''">
-                AND DISPLAY_YN = #{displayYn}
+                AND A.EXPOSURE_STATUS_CD = #{displayYn}
             </if>
-            <!-- 기간 검색 등 추가 가능 -->
+            <if test="searchStartDate != null and searchStartDate != ''">
+                AND DATE(A.REG_DT) &gt;= #{searchStartDate}
+            </if>
+            <if test="searchEndDate != null and searchEndDate != ''">
+                AND DATE(A.REG_DT) &lt;= #{searchEndDate}
+            </if>
+            AND A.DEL_YN = 'N'
         </where>
     </sql>
 
     <!-- 상품 목록 조회 -->
     <select id="selectProductList" parameterType="kr.co.matpam.admin.product.service.ProductVO" resultMap="productResultMap">
         SELECT
-            A.PRODUCT_NO,
-            A.PRODUCT_NAME,
-            A.SALE_PRICE,
+            A.SALES_PROD_ID,
+            A.SALES_PROD_NAME,
+            A.LIST_PRICE,
             A.COST_PRICE,
-            A.VAT_AMOUNT,
-            A.SALE_START_DATE,
-            A.SALE_END_DATE,
-            A.DISPLAY_YN,
-            A.SELLER_ID,
-            A.PRODUCT_SUMMARY,
+            A.VAT_RATE,
+            A.SALE_START_DT,
+            A.SALE_END_DT,
+            A.EXPOSURE_STATUS_CD,
+            A.SELLER_MEMBER_ID,
+            M.COMPANY_NAME AS SELLER_NAME,
+            A.SUMMARY,
             A.MD_COMMENT,
-            A.DESCRIPTION,
-            A.PAYMENT_INFO,
-            A.SHIPPING_INFO,
-            A.EXCHANGE_RETURN_INFO,
-            A.REFUND_INFO,
             A.REG_DT,
             A.MOD_DT
-        FROM TB_PRODUCT A
+        FROM TB_SALES_PRODUCT A
+        LEFT JOIN TB_MEMBER M ON A.SELLER_MEMBER_ID = M.MEMBER_ID
         <include refid="selectProductListWhere"/>
-        ORDER BY A.PRODUCT_NO DESC
+        ORDER BY A.SALES_PROD_ID DESC
         LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
     </select>
 
     <!-- 상품 목록 총 개수 -->
     <select id="selectProductListTotCnt" parameterType="kr.co.matpam.admin.product.service.ProductVO" resultType="int">
         SELECT COUNT(*)
-        FROM TB_PRODUCT A
+        FROM TB_SALES_PRODUCT A
+        LEFT JOIN TB_MEMBER M ON A.SELLER_MEMBER_ID = M.MEMBER_ID
         <include refid="selectProductListWhere"/>
     </select>
 
-    <!-- 단일 상품 조회 (구성상품 상세 포함) -->
+    <!-- 단일 상품 조회 (상세+구성+이미지) -->
     <select id="selectProduct" parameterType="long" resultMap="productWithCompositionDetailMap">
         SELECT
-            P.PRODUCT_NO,
-            P.PRODUCT_NAME,
-            P.SALE_PRICE,
+            P.SALES_PROD_ID,
+            P.SALES_PROD_NAME,
+            P.LIST_PRICE,
             P.COST_PRICE,
-            P.VAT_AMOUNT,
-            P.SALE_START_DATE,
-            P.SALE_END_DATE,
-            P.DISPLAY_YN,
-            P.SELLER_ID,
+            P.VAT_RATE,
+            CAST(P.LIST_PRICE * P.VAT_RATE / 100 AS UNSIGNED) AS VAT_AMOUNT,
+            P.SALE_START_DT,
+            P.SALE_END_DT,
+            P.EXPOSURE_STATUS_CD,
+            P.SELLER_MEMBER_ID,
             SM.COMPANY_NAME AS SELLER_NAME,
-            P.PRODUCT_SUMMARY,
+            P.SUMMARY,
             P.MD_COMMENT,
-            P.DESCRIPTION,
-            P.PAYMENT_INFO,
-            P.SHIPPING_INFO,
-            P.EXCHANGE_RETURN_INFO,
-            P.REFUND_INFO,
             P.REG_DT,
             P.MOD_DT,
             -- 구성상품 정보
@@ -200,87 +185,158 @@
         ORDER BY PC.SORT_ORDER
     </select>
 
-
+    <!-- 상품 마스터 등록 -->
     <insert id="insertProduct" parameterType="kr.co.matpam.admin.product.service.ProductVO" useGeneratedKeys="true" keyProperty="productNo">
-        INSERT INTO TB_PRODUCT (
-            PRODUCT_NAME,
-            SALE_PRICE,
+        INSERT INTO TB_SALES_PRODUCT (
+            SALES_PROD_CODE,
+            SALES_PROD_NAME,
+            LIST_PRICE,
             COST_PRICE,
-            VAT_AMOUNT,
-            SALE_START_DATE,
-            SALE_END_DATE,
-            DISPLAY_YN,
-            SELLER_ID,
-            PRODUCT_SUMMARY,
+            VAT_RATE,
+            SALE_START_DT,
+            SALE_END_DT,
+            EXPOSURE_STATUS_CD,
+            SALE_STATUS_CD,
+            SELLER_MEMBER_ID,
+            SUMMARY,
             MD_COMMENT,
-            DESCRIPTION,
-            PAYMENT_INFO,
-            SHIPPING_INFO,
-            EXCHANGE_RETURN_INFO,
-            REFUND_INFO,
+            REG_ID,
             REG_DT,
             MOD_DT
         ) VALUES (
+            CONCAT('SP', DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'), FLOOR(RAND()*1000)), -- 임시 코드 생성
             #{productName},
             #{salePrice},
             #{costPrice},
-            #{vatAmount},
+            #{vatRate},
             #{saleStartDate},
             #{saleEndDate},
             #{displayYn},
+            'SALE', -- 기본값
             #{sellerId},
             #{productSummary},
             #{mdComment},
-            #{description},
-            #{paymentInfo},
-            #{shippingInfo},
-            #{exchangeReturnInfo},
-            #{refundInfo},
+            #{regId},
             NOW(),
             NOW()
         )
     </insert>
 
+    <!-- 상품 상세 등록 -->
+    <insert id="insertProductDetail" parameterType="kr.co.matpam.admin.product.service.ProductVO">
+        INSERT INTO TB_SALES_PRODUCT_DETAIL (
+            SALES_PROD_ID,
+            DETAIL_HTML,
+            PAYMENT_INFO,
+            DELIVERY_INFO,
+            RETURN_INFO,
+            REFUND_INFO,
+            REG_ID,
+            REG_DT
+        ) VALUES (
+            #{productNo},
+            #{description},
+            #{paymentInfo},
+            #{shippingInfo},
+            #{exchangeReturnInfo},
+            #{refundInfo},
+            #{regId},
+            NOW()
+        )
+    </insert>
+
+    <!-- 상품 마스터 수정 -->
     <update id="updateProduct" parameterType="kr.co.matpam.admin.product.service.ProductVO">
-        UPDATE TB_PRODUCT
+        UPDATE TB_SALES_PRODUCT
         SET
-            PRODUCT_NAME          = #{productName},
-            SALE_PRICE            = #{salePrice},
+            SALES_PROD_NAME       = #{productName},
+            LIST_PRICE            = #{salePrice},
             COST_PRICE            = #{costPrice},
-            VAT_AMOUNT            = #{vatAmount},
-            SALE_START_DATE       = #{saleStartDate},
-            SALE_END_DATE         = #{saleEndDate},
-            DISPLAY_YN            = #{displayYn},
-            SELLER_ID             = #{sellerId},
-            PRODUCT_SUMMARY       = #{productSummary},
+            VAT_RATE              = #{vatRate},
+            SALE_START_DT         = #{saleStartDate},
+            SALE_END_DT           = #{saleEndDate},
+            EXPOSURE_STATUS_CD    = #{displayYn},
+            SELLER_MEMBER_ID      = #{sellerId},
+            SUMMARY               = #{productSummary},
             MD_COMMENT            = #{mdComment},
-            DESCRIPTION           = #{description},
-            PAYMENT_INFO          = #{paymentInfo},
-            SHIPPING_INFO         = #{shippingInfo},
-            EXCHANGE_RETURN_INFO  = #{exchangeReturnInfo},
-            REFUND_INFO           = #{refundInfo},
             MOD_DT                = NOW()
-        WHERE PRODUCT_NO = #{productNo}
+        WHERE SALES_PROD_ID = #{productNo}
+    </update>
+
+    <!-- 상품 상세 수정 -->
+    <update id="updateProductDetail" parameterType="kr.co.matpam.admin.product.service.ProductVO">
+        INSERT INTO TB_SALES_PRODUCT_DETAIL (
+            SALES_PROD_ID, DETAIL_HTML, PAYMENT_INFO, DELIVERY_INFO, RETURN_INFO, REFUND_INFO, REG_ID, REG_DT
+        ) VALUES (
+            #{productNo}, #{description}, #{paymentInfo}, #{shippingInfo}, #{exchangeReturnInfo}, #{refundInfo}, #{regId}, NOW()
+        )
+        ON DUPLICATE KEY UPDATE
+            DETAIL_HTML = #{description},
+            PAYMENT_INFO = #{paymentInfo},
+            DELIVERY_INFO = #{shippingInfo},
+            RETURN_INFO = #{exchangeReturnInfo},
+            REFUND_INFO = #{refundInfo},
+            MOD_DT = NOW()
     </update>
 
     <!-- 구성상품 저장 -->
     <insert id="insertProductComposition" parameterType="kr.co.matpam.admin.product.service.ProductCompositionVO">
-        INSERT INTO TB_PRODUCT_COMPOSITION (
-            PRODUCT_NO,
-            BUNDLE_ID,
-            SORT_ORDER
+        INSERT INTO TB_SALES_PRODUCT_COMP (
+            SALES_PROD_ID,
+            COMPONENT_PROD_ID,
+            SORT_ORDER,
+            COMP_QTY,
+            REG_ID
         ) VALUES (
             #{productNo},
             #{bundleId},
-            #{sortOrder}
+            #{sortOrder},
+            1, -- 기본 수량 1
+            'SYSTEM'
         )
     </insert>
 
-    <!-- 구성상품 삭제 (상품번호로) -->
+    <!-- 구성상품 삭제 -->
     <delete id="deleteProductCompositionsByProductNo" parameterType="long">
-        DELETE FROM TB_PRODUCT_COMPOSITION
-        WHERE PRODUCT_NO = #{value}
+        DELETE FROM TB_SALES_PRODUCT_COMP
+        WHERE SALES_PROD_ID = #{value}
     </delete>
+
+    <!-- 상품 이미지 등록 -->
+    <insert id="insertProductImage" parameterType="kr.co.matpam.admin.product.service.ProductImageVO">
+        INSERT INTO TB_SALES_PRODUCT_IMAGE (
+            SALES_PROD_ID,
+            IMG_URL,
+            SORT_ORDER,
+            IS_MAIN_YN,
+            USE_YN,
+            REG_ID,
+            REG_DT,
+            MOD_DT
+        ) VALUES (
+            #{salesProdId},
+            #{imgUrl},
+            #{sortOrder},
+            #{isMainYn},
+            'Y',
+            #{regId},
+            NOW(),
+            NOW()
+        )
+    </insert>
+
+    <!-- 상품 이미지 목록 조회 -->
+    <select id="selectProductImageList" parameterType="long" resultType="kr.co.matpam.admin.product.service.ProductImageVO">
+        SELECT
+            IMG_ID as imgId,
+            SALES_PROD_ID as salesProdId,
+            IMG_URL as imgUrl,
+            SORT_ORDER as sortOrder,
+            IS_MAIN_YN as isMainYn
+        FROM TB_SALES_PRODUCT_IMAGE
+        WHERE SALES_PROD_ID = #{value}
+        ORDER BY SORT_ORDER ASC
+    </select>
 
 
 </mapper>

@@ -65,22 +65,23 @@
                                         <tr>
                                             <th>판매유형</th>
                                             <td>
-                                                <select name="saleType" class="form-select form-select-sm">
+                                                <select name="saleDivCd" class="form-select form-select-sm">
                                                     <option value="">전체</option>
                                                     <c:forEach var="code" items="${saleTypes}">
                                                         <option value="${code.detailCode}" <c:if
-                                                            test="${searchVO.saleType eq code.detailCode}">selected</c:if>
+                                                            test="${searchVO.saleDivCd eq code.detailCode}">selected
+                                                            </c:if>
                                                             >${code.detailCodeName}</option>
                                                     </c:forEach>
                                                 </select>
                                             </td>
                                             <th>업체명</th>
                                             <td>
-                                                <select name="sellerId" class="form-select form-select-sm">
+                                                <select name="saleMemberNo" class="form-select form-select-sm">
                                                     <option value="">전체</option>
                                                     <c:forEach var="seller" items="${sellers}">
                                                         <option value="${seller.memberNo}" <c:if
-                                                            test="${searchVO.sellerId eq seller.memberNo}">selected
+                                                            test="${searchVO.saleMemberNo eq seller.memberNo}">selected
                                                             </c:if>>
                                                             ${seller.companyName}
                                                         </option>
@@ -91,11 +92,12 @@
                                         <tr>
                                             <th>저장유형</th>
                                             <td>
-                                                <select name="storageType" class="form-select form-select-sm">
+                                                <select name="storageTypeCd" class="form-select form-select-sm">
                                                     <option value="">전체</option>
                                                     <c:forEach var="code" items="${storageTypes}">
                                                         <option value="${code.detailCode}" <c:if
-                                                            test="${searchVO.storageType eq code.detailCode}">selected</c:if>
+                                                            test="${searchVO.storageTypeCd eq code.detailCode}">selected
+                                                            </c:if>
                                                             >${code.detailCodeName}</option>
                                                     </c:forEach>
                                                 </select>
@@ -106,16 +108,28 @@
                                                     <option value="">전체</option>
                                                     <c:forEach var="code" items="${saleStatuses}">
                                                         <option value="${code.detailCode}" <c:if
-                                                            test="${searchVO.saleStatus eq code.detailCode}">selected</c:if>
+                                                            test="${searchVO.saleStatus eq code.detailCode}">selected
+                                                            </c:if>
                                                             >${code.detailCodeName}</option>
                                                     </c:forEach>
                                                 </select>
                                             </td>
                                         </tr>
-                                        <!-- 기타 필드 생략/추가 가능 (분리유형, 처리유형 등) -->
                                         <tr>
+                                            <th>분리유형</th>
+                                            <td>
+                                                <select name="cutTypeCd" class="form-select form-select-sm">
+                                                    <option value="">전체</option>
+                                                    <c:forEach var="code" items="${cutTypes}">
+                                                        <option value="${code.detailCode}" <c:if
+                                                            test="${searchVO.cutTypeCd eq code.detailCode}">selected
+                                                            </c:if>
+                                                            >${code.detailCodeName}</option>
+                                                    </c:forEach>
+                                                </select>
+                                            </td>
                                             <th>상품명</th>
-                                            <td colspan="3">
+                                            <td>
                                                 <input type="text" name="productName"
                                                     class="form-control form-control-sm"
                                                     value="${searchVO.productName}" />
@@ -144,6 +158,8 @@
                                             <th>저장유형</th>
                                             <th>분리유형</th>
                                             <th>처리유형</th>
+                                            <th>판매가격</th>
+                                            <th style="width: 100px;">부가세</th>
                                             <th>판매상태</th>
                                             <th>노출상태</th>
                                         </tr>
@@ -152,39 +168,24 @@
                                         <c:forEach var="item" items="${bundleList}" varStatus="status">
                                             <tr>
                                                 <td>
-                                                    <input type="checkbox" name="checkItem" value="${item.bundleId}"
-                                                        data-json='{
-                                        "bundleId": "${item.bundleId}",
-                                        "productNo": "${item.productNo}",
-                                        "productName": "${item.productName}",
-                                        "saleType": "${item.saleType}",
-                                        "saleTypeName": "${item.saleTypeName}",
-                                        "sellerId": "${item.sellerId}",
-                                        "sellerName": "${item.sellerName}",
-                                        "salePrice": ${item.salePrice},
-                                        "costPrice": ${item.costPrice},
-                                        "vatAmount": ${item.vatAmount},
-                                        "storageTypeName": "${item.storageTypeName}",
-                                        "processTypeName": "${item.processTypeName}",
-                                        "divisionTypeName": "${item.divisionTypeName}",
-                                        "saleStatusName": "${item.saleStatusName}",
-                                        "displayYn": "${item.displayYn}",
-                                        "saleStartDate": "<fmt:formatDate value="${item.saleStartDate}" pattern="yyyy-MM-dd"/>",
-                                        "saleEndDate": "<fmt:formatDate value="${item.saleEndDate}" pattern="yyyy-MM-dd"/>",
-                                        "regDt": "<fmt:formatDate value="${item.regDt}" pattern="yyyy-MM-dd"/>",
-                                        "modDt": "<fmt:formatDate value="${item.modDt}" pattern="yyyy-MM-dd"/>"
-                                    }' />
+                                                    <input type="checkbox" name="checkItem" value="${item.bundleId}" />
                                                 </td>
-                                                <td>${item.saleTypeName}</td>
+                                                <td>${item.saleDivName}</td>
                                                 <td class="text-start">${item.productName}</td>
                                                 <td>${item.sellerName}</td>
                                                 <td>${item.storageTypeName}</td>
-                                                <td>${item.divisionTypeName}</td>
-                                                <td>${item.processTypeName}</td>
+                                                <td>${item.cutTypeName}</td>
+                                                <td>${item.processDivName}</td>
+                                                <td>
+                                                    <fmt:formatNumber value="${item.salePrice}" type="number" />
+                                                </td>
+                                                <td>
+                                                    <fmt:formatNumber value="${item.vatAmount}" type="number" />
+                                                </td>
                                                 <td>${item.saleStatusName}</td>
                                                 <td>
                                                     <c:choose>
-                                                        <c:when test="${item.displayYn eq 'Y'}">노출</c:when>
+                                                        <c:when test="${item.exposureStatusCd eq 'Y'}">노출</c:when>
                                                         <c:otherwise>비노출</c:otherwise>
                                                     </c:choose>
                                                 </td>
@@ -217,6 +218,33 @@
                     </div>
 
                     <script>
+                        var bundleMap = {};
+
+                        // JS Map 초기화
+                        <c:forEach var="item" items="${bundleList}">
+                            bundleMap["${item.bundleId}"] = {
+                                bundleId: "${item.bundleId}",
+                            productNo: "${item.productNo}",
+                            productName: "<c:out value='${item.productName}' />",
+                            saleType: "${item.saleDivCd}",
+                            saleTypeName: "${item.saleDivName}",
+                            sellerId: "${item.saleMemberNo}",
+                            sellerName: "<c:out value='${item.sellerName}' />",
+                            salePrice: <c:out value="${item.salePrice}" default="0" />,
+                            costPrice: <c:out value="${item.costPrice}" default="0" />,
+                            vatAmount: <c:out value="${item.vatAmount}" default="0" />,
+                            storageTypeName: "${item.storageTypeName}",
+                            processTypeName: "${item.processDivName}",
+                            divisionTypeName: "${item.cutTypeName}",
+                            saleStatusName: "${item.saleStatusName}",
+                            displayYn: "${item.exposureStatusCd}",
+                            saleStartDate: "<fmt:formatDate value="${item.saleStartDate}" pattern="yyyy-MM-dd" />",
+                            saleEndDate: "<fmt:formatDate value="${item.saleEndDate}" pattern="yyyy-MM-dd" />",
+                            regDt: "<fmt:formatDate value="${item.regDt}" pattern="yyyy-MM-dd" />",
+                            modDt: "<fmt:formatDate value="${item.modDt}" pattern="yyyy-MM-dd" />"
+                            };
+                        </c:forEach>
+
                         function fn_page(pageNo) {
                             var form = document.getElementById("searchForm");
                             form.pageIndex.value = pageNo;
@@ -240,12 +268,15 @@
 
                             // 선택된 항목들의 데이터를 부모창으로 전달
                             checkboxes.forEach(function (checkbox) {
-                                var data = JSON.parse(checkbox.getAttribute('data-json'));
-                                if (window.opener && !window.opener.closed) {
-                                    // 부모창의 addBundleRow 함수 호출
-                                    // 중복 체크 등은 부모창에서 처리하거나 여기서 처리.
-                                    // 편의상 단순히 추가 요청.
-                                    window.opener.addBundleRow(data);
+                                var bundleId = checkbox.value;
+                                var data = bundleMap[bundleId];
+
+                                if (data && window.opener && !window.opener.closed) {
+                                    if (typeof window.opener.addBundleRow === 'function') {
+                                        window.opener.addBundleRow(data);
+                                    } else {
+                                        console.error("부모창에 addBundleRow 함수가 없습니다.");
+                                    }
                                 }
                             });
 
