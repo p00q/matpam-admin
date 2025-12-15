@@ -23,9 +23,13 @@
 		<param-value>classpath*:egovframework/spring/context-*.xml</param-value>
 	</context-param>
 
-	<listener>
-		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-	</listener>
+        <listener>
+                <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+        </listener>
+
+        <listener>
+                <listener-class>kr.co.matpam.admin.config.MySqlCleanupListener</listener-class>
+        </listener>
 
 	<servlet>
 		<servlet-name>action</servlet-name>
