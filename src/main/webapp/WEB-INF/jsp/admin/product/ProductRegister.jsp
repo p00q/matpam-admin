@@ -427,6 +427,21 @@
                     return text.substring(0, 10);
                 }
 
+                function formatDateValue(value) {
+                    if (!value) return '';
+
+                    if (value instanceof Date) {
+                        return value.toISOString().split('T')[0];
+                    }
+
+                    const text = value.toString();
+                    if (text.indexOf('T') > -1) {
+                        return text.split('T')[0];
+                    }
+
+                    return text.substring(0, 10);
+                }
+
                 function fn_addBundlePopup() {
                     const url = '<c:url value="/admin/product/popup/bundleList.do"/>';
                     const name = 'bundlePopup';

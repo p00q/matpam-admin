@@ -10,6 +10,7 @@ public class ProductImageVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Long imageId;
+    private Long salesProdId;
     private Long productNo;
     private String imageType;
     private String imagePath;
@@ -17,6 +18,7 @@ public class ProductImageVO implements Serializable {
     private Integer sortOrder;
     private String imgUrl;
     private String isMainYn;
+    private String regId;
 
     public Long getImageId() {
         return imageId;
@@ -24,6 +26,14 @@ public class ProductImageVO implements Serializable {
 
     public void setImageId(Long imageId) {
         this.imageId = imageId;
+    }
+
+    public Long getSalesProdId() {
+        return salesProdId;
+    }
+
+    public void setSalesProdId(Long salesProdId) {
+        this.salesProdId = salesProdId;
     }
 
     public Long getProductNo() {
@@ -80,5 +90,13 @@ public class ProductImageVO implements Serializable {
 
     public void setIsMainYn(String isMainYn) {
         this.isMainYn = isMainYn;
+    }
+
+    public String getRegId() {
+        return regId;
+    }
+
+    public void setRegId(String regId) {
+        this.regId = regId;
     }
 }

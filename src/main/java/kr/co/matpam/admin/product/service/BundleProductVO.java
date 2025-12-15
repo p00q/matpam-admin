@@ -96,6 +96,10 @@ public class BundleProductVO implements Serializable {
     private Integer salePrice;
     private String saleStatus;
     private String saleStatusName;
+    private String cutTypeCd;
+    private String cutTypeName;
+    private String exposureStatusCd;
+    private String exposureStatusName;
     private String displayYn;
     private Integer totalSalesQty;
 
@@ -359,6 +363,38 @@ public class BundleProductVO implements Serializable {
 
     public void setSaleStatusName(String saleStatusName) {
         this.saleStatusName = saleStatusName;
+    }
+
+    public String getCutTypeCd() {
+        return cutTypeCd;
+    }
+
+    public void setCutTypeCd(String cutTypeCd) {
+        this.cutTypeCd = cutTypeCd;
+    }
+
+    public String getCutTypeName() {
+        return cutTypeName;
+    }
+
+    public void setCutTypeName(String cutTypeName) {
+        this.cutTypeName = cutTypeName;
+    }
+
+    public String getExposureStatusCd() {
+        return exposureStatusCd;
+    }
+
+    public void setExposureStatusCd(String exposureStatusCd) {
+        this.exposureStatusCd = exposureStatusCd;
+    }
+
+    public String getExposureStatusName() {
+        return exposureStatusName;
+    }
+
+    public void setExposureStatusName(String exposureStatusName) {
+        this.exposureStatusName = exposureStatusName;
     }
 
     public String getDisplayYn() {
