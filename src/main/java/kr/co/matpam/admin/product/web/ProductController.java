@@ -1,6 +1,7 @@
 package kr.co.matpam.admin.product.web;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import javax.annotation.Resource;
@@ -15,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.json.bind.Jsonb;
+import javax.json.bind.JsonbBuilder;
 
 import kr.co.matpam.admin.code.service.CodeManagementService;
 import kr.co.matpam.admin.member.service.MemberService;
@@ -72,8 +76,18 @@ public class ProductController {
 
         model.addAttribute("product", product);
         model.addAttribute("sellers", memberService.selectSellerList());
+        model.addAttribute("compositionJson", buildCompositionJson(product.getCompositionList()));
         model.addAttribute("contentPage", "/WEB-INF/jsp/admin/product/ProductRegister.jsp");
         return "layout/main";
+    }
+
+    private String buildCompositionJson(List<ProductCompositionVO> compositions) {
+        try (Jsonb jsonb = JsonbBuilder.create()) {
+            return jsonb.toJson(compositions != null ? compositions : Collections.emptyList());
+        } catch (Exception e) {
+            LOGGER.warn("Failed to serialize composition list", e);
+            return "[]";
+        }
     }
 
     // ② 저장 처리 (POST)
