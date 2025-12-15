@@ -30,8 +30,6 @@
         <result property="autoVatYn" column="AUTO_VAT_CAL_YN" />
         <result property="regId" column="REG_ID" />
         <result property="regDt" column="REG_DT" />
-        <result property="updId" column="UPD_ID" />
-        <result property="updDt" column="UPD_DT" />
         <result property="modId" column="MOD_ID" />
         <result property="modDt" column="MOD_DT" />
     </resultMap>
@@ -89,8 +87,6 @@
             c.AUTO_VAT_CAL_YN,
             c.REG_ID,
             c.REG_DT,
-            c.UPD_ID,
-            c.UPD_DT,
             c.MOD_ID,
             c.MOD_DT
         FROM TB_COMPONENT_GOODS c
@@ -143,8 +139,6 @@
             c.AUTO_VAT_CAL_YN,
             c.REG_ID,
             c.REG_DT,
-            c.UPD_ID,
-            c.UPD_DT,
             c.MOD_ID,
             c.MOD_DT
         FROM TB_COMPONENT_GOODS c
@@ -180,8 +174,6 @@
             AUTO_VAT_CAL_YN,
             REG_ID,
             REG_DT,
-            UPD_ID,
-            UPD_DT,
             MOD_ID,
             MOD_DT
         ) VALUES (
@@ -201,8 +193,6 @@
             #{poHubPurcVatIncldYn},
             #{autoVatCalYn},
             #{regId},
-            NOW(),
-            #{updId},
             NOW(),
             #{modId},
             #{modDt, jdbcType=TIMESTAMP}
@@ -224,8 +214,6 @@
             PO_HUB_PURC_UNIT_COST = #{poHubPurcUnitCost},
             PO_HUB_PURC_VAT_INCLD_YN = #{poHubPurcVatIncldYn},
             AUTO_VAT_CAL_YN = #{autoVatCalYn},
-            UPD_ID = #{updId},
-            UPD_DT = NOW(),
             MOD_ID = #{modId},
             MOD_DT = NOW()
         WHERE COMPONENT_COMP_CD =

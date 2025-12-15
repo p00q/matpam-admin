@@ -107,14 +107,10 @@ public class BundleProductVO implements Serializable {
 
     /** 등록/수정자 및 일시 */
     private String regId;
-    private String updId;
     private String modId;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date regDt;
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date updDt;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date modDt;
@@ -407,14 +403,6 @@ public class BundleProductVO implements Serializable {
 
     public void setRegId(String regId) {
         this.regId = regId;
-    }
-
-    public String getUpdId() {
-        return updId;
-    }
-
-    public void setUpdId(String updId) {
-        this.updId = updId;
     }
 
     public String getModId() {
