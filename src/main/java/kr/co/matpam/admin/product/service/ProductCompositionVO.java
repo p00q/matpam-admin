@@ -10,7 +10,7 @@ public class ProductCompositionVO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 구성ID */
+    /** 구성ID (구성상품ID 사용) */
     private Long compositionId;
 
     /** 판매상품번호 */
@@ -18,6 +18,9 @@ public class ProductCompositionVO implements Serializable {
 
     /** 구성상품번호 (Bundle) */
     private Long bundleId;
+
+    /** 구성 수량 */
+    private Integer compQty;
 
     /** 구성상품 정보 (Join용) */
     private String productName;
@@ -66,6 +69,14 @@ public class ProductCompositionVO implements Serializable {
 
     public void setBundleId(Long bundleId) {
         this.bundleId = bundleId;
+    }
+
+    public Integer getCompQty() {
+        return compQty;
+    }
+
+    public void setCompQty(Integer compQty) {
+        this.compQty = compQty;
     }
 
     public String getProductName() {

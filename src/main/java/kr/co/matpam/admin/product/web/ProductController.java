@@ -224,6 +224,7 @@ public class ProductController {
                 if (bundleId > 0) {
                     ProductCompositionVO comp = new ProductCompositionVO();
                     comp.setBundleId(bundleId);
+                    comp.setCompQty(1);
                     comp.setSortOrder(index + 1);
                     compositionList.add(comp);
                     LOGGER.info("구성상품[{}] bundleId: {}", index, bundleId);
