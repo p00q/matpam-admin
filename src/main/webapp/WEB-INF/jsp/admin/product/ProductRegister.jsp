@@ -93,6 +93,11 @@
                     <input type="hidden" name="productNo" value="<c:out value='${product.productNo}'/>" />
                     <input type="hidden" name="displayYn" id="displayYnValue"
                         value="<c:out value='${product.displayYn}' default='Y'/>" />
+                    <c:if test="${not empty compositionJson}">
+                        <script type="application/json" id="compositionData">
+                            <c:out value='${compositionJson}'/>
+                        </script>
+                    </c:if>
 
                     <!-- 1. 상품일반정보 -->
                     <div class="section-header">상품일반정보</div>
@@ -241,15 +246,28 @@
                     </div>
                     <div class="row g-2 mb-4">
                         <c:forEach begin="1" end="5" varStatus="status">
+                            <c:set var="image" value="${product.imageList[status.index-1]}" />
                             <div class="col">
                                 <div class="image-upload-box" id="imageBox${status.index}"
                                     data-input-id="file${status.index}"
                                     onclick="document.getElementById('file${status.index}').click();"
                                     style="cursor: pointer;">
-                                    <div class="text-center text-muted small">
-                                        <i class="bi bi-cloud-upload fs-3 d-block mb-2"></i>
-                                        클릭하여 이미지 업로드
-                                    </div>
+                                    <c:choose>
+                                        <c:when test="${not empty image}">
+                                            <img src="${image.imagePath}" alt="상품 이미지 ${status.index}"
+                                                class="product-image-thumb"
+                                                data-full-url="${image.imagePath}" />
+                                            <button type="button" class="btn btn-light btn-sm image-change-btn"
+                                                onclick="event.stopPropagation(); document.getElementById('file${status.index}').click();">변경</button>
+                                            <input type="hidden" name="existingImages[${status.index-1}].imageId" value="${image.imageId}" />
+                                        </c:when>
+                                        <c:otherwise>
+                                            <div class="text-center text-muted small">
+                                                <i class="bi bi-cloud-upload fs-3 d-block mb-2"></i>
+                                                클릭하여 이미지 업로드
+                                            </div>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </div>
                                 <input type="file" name="files" id="file${status.index}" style="display:none;"
                                     onchange="fn_previewImage(this, 'imageBox${status.index}')" accept="image/*" />
@@ -413,6 +431,21 @@
                     }
 
                     return { start: latestStart, end: earliestEnd };
+                }
+
+                function formatDateValue(value) {
+                    if (!value) return '';
+
+                    if (value instanceof Date) {
+                        return value.toISOString().split('T')[0];
+                    }
+
+                    const text = value.toString();
+                    if (text.indexOf('T') > -1) {
+                        return text.split('T')[0];
+                    }
+
+                    return text.substring(0, 10);
                 }
 
                 function fn_addBundlePopup() {
@@ -763,20 +796,20 @@
                 // ===== 기존 구성상품 로딩 =====
                 function loadExistingCompositions() {
                     console.log('loadExistingCompositions called');
-                    
+
                     try {
                         const dataElement = document.getElementById('compositionData');
                         if (!dataElement) {
                             console.log('No composition data element found');
                             return;
                         }
-                        
-                        const jsonText = dataElement.textContent || dataElement.innerText;
+
+                        const jsonText = (dataElement.textContent || dataElement.innerText || '').trim();
                         console.log('JSON text:', jsonText);
-                        
-                        const compositions = JSON.parse(jsonText);
+
+                        const compositions = jsonText ? JSON.parse(jsonText) : [];
                         console.log('Parsed compositions:', compositions);
-                        
+
                         if (compositions && compositions.length > 0) {
                             compositions.forEach(function(comp) {
                                 if (comp.bundleId > 0) {
@@ -785,17 +818,20 @@
                                         productName: comp.productName || '',
                                         saleType: comp.saleType || '',
                                         saleTypeName: comp.saleTypeName || '',
+                                        saleStatusName: comp.saleStatusName || '',
+                                        storageTypeName: comp.storageTypeName || '',
+                                        processTypeName: comp.processTypeName || '',
+                                        divisionTypeName: comp.divisionTypeName || '',
                                         salePrice: comp.salePrice || 0,
                                         costPrice: comp.costPrice || 0,
                                         vatAmount: comp.vatAmount || 0,
                                         displayYn: comp.displayYn || 'Y',
+                                        sellerId: comp.sellerId || null,
                                         sellerName: comp.sellerName || '',
-                                        saleStatusName: '',
-                                        storageTypeName: '',
-                                        processTypeName: '',
-                                        divisionTypeName: '',
-                                        regDt: '',
-                                        modDt: ''
+                                        saleStartDate: formatDateValue(comp.saleStartDate),
+                                        saleEndDate: formatDateValue(comp.saleEndDate),
+                                        regDt: formatDateValue(comp.regDt),
+                                        modDt: formatDateValue(comp.modDt)
                                     });
                                     console.log('Added composition:', comp.bundleId, comp.productName);
                                 }

@@ -1,6 +1,7 @@
 package kr.co.matpam.admin.product.service;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 판매상품 구성 VO
@@ -22,11 +23,21 @@ public class ProductCompositionVO implements Serializable {
     private String productName;
     private String saleType;
     private String saleTypeName;
+    private String saleStatusName;
+    private String storageTypeCd;
+    private String storageTypeName;
+    private String processTypeName;
+    private String divisionTypeName;
+    private Long sellerId;
     private Integer salePrice;
     private Integer costPrice;
     private Integer vatAmount;
+    private Date saleStartDate;
+    private Date saleEndDate;
     private String displayYn;
     private String sellerName;
+    private Date regDt;
+    private Date modDt;
 
     /** 정렬순서 */
     private Integer sortOrder;
@@ -81,6 +92,54 @@ public class ProductCompositionVO implements Serializable {
         this.saleTypeName = saleTypeName;
     }
 
+    public String getSaleStatusName() {
+        return saleStatusName;
+    }
+
+    public void setSaleStatusName(String saleStatusName) {
+        this.saleStatusName = saleStatusName;
+    }
+
+    public String getStorageTypeCd() {
+        return storageTypeCd;
+    }
+
+    public void setStorageTypeCd(String storageTypeCd) {
+        this.storageTypeCd = storageTypeCd;
+    }
+
+    public String getStorageTypeName() {
+        return storageTypeName;
+    }
+
+    public void setStorageTypeName(String storageTypeName) {
+        this.storageTypeName = storageTypeName;
+    }
+
+    public String getProcessTypeName() {
+        return processTypeName;
+    }
+
+    public void setProcessTypeName(String processTypeName) {
+        this.processTypeName = processTypeName;
+    }
+
+    public String getDivisionTypeName() {
+        return divisionTypeName;
+    }
+
+    public void setDivisionTypeName(String divisionTypeName) {
+        this.divisionTypeName = divisionTypeName;
+    }
+
+    public Long getSellerId() {
+        return sellerId;
+    }
+
+    public void setSellerId(Long sellerId) {
+        this.sellerId = sellerId;
+    }
+
     public Integer getSalePrice() {
         return salePrice;
     }
@@ -105,6 +164,22 @@ public class ProductCompositionVO implements Serializable {
         this.vatAmount = vatAmount;
     }
 
+    public Date getSaleStartDate() {
+        return saleStartDate;
+    }
+
+    public void setSaleStartDate(Date saleStartDate) {
+        this.saleStartDate = saleStartDate;
+    }
+
+    public Date getSaleEndDate() {
+        return saleEndDate;
+    }
+
+    public void setSaleEndDate(Date saleEndDate) {
+        this.saleEndDate = saleEndDate;
+    }
+
     public String getDisplayYn() {
         return displayYn;
     }
@@ -119,6 +194,22 @@ public class ProductCompositionVO implements Serializable {
 
     public void setSellerName(String sellerName) {
         this.sellerName = sellerName;
+    }
+
+    public Date getRegDt() {
+        return regDt;
+    }
+
+    public void setRegDt(Date regDt) {
+        this.regDt = regDt;
+    }
+
+    public Date getModDt() {
+        return modDt;
+    }
+
+    public void setModDt(Date modDt) {
+        this.modDt = modDt;
     }
 
     public Integer getSortOrder() {
