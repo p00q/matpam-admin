@@ -93,6 +93,8 @@ public class ProductVO implements Serializable {
     private String refundInfo;
 
     /** 등록/수정일 */
+    private String regId;
+    private String modId;
     private Date regDt;
     private Date modDt;
 
@@ -363,6 +365,22 @@ public class ProductVO implements Serializable {
 
     public void setRefundInfo(String refundInfo) {
         this.refundInfo = refundInfo;
+    }
+
+    public String getRegId() {
+        return regId;
+    }
+
+    public void setRegId(String regId) {
+        this.regId = regId;
+    }
+
+    public String getModId() {
+        return modId;
+    }
+
+    public void setModId(String modId) {
+        this.modId = modId;
     }
 
     public Date getRegDt() {

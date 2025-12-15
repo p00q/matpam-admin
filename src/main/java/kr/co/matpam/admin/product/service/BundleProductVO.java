@@ -115,13 +115,9 @@ public class BundleProductVO implements Serializable {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date modDt;
 
-    /** 분리유형 코드 */
-    private String cutTypeCd;
-    private String cutTypeName;
-
-    /** 노출상태 코드 */
-    private String exposureStatusCd;
-    private String exposureStatusName;
+    /** 기존 호환용 수정 일시 */
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date updDt;
 
     /** 페이징 */
 
@@ -435,6 +431,14 @@ public class BundleProductVO implements Serializable {
 
     public void setModDt(Date modDt) {
         this.modDt = modDt;
+    }
+
+    public Date getUpdDt() {
+        return updDt;
+    }
+
+    public void setUpdDt(Date updDt) {
+        this.updDt = updDt;
     }
 
     public Integer getRecordCountPerPage() {
