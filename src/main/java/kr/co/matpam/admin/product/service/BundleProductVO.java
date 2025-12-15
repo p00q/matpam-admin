@@ -453,28 +453,12 @@ public class BundleProductVO implements Serializable {
         this.regDt = regDt;
     }
 
-    public Date getUpdDt() {
-        return updDt;
-    }
-
-    public void setUpdDt(Date updDt) {
-        this.updDt = updDt;
-    }
-
     public Date getModDt() {
         return modDt;
     }
 
     public void setModDt(Date modDt) {
         this.modDt = modDt;
-    }
-
-    public Date getUpdDt() {
-        return updDt;
-    }
-
-    public void setUpdDt(Date updDt) {
-        this.updDt = updDt;
     }
 
     public Integer getRecordCountPerPage() {
@@ -525,35 +509,4 @@ public class BundleProductVO implements Serializable {
         return lastIndex;
     }
 
-    public String getCutTypeCd() {
-        return cutTypeCd;
-    }
-
-    public void setCutTypeCd(String cutTypeCd) {
-        this.cutTypeCd = cutTypeCd;
-    }
-
-    public String getCutTypeName() {
-        return cutTypeName;
-    }
-
-    public void setCutTypeName(String cutTypeName) {
-        this.cutTypeName = cutTypeName;
-    }
-
-    public String getExposureStatusCd() {
-        return exposureStatusCd;
-    }
-
-    public void setExposureStatusCd(String exposureStatusCd) {
-        this.exposureStatusCd = exposureStatusCd;
-    }
-
-    public String getExposureStatusName() {
-        return exposureStatusName;
-    }
-
-    public void setExposureStatusName(String exposureStatusName) {
-        this.exposureStatusName = exposureStatusName;
-    }
 }

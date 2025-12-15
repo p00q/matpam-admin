@@ -98,9 +98,6 @@ public class ProductVO implements Serializable {
     private Date regDt;
     private Date modDt;
 
-    /** 등록자ID */
-    private String regId;
-
     /** 구성상품 목록 */
     private List<ProductCompositionVO> compositionList;
 
