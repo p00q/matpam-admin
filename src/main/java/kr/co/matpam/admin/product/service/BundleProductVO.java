@@ -461,6 +461,14 @@ public class BundleProductVO implements Serializable {
         this.modDt = modDt;
     }
 
+    public Date getUpdDt() {
+        return updDt;
+    }
+
+    public void setUpdDt(Date updDt) {
+        this.updDt = updDt;
+    }
+
     public Integer getRecordCountPerPage() {
         return recordCountPerPage;
     }
