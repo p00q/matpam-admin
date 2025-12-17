@@ -94,6 +94,36 @@ public class ComponentProductController {
     }
 
     /**
+     * 구성상품 등록/수정 단일 엔드포인트 (구경로 호환)
+     */
+    @RequestMapping(value = "/admin/product/componentProductForm.do")
+    public String componentProductForm(@RequestParam(value = "componentProdId", required = false) Long componentProdId,
+            ModelMap model) throws Exception {
+
+        if (componentProdId == null) {
+            Date today = new Date();
+            Calendar nextYear = Calendar.getInstance();
+            nextYear.setTime(today);
+            nextYear.add(Calendar.YEAR, 1);
+
+            ComponentProductVO component = new ComponentProductVO();
+            component.setSaleStartDate(today);
+            component.setSaleEndDate(nextYear.getTime());
+            component.setDisplayYn("Y");
+
+            model.addAttribute("component", component);
+        } else {
+            ComponentProductVO component = componentProductService.selectComponentProduct(componentProdId);
+            model.addAttribute("component", component);
+        }
+
+        addComponentDropdowns(model);
+
+        model.addAttribute("contentPage", "/WEB-INF/jsp/admin/product/ComponentProductRegister.jsp");
+        return "layout/main";
+    }
+
+    /**
      * 구성상품 등록 화면
      */
     @RequestMapping(value = "/admin/product/componentRegist.do")
