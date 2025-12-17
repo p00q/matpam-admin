@@ -31,8 +31,9 @@
                     <div class="card mb-4 border-0 shadow-sm">
                         <div class="card-body p-0">
                             <form id="searchForm" method="get"
-                                action="<c:url value='/admin/product/bundleProductList.do'/>">
-                                <input type="hidden" name="menu" value="bundle" />
+                                action="<c:url value='/admin/product/componentProductList.do'/>">
+                                <input type="hidden" name="menu" value="component" />
+
                                 <table class="table table-bordered mb-0 align-middle search-filter-table">
                                     <colgroup>
                                         <col style="width: 15%;">
@@ -44,30 +45,35 @@
                                         <tr>
                                             <th class="text-center" style="background-color: #e9ecef;">판매구분</th>
                                             <td>
-                                                <select name="saleDivCd" class="form-select form-select-sm"
+                                                <!-- 기존 saleDivCd → 신 ERD saleTypeCd -->
+                                                <select name="saleTypeCd" class="form-select form-select-sm"
                                                     style="max-width: 200px;">
                                                     <option value="">전체</option>
                                                     <c:forEach var="code" items="${saleTypes}">
-                                                        <option value="${code.detailCode}" ${param.saleDivCd eq
-                                                            code.detailCode ? 'selected' : '' }>${code.detailCodeName}
+                                                        <option value="${code.detailCode}" ${param.saleTypeCd eq
+                                                            code.detailCode ? 'selected' : '' }>
+                                                            ${code.detailCodeName}
                                                         </option>
                                                     </c:forEach>
                                                 </select>
                                             </td>
+
                                             <th class="text-center" style="background-color: #e9ecef;">판매자명</th>
                                             <td>
-                                                <select name="saleMemberNo" class="form-select form-select-sm"
+                                                <!-- 기존 saleMemberNo → 신 ERD sellerMemberId -->
+                                                <select name="sellerMemberId" class="form-select form-select-sm"
                                                     style="max-width: 200px;">
                                                     <option value="">전체</option>
                                                     <c:forEach var="item" items="${sellers}">
-                                                        <option value="${item.memberNo}" ${param.saleMemberNo eq
-                                                            item.memberNo ? 'selected' : '' }>${item.companyName}
-                                                            (${item.ceoName})
+                                                        <option value="${item.memberId}" ${param.sellerMemberId eq
+                                                            item.memberId ? 'selected' : '' }>
+                                                            ${item.companyName} (${item.ceoName})
                                                         </option>
                                                     </c:forEach>
                                                 </select>
                                             </td>
                                         </tr>
+
                                         <tr>
                                             <th class="text-center" style="background-color: #e9ecef;">저장유형</th>
                                             <td>
@@ -76,41 +82,51 @@
                                                     <option value="">전체</option>
                                                     <c:forEach var="code" items="${storageTypes}">
                                                         <option value="${code.detailCode}" ${param.storageTypeCd eq
-                                                            code.detailCode ? 'selected' : '' }>${code.detailCodeName}
+                                                            code.detailCode ? 'selected' : '' }>
+                                                            ${code.detailCodeName}
                                                         </option>
                                                     </c:forEach>
                                                 </select>
                                             </td>
+
                                             <th class="text-center" style="background-color: #e9ecef;">처리구분</th>
                                             <td>
-                                                <select name="processDivCd" class="form-select form-select-sm"
+                                                <!-- 기존 processDivCd → 신 ERD processTypeCd -->
+                                                <select name="processTypeCd" class="form-select form-select-sm"
                                                     style="max-width: 200px;">
                                                     <option value="">전체</option>
                                                     <c:forEach var="code" items="${processTypes}">
-                                                        <option value="${code.detailCode}" ${param.processDivCd eq
-                                                            code.detailCode ? 'selected' : '' }>${code.detailCodeName}
+                                                        <option value="${code.detailCode}" ${param.processTypeCd eq
+                                                            code.detailCode ? 'selected' : '' }>
+                                                            ${code.detailCodeName}
                                                         </option>
                                                     </c:forEach>
                                                 </select>
                                             </td>
                                         </tr>
+
                                         <tr>
-                                            <th class="text-center" style="background-color: #e9ecef;">재고단위</th>
+                                            <th class="text-center" style="background-color: #e9ecef;">단위유형</th>
                                             <td>
-                                                <select name="stockUnitCd" class="form-select form-select-sm"
+                                                <!-- 기존 stockUnitCd → 신 ERD unitTypeCd -->
+                                                <select name="unitTypeCd" class="form-select form-select-sm"
                                                     style="max-width: 200px;">
                                                     <option value="">전체</option>
                                                     <c:forEach var="code" items="${unitTypes}">
-                                                        <option value="${code.detailCode}" ${param.stockUnitCd eq
-                                                            code.detailCode ? 'selected' : '' }>${code.detailCodeName}
+                                                        <option value="${code.detailCode}" ${param.unitTypeCd eq
+                                                            code.detailCode ? 'selected' : '' }>
+                                                            ${code.detailCodeName}
                                                         </option>
                                                     </c:forEach>
                                                 </select>
                                             </td>
-                                            <th class="text-center" style="background-color: #e9ecef;">구성상품코드</th>
+
+                                            <th class="text-center" style="background-color: #e9ecef;">검색어</th>
                                             <td>
-                                                <input type="text" name="componentGoodsCd" value="${param.componentGoodsCd}"
-                                                    class="form-control form-control-sm" style="max-width: 200px;" />
+                                                <!-- 신 Mapper where에서 searchKeyword로 NAME/CODE 검색 -->
+                                                <input type="text" name="searchKeyword" value="${param.searchKeyword}"
+                                                    class="form-control form-control-sm" style="max-width: 200px;"
+                                                    placeholder="상품명 또는 코드" />
                                             </td>
                                         </tr>
                                     </tbody>
@@ -139,7 +155,7 @@
                             </c:choose>
                         </div>
                         <div class="d-flex gap-2">
-                            <a href="<c:url value='/admin/product/bundleRegist.do'/>" class="btn btn-success btn-sm">
+                            <a href="<c:url value='/admin/product/componentProductForm.do'/>" class="btn btn-success btn-sm">
                                 <i class="bi bi-plus-lg me-1"></i>상품등록
                             </a>
                             <button type="button" class="btn btn-secondary btn-sm">
@@ -155,59 +171,72 @@
                             <thead class="table-light">
                                 <tr>
                                     <th scope="col">순번</th>
-                                    <th scope="col">구성상품코드</th>
-                                    <th scope="col">상품코드</th>
+                                    <th scope="col">컴포넌트ID</th>
+                                    <th scope="col">컴포넌트코드</th>
+                                    <th scope="col">상품명</th>
                                     <th scope="col">판매자명</th>
                                     <th scope="col">저장유형</th>
                                     <th scope="col">처리구분</th>
-                                    <th scope="col">재고단위</th>
-                                    <th scope="col">판매구분</th>
-                                    <th scope="col">기준수량</th>
-                                    <th scope="col">구매단가</th>
-                                    <th scope="col">VAT포함</th>
-                                    <th scope="col">자동VAT계산</th>
+                                    <th scope="col">단위유형</th>
+                                    <th scope="col">정가</th>
+                                    <th scope="col">원가</th>
+                                    <th scope="col">VAT율(%)</th>
+                                    <th scope="col">판매기간</th>
                                     <th scope="col">등록일</th>
                                     <th scope="col">수정일</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <c:forEach var="item" items="${bundleList}" varStatus="status">
+                                <c:forEach var="item" items="${componentList}" varStatus="status">
                                     <tr>
                                         <td>${status.index + 1}</td>
-                                        <td class="text-start">${item.componentGoodsCd}</td>
+
+                                        <td>${item.componentProdId}</td>
+
                                         <td class="text-start">
-                                            <c:url var="bundleViewUrl" value="/admin/product/bundleDetail.do">
-                                                <c:param name="productNo" value="${item.bundleId}" />
+                                            <c:url var="viewUrl" value="/admin/product/componentProductForm.do">
+                                                <c:param name="componentProdId" value="${item.componentProdId}" />
                                             </c:url>
-                                            <a href="${bundleViewUrl}">${item.goodsCd}</a>
+                                            <a href="${viewUrl}">${item.componentProdCode}</a>
                                         </td>
 
+                                        <td class="text-start">${item.componentProdName}</td>
                                         <td>${item.sellerName}</td>
 
-                                        <td>${item.storageTypeName}</td>
-                                        <td>${item.processDivName}</td>
-                                        <td>${item.stockUnitName}</td>
-                                        <td>${item.saleDivName}</td>
+                                        <!-- 코드명은 현재 Controller에서 code list만 내려주고 있음.
+                             목록에서는 코드값만 우선 출력(필요시 Mapper에서 코드명 조인 or 공통코드 변환로직 추가) -->
+                                        <td>${item.storageTypeCd}</td>
+                                        <td>${item.processTypeCd}</td>
+                                        <td>${item.unitTypeCd}</td>
+
                                         <td class="text-end">
-                                            <fmt:formatNumber value="${item.stdrQty}" type="number" />
+                                            <fmt:formatNumber value="${item.listPrice}" type="number" />
                                         </td>
                                         <td class="text-end">
-                                            <fmt:formatNumber value="${item.poHubPurcUnitCost}" type="number" />
+                                            <fmt:formatNumber value="${item.costPrice}" type="number" />
                                         </td>
-                                        <td>${item.poHubPurcVatIncldYn}</td>
-                                        <td>${item.autoVatCalYn}</td>
+                                        <td class="text-end">
+                                            <fmt:formatNumber value="${item.vatRate}" type="number" />
+                                        </td>
+
+                                        <td>
+                                            <fmt:formatDate value="${item.saleStartDt}" pattern="yyyy-MM-dd" />
+                                            ~
+                                            <fmt:formatDate value="${item.saleEndDt}" pattern="yyyy-MM-dd" />
+                                        </td>
+
                                         <td>
                                             <fmt:formatDate value="${item.regDt}" pattern="yyyy-MM-dd" />
                                         </td>
                                         <td>
-                                            <fmt:formatDate value="${item.updDt}" pattern="yyyy-MM-dd" />
+                                            <fmt:formatDate value="${item.modDt}" pattern="yyyy-MM-dd" />
                                         </td>
                                     </tr>
                                 </c:forEach>
 
-                                <c:if test="${empty bundleList}">
+                                <c:if test="${empty componentList}">
                                     <tr>
-                                        <td colspan="12" class="py-4 text-center text-muted">
+                                        <td colspan="14" class="py-4 text-center text-muted">
                                             검색된 결과가 없습니다.
                                         </td>
                                     </tr>
@@ -225,28 +254,29 @@
 
                     <!-- 페이지 유지용 form -->
                     <form name="pageForm" id="pageForm" method="get"
-                        action="<c:url value='/admin/product/bundleProductList.do'/>">
-                        <input type="hidden" name="menu" value="bundle" />
+                        action="<c:url value='/admin/product/componentProductList.do'/>">
+                        <input type="hidden" name="menu" value="component" />
                         <input type="hidden" name="pageIndex"
                             value="${not empty paginationInfo ? paginationInfo.currentPageNo : 1}" />
-                        <input type="hidden" name="saleDivCd" value="${param.saleDivCd}" />
+
+                        <input type="hidden" name="saleTypeCd" value="${param.saleTypeCd}" />
+                        <input type="hidden" name="sellerMemberId" value="${param.sellerMemberId}" />
                         <input type="hidden" name="storageTypeCd" value="${param.storageTypeCd}" />
-                        <input type="hidden" name="processDivCd" value="${param.processDivCd}" />
-                        <input type="hidden" name="stockUnitCd" value="${param.stockUnitCd}" />
-                        <input type="hidden" name="sellerName" value="${param.sellerName}" />
-                        <input type="hidden" name="componentGoodsCd" value="${param.componentGoodsCd}" />
+                        <input type="hidden" name="processTypeCd" value="${param.processTypeCd}" />
+                        <input type="hidden" name="unitTypeCd" value="${param.unitTypeCd}" />
+                        <input type="hidden" name="searchKeyword" value="${param.searchKeyword}" />
                     </form>
                 </div>
 
                 <script>
                     function fn_reset() {
                         var form = document.getElementById('searchForm');
-                        form.saleDivCd.value = "";
+                        form.saleTypeCd.value = "";
+                        form.sellerMemberId.value = "";
                         form.storageTypeCd.value = "";
-                        form.processDivCd.value = "";
-                        form.stockUnitCd.value = "";
-                        form.sellerName.value = "";
-                        form.componentGoodsCd.value = "";
+                        form.processTypeCd.value = "";
+                        form.unitTypeCd.value = "";
+                        form.searchKeyword.value = "";
                     }
 
                     function fn_page(pageNo) {

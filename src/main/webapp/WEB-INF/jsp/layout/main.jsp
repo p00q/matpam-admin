@@ -102,14 +102,14 @@
                             </a>
                         </li>
                         <li>
-                            <a href="<c:url value='/admin/product/productList.do'/>"
+                            <a href="<c:url value='/admin/product/salesProductList.do?menu=product'/>"
                                 class="${param.menu eq 'product' ? 'active' : ''}">
                                 <i class="bi bi-box-seam-fill"></i>판매상품관리
                             </a>
                         </li>
                         <li>
-                            <a href="<c:url value='/admin/product/bundleProductList.do?menu=bundle'/>"
-                                class="${param.menu eq 'bundle' ? 'active' : ''}">
+                            <a href="<c:url value='/admin/product/componentProductList.do?menu=component'/>"
+                                class="${param.menu eq 'component' ? 'active' : ''}">
                                 <i class="bi bi-gear-fill"></i>구성상품관리
                             </a>
                         </li>

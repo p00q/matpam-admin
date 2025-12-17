@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.matpam.admin.product.service.impl.SalesProductCompositionMapper">
+
+    <resultMap id="salesProductCompResultMap"
+               type="kr.co.matpam.admin.product.service.SalesProductCompositionVO">
+
+        <id property="salesProdId"     column="SALES_PROD_ID"/>
+        <id property="componentProdId" column="COMPONENT_PROD_ID"/>
+
+        <result property="compQty"     column="COMP_QTY"/>
+        <result property="sortOrder"   column="SORT_ORDER"/>
+
+        <result property="useYn"       column="USE_YN"/>
+        <result property="delYn"       column="DEL_YN"/>
+        <result property="regId"       column="REG_ID"/>
+        <result property="regDt"       column="REG_DT"/>
+        <result property="modId"       column="MOD_ID"/>
+        <result property="modDt"       column="MOD_DT"/>
+
+        <!-- 조인/표시용 -->
+        <result property="componentProdCode" column="COMPONENT_PROD_CODE"/>
+        <result property="componentProdName" column="COMPONENT_PROD_NAME"/>
+        <result property="sellerMemberId"    column="SELLER_MEMBER_ID"/>
+        <result property="sellerName"        column="SELLER_NAME"/>
+
+        <result property="listPrice"         column="LIST_PRICE"/>
+        <result property="costPrice"         column="COST_PRICE"/>
+        <result property="vatRate"           column="VAT_RATE"/>
+        <result property="vatAmount"         column="VAT_AMOUNT"/>
+
+        <result property="exposureStatusCd"  column="EXPOSURE_STATUS_CD"/>
+        <result property="saleStatusCd"      column="SALE_STATUS_CD"/>
+        <result property="saleStartDt"       column="SALE_START_DT"/>
+        <result property="saleEndDt"         column="SALE_END_DT"/>
+    </resultMap>
+
+    <!-- 판매상품ID 기준 구성목록 조회 -->
+    <select id="selectCompListBySalesProdId"
+            parameterType="long"
+            resultMap="salesProductCompResultMap">
+        SELECT
+            c.SALES_PROD_ID,
+            c.COMPONENT_PROD_ID,
+            c.COMP_QTY,
+            c.SORT_ORDER,
+            c.USE_YN,
+            c.DEL_YN,
+            c.REG_ID,
+            c.REG_DT,
+            c.MOD_ID,
+            c.MOD_DT,
+
+            cp.COMPONENT_PROD_CODE,
+            cp.COMPONENT_PROD_NAME,
+            cp.SELLER_MEMBER_ID,
+            m.COMPANY_NAME AS SELLER_NAME,
+
+            cp.LIST_PRICE,
+            cp.COST_PRICE,
+            cp.VAT_RATE,
+            CAST(cp.LIST_PRICE * cp.VAT_RATE / 100 AS DECIMAL(18,2)) AS VAT_AMOUNT,
+
+            cp.EXPOSURE_STATUS_CD,
+            cp.SALE_STATUS_CD,
+            cp.SALE_START_DT,
+            cp.SALE_END_DT
+        FROM TB_SALES_PRODUCT_COMP c
+        JOIN TB_COMPONENT_PRODUCT cp
+          ON c.COMPONENT_PROD_ID = cp.COMPONENT_PROD_ID
+        LEFT JOIN TB_MEMBER m
+          ON cp.SELLER_MEMBER_ID = m.MEMBER_ID
+        WHERE c.SALES_PROD_ID = #{value}
+          AND c.DEL_YN = 'N'
+        ORDER BY c.SORT_ORDER ASC
+    </select>
+
+    <!-- 1건 upsert (복합PK 환경에서 재저장 대응) -->
+    <insert id="upsertComp"
+            parameterType="kr.co.matpam.admin.product.service.SalesProductCompositionVO">
+        INSERT INTO TB_SALES_PRODUCT_COMP (
+            SALES_PROD_ID,
+            COMPONENT_PROD_ID,
+            COMP_QTY,
+            SORT_ORDER,
+            USE_YN,
+            DEL_YN,
+            REG_ID,
+            REG_DT,
+            MOD_ID,
+            MOD_DT
+        ) VALUES (
+            #{salesProdId},
+            #{componentProdId},
+            #{compQty},
+            #{sortOrder},
+            <choose>
+                <when test="useYn != null and useYn != ''">#{useYn}</when>
+                <otherwise>'Y'</otherwise>
+            </choose>,
+            'N',
+            #{regId},
+            NOW(),
+            #{modId},
+            NOW()
+        )
+        ON DUPLICATE KEY UPDATE
+            COMP_QTY   = VALUES(COMP_QTY),
+            SORT_ORDER = VALUES(SORT_ORDER),
+            USE_YN     = VALUES(USE_YN),
+            DEL_YN     = 'N',
+            MOD_ID     = VALUES(MOD_ID),
+            MOD_DT     = NOW()
+    </insert>
+
+    <!-- 판매상품ID 기준 구성 논리삭제 -->
+    <update id="deleteCompBySalesProdId" parameterType="long">
+        UPDATE TB_SALES_PRODUCT_COMP
+        SET
+            DEL_YN = 'Y',
+            MOD_DT = NOW()
+        WHERE SALES_PROD_ID = #{value}
+          AND DEL_YN = 'N'
+    </update>
+
+    <!-- 1건 논리삭제 (복합PK로 삭제) -->
+    <update id="deleteComp" parameterType="kr.co.matpam.admin.product.service.SalesProductCompositionVO">
+        UPDATE TB_SALES_PRODUCT_COMP
+        SET
+            DEL_YN = 'Y',
+            MOD_DT = NOW()
+        WHERE SALES_PROD_ID = #{salesProdId}
+          AND COMPONENT_PROD_ID = #{componentProdId}
+          AND DEL_YN = 'N'
+    </update>
+
+</mapper>

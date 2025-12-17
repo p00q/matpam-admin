@@ -73,22 +73,23 @@
                 <div class="container">
                     <div class="product-header d-flex justify-content-between align-items-end">
                         <div>
-                            <div class="badge bg-primary mb-2">${product.displayYn == 'Y' ? '판매중' : '판매중지'}</div>
+                            <div class="badge bg-primary mb-2">${salesProduct.exposureStatusCd == 'Y' ? '판매중' : '판매중지'}
+                            </div>
                             <div class="product-title">
-                                <c:out value="${product.productName}" />
+                                <c:out value="${salesProduct.salesProdName}" />
                             </div>
                         </div>
                         <div class="product-price">
-                            <fmt:formatNumber value="${product.salePrice}" type="number" />원
+                            <fmt:formatNumber value="${salesProduct.listPrice}" type="number" />원
                         </div>
                     </div>
 
                     <!-- 이미지 미리보기 (임시) -->
                     <div class="product-images">
-                        <c:forEach items="${product.imageList}" var="img">
+                        <c:forEach items="${salesProduct.imageList}" var="img">
                             <img src="<c:url value='${img.imgUrl}'/>" alt="상품이미지">
                         </c:forEach>
-                        <c:if test="${empty product.imageList}">
+                        <c:if test="${empty salesProduct.imageList}">
                             <div class="text-muted p-3 border w-100 text-center">등록된 이미지가 없습니다.</div>
                         </c:if>
                     </div>
@@ -97,34 +98,34 @@
                         <tr>
                             <th>상품요약</th>
                             <td colspan="3">
-                                <c:out value="${product.productSummary}" />
+                                <c:out value="${salesProduct.summary}" />
                             </td>
                         </tr>
                         <tr>
                             <th>판매기간</th>
                             <td>
-                                <fmt:formatDate value="${product.saleStartDate}" pattern="yyyy-MM-dd" /> ~
-                                <fmt:formatDate value="${product.saleEndDate}" pattern="yyyy-MM-dd" />
+                                <fmt:formatDate value="${salesProduct.saleStartDt}" pattern="yyyy-MM-dd" /> ~
+                                <fmt:formatDate value="${salesProduct.saleEndDt}" pattern="yyyy-MM-dd" />
                             </td>
                             <th>판매자</th>
                             <td>
-                                <c:out value="${product.sellerName}" />
+                                <c:out value="${salesProduct.sellerName}" />
                             </td>
                         </tr>
                         <tr>
                             <th>원가</th>
                             <td>
-                                <fmt:formatNumber value="${product.costPrice}" type="number" />원
+                                <fmt:formatNumber value="${salesProduct.costPrice}" type="number" />원
                             </td>
                             <th>부가세</th>
                             <td>
-                                <fmt:formatNumber value="${product.vatAmount}" type="number" />원
+                                <fmt:formatNumber value="${salesProduct.vatAmount}" type="number" />원
                             </td>
                         </tr>
                         <tr>
                             <th>MD 코멘트</th>
                             <td colspan="3">
-                                <c:out value="${product.mdComment}" />
+                                <c:out value="${salesProduct.mdComment}" />
                             </td>
                         </tr>
                     </table>
@@ -133,7 +134,7 @@
                         <h4>상품 상세 설명</h4>
                     </div>
                     <div class="detail-content">
-                        ${product.description}
+                        ${salesProduct.description}
                     </div>
 
                     <div class="text-center mt-5">

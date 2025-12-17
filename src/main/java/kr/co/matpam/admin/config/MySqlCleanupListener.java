@@ -36,10 +36,8 @@ public class MySqlCleanupListener implements ServletContextListener {
 
         try {
             AbandonedConnectionCleanupThread.checkedShutdown();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
         } catch (Exception e) {
-            LOGGER.warn("MySQL cleanup thread shutdown issue", e);
+            LOGGER.warn("Failed to shutdown MySQL AbandonedConnectionCleanupThread", e);
         }
     }
 }

@@ -48,7 +48,7 @@
                     <div class="card mb-4 border-0 shadow-sm">
                         <div class="card-body p-0">
                             <form name="searchForm" id="searchForm"
-                                action="<c:url value='/admin/product/productList.do'/>" method="get">
+                                action="<c:url value='/admin/product/salesProductList.do'/>" method="get">
                                 <input type="hidden" name="pageIndex"
                                     value="<c:out value='${searchVO.pageIndex}' default='1'/>" />
 
@@ -66,8 +66,9 @@
                                                 <div class="d-flex gap-2">
                                                     <select name="searchCondition" class="form-select form-select-sm"
                                                         style="width: 120px;">
-                                                        <option value="productName" <c:if
-                                                            test="${searchVO.searchCondition eq 'productName'}">selected
+                                                        <option value="salesProdName" <c:if
+                                                            test="${searchVO.searchCondition eq 'salesProdName'}">
+                                                            selected
                                                             </c:if>>상품명</option>
                                                         <option value="sellerName" <c:if
                                                             test="${searchVO.searchCondition eq 'sellerName'}">selected
@@ -94,27 +95,31 @@
                                         <tr>
                                             <th class="text-center" style="background-color: #e9ecef;">판매상태</th>
                                             <td>
-                                                <!-- 판매상태는 현재 DB 컬럼이 없으므로 UI만 제공 (추후 구현 필요) -->
-                                                <select name="saleStatus" class="form-select form-select-sm"
+                                                <!-- 판매상태코드(sale_status_cd) -->
+                                                <select name="saleStatusCd" class="form-select form-select-sm"
                                                     style="max-width: 200px;">
                                                     <option value="">전체</option>
-                                                    <option value="SELLING" <c:if
-                                                        test="${param.saleStatus eq 'SELLING'}">selected</c:if>>판매중
+                                                    <option value="LIVE" <c:if
+                                                        test="${searchVO.saleStatusCd eq 'LIVE'}">selected</c:if>>판매중
                                                     </option>
-                                                    <option value="READY" <c:if test="${param.saleStatus eq 'READY'}">
+                                                    <option value="WAIT" <c:if
+                                                        test="${searchVO.saleStatusCd eq 'WAIT'}">
                                                         selected</c:if>>판매예정</option>
-                                                    <option value="STOP" <c:if test="${param.saleStatus eq 'STOP'}">
+                                                    <option value="STOP" <c:if
+                                                        test="${searchVO.saleStatusCd eq 'STOP'}">
                                                         selected</c:if>>판매종료</option>
                                                 </select>
                                             </td>
                                             <th class="text-center" style="background-color: #e9ecef;">노출상태</th>
                                             <td>
-                                                <select name="displayYn" class="form-select form-select-sm"
+                                                <select name="exposureStatusCd" class="form-select form-select-sm"
                                                     style="max-width: 200px;">
                                                     <option value="">전체</option>
-                                                    <option value="Y" <c:if test="${searchVO.displayYn eq 'Y'}">selected
+                                                    <option value="Y" <c:if test="${searchVO.exposureStatusCd eq 'Y'}">
+                                                        selected
                                                         </c:if>>노출</option>
-                                                    <option value="N" <c:if test="${searchVO.displayYn eq 'N'}">selected
+                                                    <option value="N" <c:if test="${searchVO.exposureStatusCd eq 'N'}">
+                                                        selected
                                                         </c:if>>비노출</option>
                                                 </select>
                                             </td>
@@ -141,7 +146,7 @@
                         </div>
                         <div class="d-flex gap-2">
                             <button type="button" class="btn btn-success btn-sm"
-                                onclick="location.href='<c:url value='/admin/product/productRegist.do'/>'">
+                                onclick="location.href='<c:url value='/admin/product/salesProductRegister.do'/>'">
                                 <i class="bi bi-plus-circle me-1"></i>신규등록
                             </button>
                             <button type="button" class="btn btn-secondary btn-sm">
@@ -166,19 +171,19 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <c:forEach var="item" items="${productList}" varStatus="status">
+                                <c:forEach var="item" items="${resultList}" varStatus="status">
                                     <tr>
                                         <td>
-                                            <c:out value="${item.productNo}" />
+                                            <c:out value="${item.salesProdCode}" />
                                         </td>
                                         <td class="text-start">
-                                            <a href="<c:url value='/admin/product/productRegist.do?productNo=${item.productNo}'/>"
+                                            <a href="<c:url value='/admin/product/salesProductRegister.do?salesProdId=${item.salesProdId}'/>"
                                                 class="text-decoration-none text-primary fw-bold">
-                                                ${item.productName}
+                                                ${item.salesProdName}
                                             </a>
                                         </td>
                                         <td class="text-end">
-                                            <fmt:formatNumber value="${item.salePrice}" type="number" />원
+                                            <fmt:formatNumber value="${item.listPrice}" type="number" />원
                                         </td>
                                         <td>0</td>
                                         <td>0</td>
@@ -188,11 +193,11 @@
                                         <td>
                                             <c:choose>
                                                 <c:when
-                                                    test="${not empty item.saleStartDate && item.saleStartDate.time > today.time}">
+                                                    test="${not empty item.saleStartDt && item.saleStartDt.time > today.time}">
                                                     <span class="badge bg-info">판매예정</span>
                                                 </c:when>
                                                 <c:when
-                                                    test="${not empty item.saleEndDate && item.saleEndDate.time < today.time}">
+                                                    test="${not empty item.saleEndDt && item.saleEndDt.time < today.time}">
                                                     <span class="badge bg-secondary">판매종료</span>
                                                 </c:when>
                                                 <c:otherwise>
@@ -202,7 +207,7 @@
                                         </td>
                                         <td>
                                             <c:choose>
-                                                <c:when test="${item.displayYn eq 'Y'}">
+                                                <c:when test="${item.exposureStatusCd eq 'Y'}">
                                                     <span class="badge bg-primary">노출</span>
                                                 </c:when>
                                                 <c:otherwise>
@@ -213,7 +218,7 @@
                                     </tr>
                                 </c:forEach>
 
-                                <c:if test="${empty productList}">
+                                <c:if test="${empty resultList}">
                                     <tr>
                                         <td colspan="8" class="py-4 text-center text-muted">
                                             검색된 결과가 없습니다.
@@ -239,6 +244,6 @@
                     }
 
                     function fn_reset() {
-                        location.href = '<c:url value="/admin/product/productList.do"/>';
+                        location.href = '<c:url value="/admin/product/salesProductList.do"/>';
                     }
                 </script>
