@@ -116,11 +116,12 @@
                                         <option value="" disabled <c:if test="${empty component.sellerMemberId}">
                                             selected</c:if>>선택</option>
                                         <c:forEach var="seller" items="${sellers}">
-                                            <c:set var="sellerPkStr" value="${fn:trim(seller.memberNo)}" />
-                                            <c:set var="legacySellerId" value="${seller.memberId}" />
-                                            <c:set var="componentSellerId" value="${component.sellerMemberId}" />
+                                            <c:set var="sellerPkStr" value="${fn:trim(seller.memberPk)}" />
+                                            <c:set var="legacySellerId" value="${fn:trim(seller.memberId)}" />
+                                            <c:set var="componentSellerIdStr"
+                                                value="${fn:trim(component.sellerMemberId)}" />
                                             <c:set var="sellerSelected"
-                                                value="${componentSellerId == sellerPkStr or componentSellerId == legacySellerId}" />
+                                                value="${componentSellerIdStr eq sellerPkStr or componentSellerIdStr eq legacySellerId}" />
                                             <option value="${sellerPkStr}" ${sellerSelected ? 'selected' : ''}>
                                                 ${seller.companyName} (${seller.ceoName})
                                             </option>

@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="ui" uri="http://egovframework.gov/ctl/ui" %>
 
 <!DOCTYPE html>
@@ -79,8 +80,9 @@
                             <select name="sellerMemberId" class="form-select form-select-sm">
                                 <option value="">전체</option>
                                 <c:forEach var="seller" items="${sellers}">
-                                    <c:set var="sellerKey" value="${not empty seller.memberNo ? seller.memberNo : seller.memberId}" />
-                                    <option value="${sellerKey}" <c:if test="${searchVO.sellerMemberId eq sellerKey}">selected</c:if>>
+                                    <c:set var="sellerPk" value="${fn:trim(seller.memberPk)}" />
+                                    <c:set var="legacySellerId" value="${fn:trim(seller.memberId)}" />
+                                    <option value="${sellerPk}" <c:if test="${searchVO.sellerMemberId eq sellerPk or searchVO.sellerMemberId eq legacySellerId}">selected</c:if>>
                                         ${seller.companyName}
                                     </option>
                                 </c:forEach>
