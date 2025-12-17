@@ -109,15 +109,17 @@
 
                                 <th>판매자명 <span class="text-danger">*</span></th>
                                 <td>
-                                    <!-- 기존 saleMemberNo -> sellerMemberId -->
+                                    <!-- sellerMemberId는 회원 PK(MEMBER_ID)를 사용하며, 구데이터(loginId)도 대응 -->
                                     <select name="sellerMemberId" class="form-select form-select-sm"
                                         style="max-width: 200px;" required>
                                         <option value="" disabled <c:if test="${empty component.sellerMemberId}">
                                             selected</c:if>>선택</option>
                                         <c:forEach var="seller" items="${sellers}">
-                                            <option value="${not empty seller.memberNo ? seller.memberNo : seller.memberId}"
+                                            <c:set var="sellerPk" value="${seller.memberNo}" />
+                                            <c:set var="legacySellerId" value="${seller.memberId}" />
+                                            <option value="${sellerPk}"
                                                 <c:if
-                                                    test="${component.sellerMemberId eq (not empty seller.memberNo ? seller.memberNo : seller.memberId)}">selected</c:if>>
+                                                    test="${component.sellerMemberId eq sellerPk or component.sellerMemberId eq legacySellerId}">selected</c:if>>
                                                 ${seller.companyName} (${seller.ceoName})
                                             </option>
                                         </c:forEach>
