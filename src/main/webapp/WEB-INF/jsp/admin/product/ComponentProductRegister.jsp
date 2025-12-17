@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
     <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
         <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+            <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
             <!-- 구성상품(컴포넌트상품) 등록/상세 화면 -->
 
@@ -109,15 +110,18 @@
 
                                 <th>판매자명 <span class="text-danger">*</span></th>
                                 <td>
-                                    <!-- 기존 saleMemberNo -> sellerMemberId -->
+                                    <!-- sellerMemberId는 회원 PK(MEMBER_ID)를 사용하며, 구데이터(loginId)도 대응 -->
                                     <select name="sellerMemberId" class="form-select form-select-sm"
                                         style="max-width: 200px;" required>
                                         <option value="" disabled <c:if test="${empty component.sellerMemberId}">
                                             selected</c:if>>선택</option>
                                         <c:forEach var="seller" items="${sellers}">
-                                            <!-- sellers 객체가 memberId를 갖는 전제(없으면 memberNo로 바꿔야 함) -->
-                                            <option value="${seller.memberId}" <c:if
-                                                test="${component.sellerMemberId eq seller.memberId}">selected</c:if>>
+                                            <c:set var="sellerPkStr" value="${fn:trim(seller.memberNo)}" />
+                                            <c:set var="legacySellerId" value="${seller.memberId}" />
+                                            <c:set var="componentSellerId" value="${component.sellerMemberId}" />
+                                            <c:set var="sellerSelected"
+                                                value="${componentSellerId == sellerPkStr or componentSellerId == legacySellerId}" />
+                                            <option value="${sellerPkStr}" ${sellerSelected ? 'selected' : ''}>
                                                 ${seller.companyName} (${seller.ceoName})
                                             </option>
                                         </c:forEach>
