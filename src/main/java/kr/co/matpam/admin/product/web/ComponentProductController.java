@@ -107,9 +107,10 @@ public class ComponentProductController {
             nextYear.add(Calendar.YEAR, 1);
 
             ComponentProductVO component = new ComponentProductVO();
-            component.setSaleStartDate(today);
-            component.setSaleEndDate(nextYear.getTime());
-            component.setDisplayYn("Y");
+            component.setSaleStartDt(today);
+            component.setSaleEndDt(nextYear.getTime());
+            component.setExposureStatusCd("Y");
+            component.setUseYn("Y");
 
             model.addAttribute("component", component);
         } else {

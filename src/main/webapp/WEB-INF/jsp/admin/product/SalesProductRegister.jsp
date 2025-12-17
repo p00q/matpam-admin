@@ -201,8 +201,9 @@
                                             class="form-select form-select-sm">
                                             <option value="">선택</option>
                                             <c:forEach var="seller" items="${sellers}">
-                                                <option value="<c:out value='${seller.memberId}'/>" <c:if
-                                                    test="${seller.memberId eq salesProduct.sellerMemberId}">selected
+                                                <c:set var="sellerKey" value="${not empty seller.memberNo ? seller.memberNo : seller.memberId}" />
+                                                <option value="<c:out value='${sellerKey}'/>" <c:if
+                                                    test="${sellerKey eq salesProduct.sellerMemberId}">selected
                                                     </c:if>>
                                                     <c:out value='${seller.companyName}' />
                                                 </option>

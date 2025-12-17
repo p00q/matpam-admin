@@ -79,7 +79,8 @@
                             <select name="sellerMemberId" class="form-select form-select-sm">
                                 <option value="">전체</option>
                                 <c:forEach var="seller" items="${sellers}">
-                                    <option value="${seller.memberId}" <c:if test="${searchVO.sellerMemberId eq seller.memberId}">selected</c:if>>
+                                    <c:set var="sellerKey" value="${not empty seller.memberNo ? seller.memberNo : seller.memberId}" />
+                                    <option value="${sellerKey}" <c:if test="${searchVO.sellerMemberId eq sellerKey}">selected</c:if>>
                                         ${seller.companyName}
                                     </option>
                                 </c:forEach>

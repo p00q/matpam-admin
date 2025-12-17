@@ -115,9 +115,9 @@
                                         <option value="" disabled <c:if test="${empty component.sellerMemberId}">
                                             selected</c:if>>선택</option>
                                         <c:forEach var="seller" items="${sellers}">
-                                            <!-- sellers 객체가 memberId를 갖는 전제(없으면 memberNo로 바꿔야 함) -->
-                                            <option value="${seller.memberId}" <c:if
-                                                test="${component.sellerMemberId eq seller.memberId}">selected</c:if>>
+                                            <option value="${not empty seller.memberNo ? seller.memberNo : seller.memberId}"
+                                                <c:if
+                                                    test="${component.sellerMemberId eq (not empty seller.memberNo ? seller.memberNo : seller.memberId)}">selected</c:if>>
                                                 ${seller.companyName} (${seller.ceoName})
                                             </option>
                                         </c:forEach>
