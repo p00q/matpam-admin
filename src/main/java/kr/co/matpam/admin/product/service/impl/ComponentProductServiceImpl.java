@@ -1,5 +1,6 @@
 package kr.co.matpam.admin.product.service.impl;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -66,6 +67,8 @@ public class ComponentProductServiceImpl extends EgovAbstractServiceImpl
         LOGGER.debug("Insert component product: {}",
                 componentProductVO.getComponentProdName());
 
+        normalizePrices(componentProductVO);
+
         componentProductDAO.insertComponentProduct(componentProductVO);
     }
 
@@ -78,6 +81,8 @@ public class ComponentProductServiceImpl extends EgovAbstractServiceImpl
 
         LOGGER.debug("Update component product ID: {}",
                 componentProductVO.getComponentProdId());
+
+        normalizePrices(componentProductVO);
 
         componentProductDAO.updateComponentProduct(componentProductVO);
     }
@@ -92,5 +97,18 @@ public class ComponentProductServiceImpl extends EgovAbstractServiceImpl
         LOGGER.debug("Delete component product ID: {}", componentProdId);
 
         componentProductDAO.deleteComponentProduct(componentProdId);
+    }
+
+    /**
+     * 금액/수량 기본값 보정
+     */
+    private void normalizePrices(ComponentProductVO vo) {
+        if (vo.getListPrice() == null) {
+            vo.setListPrice(BigDecimal.ZERO);
+        }
+
+        vo.setCostPrice(vo.getListPrice());
+        vo.setVatRate(BigDecimal.TEN);
+        vo.setTotalSaleQty(vo.getListPrice().longValue());
     }
 }
