@@ -173,11 +173,12 @@ public class ComponentProductController {
     }
 
     private void addComponentDropdowns(ModelMap model) throws Exception {
-        // 코드/콤보는 기존 로직 재사용
-        model.addAttribute("saleTypes", codeManagementService.selectDetailCodeList("007", "007002"));
-        model.addAttribute("storageTypes", codeManagementService.selectDetailCodeList("001", "001001"));
-        model.addAttribute("processTypes", codeManagementService.selectDetailCodeList("001", "001003"));
-        model.addAttribute("unitTypes", codeManagementService.selectDetailCodeList("001", "001004"));
+        // 공통 코드 (신규 코드 테이블 기준)
+        model.addAttribute("saleTypes", codeManagementService.selectDetailCodeList("SALE_STATUS", "SALE_TYPE"));
+        model.addAttribute("saleStatuses", codeManagementService.selectDetailCodeList("SALE_STATUS", "SALE_STATUS"));
+        model.addAttribute("storageTypes", codeManagementService.selectDetailCodeList("PRODUCT_TYPE", "STORAGE_TYPE"));
+        model.addAttribute("processTypes", codeManagementService.selectDetailCodeList("PRODUCT_TYPE", "PROCESS_TYPE"));
+        model.addAttribute("unitTypes", codeManagementService.selectDetailCodeList("PRODUCT_TYPE", "UNIT_TYPE"));
 
         // 판매자 목록
         model.addAttribute("sellers", memberService.selectSellerList());
