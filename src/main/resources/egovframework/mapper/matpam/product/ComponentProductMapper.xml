@@ -16,10 +16,15 @@
         <result property="sellerName" column="SELLER_NAME"/>
 
         <result property="saleTypeCd" column="SALE_TYPE_CD"/>
+        <result property="saleTypeName" column="SALE_TYPE_NAME"/>
         <result property="storageTypeCd" column="STORAGE_TYPE_CD"/>
+        <result property="storageTypeName" column="STORAGE_TYPE_NAME"/>
         <result property="cutTypeCd" column="CUT_TYPE_CD"/>
+        <result property="cutTypeName" column="CUT_TYPE_NAME"/>
         <result property="processTypeCd" column="PROCESS_TYPE_CD"/>
+        <result property="processTypeName" column="PROCESS_TYPE_NAME"/>
         <result property="unitTypeCd" column="UNIT_TYPE_CD"/>
+        <result property="unitTypeName" column="UNIT_TYPE_NAME"/>
 
         <result property="listPrice" column="LIST_PRICE"/>
         <result property="costPrice" column="COST_PRICE"/>
@@ -30,6 +35,7 @@
 
         <result property="exposureStatusCd" column="EXPOSURE_STATUS_CD"/>
         <result property="saleStatusCd" column="SALE_STATUS_CD"/>
+        <result property="saleStatusName" column="SALE_STATUS_NAME"/>
 
         <result property="saleStartDt" column="SALE_START_DT"/>
         <result property="saleEndDt" column="SALE_END_DT"/>
@@ -70,6 +76,10 @@
 
             <if test="saleTypeCd != null and saleTypeCd != ''">
                 AND c.SALE_TYPE_CD = #{saleTypeCd}
+            </if>
+
+            <if test="saleStatusCd != null and saleStatusCd != ''">
+                AND c.SALE_STATUS_CD = #{saleStatusCd}
             </if>
 
             <if test="storageTypeCd != null and storageTypeCd != ''">
@@ -113,10 +123,15 @@
             m.COMPANY_NAME AS SELLER_NAME,
 
             c.SALE_TYPE_CD,
+            sale_type.DETAIL_CODE_NAME   AS SALE_TYPE_NAME,
             c.STORAGE_TYPE_CD,
+            storage_type.DETAIL_CODE_NAME AS STORAGE_TYPE_NAME,
             c.CUT_TYPE_CD,
+            cut_type.DETAIL_CODE_NAME    AS CUT_TYPE_NAME,
             c.PROCESS_TYPE_CD,
+            process_type.DETAIL_CODE_NAME AS PROCESS_TYPE_NAME,
             c.UNIT_TYPE_CD,
+            unit_type.DETAIL_CODE_NAME   AS UNIT_TYPE_NAME,
 
             c.LIST_PRICE,
             c.COST_PRICE,
@@ -125,6 +140,7 @@
 
             c.EXPOSURE_STATUS_CD,
             c.SALE_STATUS_CD,
+            sale_status.DETAIL_CODE_NAME AS SALE_STATUS_NAME,
             c.SALE_START_DT,
             c.SALE_END_DT,
 
@@ -139,6 +155,30 @@
         FROM TB_COMPONENT_PRODUCT c
         LEFT JOIN TB_MEMBER m
             ON c.SELLER_MEMBER_ID = m.MEMBER_ID
+        LEFT JOIN TB_DETAIL_CODE sale_type
+            ON sale_type.CODE_GROUP_ID = 'SALE_STATUS'
+            AND sale_type.CODE_ID = 'SALE_TYPE'
+            AND sale_type.DETAIL_CODE_ID = c.SALE_TYPE_CD
+        LEFT JOIN TB_DETAIL_CODE sale_status
+            ON sale_status.CODE_GROUP_ID = 'SALE_STATUS'
+            AND sale_status.CODE_ID = 'SALE_STATUS'
+            AND sale_status.DETAIL_CODE_ID = c.SALE_STATUS_CD
+        LEFT JOIN TB_DETAIL_CODE storage_type
+            ON storage_type.CODE_GROUP_ID = 'PRODUCT_TYPE'
+            AND storage_type.CODE_ID = 'STORAGE_TYPE'
+            AND storage_type.DETAIL_CODE_ID = c.STORAGE_TYPE_CD
+        LEFT JOIN TB_DETAIL_CODE cut_type
+            ON cut_type.CODE_GROUP_ID = 'PRODUCT_TYPE'
+            AND cut_type.CODE_ID = 'CUT_TYPE'
+            AND cut_type.DETAIL_CODE_ID = c.CUT_TYPE_CD
+        LEFT JOIN TB_DETAIL_CODE process_type
+            ON process_type.CODE_GROUP_ID = 'PRODUCT_TYPE'
+            AND process_type.CODE_ID = 'PROCESS_TYPE'
+            AND process_type.DETAIL_CODE_ID = c.PROCESS_TYPE_CD
+        LEFT JOIN TB_DETAIL_CODE unit_type
+            ON unit_type.CODE_GROUP_ID = 'PRODUCT_TYPE'
+            AND unit_type.CODE_ID = 'UNIT_TYPE'
+            AND unit_type.DETAIL_CODE_ID = c.UNIT_TYPE_CD
         <include refid="componentProductWhere"/>
         ORDER BY c.COMPONENT_PROD_ID DESC
         <if test="recordCountPerPage != null and firstIndex != null">
@@ -172,10 +212,15 @@
             m.COMPANY_NAME AS SELLER_NAME,
 
             c.SALE_TYPE_CD,
+            sale_type.DETAIL_CODE_NAME   AS SALE_TYPE_NAME,
             c.STORAGE_TYPE_CD,
+            storage_type.DETAIL_CODE_NAME AS STORAGE_TYPE_NAME,
             c.CUT_TYPE_CD,
+            cut_type.DETAIL_CODE_NAME    AS CUT_TYPE_NAME,
             c.PROCESS_TYPE_CD,
+            process_type.DETAIL_CODE_NAME AS PROCESS_TYPE_NAME,
             c.UNIT_TYPE_CD,
+            unit_type.DETAIL_CODE_NAME   AS UNIT_TYPE_NAME,
 
             c.LIST_PRICE,
             c.COST_PRICE,
@@ -184,6 +229,7 @@
 
             c.EXPOSURE_STATUS_CD,
             c.SALE_STATUS_CD,
+            sale_status.DETAIL_CODE_NAME AS SALE_STATUS_NAME,
             c.SALE_START_DT,
             c.SALE_END_DT,
 
@@ -198,6 +244,30 @@
         FROM TB_COMPONENT_PRODUCT c
         LEFT JOIN TB_MEMBER m
             ON c.SELLER_MEMBER_ID = m.MEMBER_ID
+        LEFT JOIN TB_DETAIL_CODE sale_type
+            ON sale_type.CODE_GROUP_ID = 'SALE_STATUS'
+            AND sale_type.CODE_ID = 'SALE_TYPE'
+            AND sale_type.DETAIL_CODE_ID = c.SALE_TYPE_CD
+        LEFT JOIN TB_DETAIL_CODE sale_status
+            ON sale_status.CODE_GROUP_ID = 'SALE_STATUS'
+            AND sale_status.CODE_ID = 'SALE_STATUS'
+            AND sale_status.DETAIL_CODE_ID = c.SALE_STATUS_CD
+        LEFT JOIN TB_DETAIL_CODE storage_type
+            ON storage_type.CODE_GROUP_ID = 'PRODUCT_TYPE'
+            AND storage_type.CODE_ID = 'STORAGE_TYPE'
+            AND storage_type.DETAIL_CODE_ID = c.STORAGE_TYPE_CD
+        LEFT JOIN TB_DETAIL_CODE cut_type
+            ON cut_type.CODE_GROUP_ID = 'PRODUCT_TYPE'
+            AND cut_type.CODE_ID = 'CUT_TYPE'
+            AND cut_type.DETAIL_CODE_ID = c.CUT_TYPE_CD
+        LEFT JOIN TB_DETAIL_CODE process_type
+            ON process_type.CODE_GROUP_ID = 'PRODUCT_TYPE'
+            AND process_type.CODE_ID = 'PROCESS_TYPE'
+            AND process_type.DETAIL_CODE_ID = c.PROCESS_TYPE_CD
+        LEFT JOIN TB_DETAIL_CODE unit_type
+            ON unit_type.CODE_GROUP_ID = 'PRODUCT_TYPE'
+            AND unit_type.CODE_ID = 'UNIT_TYPE'
+            AND unit_type.DETAIL_CODE_ID = c.UNIT_TYPE_CD
         WHERE c.COMPONENT_PROD_ID = #{value}
     </select>
 

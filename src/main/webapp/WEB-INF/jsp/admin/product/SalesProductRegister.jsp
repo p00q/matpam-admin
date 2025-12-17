@@ -27,6 +27,11 @@
                         vertical-align: middle;
                     }
 
+                    .date-range {
+                        flex-wrap: wrap;
+                        gap: 6px;
+                    }
+
                     .preview-wrapper {
                         border: 1px dashed #cbd5e1;
                         border-radius: 8px;
@@ -162,7 +167,7 @@
                                     <td>
                                         <div class="input-group input-group-sm"><input type="number" name="vatRate"
                                                 id="vatRate" class="form-control"
-                                                value="<c:out value='${salesProduct.vatRate}' default='0'/>" /><span
+                                                value="<c:out value='${empty salesProduct.vatRate ? 10 : salesProduct.vatRate}' default='10'/>" /><span
                                                 class="input-group-text">%</span></div>
                                     </td>
                                     <th>노출여부</th>
@@ -177,7 +182,7 @@
                                 <tr>
                                     <th>판매기간</th>
                                     <td>
-                                        <div class="d-flex align-items-center gap-2">
+                                        <div class="d-flex align-items-center date-range">
                                             <input type="date" name="saleStartDt" id="saleStartDt"
                                                 class="form-control form-control-sm"
                                                 value="<fmt:formatDate value='${salesProduct.saleStartDt}' pattern='yyyy-MM-dd'/>" />
@@ -201,8 +206,10 @@
                                             class="form-select form-select-sm">
                                             <option value="">선택</option>
                                             <c:forEach var="seller" items="${sellers}">
-                                                <option value="<c:out value='${seller.memberId}'/>" <c:if
-                                                    test="${seller.memberId eq salesProduct.sellerMemberId}">selected
+                                                <c:set var="sellerPk" value="${fn:trim(seller.memberPk)}" />
+                                                <c:set var="legacySellerId" value="${fn:trim(seller.memberId)}" />
+                                                <option value="<c:out value='${sellerPk}'/>" <c:if
+                                                    test="${sellerPk eq salesProduct.sellerMemberId or legacySellerId eq salesProduct.sellerMemberId}">selected
                                                     </c:if>>
                                                     <c:out value='${seller.companyName}' />
                                                 </option>
@@ -222,8 +229,8 @@
                         <!-- 2. 상품 구성 목록 -->
                         <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
                             <div class="section-header" style="margin:0;">상품 구성 목록</div>
-                            <button type="button" class="btn btn-secondary btn-sm" id="addBundleButton"
-                                onclick="fn_addBundlePopup()">구성 추가</button>
+                            <button type="button" class="btn btn-secondary btn-sm" id="addComponentButton"
+                                onclick="fn_addComponentPopup()">구성 추가</button>
                         </div>
                         <!-- 구성 상품 테이블 영역 (JS로 렌더링 될 부분 - 테이블 태그가 필요하다면 추가해야 함) -->
                         <table class="table table-bordered table-hover text-center" style="font-size: 0.9rem;">
@@ -245,7 +252,7 @@
                                     <th>관리</th>
                                 </tr>
                             </thead>
-                            <tbody id="bundleTableBody">
+                            <tbody id="componentTableBody">
                                 <tr id="emptyRow">
                                     <td colspan="14" class="text-muted py-4">구성 상품이 없습니다.</td>
                                 </tr>
@@ -363,7 +370,7 @@
                     var oEditors = [];
 
                     // ★ 전역 변수
-                    let bundleList = [];
+                    let componentProductList = [];
                     const previewImages = {};
                     const objectUrlMap = {};
                     let imageModalInstance = null;
@@ -420,9 +427,9 @@
                         return text.substring(0, 10);
                     }
 
-                    function fn_addBundlePopup() {
-                        const url = '<c:url value="/admin/product/popup/bundleList.do"/>';
-                        const name = 'bundlePopup';
+                    function fn_addComponentPopup() {
+                        const url = '<c:url value="/admin/product/popup/componentList.do"/>';
+                        const name = 'componentPopup';
                         const option = 'width=1200,height=800,scrollbars=yes';
                         window.open(url, name, option);
                     }
@@ -457,18 +464,18 @@
                         return { start: latestStart, end: earliestEnd };
                     }
 
-                    function renderBundleTable() {
-                        const tbody = document.getElementById('bundleTableBody');
+                    function renderComponentTable() {
+                        const tbody = document.getElementById('componentTableBody');
                         if (!tbody) return; // 테이블이 없을 경우 방어
 
                         tbody.innerHTML = '';
 
-                        if (bundleList.length === 0) {
+                        if (componentProductList.length === 0) {
                             tbody.innerHTML = '<tr id="emptyRow"><td colspan="14" class="text-muted py-4">구성 상품이 없습니다.</td></tr>';
                             return;
                         }
 
-                        bundleList.forEach((item, index) => {
+                        componentProductList.forEach((item, index) => {
                             const salePrice = Number(item.listPrice) || 0;
                             const costPrice = Number(item.costPrice) || 0;
                             const vatAmount = Number(item.vatRate) || 0;
@@ -489,7 +496,7 @@
                 <td>\${item.modDt}</td>
                 <td>\${item.exposureStatusCd == 'Y' ? '노출' : '비노출'}</td>
                 <td>
-                    <button type="button" class="btn btn-secondary btn-sm" style="font-size:0.8rem;" onclick="removeBundleRow(\${index})">삭제</button>
+                    <button type="button" class="btn btn-secondary btn-sm" style="font-size:0.8rem;" onclick="removeComponentRow(\${index})">삭제</button>
                 </td>
             `;
                             tbody.appendChild(tr);
@@ -499,9 +506,39 @@
                         updateProductInfo();
                     }
 
-                    function removeBundleRow(index) {
-                        bundleList.splice(index, 1);
-                        renderBundleTable();
+                    function removeComponentRow(index) {
+                        componentProductList.splice(index, 1);
+                        renderComponentTable();
+                    }
+
+                    function addComponentRow(data) {
+                        if (!data || !data.componentProdId) return;
+
+                        const exists = componentProductList.some(item => item.componentProdId === Number(data.componentProdId));
+                        if (!exists) {
+                            componentProductList.push({
+                                componentProdId: Number(data.componentProdId),
+                                componentProdName: data.componentProdName || '',
+                                saleType: data.saleType || '',
+                                saleTypeName: data.saleTypeName || '',
+                                saleStatusName: data.saleStatusName || '',
+                                storageTypeName: data.storageTypeName || '',
+                                processTypeName: data.processTypeName || '',
+                                divisionTypeName: data.divisionTypeName || '',
+                                listPrice: data.listPrice || 0,
+                                costPrice: data.costPrice || 0,
+                                vatRate: data.vatRate || 0,
+                                exposureStatusCd: data.exposureStatusCd || 'Y',
+                                sellerMemberId: data.sellerMemberId || null,
+                                sellerName: data.sellerName || '',
+                                saleStartDt: formatDateValue(data.saleStartDt),
+                                saleEndDt: formatDateValue(data.saleEndDt),
+                                regDt: formatDateValue(data.regDt),
+                                modDt: formatDateValue(data.modDt)
+                            });
+                        }
+
+                        renderComponentTable();
                     }
 
                     function updateProductInfo() {
@@ -514,14 +551,14 @@
                         const exposureStatusCdCheckbox = document.getElementById('exposureStatusCdCheckbox');
                         const exposureStatusCdHidden = document.getElementById('exposureStatusCdValue');
 
-                        if (bundleList.length > 0) {
+                        if (componentProductList.length > 0) {
                             let totalSale = 0, totalCost = 0, totalVat = 0;
                             let rawSellerId = null;
                             let defaultSellerId = null;
                             let forceHidden = false;
                             const today = new Date().toISOString().slice(0, 10);
 
-                            bundleList.forEach(item => {
+                            componentProductList.forEach(item => {
                                 totalSale += Number(item.listPrice) || 0;
                                 totalCost += Number(item.costPrice) || 0;
                                 totalVat += Number(item.vatRate) || 0;
@@ -549,7 +586,7 @@
                             if (rawSellerId) sellerSelect.value = rawSellerId;
                             else if (defaultSellerId) sellerSelect.value = defaultSellerId;
 
-                            const { start, end } = calculateSalePeriod(bundleList);
+                            const { start, end } = calculateSalePeriod(componentProductList);
                             saleStartDateInput.value = start;
                             saleEndDateInput.value = end;
                             const hasCalculatedPeriod = !!(start && end);
@@ -717,7 +754,7 @@
                             if (compositions && compositions.length > 0) {
                                 compositions.forEach(function (comp) {
                                     if (comp.componentProdId > 0) {
-                                        bundleList.push({
+                                        componentProductList.push({
                                             componentProdId: comp.componentProdId,
                                             componentProdName: comp.componentProdName || '',
                                             saleType: comp.saleType || '',
@@ -739,7 +776,7 @@
                                         });
                                     }
                                 });
-                                renderBundleTable(); // 로딩 후 테이블 그리기
+                                renderComponentTable(); // 로딩 후 테이블 그리기
                             }
                         } catch (e) {
                             console.error('Error loading compositions:', e);
@@ -777,8 +814,8 @@
                         const oldInputs = form.querySelectorAll('input[name^="compositionList"]');
                         oldInputs.forEach(input => input.remove());
 
-                        // bundleList를 기반으로 hidden input 생성
-                        bundleList.forEach((item, index) => {
+                        // componentProductList를 기반으로 hidden input 생성
+                        componentProductList.forEach((item, index) => {
                             const input = document.createElement('input');
                             input.type = 'hidden';
                             input.name = 'compositionList[' + index + '].componentProdId';
