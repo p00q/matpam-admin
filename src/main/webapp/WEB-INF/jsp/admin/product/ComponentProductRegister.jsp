@@ -117,9 +117,9 @@
                                         <c:forEach var="seller" items="${sellers}">
                                             <c:set var="sellerPk" value="${seller.memberNo}" />
                                             <c:set var="legacySellerId" value="${seller.memberId}" />
-                                            <option value="${sellerPk}"
-                                                <c:if
-                                                    test="${component.sellerMemberId eq sellerPk or component.sellerMemberId eq legacySellerId}">selected</c:if>>
+                                            <c:set var="sellerSelected"
+                                                value="${component.sellerMemberId eq sellerPk or component.sellerMemberId eq legacySellerId}" />
+                                            <option value="${sellerPk}" ${sellerSelected ? 'selected' : ''}>
                                                 ${seller.companyName} (${seller.ceoName})
                                             </option>
                                         </c:forEach>
