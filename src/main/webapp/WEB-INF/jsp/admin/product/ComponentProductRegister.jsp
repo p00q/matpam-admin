@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
     <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
         <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+            <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
             <!-- 구성상품(컴포넌트상품) 등록/상세 화면 -->
 
@@ -115,11 +116,12 @@
                                         <option value="" disabled <c:if test="${empty component.sellerMemberId}">
                                             selected</c:if>>선택</option>
                                         <c:forEach var="seller" items="${sellers}">
-                                            <c:set var="sellerPk" value="${seller.memberNo}" />
+                                            <c:set var="sellerPkStr" value="${fn:trim(seller.memberNo)}" />
                                             <c:set var="legacySellerId" value="${seller.memberId}" />
+                                            <c:set var="componentSellerId" value="${component.sellerMemberId}" />
                                             <c:set var="sellerSelected"
-                                                value="${component.sellerMemberId eq sellerPk or component.sellerMemberId eq legacySellerId}" />
-                                            <option value="${sellerPk}" ${sellerSelected ? 'selected' : ''}>
+                                                value="${componentSellerId == sellerPkStr or componentSellerId == legacySellerId}" />
+                                            <option value="${sellerPkStr}" ${sellerSelected ? 'selected' : ''}>
                                                 ${seller.companyName} (${seller.ceoName})
                                             </option>
                                         </c:forEach>
