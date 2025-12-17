@@ -1372,11 +1372,238 @@ ALTER TABLE TB_MEMBER
     ADD COLUMN MEAT_MONEY   DECIMAL(18,2) NOT NULL DEFAULT 0 COMMENT '미트머니 잔액';
 
 
+2) tb_sales_product 수정 DDL (권장안)
+2-1. 가격/할인 컬럼 추가 및 의미 정리
+
+list_price : 정가(표시가)
+
+sale_price : 판매가(할인 적용 후, 쿠폰 전 기준가)
+
+할인정책 컬럼 추가(정률/정액/기간)
+
+ALTER TABLE tb_sales_product
+  -- 1) list_price 의미를 정가로 명확화(주석 변경)
+  MODIFY COLUMN list_price DECIMAL(18,2) NOT NULL DEFAULT 0.00 COMMENT '정가(표시가)',
+
+  -- 2) 판매가(할인가) 추가
+  ADD COLUMN sale_price DECIMAL(18,2) NOT NULL DEFAULT 0.00 COMMENT '판매가(할인 적용 후, 쿠폰 전)' AFTER list_price,
+
+  -- 3) 할인 정책(정률/정액) + 할인 값
+  ADD COLUMN discount_type_cd VARCHAR(30) DEFAULT NULL COMMENT '할인유형코드(RATE/AMOUNT)' AFTER sale_price,
+  ADD COLUMN discount_value DECIMAL(18,2) DEFAULT NULL COMMENT '할인값(정률: %값, 정액: 금액)' AFTER discount_type_cd,
+
+  -- 4) 할인 적용 기간(시간 단위 대응 위해 datetime 권장)
+  ADD COLUMN discount_start_dt DATETIME DEFAULT NULL COMMENT '할인시작일시' AFTER discount_value,
+  ADD COLUMN discount_end_dt   DATETIME DEFAULT NULL COMMENT '할인종료일시' AFTER discount_start_dt;
 
 
-delete from tb_member;
-delete from tb_member_agree;
-select * from tb_member_contact;
-select * from tb_member_credit;
-select * from tb_member_status_hist;
+운영 규칙(중요):
+
+할인 미사용 시: sale_price = list_price, 할인 컬럼은 NULL
+
+할인 사용 시: sale_price는 “할인 적용된 판매가”로 저장(조회 성능/정합성 유리)
+
+2-2. 판매기간 date → datetime 변경(권장)
+
+지금 sale_start_dt, sale_end_dt가 date라서
+“오늘 18시부터 판매/자정 종료” 같은 요구 나오면 다시 공사합니다.
+
+ALTER TABLE tb_sales_product
+  MODIFY COLUMN sale_start_dt DATETIME DEFAULT NULL COMMENT '판매시작일시',
+  MODIFY COLUMN sale_end_dt   DATETIME DEFAULT NULL COMMENT '판매종료일시';
+
+3) 제약조건(체크 성격)과 인덱스 추가 제안
+3-1. 가격 정합성 체크(애플리케이션/트리거/체크 제약 중 택1)
+
+MySQL은 버전에 따라 CHECK가 실효성 차이가 있어 “애플리케이션 검증”을 주로 씁니다.
+그래도 의도를 남기려면(8.0 이상 실효):
+
+ALTER TABLE tb_sales_product
+  ADD CONSTRAINT CK_SALES_PRODUCT_PRICE
+  CHECK (list_price >= 0 AND sale_price >= 0 AND (sale_price <= list_price));
+
+3-2. 기간 정합성 체크(권장)
+ALTER TABLE tb_sales_product
+  ADD CONSTRAINT CK_SALES_PRODUCT_DATE
+  CHECK (
+    (sale_start_dt IS NULL OR sale_end_dt IS NULL OR sale_start_dt <= sale_end_dt)
+    AND
+    (discount_start_dt IS NULL OR discount_end_dt IS NULL OR discount_start_dt <= discount_end_dt)
+  );
+
+3-3. 조회 성능용 인덱스(실무에서 체감 큼)
+
+현재 인덱스는 상태/판매자/이름만 있는데, 실제 리스트 조회는 보통:
+
+삭제아님 + 사용중 + 노출상태 + 판매상태 + 기간조건 + 정렬(reg_dt 또는 sales_prod_id)
+패턴이 많습니다.
+
+ALTER TABLE tb_sales_product
+  ADD KEY IX_SALES_PRODUCT_LIST (del_yn, use_yn, exposure_status_cd, sale_status_cd, sale_start_dt, sale_end_dt, sales_prod_id),
+  ADD KEY IX_SALES_PRODUCT_DISCOUNT (discount_start_dt, discount_end_dt);
+
+
+IX_SALES_PRODUCT_NAME은 LIKE 검색에서 선행 와일드카드(%키워드%)면 효율이 떨어집니다.
+검색이 중요하면 FULLTEXT(ngram) 를 별도로 고려하는 게 정석입니다.
+
+4) 가격/할인 이력 테이블 추가(강력 권장)
+
+상품 가격은 “바뀌는 정보”입니다. 운영에서 문제 생기면 “언제/누가/왜 바꿨는지”가 핵심이라
+마스터에 덮어쓰면 추적이 불가합니다.
+
+tb_sales_product_price_hist (추천)
+CREATE TABLE tb_sales_product_price_hist (
+  hist_id BIGINT NOT NULL AUTO_INCREMENT COMMENT '이력이력ID',
+  sales_prod_id BIGINT NOT NULL COMMENT '판매상품ID(FK)',
+  
+  list_price DECIMAL(18,2) NOT NULL DEFAULT 0.00 COMMENT '정가',
+  sale_price DECIMAL(18,2) NOT NULL DEFAULT 0.00 COMMENT '판매가',
+  cost_price DECIMAL(18,2) DEFAULT NULL COMMENT '원가',
+  vat_rate   DECIMAL(5,2)  NOT NULL DEFAULT 0.00 COMMENT '부가세율',
+
+  discount_type_cd VARCHAR(30) DEFAULT NULL COMMENT '할인유형코드',
+  discount_value   DECIMAL(18,2) DEFAULT NULL COMMENT '할인값',
+  discount_start_dt DATETIME DEFAULT NULL COMMENT '할인시작일시',
+  discount_end_dt   DATETIME DEFAULT NULL COMMENT '할인종료일시',
+
+  reason VARCHAR(500) DEFAULT NULL COMMENT '변경사유',
+  reg_id VARCHAR(20) NOT NULL COMMENT '등록자ID',
+  reg_dt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP() COMMENT '등록일시',
+
+  PRIMARY KEY (hist_id),
+  KEY IX_SPPH_SALES_PROD (sales_prod_id, reg_dt),
+  CONSTRAINT FK_SPPH_SALES_PROD
+    FOREIGN KEY (sales_prod_id) REFERENCES tb_sales_product (sales_prod_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci COMMENT='판매상품 가격/할인 변경이력';
+
+
+운영 팁: 가격/할인 변경 시
+
+hist insert
+
+master update
+순서로 트랜잭션 처리하면 추적이 깔끔합니다.
+
+
+2-1. 할인 총액을 “구성요소별”로 분해(강력 권장)
+
+discount_total_amt는 유지하되, 아래를 추가해 정확한 총액 근거를 남기세요.
+
+상품할인(프로모션/할인가)
+
+쿠폰할인
+
+회원등급/정책할인
+
+배송비할인
+
+포인트/적립금 사용
+
+ALTER TABLE tb_order
+  ADD COLUMN goods_discount_amt   DECIMAL(18,2) NOT NULL DEFAULT 0.00 COMMENT '상품할인금액(프로모션/할인가)' AFTER discount_total_amt,
+  ADD COLUMN coupon_discount_amt  DECIMAL(18,2) NOT NULL DEFAULT 0.00 COMMENT '쿠폰할인금액' AFTER goods_discount_amt,
+  ADD COLUMN member_discount_amt  DECIMAL(18,2) NOT NULL DEFAULT 0.00 COMMENT '회원할인금액(등급/정책)' AFTER coupon_discount_amt,
+  ADD COLUMN delivery_discount_amt DECIMAL(18,2) NOT NULL DEFAULT 0.00 COMMENT '배송비할인금액' AFTER member_discount_amt,
+  ADD COLUMN point_use_amt        DECIMAL(18,2) NOT NULL DEFAULT 0.00 COMMENT '포인트/적립금 사용금액' AFTER delivery_discount_amt;
+
+
+운영 규칙:
+discount_total_amt = goods_discount_amt + coupon_discount_amt + member_discount_amt + delivery_discount_amt + point_use_amt
+(정합성 체크는 앱/배치/DB CHECK 중 선택)
+
+2-2. 결제 식별자/확정/취소 대비 컬럼 추가
+
+지금은 payment_method_cd, payment_status_cd만으로는 CS가 불가능해집니다.
+
+ALTER TABLE tb_order
+  ADD COLUMN payment_approved_dt DATETIME DEFAULT NULL COMMENT '결제승인일시' AFTER payment_status_cd,
+  ADD COLUMN pg_provider_cd      VARCHAR(30) DEFAULT NULL COMMENT 'PG사코드' AFTER payment_approved_dt,
+  ADD COLUMN pg_tid              VARCHAR(100) DEFAULT NULL COMMENT 'PG거래ID(TID)' AFTER pg_provider_cd,
+  ADD COLUMN payment_cancel_dt   DATETIME DEFAULT NULL COMMENT '결제취소/환불일시' AFTER pg_tid,
+  ADD COLUMN refund_total_amt    DECIMAL(18,2) NOT NULL DEFAULT 0.00 COMMENT '총환불금액(누적)' AFTER payment_cancel_dt;
+
+
+부분취소(부분환불)까지 가면 헤더에는 누적만 두고, 상세는 tb_payment_txn 같은 별도 테이블로 분리하는 게 정석입니다.
+
+2-3. VAT 총액 산정 기준 명확화(권장)
+
+vat_total_amt는 있는데, 면세/과세 혼재 가능성이 있으면 부가세 포함/별도 기준이 필요할 수 있습니다.
+
+ALTER TABLE tb_order
+  ADD COLUMN vat_calc_type_cd VARCHAR(30) DEFAULT NULL COMMENT '부가세계산방식(VAT_INCLUDED/VAT_EXCLUDED)' AFTER vat_total_amt;
+
+3) 인덱스/제약 제안(조회/운영 안정성)
+3-1. 주문상태+결제상태 조회가 잦으면 인덱스 보강
+
+정산/CS는 “결제완료 주문만”, “환불 진행” 같은 조회가 많습니다.
+
+ALTER TABLE tb_order
+  ADD KEY IX_TB_ORDER_PAYMENT (payment_status_cd, order_dt),
+  ADD KEY IX_TB_ORDER_STATUS (order_status_cd, order_dt);
+
+
+(이미 IX_TB_ORDER_DT_STATUS(order_dt, order_status_cd)가 있어서, 실제 쿼리 패턴 보고 중복이면 조정)
+
+4) “헤더만으로는 부족”해서 반드시 필요한 하위 테이블(ERD 관점)
+
+tb_order는 헤더입니다. 할인가 베이스를 제대로 하려면 필수 디테일이 있어야 합니다.
+
+4-1. tb_order_item (필수)
+
+상품 단가/할인가/최종가를 주문 시점 스냅샷으로 고정 저장해야 합니다.
+
+권장 컬럼(핵심만):
+
+order_item_id (PK)
+
+order_id (FK)
+
+sales_prod_id (FK)
+
+qty
+
+unit_list_price
+
+unit_sale_price
+
+unit_discount_amt
+
+unit_vat_rate, unit_vat_amt
+
+line_goods_amt (qty*unit_sale_price)
+
+line_pay_amt (라인 최종결제금액)
+
+상품 가격이 바뀌어도 과거 주문은 그대로 유지하려면 반드시 필요합니다.
+
+4-2. 할인 상세 테이블(선택이 아니라 “확장 대비 필수”)
+
+할인 사유가 2개 이상(쿠폰+프로모션) 들어가면 헤더만으로 설명 불가입니다.
+
+tb_order_discount (order_id 기준, 여러 건)
+
+discount_kind_cd (PROMOTION/COUPON/MEMBER/DELIVERY/POINT)
+
+discount_amt
+
+ref_id (쿠폰ID/프로모션ID 등)
+
+memo/desc
+
+5) 합계 정합성 공식(운영 기준)
+
+정확한 베이스를 잡으려면 “총액 공식”을 시스템 규칙으로 고정하세요.
+
+goods_total_amt = Σ(주문상품 라인금액(할인 적용 후))
+
+discount_total_amt = 상품할인+쿠폰+회원+배송비+포인트
+
+pay_total_amt = goods_total_amt + delivery_total_amt + vat_total_amt - (coupon/member/point/배송비할인 등, 이미 goods_total_amt에 포함된 할인은 중복 반영 금지)
+
+여기서 가장 흔한 장애가 “할인을 goods_total_amt에 포함했는데 또 discount_total_amt로 차감”하는 이중할인 버그입니다.
+그래서 “상품단 라인금액”과 “할인 상세”를 분리해 두는 게 안전합니다.
+
+
+
+
 
