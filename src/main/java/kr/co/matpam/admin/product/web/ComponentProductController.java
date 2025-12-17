@@ -94,6 +94,37 @@ public class ComponentProductController {
     }
 
     /**
+     * 구성상품 등록/수정 단일 엔드포인트 (구경로 호환)
+     */
+    @RequestMapping(value = "/admin/product/componentProductForm.do")
+    public String componentProductForm(@RequestParam(value = "componentProdId", required = false) Long componentProdId,
+            ModelMap model) throws Exception {
+
+        if (componentProdId == null) {
+            Date today = new Date();
+            Calendar nextYear = Calendar.getInstance();
+            nextYear.setTime(today);
+            nextYear.add(Calendar.YEAR, 1);
+
+            ComponentProductVO component = new ComponentProductVO();
+            component.setSaleStartDt(today);
+            component.setSaleEndDt(nextYear.getTime());
+            component.setExposureStatusCd("Y");
+            component.setUseYn("Y");
+
+            model.addAttribute("component", component);
+        } else {
+            ComponentProductVO component = componentProductService.selectComponentProduct(componentProdId);
+            model.addAttribute("component", component);
+        }
+
+        addComponentDropdowns(model);
+
+        model.addAttribute("contentPage", "/WEB-INF/jsp/admin/product/ComponentProductRegister.jsp");
+        return "layout/main";
+    }
+
+    /**
      * 구성상품 등록 화면
      */
     @RequestMapping(value = "/admin/product/componentRegist.do")
@@ -173,11 +204,12 @@ public class ComponentProductController {
     }
 
     private void addComponentDropdowns(ModelMap model) throws Exception {
-        // 코드/콤보는 기존 로직 재사용
-        model.addAttribute("saleTypes", codeManagementService.selectDetailCodeList("007", "007002"));
-        model.addAttribute("storageTypes", codeManagementService.selectDetailCodeList("001", "001001"));
-        model.addAttribute("processTypes", codeManagementService.selectDetailCodeList("001", "001003"));
-        model.addAttribute("unitTypes", codeManagementService.selectDetailCodeList("001", "001004"));
+        // 공통 코드 (신규 코드 테이블 기준)
+        model.addAttribute("saleTypes", codeManagementService.selectDetailCodeList("SALE_STATUS", "SALE_TYPE"));
+        model.addAttribute("saleStatuses", codeManagementService.selectDetailCodeList("SALE_STATUS", "SALE_STATUS"));
+        model.addAttribute("storageTypes", codeManagementService.selectDetailCodeList("PRODUCT_TYPE", "STORAGE_TYPE"));
+        model.addAttribute("processTypes", codeManagementService.selectDetailCodeList("PRODUCT_TYPE", "PROCESS_TYPE"));
+        model.addAttribute("unitTypes", codeManagementService.selectDetailCodeList("PRODUCT_TYPE", "UNIT_TYPE"));
 
         // 판매자 목록
         model.addAttribute("sellers", memberService.selectSellerList());
