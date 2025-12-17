@@ -195,8 +195,8 @@
                                     <th scope="col">분리유형</th>
                                     <th scope="col">처리구분</th>
                                     <th scope="col">단위유형</th>
-                                    <th scope="col">판매가격(list_price)</th>
-                                    <th scope="col">VAT율(%)</th>
+                                    <th scope="col">판매가격</th>
+                                    <th scope="col">부가세</th>
                                     <th scope="col">판매기간</th>
                                     <th scope="col">등록일</th>
                                     <th scope="col">수정일</th>
@@ -230,7 +230,9 @@
                                             <fmt:formatNumber value="${item.listPrice}" type="number" />
                                         </td>
                                         <td class="text-end">
-                                            <fmt:formatNumber value="${item.vatRate}" type="number" />
+                                            <c:set var="vatAmount"
+                                                value="${not empty item.vatAmount ? item.vatAmount : (item.listPrice * item.vatRate / 100)}" />
+                                            <fmt:formatNumber value="${vatAmount}" type="number" />
                                         </td>
 
                                         <td>

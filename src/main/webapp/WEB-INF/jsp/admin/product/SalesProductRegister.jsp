@@ -150,25 +150,29 @@
                                     <th>판매 가격</th>
                                     <td>
                                         <div class="input-group input-group-sm"><input type="number" name="listPrice"
-                                                id="listPrice" class="form-control"
+                                                id="listPrice" class="form-control" step="1" min="0"
                                                 value="<c:out value='${salesProduct.listPrice}' default='0'/>" /><span
                                                 class="input-group-text">원</span></div>
+                                        <input type="hidden" name="costPrice" id="costPrice"
+                                            value="<c:out value='${empty salesProduct.listPrice ? salesProduct.costPrice : salesProduct.listPrice}' default='0'/>" />
                                     </td>
                                     <th>원가</th>
                                     <td>
-                                        <div class="input-group input-group-sm"><input type="number" name="costPrice"
-                                                id="costPrice" class="form-control"
-                                                value="<c:out value='${salesProduct.costPrice}' default='0'/>" /><span
-                                                class="input-group-text">원</span></div>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control" value="<c:out value='${empty salesProduct.listPrice ? salesProduct.costPrice : salesProduct.listPrice}' default='0'/>"
+                                                readonly />
+                                            <span class="input-group-text">원</span>
+                                        </div>
                                     </td>
                                 </tr>
                                 <tr>
                                     <th>부가세</th>
                                     <td>
-                                        <div class="input-group input-group-sm"><input type="number" name="vatRate"
-                                                id="vatRate" class="form-control"
-                                                value="<c:out value='${empty salesProduct.vatRate ? 10 : salesProduct.vatRate}' default='10'/>" /><span
-                                                class="input-group-text">%</span></div>
+                                        <div class="input-group input-group-sm"><input type="number" id="vatAmount"
+                                                class="form-control" value="0" readonly /><span class="input-group-text">원</span></div>
+                                        <input type="hidden" name="vatRate" id="vatRate"
+                                            value="<c:out value='${empty salesProduct.vatRate ? 10 : salesProduct.vatRate}' default='10'/>" />
+                                        <small class="text-muted">판매가격의 10%</small>
                                     </td>
                                     <th>노출여부</th>
                                     <td>
@@ -385,6 +389,8 @@
                         // initDisplayToggle();    // 필요시 구현
                         initUnloadCleanup();
 
+                        syncManualPrice();
+
                         // 구성상품 로딩 (수정 모드일 때만)
                         loadExistingCompositions();
 
@@ -392,6 +398,13 @@
                         setTimeout(function () {
                             initProductImagePopup();
                         }, 500);
+
+                        const salePriceInput = document.getElementById('listPrice');
+                        if (salePriceInput) {
+                            salePriceInput.addEventListener('input', syncManualPrice);
+                        }
+
+                        updateProductInfo();
 
                         console.log('페이지 초기화 완료');
                     });
@@ -478,7 +491,7 @@
                         componentProductList.forEach((item, index) => {
                             const salePrice = Number(item.listPrice) || 0;
                             const costPrice = Number(item.costPrice) || 0;
-                            const vatAmount = Number(item.vatRate) || 0;
+                            const vatAmount = Math.round(salePrice * (Number(item.vatRate) || 0) / 100);
 
                             const tr = document.createElement('tr');
                             tr.innerHTML = `
@@ -541,10 +554,30 @@
                         renderComponentTable();
                     }
 
+                    function sanitizeInteger(value) {
+                        const num = Math.max(0, Math.floor(Number(value) || 0));
+                        return Number.isFinite(num) ? num : 0;
+                    }
+
+                    function syncManualPrice() {
+                        const salePriceInput = document.getElementById('listPrice');
+                        const costPriceInput = document.getElementById('costPrice');
+                        const vatAmountInput = document.getElementById('vatAmount');
+                        const vatRateHidden = document.getElementById('vatRate');
+
+                        const salePrice = sanitizeInteger(salePriceInput.value);
+                        const vatRate = sanitizeInteger(vatRateHidden.value || 10);
+                        salePriceInput.value = salePrice;
+                        costPriceInput.value = salePrice;
+                        vatAmountInput.value = Math.round(salePrice * vatRate / 100);
+                        vatRateHidden.value = vatRate;
+                    }
+
                     function updateProductInfo() {
                         const salePriceInput = document.getElementById('listPrice');
                         const costPriceInput = document.getElementById('costPrice');
-                        const vatAmountInput = document.getElementById('vatRate');
+                        const vatAmountInput = document.getElementById('vatAmount');
+                        const vatRateHidden = document.getElementById('vatRate');
                         const saleStartDateInput = document.getElementById('saleStartDt');
                         const saleEndDateInput = document.getElementById('saleEndDt');
                         const sellerSelect = document.getElementById('sellerMemberId');
@@ -552,16 +585,18 @@
                         const exposureStatusCdHidden = document.getElementById('exposureStatusCdValue');
 
                         if (componentProductList.length > 0) {
-                            let totalSale = 0, totalCost = 0, totalVat = 0;
+                            let totalSale = 0, totalVat = 0;
                             let rawSellerId = null;
                             let defaultSellerId = null;
                             let forceHidden = false;
                             const today = new Date().toISOString().slice(0, 10);
+                            const vatRate = sanitizeInteger(vatRateHidden.value || 10);
 
                             componentProductList.forEach(item => {
-                                totalSale += Number(item.listPrice) || 0;
-                                totalCost += Number(item.costPrice) || 0;
-                                totalVat += Number(item.vatRate) || 0;
+                                const salePrice = Number(item.listPrice) || 0;
+                                const rate = Number(item.vatRate || vatRate);
+                                totalSale += salePrice;
+                                totalVat += Math.round(salePrice * rate / 100);
 
                                 const saleTypeCode = (item.saleType || '').toString();
                                 const saleTypeName = item.saleTypeName || '';
@@ -577,11 +612,12 @@
                             });
 
                             salePriceInput.value = totalSale;
-                            costPriceInput.value = totalCost;
+                            costPriceInput.value = totalSale;
                             vatAmountInput.value = totalVat;
+                            vatRateHidden.value = sanitizeInteger(vatRateHidden.value || 10);
                             salePriceInput.readOnly = true;
-                            costPriceInput.readOnly = true;
-                            vatAmountInput.readOnly = true;
+                            saleStartDateInput.readOnly = true;
+                            saleEndDateInput.readOnly = true;
 
                             if (rawSellerId) sellerSelect.value = rawSellerId;
                             else if (defaultSellerId) sellerSelect.value = defaultSellerId;
@@ -602,10 +638,9 @@
                             }
                         } else {
                             salePriceInput.readOnly = false;
-                            costPriceInput.readOnly = false;
-                            vatAmountInput.readOnly = false;
                             saleStartDateInput.readOnly = false;
                             saleEndDateInput.readOnly = false;
+                            syncManualPrice();
                         }
                     }
 
@@ -795,7 +830,7 @@
                         syncEditorContent();
 
                         // 숫자 필드 빈 값 처리
-                        ['listPrice', 'costPrice', 'vatRate'].forEach(fieldId => {
+                        ['listPrice', 'costPrice', 'vatRate', 'vatAmount'].forEach(fieldId => {
                             const field = document.getElementById(fieldId);
                             if (field && !field.value.trim()) field.value = '0';
                         });

@@ -202,40 +202,32 @@
                                 </td>
                             </tr>
 
-                            <!-- Row 5: 판매가격 / VAT율 -->
+                            <!-- Row 5: 판매가격 / 부가세 -->
                             <tr>
                                 <th>판매가격 <span class="text-danger">*</span></th>
                                 <td>
                                     <div class="input-group" style="max-width: 200px;">
                                         <input type="number" name="listPrice" id="listPrice"
-                                            class="form-control form-control-sm"
+                                            class="form-control form-control-sm" step="1"
                                             value="<c:out value='${component.listPrice}' default='0'/>" required min="0" />
                                         <span class="input-group-text">원</span>
                                     </div>
                                     <input type="hidden" name="costPrice" id="costPrice"
                                         value="<c:out value='${empty component.listPrice ? component.costPrice : component.listPrice}' default='0'/>" />
+                                    <input type="hidden" name="totalSaleQty" id="totalSaleQty"
+                                        value="<c:out value='${empty component.totalSaleQty ? component.listPrice : component.totalSaleQty}' default='0'/>" />
                                 </td>
 
-                                <th>VAT율(%) <span class="text-danger">*</span></th>
+                                <th>부가세 <span class="text-danger">*</span></th>
                                 <td>
                                     <div class="input-group" style="max-width: 200px;">
-                                        <input type="number" name="vatRate" id="vatRate"
-                                            class="form-control form-control-sm"
-                                            value="<c:out value='${empty component.vatRate ? 10 : component.vatRate}'/>" required min="0" max="100" />
-                                        <span class="input-group-text">%</span>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            <tr class="d-none">
-                                <th>VAT(계산)</th>
-                                <td colspan="3">
-                                    <div class="input-group" style="max-width: 200px;">
                                         <input type="number" id="vatAmountView" class="form-control form-control-sm"
-                                            readonly />
+                                            value="0" readonly />
                                         <span class="input-group-text">원</span>
                                     </div>
-                                    <small class="text-muted">(정가 × VAT율)</small>
+                                    <input type="hidden" name="vatRate" id="vatRate"
+                                        value="<c:out value='${empty component.vatRate ? 10 : component.vatRate}' default='10'/>" />
+                                    <small class="text-muted">판매가격의 10%</small>
                                 </td>
                             </tr>
 
@@ -329,27 +321,40 @@
                     const vatRateInput = document.getElementById('vatRate');
                     const vatAmountView = document.getElementById('vatAmountView');
                     const costPriceInput = document.getElementById('costPrice');
+                    const totalSaleQtyInput = document.getElementById('totalSaleQty');
 
-                    function syncCostPrice() {
+                    function sanitizeInteger(value) {
+                        const num = Math.max(0, Math.floor(Number(value) || 0));
+                        return Number.isFinite(num) ? num : 0;
+                    }
+
+                    function syncFromSalePrice() {
+                        const salePrice = sanitizeInteger(listPriceInput.value);
+                        listPriceInput.value = salePrice;
+
                         if (costPriceInput) {
-                            costPriceInput.value = listPriceInput.value || 0;
+                            costPriceInput.value = salePrice;
+                        }
+
+                        if (totalSaleQtyInput) {
+                            totalSaleQtyInput.value = salePrice;
                         }
                     }
 
                     function calcVat() {
-                        const listPrice = parseFloat(listPriceInput.value) || 0;
-                        const vatRate = parseFloat(vatRateInput.value) || 0;
+                        const listPrice = sanitizeInteger(listPriceInput.value);
+                        const vatRate = sanitizeInteger(vatRateInput.value || 10);
                         const vat = Math.round(listPrice * (vatRate / 100));
                         vatAmountView.value = vat;
+                        vatRateInput.value = vatRate;
                     }
 
                     listPriceInput.addEventListener('input', function () {
-                        syncCostPrice();
+                        syncFromSalePrice();
                         calcVat();
                     });
-                    vatRateInput.addEventListener('input', calcVat);
 
-                    syncCostPrice();
+                    syncFromSalePrice();
                     calcVat();
                 });
 

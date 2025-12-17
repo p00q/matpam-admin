@@ -136,7 +136,7 @@
             c.LIST_PRICE,
             c.COST_PRICE,
             c.VAT_RATE,
-            CAST(c.LIST_PRICE * c.VAT_RATE / 100 AS DECIMAL(18,2)) AS VAT_AMOUNT,
+            CAST(c.LIST_PRICE * c.VAT_RATE / 100 AS DECIMAL(18,0)) AS VAT_AMOUNT,
 
             c.EXPOSURE_STATUS_CD,
             c.SALE_STATUS_CD,
@@ -225,7 +225,7 @@
             c.LIST_PRICE,
             c.COST_PRICE,
             c.VAT_RATE,
-            CAST(c.LIST_PRICE * c.VAT_RATE / 100 AS DECIMAL(18,2)) AS VAT_AMOUNT,
+            CAST(c.LIST_PRICE * c.VAT_RATE / 100 AS DECIMAL(18,0)) AS VAT_AMOUNT,
 
             c.EXPOSURE_STATUS_CD,
             c.SALE_STATUS_CD,
@@ -320,15 +320,15 @@
             #{unitTypeCd},
 
             #{listPrice},
-            #{costPrice},
-            #{vatRate},
+            COALESCE(#{costPrice}, #{listPrice}, 0),
+            COALESCE(#{vatRate}, 10),
 
             #{exposureStatusCd},
             #{saleStatusCd},
             #{saleStartDt},
             #{saleEndDt},
 
-            #{totalSaleQty},
+            COALESCE(#{totalSaleQty}, #{listPrice}, 0),
             #{useYn},
             'N',
 
@@ -358,15 +358,15 @@
             UNIT_TYPE_CD          = #{unitTypeCd},
 
             LIST_PRICE            = #{listPrice},
-            COST_PRICE            = #{costPrice},
-            VAT_RATE              = #{vatRate},
+            COST_PRICE            = COALESCE(#{costPrice}, #{listPrice}, 0),
+            VAT_RATE              = COALESCE(#{vatRate}, 10),
 
             EXPOSURE_STATUS_CD    = #{exposureStatusCd},
             SALE_STATUS_CD        = #{saleStatusCd},
             SALE_START_DT         = #{saleStartDt},
             SALE_END_DT           = #{saleEndDt},
 
-            TOTAL_SALE_QTY        = #{totalSaleQty},
+            TOTAL_SALE_QTY        = COALESCE(#{totalSaleQty}, #{listPrice}, 0),
             USE_YN                = #{useYn},
 
             MOD_ID                = #{modId},
