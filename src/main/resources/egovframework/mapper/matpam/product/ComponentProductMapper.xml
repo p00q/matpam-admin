@@ -20,6 +20,7 @@
         <result property="storageTypeCd" column="STORAGE_TYPE_CD"/>
         <result property="storageTypeName" column="STORAGE_TYPE_NAME"/>
         <result property="cutTypeCd" column="CUT_TYPE_CD"/>
+        <result property="cutTypeName" column="CUT_TYPE_NAME"/>
         <result property="processTypeCd" column="PROCESS_TYPE_CD"/>
         <result property="processTypeName" column="PROCESS_TYPE_NAME"/>
         <result property="unitTypeCd" column="UNIT_TYPE_CD"/>
@@ -126,6 +127,7 @@
             c.STORAGE_TYPE_CD,
             storage_type.DETAIL_CODE_NAME AS STORAGE_TYPE_NAME,
             c.CUT_TYPE_CD,
+            cut_type.DETAIL_CODE_NAME    AS CUT_TYPE_NAME,
             c.PROCESS_TYPE_CD,
             process_type.DETAIL_CODE_NAME AS PROCESS_TYPE_NAME,
             c.UNIT_TYPE_CD,
@@ -165,6 +167,10 @@
             ON storage_type.CODE_GROUP_ID = 'PRODUCT_TYPE'
             AND storage_type.CODE_ID = 'STORAGE_TYPE'
             AND storage_type.DETAIL_CODE_ID = c.STORAGE_TYPE_CD
+        LEFT JOIN TB_DETAIL_CODE cut_type
+            ON cut_type.CODE_GROUP_ID = 'PRODUCT_TYPE'
+            AND cut_type.CODE_ID = 'CUT_TYPE'
+            AND cut_type.DETAIL_CODE_ID = c.CUT_TYPE_CD
         LEFT JOIN TB_DETAIL_CODE process_type
             ON process_type.CODE_GROUP_ID = 'PRODUCT_TYPE'
             AND process_type.CODE_ID = 'PROCESS_TYPE'
@@ -210,6 +216,7 @@
             c.STORAGE_TYPE_CD,
             storage_type.DETAIL_CODE_NAME AS STORAGE_TYPE_NAME,
             c.CUT_TYPE_CD,
+            cut_type.DETAIL_CODE_NAME    AS CUT_TYPE_NAME,
             c.PROCESS_TYPE_CD,
             process_type.DETAIL_CODE_NAME AS PROCESS_TYPE_NAME,
             c.UNIT_TYPE_CD,
@@ -249,6 +256,10 @@
             ON storage_type.CODE_GROUP_ID = 'PRODUCT_TYPE'
             AND storage_type.CODE_ID = 'STORAGE_TYPE'
             AND storage_type.DETAIL_CODE_ID = c.STORAGE_TYPE_CD
+        LEFT JOIN TB_DETAIL_CODE cut_type
+            ON cut_type.CODE_GROUP_ID = 'PRODUCT_TYPE'
+            AND cut_type.CODE_ID = 'CUT_TYPE'
+            AND cut_type.DETAIL_CODE_ID = c.CUT_TYPE_CD
         LEFT JOIN TB_DETAIL_CODE process_type
             ON process_type.CODE_GROUP_ID = 'PRODUCT_TYPE'
             AND process_type.CODE_ID = 'PROCESS_TYPE'

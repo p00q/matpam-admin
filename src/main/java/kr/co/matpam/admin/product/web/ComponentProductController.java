@@ -1,5 +1,6 @@
 package kr.co.matpam.admin.product.web;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -111,6 +112,7 @@ public class ComponentProductController {
             component.setSaleEndDt(nextYear.getTime());
             component.setExposureStatusCd("Y");
             component.setUseYn("Y");
+            component.setVatRate(BigDecimal.TEN);
 
             model.addAttribute("component", component);
         } else {
@@ -208,6 +210,7 @@ public class ComponentProductController {
         model.addAttribute("saleTypes", codeManagementService.selectDetailCodeList("SALE_STATUS", "SALE_TYPE"));
         model.addAttribute("saleStatuses", codeManagementService.selectDetailCodeList("SALE_STATUS", "SALE_STATUS"));
         model.addAttribute("storageTypes", codeManagementService.selectDetailCodeList("PRODUCT_TYPE", "STORAGE_TYPE"));
+        model.addAttribute("cutTypes", codeManagementService.selectDetailCodeList("PRODUCT_TYPE", "CUT_TYPE"));
         model.addAttribute("processTypes", codeManagementService.selectDetailCodeList("PRODUCT_TYPE", "PROCESS_TYPE"));
         model.addAttribute("unitTypes", codeManagementService.selectDetailCodeList("PRODUCT_TYPE", "UNIT_TYPE"));
 

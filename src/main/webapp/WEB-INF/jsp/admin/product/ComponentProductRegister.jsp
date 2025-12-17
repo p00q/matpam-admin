@@ -31,6 +31,11 @@
                     border-left: 4px solid #2c5f7c;
                     margin-bottom: 1rem;
                 }
+
+                .date-range {
+                    flex-wrap: wrap;
+                    gap: 6px;
+                }
             </style>
 
             <div class="container-fluid p-4">
@@ -75,9 +80,9 @@
                             <col style="width: 38%;">
                         </colgroup>
                         <tbody>
-                            <!-- Row 1: 컴포넌트코드 / 상품명 -->
+                            <!-- Row 1: 구성상품 코드 / 상품명 -->
                             <tr>
-                                <th>컴포넌트코드 <span class="text-danger">*</span></th>
+                                <th>구성상품 코드 <span class="text-danger">*</span></th>
                                 <td>
                                     <input type="text" name="componentProdCode" class="form-control form-control-sm"
                                         value="<c:out value='${component.componentProdCode}'/>" required
@@ -197,44 +202,35 @@
                                 </td>
                             </tr>
 
-                            <!-- Row 5: 가격(정가/원가) / VAT율 -->
+                            <!-- Row 5: 판매가격 / VAT율 -->
                             <tr>
-                                <th>정가 <span class="text-danger">*</span></th>
+                                <th>판매가격 <span class="text-danger">*</span></th>
                                 <td>
                                     <div class="input-group" style="max-width: 200px;">
                                         <input type="number" name="listPrice" id="listPrice"
                                             class="form-control form-control-sm"
-                                            value="<c:out value='${component.listPrice}'/>" required min="0" />
+                                            value="<c:out value='${component.listPrice}' default='0'/>" required min="0" />
                                         <span class="input-group-text">원</span>
                                     </div>
+                                    <input type="hidden" name="costPrice" id="costPrice"
+                                        value="<c:out value='${empty component.listPrice ? component.costPrice : component.listPrice}' default='0'/>" />
                                 </td>
 
-                                <th>원가 <span class="text-danger">*</span></th>
-                                <td>
-                                    <div class="input-group" style="max-width: 200px;">
-                                        <input type="number" name="costPrice" id="costPrice"
-                                            class="form-control form-control-sm"
-                                            value="<c:out value='${component.costPrice}'/>" required min="0" />
-                                        <span class="input-group-text">원</span>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            <tr>
                                 <th>VAT율(%) <span class="text-danger">*</span></th>
                                 <td>
                                     <div class="input-group" style="max-width: 200px;">
                                         <input type="number" name="vatRate" id="vatRate"
                                             class="form-control form-control-sm"
-                                            value="<c:out value='${component.vatRate}'/>" required min="0" max="100" />
+                                            value="<c:out value='${empty component.vatRate ? 10 : component.vatRate}'/>" required min="0" max="100" />
                                         <span class="input-group-text">%</span>
                                     </div>
                                 </td>
+                            </tr>
 
+                            <tr class="d-none">
                                 <th>VAT(계산)</th>
-                                <td>
+                                <td colspan="3">
                                     <div class="input-group" style="max-width: 200px;">
-                                        <!-- 화면 표시용 계산값(저장X) -->
                                         <input type="number" id="vatAmountView" class="form-control form-control-sm"
                                             readonly />
                                         <span class="input-group-text">원</span>
@@ -278,7 +274,7 @@
                             <tr>
                                 <th>판매 기간</th>
                                 <td colspan="3">
-                                    <div class="d-flex align-items-center gap-2">
+                                    <div class="d-flex align-items-center date-range">
                                         <!-- 기존 saleStartDate/saleEndDate -> saleStartDt/saleEndDt -->
                                         <input type="date" name="saleStartDt" class="form-control form-control-sm"
                                             value="<fmt:formatDate value='${component.saleStartDt}' pattern='yyyy-MM-dd'/>"
@@ -332,6 +328,13 @@
                     const listPriceInput = document.getElementById('listPrice');
                     const vatRateInput = document.getElementById('vatRate');
                     const vatAmountView = document.getElementById('vatAmountView');
+                    const costPriceInput = document.getElementById('costPrice');
+
+                    function syncCostPrice() {
+                        if (costPriceInput) {
+                            costPriceInput.value = listPriceInput.value || 0;
+                        }
+                    }
 
                     function calcVat() {
                         const listPrice = parseFloat(listPriceInput.value) || 0;
@@ -340,9 +343,13 @@
                         vatAmountView.value = vat;
                     }
 
-                    listPriceInput.addEventListener('input', calcVat);
+                    listPriceInput.addEventListener('input', function () {
+                        syncCostPrice();
+                        calcVat();
+                    });
                     vatRateInput.addEventListener('input', calcVat);
 
+                    syncCostPrice();
                     calcVat();
                 });
 

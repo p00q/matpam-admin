@@ -27,6 +27,11 @@
                         vertical-align: middle;
                     }
 
+                    .date-range {
+                        flex-wrap: wrap;
+                        gap: 6px;
+                    }
+
                     .preview-wrapper {
                         border: 1px dashed #cbd5e1;
                         border-radius: 8px;
@@ -162,7 +167,7 @@
                                     <td>
                                         <div class="input-group input-group-sm"><input type="number" name="vatRate"
                                                 id="vatRate" class="form-control"
-                                                value="<c:out value='${salesProduct.vatRate}' default='0'/>" /><span
+                                                value="<c:out value='${empty salesProduct.vatRate ? 10 : salesProduct.vatRate}' default='10'/>" /><span
                                                 class="input-group-text">%</span></div>
                                     </td>
                                     <th>노출여부</th>
@@ -177,7 +182,7 @@
                                 <tr>
                                     <th>판매기간</th>
                                     <td>
-                                        <div class="d-flex align-items-center gap-2">
+                                        <div class="d-flex align-items-center date-range">
                                             <input type="date" name="saleStartDt" id="saleStartDt"
                                                 class="form-control form-control-sm"
                                                 value="<fmt:formatDate value='${salesProduct.saleStartDt}' pattern='yyyy-MM-dd'/>" />
