@@ -187,7 +187,6 @@
                             <thead class="table-light">
                                 <tr>
                                     <th scope="col">순번</th>
-                                    <th scope="col">구성상품 ID</th>
                                     <th scope="col">구성상품 코드</th>
                                     <th scope="col">상품명</th>
                                     <th scope="col">판매자명</th>
@@ -196,7 +195,7 @@
                                     <th scope="col">처리구분</th>
                                     <th scope="col">단위유형</th>
                                     <th scope="col">판매가격</th>
-                                    <th scope="col">부가세</th>
+                                    <th scope="col">VAT</th>
                                     <th scope="col">판매기간</th>
                                     <th scope="col">등록일</th>
                                     <th scope="col">수정일</th>
@@ -206,8 +205,6 @@
                                 <c:forEach var="item" items="${componentList}" varStatus="status">
                                     <tr>
                                         <td>${status.index + 1}</td>
-
-                                        <td>${item.componentProdId}</td>
 
                                         <td class="text-start">
                                             <c:url var="viewUrl" value="/admin/product/componentProductForm.do">
@@ -252,7 +249,7 @@
 
                                 <c:if test="${empty componentList}">
                                     <tr>
-                                        <td colspan="14" class="py-4 text-center text-muted">
+                                        <td colspan="13" class="py-4 text-center text-muted">
                                             검색된 결과가 없습니다.
                                         </td>
                                     </tr>

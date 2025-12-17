@@ -166,13 +166,15 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th>부가세</th>
+                                    <th>VAT</th>
                                     <td>
-                                        <div class="input-group input-group-sm"><input type="number" id="vatAmount"
-                                                class="form-control" value="0" readonly /><span class="input-group-text">원</span></div>
+                                        <div class="d-flex align-items-center flex-wrap gap-2">
+                                            <div class="input-group input-group-sm"><input type="number" id="vatAmount"
+                                                    class="form-control" value="0" readonly /><span class="input-group-text">원</span></div>
+                                            <span class="text-muted small">판매가격의 10%</span>
+                                        </div>
                                         <input type="hidden" name="vatRate" id="vatRate"
                                             value="<c:out value='${empty salesProduct.vatRate ? 10 : salesProduct.vatRate}' default='10'/>" />
-                                        <small class="text-muted">판매가격의 10%</small>
                                     </td>
                                     <th>노출여부</th>
                                     <td>
@@ -186,14 +188,19 @@
                                 <tr>
                                     <th>판매기간</th>
                                     <td>
-                                        <div class="d-flex align-items-center date-range">
-                                            <input type="date" name="saleStartDt" id="saleStartDt"
-                                                class="form-control form-control-sm"
-                                                value="<fmt:formatDate value='${salesProduct.saleStartDt}' pattern='yyyy-MM-dd'/>" />
-                                            <span>~</span>
-                                            <input type="date" name="saleEndDt" id="saleEndDt"
-                                                class="form-control form-control-sm"
-                                                value="<fmt:formatDate value='${salesProduct.saleEndDt}' pattern='yyyy-MM-dd'/>" />
+                                        <div class="d-flex flex-column gap-2">
+                                            <div class="d-flex flex-column gap-1">
+                                                <label class="text-muted small mb-0">시작일</label>
+                                                <input type="date" name="saleStartDt" id="saleStartDt"
+                                                    class="form-control form-control-sm"
+                                                    value="<fmt:formatDate value='${salesProduct.saleStartDt}' pattern='yyyy-MM-dd'/>" />
+                                            </div>
+                                            <div class="d-flex flex-column gap-1">
+                                                <label class="text-muted small mb-0">종료일</label>
+                                                <input type="date" name="saleEndDt" id="saleEndDt"
+                                                    class="form-control form-control-sm"
+                                                    value="<fmt:formatDate value='${salesProduct.saleEndDt}' pattern='yyyy-MM-dd'/>" />
+                                            </div>
                                         </div>
                                     </td>
                                     <th>조회수</th>
@@ -246,7 +253,7 @@
                                     <th>판매상태</th>
                                     <th>판매가</th>
                                     <th>원가</th>
-                                    <th>부가세</th>
+                                    <th>VAT</th>
                                     <th>보관구분</th>
                                     <th>가공구분</th>
                                     <th>구분</th>
@@ -390,6 +397,7 @@
                         initUnloadCleanup();
 
                         syncManualPrice();
+                        defaultSalePeriodIfEmpty();
 
                         // 구성상품 로딩 (수정 모드일 때만)
                         loadExistingCompositions();
@@ -557,6 +565,23 @@
                     function sanitizeInteger(value) {
                         const num = Math.max(0, Math.floor(Number(value) || 0));
                         return Number.isFinite(num) ? num : 0;
+                    }
+
+                    function defaultSalePeriodIfEmpty() {
+                        const saleStartInput = document.getElementById('saleStartDt');
+                        const saleEndInput = document.getElementById('saleEndDt');
+                        const today = new Date();
+                        const format = (d) => d.toISOString().slice(0, 10);
+
+                        if (saleStartInput && !saleStartInput.value) {
+                            saleStartInput.value = format(today);
+                        }
+
+                        if (saleEndInput && !saleEndInput.value) {
+                            const nextYear = new Date(today);
+                            nextYear.setFullYear(today.getFullYear() + 1);
+                            saleEndInput.value = format(nextYear);
+                        }
                     }
 
                     function syncManualPrice() {

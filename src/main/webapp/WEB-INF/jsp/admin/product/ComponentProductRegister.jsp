@@ -32,10 +32,6 @@
                     margin-bottom: 1rem;
                 }
 
-                .date-range {
-                    flex-wrap: wrap;
-                    gap: 6px;
-                }
             </style>
 
             <div class="container-fluid p-4">
@@ -202,7 +198,7 @@
                                 </td>
                             </tr>
 
-                            <!-- Row 5: 판매가격 / 부가세 -->
+                            <!-- Row 5: 판매가격 / VAT -->
                             <tr>
                                 <th>판매가격 <span class="text-danger">*</span></th>
                                 <td>
@@ -218,16 +214,18 @@
                                         value="<c:out value='${empty component.totalSaleQty ? component.listPrice : component.totalSaleQty}' default='0'/>" />
                                 </td>
 
-                                <th>부가세 <span class="text-danger">*</span></th>
+                                <th>VAT <span class="text-danger">*</span></th>
                                 <td>
-                                    <div class="input-group" style="max-width: 200px;">
-                                        <input type="number" id="vatAmountView" class="form-control form-control-sm"
-                                            value="0" readonly />
-                                        <span class="input-group-text">원</span>
+                                    <div class="d-flex align-items-center flex-wrap gap-2">
+                                        <div class="input-group" style="max-width: 200px;">
+                                            <input type="number" id="vatAmountView" class="form-control form-control-sm"
+                                                value="0" readonly />
+                                            <span class="input-group-text">원</span>
+                                        </div>
+                                        <span class="text-muted small">판매가격의 10%</span>
                                     </div>
                                     <input type="hidden" name="vatRate" id="vatRate"
                                         value="<c:out value='${empty component.vatRate ? 10 : component.vatRate}' default='10'/>" />
-                                    <small class="text-muted">판매가격의 10%</small>
                                 </td>
                             </tr>
 
@@ -266,15 +264,19 @@
                             <tr>
                                 <th>판매 기간</th>
                                 <td colspan="3">
-                                    <div class="d-flex align-items-center date-range">
-                                        <!-- 기존 saleStartDate/saleEndDate -> saleStartDt/saleEndDt -->
-                                        <input type="date" name="saleStartDt" class="form-control form-control-sm"
-                                            value="<fmt:formatDate value='${component.saleStartDt}' pattern='yyyy-MM-dd'/>"
-                                            style="max-width: 150px;" />
-                                        <span>~</span>
-                                        <input type="date" name="saleEndDt" class="form-control form-control-sm"
-                                            value="<fmt:formatDate value='${component.saleEndDt}' pattern='yyyy-MM-dd'/>"
-                                            style="max-width: 150px;" />
+                                    <div class="d-flex flex-column gap-2">
+                                        <div class="d-flex flex-column gap-1">
+                                            <label class="text-muted small mb-0">시작일</label>
+                                            <input type="date" name="saleStartDt" class="form-control form-control-sm"
+                                                value="<fmt:formatDate value='${component.saleStartDt}' pattern='yyyy-MM-dd'/>"
+                                                style="max-width: 220px;" />
+                                        </div>
+                                        <div class="d-flex flex-column gap-1">
+                                            <label class="text-muted small mb-0">종료일</label>
+                                            <input type="date" name="saleEndDt" class="form-control form-control-sm"
+                                                value="<fmt:formatDate value='${component.saleEndDt}' pattern='yyyy-MM-dd'/>"
+                                                style="max-width: 220px;" />
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -283,13 +285,16 @@
                             <tr>
                                 <th>사용여부</th>
                                 <td colspan="3">
-                                    <select name="useYn" class="form-select form-select-sm" style="max-width: 200px;">
-                                        <option value="Y" <c:if
-                                            test="${empty component.useYn or component.useYn eq 'Y'}">selected</c:if>>사용
-                                        </option>
-                                        <option value="N" <c:if test="${component.useYn eq 'N'}">selected</c:if>>미사용
-                                        </option>
-                                    </select>
+                                    <div class="d-flex flex-column gap-1" style="max-width: 220px;">
+                                        <select name="useYn" class="form-select form-select-sm">
+                                            <option value="Y" <c:if
+                                                test="${empty component.useYn or component.useYn eq 'Y'}">selected</c:if>>사용
+                                            </option>
+                                            <option value="N" <c:if test="${component.useYn eq 'N'}">selected</c:if>>미사용
+                                            </option>
+                                        </select>
+                                        <small class="text-muted">사용여부를 선택해주세요.</small>
+                                    </div>
                                 </td>
                             </tr>
 
@@ -322,6 +327,8 @@
                     const vatAmountView = document.getElementById('vatAmountView');
                     const costPriceInput = document.getElementById('costPrice');
                     const totalSaleQtyInput = document.getElementById('totalSaleQty');
+                    const saleStartInput = document.querySelector('input[name="saleStartDt"]');
+                    const saleEndInput = document.querySelector('input[name="saleEndDt"]');
 
                     function sanitizeInteger(value) {
                         const num = Math.max(0, Math.floor(Number(value) || 0));
@@ -349,6 +356,21 @@
                         vatRateInput.value = vatRate;
                     }
 
+                    function defaultSalePeriodIfEmpty() {
+                        const today = new Date();
+                        const toDateInputValue = (dateObj) => dateObj.toISOString().slice(0, 10);
+
+                        if (saleStartInput && !saleStartInput.value) {
+                            saleStartInput.value = toDateInputValue(today);
+                        }
+
+                        if (saleEndInput && !saleEndInput.value) {
+                            const nextYear = new Date(today);
+                            nextYear.setFullYear(today.getFullYear() + 1);
+                            saleEndInput.value = toDateInputValue(nextYear);
+                        }
+                    }
+
                     listPriceInput.addEventListener('input', function () {
                         syncFromSalePrice();
                         calcVat();
@@ -356,6 +378,7 @@
 
                     syncFromSalePrice();
                     calcVat();
+                    defaultSalePeriodIfEmpty();
                 });
 
                 document.querySelector('form[name="componentForm"]').addEventListener('submit', function (e) {

@@ -169,7 +169,7 @@
                     <th>처리유형</th>
                     <th>단위유형</th>
                     <th>판매가격</th>
-                    <th style="width: 100px;">부가세</th>
+                    <th style="width: 100px;">VAT</th>
                     <th>판매상태</th>
                     <th>노출상태</th>
                 </tr>
