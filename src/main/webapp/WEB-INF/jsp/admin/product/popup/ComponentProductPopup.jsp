@@ -56,7 +56,7 @@
         </div>
         <div class="card-body">
             <form name="searchForm" id="searchForm" method="post"
-                  action="<c:url value='/admin/product/popup/bundleList.do'/>">
+                  action="<c:url value='/admin/product/popup/componentList.do'/>">
 
                 <input type="hidden" name="pageIndex" value="<c:out value='${searchVO.pageIndex}' default='1'/>"/>
 
@@ -79,7 +79,8 @@
                             <select name="sellerMemberId" class="form-select form-select-sm">
                                 <option value="">전체</option>
                                 <c:forEach var="seller" items="${sellers}">
-                                    <option value="${seller.memberId}" <c:if test="${searchVO.sellerMemberId eq seller.memberId}">selected</c:if>>
+                                    <c:set var="sellerKey" value="${not empty seller.memberNo ? seller.memberNo : seller.memberId}" />
+                                    <option value="${sellerKey}" <c:if test="${searchVO.sellerMemberId eq sellerKey}">selected</c:if>>
                                         ${seller.companyName}
                                     </option>
                                 </c:forEach>
@@ -146,7 +147,7 @@
                 <div class="text-center">
                     <button type="submit" class="btn btn-secondary px-4">검색</button>
                     <button type="button" class="btn btn-secondary px-4"
-                            onclick="location.href='<c:url value='/admin/product/popup/bundleList.do'/>'">초기화</button>
+                            onclick="location.href='<c:url value='/admin/product/popup/componentList.do'/>'">초기화</button>
                 </div>
             </form>
         </div>
@@ -286,10 +287,10 @@
 
             if (data && window.opener && !window.opener.closed) {
                 // 부모창에서 받는 함수명(기존 흐름 유지)
-                if (typeof window.opener.addBundleRow === 'function') {
-                    window.opener.addBundleRow(data);
+                if (typeof window.opener.addComponentRow === 'function') {
+                    window.opener.addComponentRow(data);
                 } else {
-                    console.error('부모창에 addBundleRow 함수가 없습니다.');
+                    console.error('부모창에 addComponentRow 함수가 없습니다.');
                 }
             }
         });
