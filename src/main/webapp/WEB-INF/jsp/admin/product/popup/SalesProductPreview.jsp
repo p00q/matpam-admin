@@ -134,7 +134,7 @@
                         <h4>상품 상세 설명</h4>
                     </div>
                     <div class="detail-content">
-                        ${salesProduct.description}
+                        <c:out value='${salesProduct.detailHtml}' escapeXml="false" />
                     </div>
 
                     <div class="text-center mt-5">

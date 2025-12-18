@@ -130,8 +130,6 @@
                         enctype="multipart/form-data">
                         <input type="hidden" name="salesProdId" value="<c:out value='${salesProduct.salesProdId}'/>" />
                         <input type="hidden" name="salesProdCode" value="<c:out value='${salesProduct.salesProdCode}'/>" />
-                        <input type="hidden" name="exposureStatusCd" id="exposureStatusCdValue"
-                            value="<c:out value='${salesProduct.exposureStatusCd}' default='Y'/>" />
 
                         <c:if test="${not empty compositionJson}">
                             <script type="application/json"
@@ -223,7 +221,7 @@
                                     </td>
                                     <th>조회수</th>
                                     <td>
-                                        <input type="text" class="form-control form-control-sm" style="max-width: 160px;"
+                                        <input type="text" class="form-control form-control-sm" style="max-width: 220px;"
                                             value="<c:out value='${empty salesProduct.viewCnt ? 0 : salesProduct.viewCnt}' default='0'/>"
                                             readonly />
                                     </td>
@@ -231,12 +229,13 @@
                                 <tr>
                                     <th>노출여부</th>
                                     <td>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="exposureStatusCdCheckbox"
-                                                <c:if test="${salesProduct.exposureStatusCd ne 'N'}">checked</c:if>
-                                                onclick="fn_toggleExposureStatus(this)">
-                                            <label class="form-check-label" for="exposureStatusCdCheckbox">노출</label>
-                                        </div>
+                                        <select name="exposureStatusCd" id="exposureStatusCd"
+                                            class="form-select form-select-sm" style="max-width: 220px;">
+                                            <option value="Y"
+                                                <c:if test="${empty salesProduct.exposureStatusCd or salesProduct.exposureStatusCd eq 'Y'}">selected</c:if>>노출</option>
+                                            <option value="N"
+                                                <c:if test="${salesProduct.exposureStatusCd eq 'N'}">selected</c:if>>비노출</option>
+                                        </select>
                                     </td>
                                     <th>사용여부</th>
                                     <td>
@@ -521,15 +520,6 @@
                     }
 
                     // 노출 여부 토글 함수 (HTML에서 호출됨)
-                    function fn_toggleExposureStatus(checkbox) {
-                        const hiddenInput = document.getElementById('exposureStatusCdValue');
-                        if (checkbox.checked) {
-                            hiddenInput.value = 'Y';
-                        } else {
-                            hiddenInput.value = 'N';
-                        }
-                    }
-
                     // ===== 구성상품 / 판매기간 계산 =====
                     function calculateSalePeriod(components) {
                         if (!components || components.length === 0) {
@@ -718,8 +708,7 @@
                         const saleStartDateInput = document.getElementById('saleStartDt');
                         const saleEndDateInput = document.getElementById('saleEndDt');
                         const sellerSelect = document.getElementById('sellerMemberId');
-                        const exposureStatusCdCheckbox = document.getElementById('exposureStatusCdCheckbox');
-                        const exposureStatusCdHidden = document.getElementById('exposureStatusCdValue');
+                        const exposureStatusSelect = document.getElementById('exposureStatusCd');
 
                         if (componentProductList.length > 0) {
                             let totalSale = 0, totalVat = 0;
@@ -766,12 +755,9 @@
                             saleStartDateInput.readOnly = hasCalculatedPeriod;
                             saleEndDateInput.readOnly = hasCalculatedPeriod;
 
-                            if (forceHidden) {
-                                if (exposureStatusCdCheckbox.checked) {
-                                    exposureStatusCdCheckbox.checked = false;
-                                    exposureStatusCdHidden.value = 'N';
-                                    alert("구성상품 중 판매 중지(비노출)되거나 판매 기간이 아닌 상품이 포함되어 있어\n전체 상품이 '비노출' 로 설정됩니다.");
-                                }
+                            if (forceHidden && exposureStatusSelect && exposureStatusSelect.value !== 'N') {
+                                exposureStatusSelect.value = 'N';
+                                alert("구성상품 중 판매 중지(비노출)되거나 판매 기간이 아닌 상품이 포함되어 있어\n전체 상품이 '비노출' 로 설정됩니다.");
                             }
                         } else {
                             salePriceInput.readOnly = false;
