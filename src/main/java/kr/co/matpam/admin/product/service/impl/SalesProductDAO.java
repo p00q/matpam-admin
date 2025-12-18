@@ -42,7 +42,7 @@ public class SalesProductDAO extends EgovAbstractMapper {
         return insert(NAMESPACE + ".insertSalesProduct", vo);
     }
 
-    /** 판매상품 상세 upsert */
+    /** 판매상품 상세(설명/정책) UPSERT */
     public int upsertSalesProductDetail(SalesProductVO vo) {
         return insert(NAMESPACE + ".upsertSalesProductDetail", vo);
     }

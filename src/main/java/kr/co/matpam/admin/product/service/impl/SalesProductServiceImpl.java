@@ -63,10 +63,10 @@ public class SalesProductServiceImpl extends EgovAbstractServiceImpl implements 
         // 1) 판매상품 마스터 저장 (useGeneratedKeys로 PK 세팅된다는 전제)
         salesProductDAO.insertSalesProduct(vo);
 
-        // 1-1) 상세 설명/정책 upsert (분리 테이블)
+        // 2) 상세/정책 저장 (분리 테이블)
         salesProductDAO.upsertSalesProductDetail(vo);
 
-        // 2) 구성 저장
+        // 3) 구성 저장
         saveComposition(vo.getSalesProdId(), vo.getCompositionList(), vo.getRegId(), vo.getModId());
     }
 
@@ -85,13 +85,17 @@ public class SalesProductServiceImpl extends EgovAbstractServiceImpl implements 
             vo.setModId("SYSTEM");
         }
 
+        if (vo.getRegId() == null || vo.getRegId().trim().isEmpty()) {
+            vo.setRegId("SYSTEM");
+        }
+
         // 1) 판매상품 마스터 수정
         salesProductDAO.updateSalesProduct(vo);
 
-        // 1-1) 상세 설명/정책 upsert (분리 테이블)
+        // 2) 상세/정책 저장 (upsert)
         salesProductDAO.upsertSalesProductDetail(vo);
 
-        // 2) 구성 저장(전량 교체 + upsert)
+        // 3) 구성 저장(전량 교체 + upsert)
         saveComposition(vo.getSalesProdId(), vo.getCompositionList(), vo.getRegId(), vo.getModId());
     }
 

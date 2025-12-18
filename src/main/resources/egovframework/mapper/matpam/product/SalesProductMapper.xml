@@ -161,11 +161,11 @@
             sp.SELLER_MEMBER_ID,
             m.COMPANY_NAME AS SELLER_NAME,
 
-            sp.DETAIL_HTML,
-            sp.PAYMENT_INFO,
-            sp.DELIVERY_INFO,
-            sp.RETURN_INFO,
-            sp.REFUND_INFO,
+            spd.DETAIL_HTML,
+            spd.PAYMENT_INFO,
+            spd.DELIVERY_INFO,
+            spd.RETURN_INFO,
+            spd.REFUND_INFO,
 
             sp.LIST_PRICE,
             CAST(sp.COST_PRICE AS DECIMAL(18,0)) AS COST_PRICE,
@@ -181,11 +181,6 @@
             sp.SUMMARY,
             sp.MD_COMMENT,
 
-            sp.DETAIL_HTML,
-            sp.PAYMENT_INFO,
-            sp.DELIVERY_INFO,
-            sp.RETURN_INFO,
-            sp.REFUND_INFO,
 
             sp.USE_YN,
             sp.DEL_YN,
@@ -321,7 +316,7 @@
     </update>
 
     <!-- =========================================================
-         판매상품 상세 설명 upsert (TB_SALES_PRODUCT_DETAIL)
+         판매상품 상세(설명/정책) 저장 (UPSERT)
          ========================================================= -->
     <insert id="upsertSalesProductDetail"
             parameterType="kr.co.matpam.admin.product.service.SalesProductVO">
@@ -335,6 +330,7 @@
 
             USE_YN,
             DEL_YN,
+
             REG_ID,
             REG_DT,
             MOD_ID,
@@ -347,11 +343,12 @@
             #{returnInfo},
             #{refundInfo},
 
-            COALESCE(NULLIF(#{useYn}, ''), 'Y'),
+            COALESCE(#{useYn}, 'Y'),
             'N',
-            COALESCE(NULLIF(#{regId}, ''), 'SYSTEM'),
+
+            COALESCE(#{regId}, 'SYSTEM'),
             NOW(),
-            COALESCE(NULLIF(#{modId}, ''), COALESCE(NULLIF(#{regId}, ''), 'SYSTEM')),
+            COALESCE(#{modId}, COALESCE(#{regId}, 'SYSTEM')),
             NOW()
         )
         ON DUPLICATE KEY UPDATE
@@ -360,10 +357,10 @@
             DELIVERY_INFO = VALUES(DELIVERY_INFO),
             RETURN_INFO   = VALUES(RETURN_INFO),
             REFUND_INFO   = VALUES(REFUND_INFO),
-            USE_YN        = COALESCE(NULLIF(VALUES(USE_YN), ''), 'Y'),
-            DEL_YN        = 'N',
-            MOD_ID        = VALUES(MOD_ID),
-            MOD_DT        = NOW()
+
+            USE_YN = VALUES(USE_YN),
+            MOD_ID = VALUES(MOD_ID),
+            MOD_DT = NOW()
     </insert>
 
     <!-- =========================================================
