@@ -31,6 +31,12 @@
         <result property="summary"           column="SUMMARY"/>
         <result property="mdComment"         column="MD_COMMENT"/>
 
+        <result property="detailHtml"        column="DETAIL_HTML"/>
+        <result property="paymentInfo"       column="PAYMENT_INFO"/>
+        <result property="deliveryInfo"      column="DELIVERY_INFO"/>
+        <result property="returnInfo"        column="RETURN_INFO"/>
+        <result property="refundInfo"        column="REFUND_INFO"/>
+
         <result property="useYn"             column="USE_YN"/>
         <result property="delYn"             column="DEL_YN"/>
 
@@ -94,7 +100,7 @@
             m.COMPANY_NAME AS SELLER_NAME,
 
             sp.LIST_PRICE,
-            sp.COST_PRICE,
+            CAST(sp.COST_PRICE AS DECIMAL(18,0)) AS COST_PRICE,
             sp.VAT_RATE,
             CAST(sp.LIST_PRICE * sp.VAT_RATE / 100 AS DECIMAL(18,2)) AS VAT_AMOUNT,
 
@@ -149,8 +155,14 @@
             sp.SELLER_MEMBER_ID,
             m.COMPANY_NAME AS SELLER_NAME,
 
+            sp.DETAIL_HTML,
+            sp.PAYMENT_INFO,
+            sp.DELIVERY_INFO,
+            sp.RETURN_INFO,
+            sp.REFUND_INFO,
+
             sp.LIST_PRICE,
-            sp.COST_PRICE,
+            CAST(sp.COST_PRICE AS DECIMAL(18,0)) AS COST_PRICE,
             sp.VAT_RATE,
             CAST(sp.LIST_PRICE * sp.VAT_RATE / 100 AS DECIMAL(18,2)) AS VAT_AMOUNT,
 
@@ -203,6 +215,12 @@
             SUMMARY,
             MD_COMMENT,
 
+            DETAIL_HTML,
+            PAYMENT_INFO,
+            DELIVERY_INFO,
+            RETURN_INFO,
+            REFUND_INFO,
+
             USE_YN,
             DEL_YN,
 
@@ -226,14 +244,20 @@
             #{costPrice},
             #{vatRate},
 
-            #{exposureStatusCd},
-            #{saleStatusCd},
+            COALESCE(#{exposureStatusCd}, 'Y'),
+            COALESCE(#{saleStatusCd}, 'LIVE'),
             #{saleStartDt},
             #{saleEndDt},
 
             0,
             #{summary},
             #{mdComment},
+
+            #{detailHtml},
+            #{paymentInfo},
+            #{deliveryInfo},
+            #{returnInfo},
+            #{refundInfo},
 
             #{useYn},
             'N',
@@ -259,13 +283,19 @@
             COST_PRICE           = #{costPrice},
             VAT_RATE             = #{vatRate},
 
-            EXPOSURE_STATUS_CD   = #{exposureStatusCd},
-            SALE_STATUS_CD       = #{saleStatusCd},
+            EXPOSURE_STATUS_CD   = COALESCE(#{exposureStatusCd}, 'Y'),
+            SALE_STATUS_CD       = COALESCE(#{saleStatusCd}, 'LIVE'),
             SALE_START_DT        = #{saleStartDt},
             SALE_END_DT          = #{saleEndDt},
 
             SUMMARY              = #{summary},
             MD_COMMENT           = #{mdComment},
+
+            DETAIL_HTML          = #{detailHtml},
+            PAYMENT_INFO         = #{paymentInfo},
+            DELIVERY_INFO        = #{deliveryInfo},
+            RETURN_INFO          = #{returnInfo},
+            REFUND_INFO          = #{refundInfo},
 
             USE_YN               = #{useYn},
 
@@ -284,6 +314,17 @@
             DEL_YN = 'Y',
             MOD_DT = NOW()
         WHERE SALES_PROD_ID = #{value}
+    </update>
+
+    <!-- =========================================================
+         조회수 증가
+         ========================================================= -->
+    <update id="increaseViewCount" parameterType="long">
+        UPDATE TB_SALES_PRODUCT
+        SET VIEW_CNT = COALESCE(VIEW_CNT, 0) + 1,
+            MOD_DT = NOW()
+        WHERE SALES_PROD_ID = #{value}
+          AND DEL_YN = 'N'
     </update>
 
 </mapper>

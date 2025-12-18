@@ -32,6 +32,10 @@ public class SalesProductDAO extends EgovAbstractMapper {
         return selectOne(NAMESPACE + ".selectSalesProduct", salesProdId);
     }
 
+    public void increaseViewCount(Long salesProdId) {
+        update(NAMESPACE + ".increaseViewCount", salesProdId);
+    }
+
     /** 판매상품 등록 */
     public int insertSalesProduct(SalesProductVO vo) {
         // useGeneratedKeys="true" keyProperty="salesProdId" 이므로 vo.salesProdId에 PK 세팅됨
