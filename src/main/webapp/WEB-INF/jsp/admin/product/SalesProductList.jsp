@@ -171,7 +171,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <c:forEach var="item" items="${resultList}" varStatus="status">
+                                <c:forEach var="item" items="${salesProductList}" varStatus="status">
                                     <tr>
                                         <td>
                                             <c:out value="${item.salesProdCode}" />
@@ -185,7 +185,9 @@
                                         <td class="text-end">
                                             <fmt:formatNumber value="${item.listPrice}" type="number" />원
                                         </td>
-                                        <td>0</td>
+                                        <td class="text-end">
+                                            <fmt:formatNumber value="${item.viewCnt == null ? 0 : item.viewCnt}" type="number" />
+                                        </td>
                                         <td>0</td>
                                         <td>
                                             <fmt:formatDate value="${item.regDt}" pattern="yyyy-MM-dd" />
@@ -218,7 +220,7 @@
                                     </tr>
                                 </c:forEach>
 
-                                <c:if test="${empty resultList}">
+                                <c:if test="${empty salesProductList}">
                                     <tr>
                                         <td colspan="8" class="py-4 text-center text-muted">
                                             검색된 결과가 없습니다.

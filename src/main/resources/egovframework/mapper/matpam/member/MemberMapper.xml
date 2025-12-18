@@ -3,10 +3,12 @@
 <mapper namespace="matpam.member.MemberMapper">
 
     <resultMap id="memberResultMap" type="kr.co.matpam.admin.member.service.MemberVO">
-        <id property="memberNo" column="MEMBER_NO" />
+        <id property="memberPk" column="MEMBER_ID" />
+        <result property="memberNo" column="MEMBER_ID" />
         <result property="memberType" column="MEMBER_TYPE" />
         <result property="memberTypeName" column="MEMBER_TYPE_NAME" />
-        <result property="memberId" column="MEMBER_ID" />
+        <result property="memberId" column="LOGIN_ID" />
+        <result property="loginId" column="LOGIN_ID" />
         <result property="companyName" column="COMPANY_NAME" />
         <result property="businessNumber" column="BIZ_REG_NO" />
         <result property="ceoName" column="CEO_NAME" />
@@ -81,10 +83,11 @@
     <select id="selectMemberList" resultMap="memberResultMap"
             parameterType="kr.co.matpam.admin.member.service.MemberDefaultVO">
         SELECT
-            m.MEMBER_ID        AS MEMBER_NO,
+            m.MEMBER_ID        AS MEMBER_ID,
+            m.MEMBER_ID        AS MEMBER_ID,
             m.MEMBER_TYPE_CD   AS MEMBER_TYPE,
             mt.DETAIL_CODE_NAME AS MEMBER_TYPE_NAME,
-            m.LOGIN_ID         AS MEMBER_ID,
+            m.LOGIN_ID         AS LOGIN_ID,
             m.COMPANY_NAME,
             m.BIZ_REG_NO,
             m.CEO_NAME,
@@ -151,10 +154,11 @@
     <!-- 단건 조회 (PK) -->
     <select id="selectMember" resultMap="memberResultMap" parameterType="long">
         SELECT
-            m.MEMBER_ID        AS MEMBER_NO,
+            m.MEMBER_ID        AS MEMBER_ID,
+            m.MEMBER_ID        AS MEMBER_ID,
             m.MEMBER_TYPE_CD   AS MEMBER_TYPE,
             mt.DETAIL_CODE_NAME AS MEMBER_TYPE_NAME,
-            m.LOGIN_ID         AS MEMBER_ID,
+            m.LOGIN_ID         AS LOGIN_ID,
             m.COMPANY_NAME,
             m.BIZ_REG_NO,
             m.CEO_NAME,
@@ -207,10 +211,11 @@
     <!-- 단건 조회 (LOGIN_ID) -->
     <select id="selectMemberById" resultMap="memberResultMap" parameterType="string">
         SELECT
-            m.MEMBER_ID        AS MEMBER_NO,
+            m.MEMBER_ID        AS MEMBER_ID,
+            m.MEMBER_ID        AS MEMBER_ID,
             m.MEMBER_TYPE_CD   AS MEMBER_TYPE,
             mt.DETAIL_CODE_NAME AS MEMBER_TYPE_NAME,
-            m.LOGIN_ID         AS MEMBER_ID,
+            m.LOGIN_ID         AS LOGIN_ID,
             m.COMPANY_NAME,
             m.BIZ_REG_NO,
             m.CEO_NAME,
@@ -376,8 +381,10 @@
     <!-- 판매자 목록 조회 (회원타입이 '003001002' = 판매자인 회원만) -->
     <select id="selectSellerList" resultType="kr.co.matpam.admin.member.service.MemberVO">
         SELECT
+            m.MEMBER_ID     AS memberPk,
             m.MEMBER_ID     AS memberNo,
             m.LOGIN_ID      AS memberId,
+            m.LOGIN_ID      AS loginId,
             m.COMPANY_NAME  AS companyName,
             m.CEO_NAME      AS ceoName
         FROM TB_MEMBER m

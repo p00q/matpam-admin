@@ -31,6 +31,12 @@
         <result property="summary"           column="SUMMARY"/>
         <result property="mdComment"         column="MD_COMMENT"/>
 
+        <result property="detailHtml"        column="DETAIL_HTML"/>
+        <result property="paymentInfo"       column="PAYMENT_INFO"/>
+        <result property="deliveryInfo"      column="DELIVERY_INFO"/>
+        <result property="returnInfo"        column="RETURN_INFO"/>
+        <result property="refundInfo"        column="REFUND_INFO"/>
+
         <result property="useYn"             column="USE_YN"/>
         <result property="delYn"             column="DEL_YN"/>
 
@@ -94,7 +100,7 @@
             m.COMPANY_NAME AS SELLER_NAME,
 
             sp.LIST_PRICE,
-            sp.COST_PRICE,
+            CAST(sp.COST_PRICE AS DECIMAL(18,0)) AS COST_PRICE,
             sp.VAT_RATE,
             CAST(sp.LIST_PRICE * sp.VAT_RATE / 100 AS DECIMAL(18,2)) AS VAT_AMOUNT,
 
@@ -149,8 +155,14 @@
             sp.SELLER_MEMBER_ID,
             m.COMPANY_NAME AS SELLER_NAME,
 
+            spd.DETAIL_HTML,
+            spd.PAYMENT_INFO,
+            spd.DELIVERY_INFO,
+            spd.RETURN_INFO,
+            spd.REFUND_INFO,
+
             sp.LIST_PRICE,
-            sp.COST_PRICE,
+            CAST(sp.COST_PRICE AS DECIMAL(18,0)) AS COST_PRICE,
             sp.VAT_RATE,
             CAST(sp.LIST_PRICE * sp.VAT_RATE / 100 AS DECIMAL(18,2)) AS VAT_AMOUNT,
 
@@ -173,6 +185,9 @@
         FROM TB_SALES_PRODUCT sp
         LEFT JOIN TB_MEMBER m
             ON sp.SELLER_MEMBER_ID = m.MEMBER_ID
+        LEFT JOIN TB_SALES_PRODUCT_DETAIL spd
+            ON sp.SALES_PROD_ID = spd.SALES_PROD_ID
+           AND spd.DEL_YN = 'N'
         WHERE sp.SALES_PROD_ID = #{value}
           AND sp.DEL_YN = 'N'
     </select>
@@ -226,8 +241,8 @@
             #{costPrice},
             #{vatRate},
 
-            #{exposureStatusCd},
-            #{saleStatusCd},
+            COALESCE(#{exposureStatusCd}, 'Y'),
+            COALESCE(#{saleStatusCd}, 'LIVE'),
             #{saleStartDt},
             #{saleEndDt},
 
@@ -259,8 +274,8 @@
             COST_PRICE           = #{costPrice},
             VAT_RATE             = #{vatRate},
 
-            EXPOSURE_STATUS_CD   = #{exposureStatusCd},
-            SALE_STATUS_CD       = #{saleStatusCd},
+            EXPOSURE_STATUS_CD   = COALESCE(#{exposureStatusCd}, 'Y'),
+            SALE_STATUS_CD       = COALESCE(#{saleStatusCd}, 'LIVE'),
             SALE_START_DT        = #{saleStartDt},
             SALE_END_DT          = #{saleEndDt},
 
@@ -276,6 +291,54 @@
     </update>
 
     <!-- =========================================================
+         판매상품 상세(설명/정책) 저장 (UPSERT)
+         ========================================================= -->
+    <insert id="upsertSalesProductDetail"
+            parameterType="kr.co.matpam.admin.product.service.SalesProductVO">
+        INSERT INTO TB_SALES_PRODUCT_DETAIL (
+            SALES_PROD_ID,
+            DETAIL_HTML,
+            PAYMENT_INFO,
+            DELIVERY_INFO,
+            RETURN_INFO,
+            REFUND_INFO,
+
+            USE_YN,
+            DEL_YN,
+
+            REG_ID,
+            REG_DT,
+            MOD_ID,
+            MOD_DT
+        ) VALUES (
+            #{salesProdId},
+            #{detailHtml},
+            #{paymentInfo},
+            #{deliveryInfo},
+            #{returnInfo},
+            #{refundInfo},
+
+            COALESCE(#{useYn}, 'Y'),
+            'N',
+
+            COALESCE(#{regId}, 'SYSTEM'),
+            NOW(),
+            COALESCE(#{modId}, COALESCE(#{regId}, 'SYSTEM')),
+            NOW()
+        )
+        ON DUPLICATE KEY UPDATE
+            DETAIL_HTML   = VALUES(DETAIL_HTML),
+            PAYMENT_INFO  = VALUES(PAYMENT_INFO),
+            DELIVERY_INFO = VALUES(DELIVERY_INFO),
+            RETURN_INFO   = VALUES(RETURN_INFO),
+            REFUND_INFO   = VALUES(REFUND_INFO),
+
+            USE_YN = VALUES(USE_YN),
+            MOD_ID = VALUES(MOD_ID),
+            MOD_DT = NOW()
+    </insert>
+
+    <!-- =========================================================
          판매상품 삭제(논리삭제)
          ========================================================= -->
     <update id="deleteSalesProduct" parameterType="long">
@@ -284,6 +347,17 @@
             DEL_YN = 'Y',
             MOD_DT = NOW()
         WHERE SALES_PROD_ID = #{value}
+    </update>
+
+    <!-- =========================================================
+         조회수 증가
+         ========================================================= -->
+    <update id="increaseViewCount" parameterType="long">
+        UPDATE TB_SALES_PRODUCT
+        SET VIEW_CNT = COALESCE(VIEW_CNT, 0) + 1,
+            MOD_DT = NOW()
+        WHERE SALES_PROD_ID = #{value}
+          AND DEL_YN = 'N'
     </update>
 
 </mapper>

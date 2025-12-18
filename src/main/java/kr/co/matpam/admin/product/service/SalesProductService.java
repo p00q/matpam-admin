@@ -17,6 +17,9 @@ public interface SalesProductService {
     /** 판매상품 상세 */
     SalesProductVO selectSalesProduct(Long salesProdId) throws Exception;
 
+    /** 조회수 증가 */
+    void increaseViewCount(Long salesProdId) throws Exception;
+
     /** 판매상품 등록 */
     void insertSalesProduct(SalesProductVO vo) throws Exception;
 

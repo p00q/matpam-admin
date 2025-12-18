@@ -32,10 +32,19 @@ public class SalesProductDAO extends EgovAbstractMapper {
         return selectOne(NAMESPACE + ".selectSalesProduct", salesProdId);
     }
 
+    public void increaseViewCount(Long salesProdId) {
+        update(NAMESPACE + ".increaseViewCount", salesProdId);
+    }
+
     /** 판매상품 등록 */
     public int insertSalesProduct(SalesProductVO vo) {
         // useGeneratedKeys="true" keyProperty="salesProdId" 이므로 vo.salesProdId에 PK 세팅됨
         return insert(NAMESPACE + ".insertSalesProduct", vo);
+    }
+
+    /** 판매상품 상세(설명/정책) UPSERT */
+    public int upsertSalesProductDetail(SalesProductVO vo) {
+        return insert(NAMESPACE + ".upsertSalesProductDetail", vo);
     }
 
     /** 판매상품 수정 */
