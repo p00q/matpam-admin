@@ -113,6 +113,12 @@
             sp.SUMMARY,
             sp.MD_COMMENT,
 
+            sp.DETAIL_HTML,
+            sp.PAYMENT_INFO,
+            sp.DELIVERY_INFO,
+            sp.RETURN_INFO,
+            sp.REFUND_INFO,
+
             sp.USE_YN,
             sp.DEL_YN,
 
@@ -175,6 +181,12 @@
             sp.SUMMARY,
             sp.MD_COMMENT,
 
+            sp.DETAIL_HTML,
+            sp.PAYMENT_INFO,
+            sp.DELIVERY_INFO,
+            sp.RETURN_INFO,
+            sp.REFUND_INFO,
+
             sp.USE_YN,
             sp.DEL_YN,
 
@@ -185,6 +197,9 @@
         FROM TB_SALES_PRODUCT sp
         LEFT JOIN TB_MEMBER m
             ON sp.SELLER_MEMBER_ID = m.MEMBER_ID
+        LEFT JOIN TB_SALES_PRODUCT_DETAIL spd
+            ON sp.SALES_PROD_ID = spd.SALES_PROD_ID
+           AND spd.DEL_YN = 'N'
         WHERE sp.SALES_PROD_ID = #{value}
           AND sp.DEL_YN = 'N'
     </select>
@@ -304,6 +319,52 @@
         WHERE SALES_PROD_ID = #{salesProdId}
           AND DEL_YN = 'N'
     </update>
+
+    <!-- =========================================================
+         판매상품 상세 설명 upsert (TB_SALES_PRODUCT_DETAIL)
+         ========================================================= -->
+    <insert id="upsertSalesProductDetail"
+            parameterType="kr.co.matpam.admin.product.service.SalesProductVO">
+        INSERT INTO TB_SALES_PRODUCT_DETAIL (
+            SALES_PROD_ID,
+            DETAIL_HTML,
+            PAYMENT_INFO,
+            DELIVERY_INFO,
+            RETURN_INFO,
+            REFUND_INFO,
+
+            USE_YN,
+            DEL_YN,
+            REG_ID,
+            REG_DT,
+            MOD_ID,
+            MOD_DT
+        ) VALUES (
+            #{salesProdId},
+            #{detailHtml},
+            #{paymentInfo},
+            #{deliveryInfo},
+            #{returnInfo},
+            #{refundInfo},
+
+            COALESCE(NULLIF(#{useYn}, ''), 'Y'),
+            'N',
+            COALESCE(NULLIF(#{regId}, ''), 'SYSTEM'),
+            NOW(),
+            COALESCE(NULLIF(#{modId}, ''), COALESCE(NULLIF(#{regId}, ''), 'SYSTEM')),
+            NOW()
+        )
+        ON DUPLICATE KEY UPDATE
+            DETAIL_HTML   = VALUES(DETAIL_HTML),
+            PAYMENT_INFO  = VALUES(PAYMENT_INFO),
+            DELIVERY_INFO = VALUES(DELIVERY_INFO),
+            RETURN_INFO   = VALUES(RETURN_INFO),
+            REFUND_INFO   = VALUES(REFUND_INFO),
+            USE_YN        = COALESCE(NULLIF(VALUES(USE_YN), ''), 'Y'),
+            DEL_YN        = 'N',
+            MOD_ID        = VALUES(MOD_ID),
+            MOD_DT        = NOW()
+    </insert>
 
     <!-- =========================================================
          판매상품 삭제(논리삭제)
