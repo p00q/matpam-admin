@@ -161,11 +161,11 @@
             sp.SELLER_MEMBER_ID,
             m.COMPANY_NAME AS SELLER_NAME,
 
-            spd.DETAIL_HTML,
-            spd.PAYMENT_INFO,
-            spd.DELIVERY_INFO,
-            spd.RETURN_INFO,
-            spd.REFUND_INFO,
+            sp.DETAIL_HTML,
+            sp.PAYMENT_INFO,
+            sp.DELIVERY_INFO,
+            sp.RETURN_INFO,
+            sp.REFUND_INFO,
 
             sp.LIST_PRICE,
             CAST(sp.COST_PRICE AS DECIMAL(18,0)) AS COST_PRICE,
