@@ -185,7 +185,9 @@
                                         <td class="text-end">
                                             <fmt:formatNumber value="${item.listPrice}" type="number" />원
                                         </td>
-                                        <td>0</td>
+                                        <td class="text-end">
+                                            <fmt:formatNumber value="${item.viewCnt == null ? 0 : item.viewCnt}" type="number" />
+                                        </td>
                                         <td>0</td>
                                         <td>
                                             <fmt:formatDate value="${item.regDt}" pattern="yyyy-MM-dd" />

@@ -136,6 +136,16 @@
                                 id="compositionData"><c:out value='${compositionJson}'/></script>
                         </c:if>
 
+                        <fmt:formatNumber var="listPriceFormatted"
+                            value="${empty salesProduct.listPrice ? 0 : salesProduct.listPrice}"
+                            type="number" maxFractionDigits="0" groupingUsed="false" />
+                        <fmt:formatNumber var="costPriceFormatted"
+                            value="${empty salesProduct.costPrice ? (empty salesProduct.listPrice ? 0 : salesProduct.listPrice) : salesProduct.costPrice}"
+                            type="number" maxFractionDigits="0" groupingUsed="false" />
+                        <fmt:formatNumber var="viewCountFormatted"
+                            value="${empty salesProduct.viewCnt ? 0 : salesProduct.viewCnt}"
+                            type="number" maxFractionDigits="0" groupingUsed="false" />
+
                         <!-- 1. 상품일반정보 -->
                         <div class="section-header">상품일반정보</div>
                         <table class="table table-bordered form-table">
@@ -160,16 +170,17 @@
                                         <div class="input-group input-group-sm" style="max-width: 220px;">
                                             <input type="number" name="listPrice" id="listPrice"
                                                 class="form-control form-control-sm" step="1" min="0"
-                                                value="<c:out value='${salesProduct.listPrice}' default='0'/>" />
+                                                value="<c:out value='${listPriceFormatted}' default='0'/>" />
                                             <span class="input-group-text">원</span>
                                         </div>
-                                        <input type="hidden" name="costPrice" id="costPrice" value="<c:out value='${empty salesProduct.listPrice ? salesProduct.costPrice : salesProduct.listPrice}' default='0'/>" />
+                                        <input type="hidden" name="costPrice" id="costPrice"
+                                            value="<c:out value='${costPriceFormatted}' default='0'/>" />
                                     </td>
                                     <th>원가</th>
                                     <td>
                                         <div class="input-group input-group-sm" style="max-width: 220px;">
-                                            <input type="number" class="form-control form-control-sm" value="<c:out value='${empty salesProduct.listPrice ? salesProduct.costPrice : salesProduct.listPrice}' default='0'/>"
-                                                readonly />
+                                            <input type="number" class="form-control form-control-sm"
+                                                value="<c:out value='${costPriceFormatted}' default='0'/>" readonly />
                                             <span class="input-group-text">원</span>
                                         </div>
                                     </td>
@@ -222,7 +233,7 @@
                                     <th>조회수</th>
                                     <td>
                                         <input type="text" class="form-control form-control-sm" style="max-width: 220px;"
-                                            value="<c:out value='${empty salesProduct.viewCnt ? 0 : salesProduct.viewCnt}' default='0'/>"
+                                            value="<c:out value='${viewCountFormatted}' default='0'/>"
                                             readonly />
                                     </td>
                                 </tr>

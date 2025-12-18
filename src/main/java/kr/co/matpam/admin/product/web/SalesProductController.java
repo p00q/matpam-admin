@@ -62,6 +62,10 @@ public class SalesProductController {
     public String salesProductRegister(@RequestParam(value = "salesProdId", required = false) Long salesProdId,
             ModelMap model) throws Exception {
 
+        if (salesProdId != null) {
+            salesProductService.increaseViewCount(salesProdId);
+        }
+
         SalesProductVO salesProduct = (salesProdId != null)
                 ? salesProductService.selectSalesProduct(salesProdId)
                 : new SalesProductVO();
@@ -114,6 +118,11 @@ public class SalesProductController {
             @RequestParam(value = "saleEndDt", required = false) String saleEndDt,
             @RequestParam(value = "summary", required = false) String summary,
             @RequestParam(value = "mdComment", required = false) String mdComment,
+            @RequestParam(value = "detailHtml", required = false) String detailHtml,
+            @RequestParam(value = "paymentInfo", required = false) String paymentInfo,
+            @RequestParam(value = "deliveryInfo", required = false) String deliveryInfo,
+            @RequestParam(value = "returnInfo", required = false) String returnInfo,
+            @RequestParam(value = "refundInfo", required = false) String refundInfo,
             @RequestParam(value = "files", required = false) List<MultipartFile> files,
             HttpServletRequest request,
             RedirectAttributes redirectAttributes) throws Exception {
@@ -175,6 +184,11 @@ public class SalesProductController {
 
         vo.setSummary(summary);
         vo.setMdComment(mdComment);
+        vo.setDetailHtml(detailHtml);
+        vo.setPaymentInfo(paymentInfo);
+        vo.setDeliveryInfo(deliveryInfo);
+        vo.setReturnInfo(returnInfo);
+        vo.setRefundInfo(refundInfo);
 
         // 이미지 목록 (프로젝트 표준에 맞게 VO 필드명 조정)
         vo.setImageList(imageList);

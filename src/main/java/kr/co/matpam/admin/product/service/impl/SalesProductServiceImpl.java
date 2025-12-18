@@ -38,7 +38,17 @@ public class SalesProductServiceImpl extends EgovAbstractServiceImpl implements 
 
     @Override
     public SalesProductVO selectSalesProduct(Long salesProdId) throws Exception {
-        return salesProductDAO.selectSalesProduct(salesProdId);
+        SalesProductVO vo = salesProductDAO.selectSalesProduct(salesProdId);
+        if (vo != null && salesProdId != null) {
+            vo.setCompositionList(salesProductCompositionDAO.selectCompListBySalesProdId(salesProdId));
+        }
+        return vo;
+    }
+
+    @Override
+    public void increaseViewCount(Long salesProdId) throws Exception {
+        if (salesProdId == null) return;
+        salesProductDAO.increaseViewCount(salesProdId);
     }
 
     /**
