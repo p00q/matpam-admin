@@ -226,8 +226,8 @@
             #{costPrice},
             #{vatRate},
 
-            #{exposureStatusCd},
-            #{saleStatusCd},
+            COALESCE(#{exposureStatusCd}, 'Y'),
+            COALESCE(#{saleStatusCd}, 'LIVE'),
             #{saleStartDt},
             #{saleEndDt},
 
@@ -259,8 +259,8 @@
             COST_PRICE           = #{costPrice},
             VAT_RATE             = #{vatRate},
 
-            EXPOSURE_STATUS_CD   = #{exposureStatusCd},
-            SALE_STATUS_CD       = #{saleStatusCd},
+            EXPOSURE_STATUS_CD   = COALESCE(#{exposureStatusCd}, 'Y'),
+            SALE_STATUS_CD       = COALESCE(#{saleStatusCd}, 'LIVE'),
             SALE_START_DT        = #{saleStartDt},
             SALE_END_DT          = #{saleEndDt},
 

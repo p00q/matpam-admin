@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
     <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
         <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+            <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
             <!-- 구성상품(컴포넌트상품) 등록/상세 화면 -->
 
@@ -30,6 +31,7 @@
                     border-left: 4px solid #2c5f7c;
                     margin-bottom: 1rem;
                 }
+
             </style>
 
             <div class="container-fluid p-4">
@@ -74,9 +76,9 @@
                             <col style="width: 38%;">
                         </colgroup>
                         <tbody>
-                            <!-- Row 1: 컴포넌트코드 / 상품명 -->
+                            <!-- Row 1: 구성상품 코드 / 상품명 -->
                             <tr>
-                                <th>컴포넌트코드 <span class="text-danger">*</span></th>
+                                <th>구성상품 코드 <span class="text-danger">*</span></th>
                                 <td>
                                     <input type="text" name="componentProdCode" class="form-control form-control-sm"
                                         value="<c:out value='${component.componentProdCode}'/>" required
@@ -109,15 +111,19 @@
 
                                 <th>판매자명 <span class="text-danger">*</span></th>
                                 <td>
-                                    <!-- 기존 saleMemberNo -> sellerMemberId -->
+                                    <!-- sellerMemberId는 회원 PK(MEMBER_ID)를 사용하며, 구데이터(loginId)도 대응 -->
                                     <select name="sellerMemberId" class="form-select form-select-sm"
                                         style="max-width: 200px;" required>
                                         <option value="" disabled <c:if test="${empty component.sellerMemberId}">
                                             selected</c:if>>선택</option>
                                         <c:forEach var="seller" items="${sellers}">
-                                            <!-- sellers 객체가 memberId를 갖는 전제(없으면 memberNo로 바꿔야 함) -->
-                                            <option value="${seller.memberId}" <c:if
-                                                test="${component.sellerMemberId eq seller.memberId}">selected</c:if>>
+                                            <c:set var="sellerPkStr" value="${fn:trim(seller.memberPk)}" />
+                                            <c:set var="legacySellerId" value="${fn:trim(seller.memberId)}" />
+                                            <c:set var="componentSellerIdStr"
+                                                value="${fn:trim(component.sellerMemberId)}" />
+                                            <c:set var="sellerSelected"
+                                                value="${componentSellerIdStr eq sellerPkStr or componentSellerIdStr eq legacySellerId}" />
+                                            <option value="${sellerPkStr}" ${sellerSelected ? 'selected' : ''}>
                                                 ${seller.companyName} (${seller.ceoName})
                                             </option>
                                         </c:forEach>
@@ -192,49 +198,34 @@
                                 </td>
                             </tr>
 
-                            <!-- Row 5: 가격(정가/원가) / VAT율 -->
+                            <!-- Row 5: 판매가격 / VAT -->
                             <tr>
-                                <th>정가 <span class="text-danger">*</span></th>
+                                <th>판매가격 <span class="text-danger">*</span></th>
                                 <td>
                                     <div class="input-group" style="max-width: 200px;">
                                         <input type="number" name="listPrice" id="listPrice"
-                                            class="form-control form-control-sm"
-                                            value="<c:out value='${component.listPrice}'/>" required min="0" />
+                                            class="form-control form-control-sm" step="1"
+                                            value="<c:out value='${component.listPrice}' default='0'/>" required min="0" />
                                         <span class="input-group-text">원</span>
                                     </div>
+                                    <input type="hidden" name="costPrice" id="costPrice"
+                                        value="<c:out value='${empty component.listPrice ? component.costPrice : component.listPrice}' default='0'/>" />
+                                    <input type="hidden" name="totalSaleQty" id="totalSaleQty"
+                                        value="<c:out value='${empty component.totalSaleQty ? component.listPrice : component.totalSaleQty}' default='0'/>" />
                                 </td>
 
-                                <th>원가 <span class="text-danger">*</span></th>
+                                <th>VAT <span class="text-danger">*</span></th>
                                 <td>
-                                    <div class="input-group" style="max-width: 200px;">
-                                        <input type="number" name="costPrice" id="costPrice"
-                                            class="form-control form-control-sm"
-                                            value="<c:out value='${component.costPrice}'/>" required min="0" />
-                                        <span class="input-group-text">원</span>
+                                    <div class="d-flex align-items-center flex-wrap gap-2">
+                                        <div class="input-group" style="max-width: 200px;">
+                                            <input type="number" id="vatAmountView" class="form-control form-control-sm"
+                                                value="0" readonly />
+                                            <span class="input-group-text">원</span>
+                                        </div>
+                                        <span class="text-muted small">판매가격의 10%</span>
                                     </div>
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <th>VAT율(%) <span class="text-danger">*</span></th>
-                                <td>
-                                    <div class="input-group" style="max-width: 200px;">
-                                        <input type="number" name="vatRate" id="vatRate"
-                                            class="form-control form-control-sm"
-                                            value="<c:out value='${component.vatRate}'/>" required min="0" max="100" />
-                                        <span class="input-group-text">%</span>
-                                    </div>
-                                </td>
-
-                                <th>VAT(계산)</th>
-                                <td>
-                                    <div class="input-group" style="max-width: 200px;">
-                                        <!-- 화면 표시용 계산값(저장X) -->
-                                        <input type="number" id="vatAmountView" class="form-control form-control-sm"
-                                            readonly />
-                                        <span class="input-group-text">원</span>
-                                    </div>
-                                    <small class="text-muted">(정가 × VAT율)</small>
+                                    <input type="hidden" name="vatRate" id="vatRate"
+                                        value="<c:out value='${empty component.vatRate ? 10 : component.vatRate}' default='10'/>" />
                                 </td>
                             </tr>
 
@@ -269,30 +260,26 @@
                                 </td>
                             </tr>
 
-                            <!-- Row 7: 판매 기간 -->
+                            <!-- Row 7: 판매 기간 / 사용여부 -->
                             <tr>
                                 <th>판매 기간</th>
-                                <td colspan="3">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <!-- 기존 saleStartDate/saleEndDate -> saleStartDt/saleEndDt -->
+                                <td>
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
                                         <input type="date" name="saleStartDt" class="form-control form-control-sm"
                                             value="<fmt:formatDate value='${component.saleStartDt}' pattern='yyyy-MM-dd'/>"
-                                            style="max-width: 150px;" />
-                                        <span>~</span>
+                                            style="max-width: 180px;" />
+                                        <span class="text-muted">~</span>
                                         <input type="date" name="saleEndDt" class="form-control form-control-sm"
                                             value="<fmt:formatDate value='${component.saleEndDt}' pattern='yyyy-MM-dd'/>"
-                                            style="max-width: 150px;" />
+                                            style="max-width: 180px;" />
                                     </div>
                                 </td>
-                            </tr>
 
-                            <!-- Row 8: 사용여부 -->
-                            <tr>
                                 <th>사용여부</th>
-                                <td colspan="3">
-                                    <select name="useYn" class="form-select form-select-sm" style="max-width: 200px;">
+                                <td>
+                                    <select name="useYn" class="form-select form-select-sm" style="max-width: 220px;">
                                         <option value="Y" <c:if
-                                            test="${empty component.useYn or component.useYn eq 'Y'}">selected</c:if>>사용
+                                                test="${empty component.useYn or component.useYn eq 'Y'}">selected</c:if>>사용
                                         </option>
                                         <option value="N" <c:if test="${component.useYn eq 'N'}">selected</c:if>>미사용
                                         </option>
@@ -327,18 +314,60 @@
                     const listPriceInput = document.getElementById('listPrice');
                     const vatRateInput = document.getElementById('vatRate');
                     const vatAmountView = document.getElementById('vatAmountView');
+                    const costPriceInput = document.getElementById('costPrice');
+                    const totalSaleQtyInput = document.getElementById('totalSaleQty');
+                    const saleStartInput = document.querySelector('input[name="saleStartDt"]');
+                    const saleEndInput = document.querySelector('input[name="saleEndDt"]');
 
-                    function calcVat() {
-                        const listPrice = parseFloat(listPriceInput.value) || 0;
-                        const vatRate = parseFloat(vatRateInput.value) || 0;
-                        const vat = Math.round(listPrice * (vatRate / 100));
-                        vatAmountView.value = vat;
+                    function sanitizeInteger(value) {
+                        const num = Math.max(0, Math.floor(Number(value) || 0));
+                        return Number.isFinite(num) ? num : 0;
                     }
 
-                    listPriceInput.addEventListener('input', calcVat);
-                    vatRateInput.addEventListener('input', calcVat);
+                    function syncFromSalePrice() {
+                        const salePrice = sanitizeInteger(listPriceInput.value);
+                        listPriceInput.value = salePrice;
 
+                        if (costPriceInput) {
+                            costPriceInput.value = salePrice;
+                        }
+
+                        if (totalSaleQtyInput) {
+                            totalSaleQtyInput.value = salePrice;
+                        }
+                    }
+
+                    function calcVat() {
+                        const listPrice = sanitizeInteger(listPriceInput.value);
+                        const vatRate = sanitizeInteger(vatRateInput.value || 10);
+                        const vat = Math.round(listPrice * (vatRate / 100));
+                        vatAmountView.value = vat;
+                        vatRateInput.value = vatRate;
+                    }
+
+                    function defaultSalePeriodIfEmpty() {
+                        const today = new Date();
+                        const toDateInputValue = (dateObj) => dateObj.toISOString().slice(0, 10);
+
+                        if (saleStartInput && !saleStartInput.value) {
+                            saleStartInput.value = toDateInputValue(today);
+                        }
+
+                        if (saleEndInput && !saleEndInput.value) {
+                            const nextYear = new Date(today);
+                            nextYear.setFullYear(today.getFullYear() + 1);
+                            saleEndInput.value = toDateInputValue(nextYear);
+                        }
+                    }
+
+                    listPriceInput.addEventListener('input', function () {
+                        syncFromSalePrice();
+                        calcVat();
+                    });
+
+                    syncFromSalePrice();
                     calcVat();
+                    defaultSalePeriodIfEmpty();
                 });
 
                 document.querySelector('form[name="componentForm"]').addEventListener('submit', function (e) {

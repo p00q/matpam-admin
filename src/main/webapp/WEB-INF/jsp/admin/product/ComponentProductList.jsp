@@ -89,6 +89,37 @@
                                                 </select>
                                             </td>
 
+                                            <th class="text-center" style="background-color: #e9ecef;">단위유형</th>
+                                            <td>
+                                                <!-- 기존 stockUnitCd → 신 ERD unitTypeCd -->
+                                                <select name="unitTypeCd" class="form-select form-select-sm"
+                                                    style="max-width: 200px;">
+                                                    <option value="">전체</option>
+                                                    <c:forEach var="code" items="${unitTypes}">
+                                                        <option value="${code.detailCode}" ${param.unitTypeCd eq
+                                                            code.detailCode ? 'selected' : '' }>
+                                                            ${code.detailCodeName}
+                                                        </option>
+                                                    </c:forEach>
+                                                </select>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <th class="text-center" style="background-color: #e9ecef;">분리유형</th>
+                                            <td>
+                                                <select name="cutTypeCd" class="form-select form-select-sm"
+                                                    style="max-width: 200px;">
+                                                    <option value="">전체</option>
+                                                    <c:forEach var="code" items="${cutTypes}">
+                                                        <option value="${code.detailCode}" ${param.cutTypeCd eq
+                                                            code.detailCode ? 'selected' : '' }>
+                                                            ${code.detailCodeName}
+                                                        </option>
+                                                    </c:forEach>
+                                                </select>
+                                            </td>
+
                                             <th class="text-center" style="background-color: #e9ecef;">처리구분</th>
                                             <td>
                                                 <!-- 기존 processDivCd → 신 ERD processTypeCd -->
@@ -106,26 +137,11 @@
                                         </tr>
 
                                         <tr>
-                                            <th class="text-center" style="background-color: #e9ecef;">단위유형</th>
-                                            <td>
-                                                <!-- 기존 stockUnitCd → 신 ERD unitTypeCd -->
-                                                <select name="unitTypeCd" class="form-select form-select-sm"
-                                                    style="max-width: 200px;">
-                                                    <option value="">전체</option>
-                                                    <c:forEach var="code" items="${unitTypes}">
-                                                        <option value="${code.detailCode}" ${param.unitTypeCd eq
-                                                            code.detailCode ? 'selected' : '' }>
-                                                            ${code.detailCodeName}
-                                                        </option>
-                                                    </c:forEach>
-                                                </select>
-                                            </td>
-
                                             <th class="text-center" style="background-color: #e9ecef;">검색어</th>
-                                            <td>
+                                            <td colspan="3">
                                                 <!-- 신 Mapper where에서 searchKeyword로 NAME/CODE 검색 -->
                                                 <input type="text" name="searchKeyword" value="${param.searchKeyword}"
-                                                    class="form-control form-control-sm" style="max-width: 200px;"
+                                                    class="form-control form-control-sm" style="max-width: 300px;"
                                                     placeholder="상품명 또는 코드" />
                                             </td>
                                         </tr>
@@ -171,16 +187,15 @@
                             <thead class="table-light">
                                 <tr>
                                     <th scope="col">순번</th>
-                                    <th scope="col">컴포넌트ID</th>
-                                    <th scope="col">컴포넌트코드</th>
+                                    <th scope="col">구성상품 코드</th>
                                     <th scope="col">상품명</th>
                                     <th scope="col">판매자명</th>
                                     <th scope="col">저장유형</th>
+                                    <th scope="col">분리유형</th>
                                     <th scope="col">처리구분</th>
                                     <th scope="col">단위유형</th>
-                                    <th scope="col">정가</th>
-                                    <th scope="col">원가</th>
-                                    <th scope="col">VAT율(%)</th>
+                                    <th scope="col">판매가격</th>
+                                    <th scope="col">VAT</th>
                                     <th scope="col">판매기간</th>
                                     <th scope="col">등록일</th>
                                     <th scope="col">수정일</th>
@@ -190,8 +205,6 @@
                                 <c:forEach var="item" items="${componentList}" varStatus="status">
                                     <tr>
                                         <td>${status.index + 1}</td>
-
-                                        <td>${item.componentProdId}</td>
 
                                         <td class="text-start">
                                             <c:url var="viewUrl" value="/admin/product/componentProductForm.do">
@@ -205,18 +218,18 @@
 
                                         <!-- 코드명은 현재 Controller에서 code list만 내려주고 있음.
                              목록에서는 코드값만 우선 출력(필요시 Mapper에서 코드명 조인 or 공통코드 변환로직 추가) -->
-                                        <td>${item.storageTypeCd}</td>
-                                        <td>${item.processTypeCd}</td>
-                                        <td>${item.unitTypeCd}</td>
+                                        <td>${empty item.storageTypeName ? item.storageTypeCd : item.storageTypeName}</td>
+                                        <td>${empty item.cutTypeName ? item.cutTypeCd : item.cutTypeName}</td>
+                                        <td>${empty item.processTypeName ? item.processTypeCd : item.processTypeName}</td>
+                                        <td>${empty item.unitTypeName ? item.unitTypeCd : item.unitTypeName}</td>
 
                                         <td class="text-end">
                                             <fmt:formatNumber value="${item.listPrice}" type="number" />
                                         </td>
                                         <td class="text-end">
-                                            <fmt:formatNumber value="${item.costPrice}" type="number" />
-                                        </td>
-                                        <td class="text-end">
-                                            <fmt:formatNumber value="${item.vatRate}" type="number" />
+                                            <c:set var="vatAmount"
+                                                value="${not empty item.vatAmount ? item.vatAmount : (item.listPrice * item.vatRate / 100)}" />
+                                            <fmt:formatNumber value="${vatAmount}" type="number" />
                                         </td>
 
                                         <td>
@@ -236,7 +249,7 @@
 
                                 <c:if test="${empty componentList}">
                                     <tr>
-                                        <td colspan="14" class="py-4 text-center text-muted">
+                                        <td colspan="13" class="py-4 text-center text-muted">
                                             검색된 결과가 없습니다.
                                         </td>
                                     </tr>
@@ -262,6 +275,7 @@
                         <input type="hidden" name="saleTypeCd" value="${param.saleTypeCd}" />
                         <input type="hidden" name="sellerMemberId" value="${param.sellerMemberId}" />
                         <input type="hidden" name="storageTypeCd" value="${param.storageTypeCd}" />
+                        <input type="hidden" name="cutTypeCd" value="${param.cutTypeCd}" />
                         <input type="hidden" name="processTypeCd" value="${param.processTypeCd}" />
                         <input type="hidden" name="unitTypeCd" value="${param.unitTypeCd}" />
                         <input type="hidden" name="searchKeyword" value="${param.searchKeyword}" />
@@ -274,6 +288,7 @@
                         form.saleTypeCd.value = "";
                         form.sellerMemberId.value = "";
                         form.storageTypeCd.value = "";
+                        form.cutTypeCd.value = "";
                         form.processTypeCd.value = "";
                         form.unitTypeCd.value = "";
                         form.searchKeyword.value = "";
