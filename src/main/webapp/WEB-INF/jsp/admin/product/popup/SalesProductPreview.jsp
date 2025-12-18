@@ -117,7 +117,7 @@
                             <td>
                                 <fmt:formatNumber value="${salesProduct.costPrice}" type="number" />원
                             </td>
-                            <th>부가세</th>
+                            <th>VAT</th>
                             <td>
                                 <fmt:formatNumber value="${salesProduct.vatAmount}" type="number" />원
                             </td>
