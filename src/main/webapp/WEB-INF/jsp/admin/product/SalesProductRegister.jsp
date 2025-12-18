@@ -195,7 +195,7 @@
                                                 <c:when test="${not empty saleStatuses}">
                                                     <c:forEach var="code" items="${saleStatuses}">
                                                         <option value="${code.detailCode}" <c:if test="${empty salesProduct.saleStatusCd ? code.detailCode eq 'LIVE' : salesProduct.saleStatusCd eq code.detailCode}">selected</c:if>>
-                                                            ${code.detailName}
+                                                            ${code.detailCodeName}
                                                         </option>
                                                     </c:forEach>
                                                 </c:when>
