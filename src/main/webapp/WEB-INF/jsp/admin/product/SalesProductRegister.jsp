@@ -129,6 +129,7 @@
                         action="${pageContext.request.contextPath}/admin/product/salesProductRegister.do"
                         enctype="multipart/form-data">
                         <input type="hidden" name="salesProdId" value="<c:out value='${salesProduct.salesProdId}'/>" />
+                        <input type="hidden" name="salesProdCode" value="<c:out value='${salesProduct.salesProdCode}'/>" />
                         <input type="hidden" name="exposureStatusCd" id="exposureStatusCdValue"
                             value="<c:out value='${salesProduct.exposureStatusCd}' default='Y'/>" />
 
@@ -151,15 +152,14 @@
                                     <th>상품명</th>
                                     <td><input type="text" name="salesProdName" class="form-control form-control-sm"
                                             value="<c:out value='${salesProduct.salesProdName}'/>" required /></td>
-                                    <th>상품 번호</th>
-                                    <td><input type="text" class="form-control form-control-sm" placeholder="자동 생성"
-                                            value="<c:out value='${salesProduct.salesProdCode}'/>" readonly disabled />
-                                    </td>
+                                    <th>상품 요약</th>
+                                    <td><input type="text" name="summary" class="form-control form-control-sm"
+                                            value="<c:out value='${salesProduct.summary}'/>" /></td>
                                 </tr>
                                 <tr>
                                     <th>판매 가격</th>
                                     <td>
-                                        <div class="input-group input-group-sm" style="max-width: 200px;">
+                                        <div class="input-group input-group-sm" style="max-width: 220px;">
                                             <input type="number" name="listPrice" id="listPrice"
                                                 class="form-control form-control-sm" step="1" min="0"
                                                 value="<c:out value='${salesProduct.listPrice}' default='0'/>" />
@@ -169,7 +169,7 @@
                                     </td>
                                     <th>원가</th>
                                     <td>
-                                        <div class="input-group input-group-sm">
+                                        <div class="input-group input-group-sm" style="max-width: 220px;">
                                             <input type="number" class="form-control form-control-sm" value="<c:out value='${empty salesProduct.listPrice ? salesProduct.costPrice : salesProduct.listPrice}' default='0'/>"
                                                 readonly />
                                             <span class="input-group-text">원</span>
@@ -180,20 +180,32 @@
                                     <th>VAT</th>
                                     <td>
                                         <div class="d-flex align-items-center flex-wrap gap-2">
-                                            <div class="input-group input-group-sm" style="max-width: 200px;">
+                                            <div class="input-group input-group-sm" style="max-width: 220px;">
                                                 <input type="number" id="vatAmount"
                                                     class="form-control form-control-sm" value="0" readonly /><span class="input-group-text">원</span></div>
                                             <span class="text-muted small">판매가격의 10%</span>
                                         </div>
                                         <input type="hidden" name="vatRate" id="vatRate" value="<c:out value='${empty salesProduct.vatRate ? 10 : salesProduct.vatRate}' default='10'/>" />
                                     </td>
-                                    <th>노출여부</th>
+                                    <th>판매상태</th>
                                     <td>
-                                        <div class="form-check"><input class="form-check-input" type="checkbox"
-                                                id="exposureStatusCdCheckbox" <c:if
-                                                test="${salesProduct.exposureStatusCd ne 'N'}">checked</c:if>
-                                            onclick="fn_toggleExposureStatus(this)"><label class="form-check-label"
-                                                for="exposureStatusCdCheckbox">노출</label></div>
+                                        <select name="saleStatusCd" id="saleStatusCd" class="form-select form-select-sm"
+                                            style="max-width: 220px;">
+                                            <c:choose>
+                                                <c:when test="${not empty saleStatuses}">
+                                                    <c:forEach var="code" items="${saleStatuses}">
+                                                        <option value="${code.detailCode}" <c:if test="${empty salesProduct.saleStatusCd ? code.detailCode eq 'LIVE' : salesProduct.saleStatusCd eq code.detailCode}">selected</c:if>>
+                                                            ${code.detailName}
+                                                        </option>
+                                                    </c:forEach>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <option value="LIVE" <c:if test="${empty salesProduct.saleStatusCd or salesProduct.saleStatusCd eq 'LIVE'}">selected</c:if>>판매중</option>
+                                                    <option value="WAIT" <c:if test="${salesProduct.saleStatusCd eq 'WAIT'}">selected</c:if>>판매대기</option>
+                                                    <option value="STOP" <c:if test="${salesProduct.saleStatusCd eq 'STOP'}">selected</c:if>>판매중지</option>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </select>
                                     </td>
                                 </tr>
                                 <tr>
@@ -209,36 +221,45 @@
                                                 value="<fmt:formatDate value='${salesProduct.saleEndDt}' pattern='yyyy-MM-dd'/>" />
                                         </div>
                                     </td>
+                                    <th>조회수</th>
+                                    <td>
+                                        <input type="text" class="form-control form-control-sm" style="max-width: 160px;"
+                                            value="<c:out value='${empty salesProduct.viewCnt ? 0 : salesProduct.viewCnt}' default='0'/>"
+                                            readonly />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>노출여부</th>
+                                    <td>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="exposureStatusCdCheckbox"
+                                                <c:if test="${salesProduct.exposureStatusCd ne 'N'}">checked</c:if>
+                                                onclick="fn_toggleExposureStatus(this)">
+                                            <label class="form-check-label" for="exposureStatusCdCheckbox">노출</label>
+                                        </div>
+                                    </td>
                                     <th>사용여부</th>
                                     <td>
-                                        <select name="useYn" id="useYn" class="form-select form-select-sm" style="max-width: 220px;">
+                                        <select name="useYn" id="useYn" class="form-select form-select-sm"
+                                            style="max-width: 220px;">
                                             <option value="Y" <c:if test="${empty salesProduct.useYn or salesProduct.useYn eq 'Y'}">selected</c:if>>사용</option>
                                             <option value="N" <c:if test="${salesProduct.useYn eq 'N'}">selected</c:if>>미사용</option>
                                         </select>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th>상품 요약</th>
-                                    <td><input type="text" name="summary" class="form-control form-control-sm"
-                                            value="<c:out value='${salesProduct.summary}'/>" /></td>
-                                    <th>조회수</th>
-                                    <td><input type="text" class="form-control form-control-sm" value="0" readonly />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>판매자</th>
+                                    <th>판매자(업체명)</th>
                                     <td>
                                         <select name="sellerMemberId" id="sellerMemberId"
-                                            class="form-select form-select-sm" style="max-width: 200px;">
+                                            class="form-select form-select-sm" style="max-width: 220px;">
                                             <option value="">선택</option>
                                             <c:forEach var="seller" items="${sellers}">
                                                 <c:set var="sellerPk" value="${fn:trim(seller.memberPk)}" />
                                                 <c:set var="legacySellerId" value="${fn:trim(seller.memberId)}" />
                                                 <option value="<c:out value='${sellerPk}'/>"
+                                                    data-legacy-id="<c:out value='${legacySellerId}'/>"
                                                     data-seller-name="<c:out value='${seller.ceoName}'/>"
-                                                    <c:if
-                                                        test="${sellerPk eq salesProduct.sellerMemberId or legacySellerId eq salesProduct.sellerMemberId}">selected
-                                                    </c:if>>
+                                                    <c:if test="${sellerPk eq salesProduct.sellerMemberId or legacySellerId eq salesProduct.sellerMemberId}">selected</c:if>>
                                                     <c:out value='${seller.companyName}' />
                                                 </option>
                                             </c:forEach>
@@ -246,9 +267,20 @@
                                     </td>
                                     <th>판매자명</th>
                                     <td>
-                                        <input type="text" name="sellerName" id="sellerName"
-                                            class="form-control form-control-sm"
-                                            value="<c:out value='${salesProduct.sellerName}'/>" readonly />
+                                        <select name="sellerName" id="sellerName" class="form-select form-select-sm"
+                                            style="max-width: 220px;">
+                                            <option value="">선택</option>
+                                            <c:forEach var="seller" items="${sellers}">
+                                                <c:set var="sellerPk" value="${fn:trim(seller.memberPk)}" />
+                                                <c:set var="legacySellerId" value="${fn:trim(seller.memberId)}" />
+                                                <option value="<c:out value='${seller.ceoName}'/>"
+                                                    data-member-id="<c:out value='${sellerPk}'/>"
+                                                    data-legacy-id="<c:out value='${legacySellerId}'/>"
+                                                    <c:if test="${seller.ceoName eq salesProduct.sellerName}">selected</c:if>>
+                                                    <c:out value='${seller.ceoName}' />
+                                                </option>
+                                            </c:forEach>
+                                        </select>
                                     </td>
                                 </tr>
                                 <tr>
@@ -435,8 +467,12 @@
                         }
 
                         const sellerSelect = document.getElementById('sellerMemberId');
+                        const sellerNameSelect = document.getElementById('sellerName');
                         if (sellerSelect) {
                             sellerSelect.addEventListener('change', syncSellerName);
+                        }
+                        if (sellerNameSelect) {
+                            sellerNameSelect.addEventListener('change', syncSellerFromName);
                         }
 
                         syncSellerName();
@@ -615,12 +651,49 @@
 
                     function syncSellerName() {
                         const sellerSelect = document.getElementById('sellerMemberId');
-                        const sellerNameInput = document.getElementById('sellerName');
-                        if (!sellerSelect || !sellerNameInput) return;
+                        const sellerNameSelect = document.getElementById('sellerName');
+                        if (!sellerSelect || !sellerNameSelect) return;
 
                         const selectedOption = sellerSelect.selectedOptions && sellerSelect.selectedOptions[0];
                         const name = selectedOption && selectedOption.dataset ? selectedOption.dataset.sellerName || '' : '';
-                        sellerNameInput.value = name.trim();
+                        const legacyId = selectedOption && selectedOption.dataset ? selectedOption.dataset.legacyId || '' : '';
+                        const memberId = selectedOption ? selectedOption.value : '';
+
+                        let matched = false;
+                        Array.from(sellerNameSelect.options).forEach(opt => {
+                            const optMember = opt.dataset ? opt.dataset.memberId || '' : '';
+                            const optLegacy = opt.dataset ? opt.dataset.legacyId || '' : '';
+                            if (name && opt.value === name) {
+                                opt.selected = true;
+                                matched = true;
+                            } else if (!matched && (optMember === memberId || (legacyId && optLegacy === legacyId))) {
+                                opt.selected = true;
+                                matched = true;
+                            }
+                        });
+
+                        if (!matched) {
+                            sellerNameSelect.value = '';
+                        }
+                    }
+
+                    function syncSellerFromName() {
+                        const sellerSelect = document.getElementById('sellerMemberId');
+                        const sellerNameSelect = document.getElementById('sellerName');
+                        if (!sellerSelect || !sellerNameSelect) return;
+
+                        const selectedOption = sellerNameSelect.selectedOptions && sellerNameSelect.selectedOptions[0];
+                        if (!selectedOption) return;
+
+                        const memberId = selectedOption.dataset ? selectedOption.dataset.memberId || '' : '';
+                        const legacyId = selectedOption.dataset ? selectedOption.dataset.legacyId || '' : '';
+
+                        Array.from(sellerSelect.options).forEach(opt => {
+                            const optLegacy = opt.dataset ? opt.dataset.legacyId || '' : '';
+                            if (opt.value === memberId || (legacyId && optLegacy === legacyId)) {
+                                opt.selected = true;
+                            }
+                        });
                     }
 
                     function syncManualPrice() {

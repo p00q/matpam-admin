@@ -70,10 +70,14 @@ public class SalesProductController {
         if (salesProduct.getExposureStatusCd() == null || salesProduct.getExposureStatusCd().trim().isEmpty()) {
             salesProduct.setExposureStatusCd("Y");
         }
+        if (salesProduct.getSaleStatusCd() == null || salesProduct.getSaleStatusCd().trim().isEmpty()) {
+            salesProduct.setSaleStatusCd("LIVE");
+        }
 
         // 구성 JSON (화면 로딩용)
         model.addAttribute("salesProduct", salesProduct);
         model.addAttribute("sellers", memberService.selectSellerList());
+        model.addAttribute("saleStatuses", codeManagementService.selectDetailCodeList("SALE_STATUS", "SALE_STATUS"));
         model.addAttribute("compositionJson", buildCompositionJson(salesProduct.getCompositionList()));
 
         // 화면 경로
@@ -113,6 +117,10 @@ public class SalesProductController {
             @RequestParam(value = "files", required = false) List<MultipartFile> files,
             HttpServletRequest request,
             RedirectAttributes redirectAttributes) throws Exception {
+
+        if (saleStatusCd == null || saleStatusCd.trim().isEmpty()) {
+            saleStatusCd = "LIVE";
+        }
 
         // 1) 이미지 처리 (기존 SalesProductImageVO 재사용 - 프로젝트에 맞게 클래스명 변경 가능)
         List<SalesProductImageVO> imageList = new ArrayList<>();
@@ -262,7 +270,7 @@ public class SalesProductController {
         salesProduct.setImageList(imageList);
 
         model.addAttribute("salesProduct", salesProduct);
-        return "admin/product/popup/ProductPreview";
+        return "admin/product/popup/SalesProductPreview";
     }
 
     /*
