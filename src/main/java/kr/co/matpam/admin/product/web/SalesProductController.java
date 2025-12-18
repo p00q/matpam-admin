@@ -100,6 +100,7 @@ public class SalesProductController {
             @RequestParam(value = "salesProdId", required = false) Long salesProdId,
             @RequestParam(value = "salesProdName", required = false) String salesProdName,
             @RequestParam(value = "sellerMemberId", required = false) Long sellerMemberId,
+            @RequestParam(value = "sellerName", required = false) String sellerName,
             @RequestParam(value = "listPrice", required = false) BigDecimal listPrice,
             @RequestParam(value = "costPrice", required = false) BigDecimal costPrice,
             @RequestParam(value = "vatRate", required = false) BigDecimal vatRate,
@@ -152,10 +153,11 @@ public class SalesProductController {
         vo.setSalesProdId(salesProdId);
         vo.setSalesProdName(salesProdName);
         vo.setSellerMemberId(sellerMemberId);
+        vo.setSellerName(sellerName);
 
         vo.setListPrice(listPrice != null ? listPrice : BigDecimal.ZERO);
-        vo.setCostPrice(costPrice);
-        vo.setVatRate(vatRate != null ? vatRate : BigDecimal.ZERO);
+        vo.setCostPrice(costPrice != null ? costPrice : (listPrice != null ? listPrice : BigDecimal.ZERO));
+        vo.setVatRate(vatRate != null ? vatRate : BigDecimal.valueOf(10));
 
         vo.setExposureStatusCd(exposureStatusCd);
         vo.setSaleStatusCd(saleStatusCd);

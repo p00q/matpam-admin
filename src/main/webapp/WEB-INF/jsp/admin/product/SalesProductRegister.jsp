@@ -90,6 +90,16 @@
                         top: 6px;
                         right: 6px;
                     }
+
+                    /* SmartEditor 영역을 폼 입력과 동일한 타이포로 맞춤 */
+                    #mdContent,
+                    .se2_inputarea,
+                    .se2_inputarea textarea,
+                    .se2_textarea iframe {
+                        font-family: inherit !important;
+                        font-size: 0.875rem !important;
+                        color: #212529;
+                    }
                 </style>
 
                 <div class="container-fluid p-4">
@@ -116,7 +126,7 @@
                     </div>
 
                     <form name="productForm" method="post"
-                        action="${pageContext.request.contextPath}/admin/product/salesProductRegist.do"
+                        action="${pageContext.request.contextPath}/admin/product/salesProductRegister.do"
                         enctype="multipart/form-data">
                         <input type="hidden" name="salesProdId" value="<c:out value='${salesProduct.salesProdId}'/>" />
                         <input type="hidden" name="exposureStatusCd" id="exposureStatusCdValue"
@@ -149,17 +159,18 @@
                                 <tr>
                                     <th>판매 가격</th>
                                     <td>
-                                        <div class="input-group input-group-sm"><input type="number" name="listPrice"
-                                                id="listPrice" class="form-control" step="1" min="0"
-                                                value="<c:out value='${salesProduct.listPrice}' default='0'/>" /><span
-                                                class="input-group-text">원</span></div>
-                                        <input type="hidden" name="costPrice" id="costPrice"
-                                            value="<c:out value='${empty salesProduct.listPrice ? salesProduct.costPrice : salesProduct.listPrice}' default='0'/>" />
+                                        <div class="input-group input-group-sm" style="max-width: 200px;">
+                                            <input type="number" name="listPrice" id="listPrice"
+                                                class="form-control form-control-sm" step="1" min="0"
+                                                value="<c:out value='${salesProduct.listPrice}' default='0'/>" />
+                                            <span class="input-group-text">원</span>
+                                        </div>
+                                        <input type="hidden" name="costPrice" id="costPrice" value="<c:out value='${empty salesProduct.listPrice ? salesProduct.costPrice : salesProduct.listPrice}' default='0'/>" />
                                     </td>
                                     <th>원가</th>
                                     <td>
                                         <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" value="<c:out value='${empty salesProduct.listPrice ? salesProduct.costPrice : salesProduct.listPrice}' default='0'/>"
+                                            <input type="number" class="form-control form-control-sm" value="<c:out value='${empty salesProduct.listPrice ? salesProduct.costPrice : salesProduct.listPrice}' default='0'/>"
                                                 readonly />
                                             <span class="input-group-text">원</span>
                                         </div>
@@ -169,12 +180,12 @@
                                     <th>VAT</th>
                                     <td>
                                         <div class="d-flex align-items-center flex-wrap gap-2">
-                                            <div class="input-group input-group-sm"><input type="number" id="vatAmount"
-                                                    class="form-control" value="0" readonly /><span class="input-group-text">원</span></div>
+                                            <div class="input-group input-group-sm" style="max-width: 200px;">
+                                                <input type="number" id="vatAmount"
+                                                    class="form-control form-control-sm" value="0" readonly /><span class="input-group-text">원</span></div>
                                             <span class="text-muted small">판매가격의 10%</span>
                                         </div>
-                                        <input type="hidden" name="vatRate" id="vatRate"
-                                            value="<c:out value='${empty salesProduct.vatRate ? 10 : salesProduct.vatRate}' default='10'/>" />
+                                        <input type="hidden" name="vatRate" id="vatRate" value="<c:out value='${empty salesProduct.vatRate ? 10 : salesProduct.vatRate}' default='10'/>" />
                                     </td>
                                     <th>노출여부</th>
                                     <td>
@@ -190,17 +201,17 @@
                                     <td>
                                         <div class="d-flex align-items-center gap-2 flex-wrap">
                                             <input type="date" name="saleStartDt" id="saleStartDt"
-                                                class="form-control form-control-sm"
+                                                class="form-control form-control-sm" style="max-width: 180px;"
                                                 value="<fmt:formatDate value='${salesProduct.saleStartDt}' pattern='yyyy-MM-dd'/>" />
                                             <span class="text-muted">~</span>
                                             <input type="date" name="saleEndDt" id="saleEndDt"
-                                                class="form-control form-control-sm"
+                                                class="form-control form-control-sm" style="max-width: 180px;"
                                                 value="<fmt:formatDate value='${salesProduct.saleEndDt}' pattern='yyyy-MM-dd'/>" />
                                         </div>
                                     </td>
                                     <th>사용여부</th>
                                     <td>
-                                        <select name="useYn" id="useYn" class="form-select form-select-sm" style="max-width: 200px;">
+                                        <select name="useYn" id="useYn" class="form-select form-select-sm" style="max-width: 220px;">
                                             <option value="Y" <c:if test="${empty salesProduct.useYn or salesProduct.useYn eq 'Y'}">selected</c:if>>사용</option>
                                             <option value="N" <c:if test="${salesProduct.useYn eq 'N'}">selected</c:if>>미사용</option>
                                         </select>
@@ -218,27 +229,32 @@
                                     <th>판매자</th>
                                     <td>
                                         <select name="sellerMemberId" id="sellerMemberId"
-                                            class="form-select form-select-sm">
+                                            class="form-select form-select-sm" style="max-width: 200px;">
                                             <option value="">선택</option>
                                             <c:forEach var="seller" items="${sellers}">
                                                 <c:set var="sellerPk" value="${fn:trim(seller.memberPk)}" />
                                                 <c:set var="legacySellerId" value="${fn:trim(seller.memberId)}" />
-                                                <option value="<c:out value='${sellerPk}'/>" <c:if
-                                                    test="${sellerPk eq salesProduct.sellerMemberId or legacySellerId eq salesProduct.sellerMemberId}">selected
+                                                <option value="<c:out value='${sellerPk}'/>"
+                                                    data-seller-name="<c:out value='${seller.ceoName}'/>"
+                                                    <c:if
+                                                        test="${sellerPk eq salesProduct.sellerMemberId or legacySellerId eq salesProduct.sellerMemberId}">selected
                                                     </c:if>>
                                                     <c:out value='${seller.companyName}' />
                                                 </option>
                                             </c:forEach>
                                         </select>
                                     </td>
-                                    <th></th>
-                                    <td></td>
+                                    <th>판매자명</th>
+                                    <td>
+                                        <input type="text" name="sellerName" id="sellerName"
+                                            class="form-control form-control-sm"
+                                            value="<c:out value='${salesProduct.sellerName}'/>" readonly />
+                                    </td>
                                 </tr>
                                 <tr>
                                     <th>MD 코멘트</th>
-                                    <td colspan="3"><input type="text" name="mdComment"
-                                            class="form-control form-control-sm"
-                                            value="<c:out value='${salesProduct.mdComment}'/>" /></td>
+                                    <td colspan="3"><textarea name="mdComment" rows="2"
+                                            class="form-control form-control-sm"><c:out value='${salesProduct.mdComment}'/></textarea></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -418,6 +434,13 @@
                             salePriceInput.addEventListener('input', syncManualPrice);
                         }
 
+                        const sellerSelect = document.getElementById('sellerMemberId');
+                        if (sellerSelect) {
+                            sellerSelect.addEventListener('change', syncSellerName);
+                        }
+
+                        syncSellerName();
+
                         updateProductInfo();
 
                         console.log('페이지 초기화 완료');
@@ -590,6 +613,16 @@
                         }
                     }
 
+                    function syncSellerName() {
+                        const sellerSelect = document.getElementById('sellerMemberId');
+                        const sellerNameInput = document.getElementById('sellerName');
+                        if (!sellerSelect || !sellerNameInput) return;
+
+                        const selectedOption = sellerSelect.selectedOptions && sellerSelect.selectedOptions[0];
+                        const name = selectedOption && selectedOption.dataset ? selectedOption.dataset.sellerName || '' : '';
+                        sellerNameInput.value = name.trim();
+                    }
+
                     function syncManualPrice() {
                         const salePriceInput = document.getElementById('listPrice');
                         const costPriceInput = document.getElementById('costPrice');
@@ -673,6 +706,8 @@
                             saleEndDateInput.readOnly = false;
                             syncManualPrice();
                         }
+
+                        syncSellerName();
                     }
 
                     function fn_preview() {
