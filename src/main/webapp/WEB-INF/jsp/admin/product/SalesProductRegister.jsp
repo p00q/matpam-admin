@@ -188,29 +188,33 @@
                                 <tr>
                                     <th>판매기간</th>
                                     <td>
-                                        <div class="d-flex flex-column gap-2">
-                                            <div class="d-flex flex-column gap-1">
-                                                <label class="text-muted small mb-0">시작일</label>
-                                                <input type="date" name="saleStartDt" id="saleStartDt"
-                                                    class="form-control form-control-sm"
-                                                    value="<fmt:formatDate value='${salesProduct.saleStartDt}' pattern='yyyy-MM-dd'/>" />
-                                            </div>
-                                            <div class="d-flex flex-column gap-1">
-                                                <label class="text-muted small mb-0">종료일</label>
-                                                <input type="date" name="saleEndDt" id="saleEndDt"
-                                                    class="form-control form-control-sm"
-                                                    value="<fmt:formatDate value='${salesProduct.saleEndDt}' pattern='yyyy-MM-dd'/>" />
-                                            </div>
+                                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                                            <input type="date" name="saleStartDt" id="saleStartDt"
+                                                class="form-control form-control-sm"
+                                                value="<fmt:formatDate value='${salesProduct.saleStartDt}' pattern='yyyy-MM-dd'/>" />
+                                            <span class="text-muted">~</span>
+                                            <input type="date" name="saleEndDt" id="saleEndDt"
+                                                class="form-control form-control-sm"
+                                                value="<fmt:formatDate value='${salesProduct.saleEndDt}' pattern='yyyy-MM-dd'/>" />
                                         </div>
                                     </td>
-                                    <th>조회수</th>
-                                    <td><input type="text" class="form-control form-control-sm" value="0" readonly />
+                                    <th>사용여부</th>
+                                    <td>
+                                        <select name="useYn" id="useYn" class="form-select form-select-sm" style="max-width: 200px;">
+                                            <option value="Y" <c:if test="${empty salesProduct.useYn or salesProduct.useYn eq 'Y'}">selected</c:if>>사용</option>
+                                            <option value="N" <c:if test="${salesProduct.useYn eq 'N'}">selected</c:if>>미사용</option>
+                                        </select>
                                     </td>
                                 </tr>
                                 <tr>
                                     <th>상품 요약</th>
                                     <td><input type="text" name="summary" class="form-control form-control-sm"
                                             value="<c:out value='${salesProduct.summary}'/>" /></td>
+                                    <th>조회수</th>
+                                    <td><input type="text" class="form-control form-control-sm" value="0" readonly />
+                                    </td>
+                                </tr>
+                                <tr>
                                     <th>판매자</th>
                                     <td>
                                         <select name="sellerMemberId" id="sellerMemberId"
@@ -227,6 +231,8 @@
                                             </c:forEach>
                                         </select>
                                     </td>
+                                    <th></th>
+                                    <td></td>
                                 </tr>
                                 <tr>
                                     <th>MD 코멘트</th>

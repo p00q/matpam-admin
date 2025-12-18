@@ -260,41 +260,30 @@
                                 </td>
                             </tr>
 
-                            <!-- Row 7: 판매 기간 -->
+                            <!-- Row 7: 판매 기간 / 사용여부 -->
                             <tr>
                                 <th>판매 기간</th>
-                                <td colspan="3">
-                                    <div class="d-flex flex-column gap-2">
-                                        <div class="d-flex flex-column gap-1">
-                                            <label class="text-muted small mb-0">시작일</label>
-                                            <input type="date" name="saleStartDt" class="form-control form-control-sm"
-                                                value="<fmt:formatDate value='${component.saleStartDt}' pattern='yyyy-MM-dd'/>"
-                                                style="max-width: 220px;" />
-                                        </div>
-                                        <div class="d-flex flex-column gap-1">
-                                            <label class="text-muted small mb-0">종료일</label>
-                                            <input type="date" name="saleEndDt" class="form-control form-control-sm"
-                                                value="<fmt:formatDate value='${component.saleEndDt}' pattern='yyyy-MM-dd'/>"
-                                                style="max-width: 220px;" />
-                                        </div>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                        <input type="date" name="saleStartDt" class="form-control form-control-sm"
+                                            value="<fmt:formatDate value='${component.saleStartDt}' pattern='yyyy-MM-dd'/>"
+                                            style="max-width: 180px;" />
+                                        <span class="text-muted">~</span>
+                                        <input type="date" name="saleEndDt" class="form-control form-control-sm"
+                                            value="<fmt:formatDate value='${component.saleEndDt}' pattern='yyyy-MM-dd'/>"
+                                            style="max-width: 180px;" />
                                     </div>
                                 </td>
-                            </tr>
 
-                            <!-- Row 8: 사용여부 -->
-                            <tr>
                                 <th>사용여부</th>
-                                <td colspan="3">
-                                    <div class="d-flex flex-column gap-1" style="max-width: 220px;">
-                                        <select name="useYn" class="form-select form-select-sm">
-                                            <option value="Y" <c:if
+                                <td>
+                                    <select name="useYn" class="form-select form-select-sm" style="max-width: 220px;">
+                                        <option value="Y" <c:if
                                                 test="${empty component.useYn or component.useYn eq 'Y'}">selected</c:if>>사용
-                                            </option>
-                                            <option value="N" <c:if test="${component.useYn eq 'N'}">selected</c:if>>미사용
-                                            </option>
-                                        </select>
-                                        <small class="text-muted">사용여부를 선택해주세요.</small>
-                                    </div>
+                                        </option>
+                                        <option value="N" <c:if test="${component.useYn eq 'N'}">selected</c:if>>미사용
+                                        </option>
+                                    </select>
                                 </td>
                             </tr>
 
