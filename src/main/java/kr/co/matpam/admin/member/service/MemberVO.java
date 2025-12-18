@@ -9,11 +9,16 @@ public class MemberVO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * 회원 PK (tb_member.member_id)
+     */
+    private Long memberPk;
     private Long memberNo;
     private String memberType;
     private String memberTypeName; // 코드명 표시용
     private String region;
     private String memberId;
+    private String loginId;
     private String loginPw;
     private String companyName;
     private String businessNumber;
@@ -42,6 +47,14 @@ public class MemberVO implements Serializable {
     private String joinDate;
 
     private List<MemberManagerVO> memberManagers;
+
+    public Long getMemberPk() {
+        return memberPk;
+    }
+
+    public void setMemberPk(Long memberPk) {
+        this.memberPk = memberPk;
+    }
 
     public Long getMemberNo() {
         return memberNo;
@@ -81,6 +94,14 @@ public class MemberVO implements Serializable {
 
     public void setMemberId(String memberId) {
         this.memberId = memberId;
+    }
+
+    public String getLoginId() {
+        return loginId;
+    }
+
+    public void setLoginId(String loginId) {
+        this.loginId = loginId;
     }
 
     public String getLoginPw() {
