@@ -171,7 +171,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <c:forEach var="item" items="${resultList}" varStatus="status">
+                                <c:forEach var="item" items="${salesProductList}" varStatus="status">
                                     <tr>
                                         <td>
                                             <c:out value="${item.salesProdCode}" />
@@ -218,7 +218,7 @@
                                     </tr>
                                 </c:forEach>
 
-                                <c:if test="${empty resultList}">
+                                <c:if test="${empty salesProductList}">
                                     <tr>
                                         <td colspan="8" class="py-4 text-center text-muted">
                                             검색된 결과가 없습니다.
