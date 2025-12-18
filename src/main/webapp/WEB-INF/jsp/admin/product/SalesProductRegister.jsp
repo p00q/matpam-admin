@@ -249,16 +249,19 @@
                                 <tr>
                                     <th>판매자(업체명)</th>
                                     <td>
+                                        <c:set var="selectedSellerIdStr" value="${fn:trim(salesProduct.sellerMemberId)}" />
                                         <select name="sellerMemberId" id="sellerMemberId"
                                             class="form-select form-select-sm" style="max-width: 220px;">
                                             <option value="">선택</option>
                                             <c:forEach var="seller" items="${sellers}">
-                                                <c:set var="sellerPk" value="${fn:trim(seller.memberPk)}" />
-                                                <c:set var="legacySellerId" value="${fn:trim(seller.memberId)}" />
-                                                <option value="<c:out value='${sellerPk}'/>"
+                                                <c:set var="sellerPkStr" value="${fn:trim(seller.memberPk)}" />
+                                                <c:set var="legacySellerId" value="${fn:trim(seller.loginId)}" />
+                                                <c:set var="sellerSelected"
+                                                    value="${selectedSellerIdStr eq sellerPkStr or selectedSellerIdStr eq legacySellerId}" />
+                                                <option value="<c:out value='${sellerPkStr}'/>"
                                                     data-legacy-id="<c:out value='${legacySellerId}'/>"
                                                     data-seller-name="<c:out value='${seller.ceoName}'/>"
-                                                    <c:if test="${sellerPk eq salesProduct.sellerMemberId or legacySellerId eq salesProduct.sellerMemberId}">selected</c:if>>
+                                                    ${sellerSelected ? 'selected' : ''}>
                                                     <c:out value='${seller.companyName}' />
                                                 </option>
                                             </c:forEach>
@@ -270,10 +273,10 @@
                                             style="max-width: 220px;">
                                             <option value="">선택</option>
                                             <c:forEach var="seller" items="${sellers}">
-                                                <c:set var="sellerPk" value="${fn:trim(seller.memberPk)}" />
-                                                <c:set var="legacySellerId" value="${fn:trim(seller.memberId)}" />
+                                                <c:set var="sellerPkStr" value="${fn:trim(seller.memberPk)}" />
+                                                <c:set var="legacySellerId" value="${fn:trim(seller.loginId)}" />
                                                 <option value="<c:out value='${seller.ceoName}'/>"
-                                                    data-member-id="<c:out value='${sellerPk}'/>"
+                                                    data-member-id="<c:out value='${sellerPkStr}'/>"
                                                     data-legacy-id="<c:out value='${legacySellerId}'/>"
                                                     <c:if test="${seller.ceoName eq salesProduct.sellerName}">selected</c:if>>
                                                     <c:out value='${seller.ceoName}' />
