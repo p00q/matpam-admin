@@ -113,6 +113,12 @@
             sp.SUMMARY,
             sp.MD_COMMENT,
 
+            sp.DETAIL_HTML,
+            sp.PAYMENT_INFO,
+            sp.DELIVERY_INFO,
+            sp.RETURN_INFO,
+            sp.REFUND_INFO,
+
             sp.USE_YN,
             sp.DEL_YN,
 
@@ -175,6 +181,7 @@
             sp.SUMMARY,
             sp.MD_COMMENT,
 
+
             sp.USE_YN,
             sp.DEL_YN,
 
@@ -218,6 +225,12 @@
             SUMMARY,
             MD_COMMENT,
 
+            DETAIL_HTML,
+            PAYMENT_INFO,
+            DELIVERY_INFO,
+            RETURN_INFO,
+            REFUND_INFO,
+
             USE_YN,
             DEL_YN,
 
@@ -250,6 +263,12 @@
             #{summary},
             #{mdComment},
 
+            #{detailHtml},
+            #{paymentInfo},
+            #{deliveryInfo},
+            #{returnInfo},
+            #{refundInfo},
+
             #{useYn},
             'N',
 
@@ -281,6 +300,12 @@
 
             SUMMARY              = #{summary},
             MD_COMMENT           = #{mdComment},
+
+            DETAIL_HTML          = #{detailHtml},
+            PAYMENT_INFO         = #{paymentInfo},
+            DELIVERY_INFO        = #{deliveryInfo},
+            RETURN_INFO          = #{returnInfo},
+            REFUND_INFO          = #{refundInfo},
 
             USE_YN               = #{useYn},
 
