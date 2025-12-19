@@ -49,8 +49,7 @@ public class SalesProductVO implements Serializable {
 
     private BigDecimal listPrice = BigDecimal.ZERO; // list_price (정가/판매가격)
     private BigDecimal costPrice; // cost_price
-    private BigDecimal vatRate = BigDecimal.ZERO; // vat_rate
-    private BigDecimal vatAmount; // 조회용 계산값(선택)
+    private BigDecimal vatAmount; // vat_amount (상세 금액)
 
     private String exposureStatusCd; // exposure_status_cd
     private String saleStatusCd; // sale_status_cd
@@ -235,14 +234,6 @@ public class SalesProductVO implements Serializable {
 
     public void setCostPrice(BigDecimal costPrice) {
         this.costPrice = costPrice;
-    }
-
-    public BigDecimal getVatRate() {
-        return vatRate;
-    }
-
-    public void setVatRate(BigDecimal vatRate) {
-        this.vatRate = vatRate;
     }
 
     public BigDecimal getVatAmount() {

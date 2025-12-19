@@ -111,7 +111,7 @@ public class SalesProductController {
             @RequestParam(value = "sellerName", required = false) String sellerName,
             @RequestParam(value = "listPrice", required = false) BigDecimal listPrice,
             @RequestParam(value = "costPrice", required = false) BigDecimal costPrice,
-            @RequestParam(value = "vatRate", required = false) BigDecimal vatRate,
+            @RequestParam(value = "vatAmount", required = false) BigDecimal vatAmount,
             @RequestParam(value = "exposureStatusCd", required = false) String exposureStatusCd,
             @RequestParam(value = "saleStatusCd", required = false) String saleStatusCd,
             @RequestParam(value = "saleStartDt", required = false) String saleStartDt,
@@ -173,8 +173,8 @@ public class SalesProductController {
         vo.setSellerName(sellerName);
 
         vo.setListPrice(listPrice != null ? listPrice : BigDecimal.ZERO);
-        vo.setCostPrice(costPrice != null ? costPrice : (listPrice != null ? listPrice : BigDecimal.ZERO));
-        vo.setVatRate(vatRate != null ? vatRate : BigDecimal.valueOf(10));
+        vo.setCostPrice(costPrice != null ? costPrice : BigDecimal.ZERO);
+        vo.setVatAmount(vatAmount != null ? vatAmount : BigDecimal.ZERO);
 
         vo.setExposureStatusCd(exposureStatusCd);
         vo.setSaleStatusCd(saleStatusCd);

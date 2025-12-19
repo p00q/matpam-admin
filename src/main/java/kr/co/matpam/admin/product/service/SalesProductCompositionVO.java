@@ -42,11 +42,16 @@ public class SalesProductCompositionVO implements Serializable {
 
     private BigDecimal listPrice;
     private BigDecimal costPrice;
-    private BigDecimal vatRate;
     private BigDecimal vatAmount;
 
     private String exposureStatusCd;
     private String saleStatusCd;
+    private String saleStatusName;
+    private String saleTypeName;
+    private String storageTypeName;
+    private String processTypeName;
+    private String unitTypeName;
+    private String divisionTypeName;
     private Date saleStartDt;
     private Date saleEndDt;
 
@@ -180,14 +185,6 @@ public class SalesProductCompositionVO implements Serializable {
         this.costPrice = costPrice;
     }
 
-    public BigDecimal getVatRate() {
-        return vatRate;
-    }
-
-    public void setVatRate(BigDecimal vatRate) {
-        this.vatRate = vatRate;
-    }
-
     public BigDecimal getVatAmount() {
         return vatAmount;
     }
@@ -226,5 +223,53 @@ public class SalesProductCompositionVO implements Serializable {
 
     public void setSaleEndDt(Date saleEndDt) {
         this.saleEndDt = saleEndDt;
+    }
+
+    public String getSaleStatusName() {
+        return saleStatusName;
+    }
+
+    public void setSaleStatusName(String saleStatusName) {
+        this.saleStatusName = saleStatusName;
+    }
+
+    public String getSaleTypeName() {
+        return saleTypeName;
+    }
+
+    public void setSaleTypeName(String saleTypeName) {
+        this.saleTypeName = saleTypeName;
+    }
+
+    public String getStorageTypeName() {
+        return storageTypeName;
+    }
+
+    public void setStorageTypeName(String storageTypeName) {
+        this.storageTypeName = storageTypeName;
+    }
+
+    public String getProcessTypeName() {
+        return processTypeName;
+    }
+
+    public void setProcessTypeName(String processTypeName) {
+        this.processTypeName = processTypeName;
+    }
+
+    public String getUnitTypeName() {
+        return unitTypeName;
+    }
+
+    public void setUnitTypeName(String unitTypeName) {
+        this.unitTypeName = unitTypeName;
+    }
+
+    public String getDivisionTypeName() {
+        return divisionTypeName;
+    }
+
+    public void setDivisionTypeName(String divisionTypeName) {
+        this.divisionTypeName = divisionTypeName;
     }
 }

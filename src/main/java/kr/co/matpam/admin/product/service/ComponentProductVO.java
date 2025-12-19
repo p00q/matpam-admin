@@ -72,7 +72,6 @@ public class ComponentProductVO implements Serializable {
      */
     private BigDecimal listPrice;
     private BigDecimal costPrice;
-    private BigDecimal vatRate;
 
     /** 노출상태코드 */
     private String exposureStatusCd;
@@ -127,7 +126,7 @@ public class ComponentProductVO implements Serializable {
     private String exposureStatusName;
     private String saleStatusName;
 
-    /** 부가세 금액(계산값: listPrice * vatRate / 100) */
+    /** 부가세 금액 */
     private BigDecimal vatAmount;
 
     /*

@@ -18,7 +18,6 @@
 
         <result property="listPrice"         column="LIST_PRICE"/>
         <result property="costPrice"         column="COST_PRICE"/>
-        <result property="vatRate"           column="VAT_RATE"/>
         <result property="vatAmount"         column="VAT_AMOUNT"/>
 
         <result property="exposureStatusCd"  column="EXPOSURE_STATUS_CD"/>
@@ -101,8 +100,7 @@
 
             sp.LIST_PRICE,
             CAST(sp.COST_PRICE AS DECIMAL(18,0)) AS COST_PRICE,
-            sp.VAT_RATE,
-            CAST(sp.LIST_PRICE * sp.VAT_RATE / 100 AS DECIMAL(18,2)) AS VAT_AMOUNT,
+            sp.VAT_AMOUNT,
 
             sp.EXPOSURE_STATUS_CD,
             sp.SALE_STATUS_CD,
@@ -112,12 +110,6 @@
             sp.VIEW_CNT,
             sp.SUMMARY,
             sp.MD_COMMENT,
-
-            sp.DETAIL_HTML,
-            sp.PAYMENT_INFO,
-            sp.DELIVERY_INFO,
-            sp.RETURN_INFO,
-            sp.REFUND_INFO,
 
             sp.USE_YN,
             sp.DEL_YN,
@@ -169,8 +161,7 @@
 
             sp.LIST_PRICE,
             CAST(sp.COST_PRICE AS DECIMAL(18,0)) AS COST_PRICE,
-            sp.VAT_RATE,
-            CAST(sp.LIST_PRICE * sp.VAT_RATE / 100 AS DECIMAL(18,2)) AS VAT_AMOUNT,
+            sp.VAT_AMOUNT,
 
             sp.EXPOSURE_STATUS_CD,
             sp.SALE_STATUS_CD,
@@ -214,7 +205,7 @@
 
             LIST_PRICE,
             COST_PRICE,
-            VAT_RATE,
+            VAT_AMOUNT,
 
             EXPOSURE_STATUS_CD,
             SALE_STATUS_CD,
@@ -224,12 +215,6 @@
             VIEW_CNT,
             SUMMARY,
             MD_COMMENT,
-
-            DETAIL_HTML,
-            PAYMENT_INFO,
-            DELIVERY_INFO,
-            RETURN_INFO,
-            REFUND_INFO,
 
             USE_YN,
             DEL_YN,
@@ -252,7 +237,7 @@
 
             #{listPrice},
             #{costPrice},
-            #{vatRate},
+            #{vatAmount},
 
             COALESCE(#{exposureStatusCd}, 'Y'),
             COALESCE(#{saleStatusCd}, 'LIVE'),
@@ -262,12 +247,6 @@
             0,
             #{summary},
             #{mdComment},
-
-            #{detailHtml},
-            #{paymentInfo},
-            #{deliveryInfo},
-            #{returnInfo},
-            #{refundInfo},
 
             #{useYn},
             'N',
@@ -291,7 +270,7 @@
 
             LIST_PRICE           = #{listPrice},
             COST_PRICE           = #{costPrice},
-            VAT_RATE             = #{vatRate},
+            VAT_AMOUNT           = #{vatAmount},
 
             EXPOSURE_STATUS_CD   = COALESCE(#{exposureStatusCd}, 'Y'),
             SALE_STATUS_CD       = COALESCE(#{saleStatusCd}, 'LIVE'),
@@ -300,12 +279,6 @@
 
             SUMMARY              = #{summary},
             MD_COMMENT           = #{mdComment},
-
-            DETAIL_HTML          = #{detailHtml},
-            PAYMENT_INFO         = #{paymentInfo},
-            DELIVERY_INFO        = #{deliveryInfo},
-            RETURN_INFO          = #{returnInfo},
-            REFUND_INFO          = #{refundInfo},
 
             USE_YN               = #{useYn},
 

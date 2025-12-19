@@ -28,9 +28,6 @@
 
         <result property="listPrice" column="LIST_PRICE"/>
         <result property="costPrice" column="COST_PRICE"/>
-        <result property="vatRate" column="VAT_RATE"/>
-
-        <!-- 조회용 계산값(선택) -->
         <result property="vatAmount" column="VAT_AMOUNT"/>
 
         <result property="exposureStatusCd" column="EXPOSURE_STATUS_CD"/>
@@ -135,8 +132,7 @@
 
             c.LIST_PRICE,
             c.COST_PRICE,
-            c.VAT_RATE,
-            CAST(c.LIST_PRICE * c.VAT_RATE / 100 AS DECIMAL(18,0)) AS VAT_AMOUNT,
+            c.VAT_AMOUNT,
 
             c.EXPOSURE_STATUS_CD,
             c.SALE_STATUS_CD,
@@ -224,8 +220,7 @@
 
             c.LIST_PRICE,
             c.COST_PRICE,
-            c.VAT_RATE,
-            CAST(c.LIST_PRICE * c.VAT_RATE / 100 AS DECIMAL(18,0)) AS VAT_AMOUNT,
+            c.VAT_AMOUNT,
 
             c.EXPOSURE_STATUS_CD,
             c.SALE_STATUS_CD,
@@ -293,7 +288,7 @@
 
             LIST_PRICE,
             COST_PRICE,
-            VAT_RATE,
+            VAT_AMOUNT,
 
             EXPOSURE_STATUS_CD,
             SALE_STATUS_CD,
@@ -320,8 +315,8 @@
             #{unitTypeCd},
 
             #{listPrice},
-            COALESCE(#{costPrice}, #{listPrice}, 0),
-            COALESCE(#{vatRate}, 10),
+            COALESCE(#{costPrice}, 0),
+            COALESCE(#{vatAmount}, 0),
 
             #{exposureStatusCd},
             #{saleStatusCd},
@@ -358,8 +353,8 @@
             UNIT_TYPE_CD          = #{unitTypeCd},
 
             LIST_PRICE            = #{listPrice},
-            COST_PRICE            = COALESCE(#{costPrice}, #{listPrice}, 0),
-            VAT_RATE              = COALESCE(#{vatRate}, 10),
+            COST_PRICE            = COALESCE(#{costPrice}, 0),
+            VAT_AMOUNT            = COALESCE(#{vatAmount}, 0),
 
             EXPOSURE_STATUS_CD    = #{exposureStatusCd},
             SALE_STATUS_CD        = #{saleStatusCd},

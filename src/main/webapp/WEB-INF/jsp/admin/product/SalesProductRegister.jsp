@@ -129,22 +129,23 @@
                         action="${pageContext.request.contextPath}/admin/product/salesProductRegister.do"
                         enctype="multipart/form-data">
                         <input type="hidden" name="salesProdId" value="<c:out value='${salesProduct.salesProdId}'/>" />
-                        <input type="hidden" name="salesProdCode" value="<c:out value='${salesProduct.salesProdCode}'/>" />
+                        <input type="hidden" name="salesProdCode"
+                            value="<c:out value='${salesProduct.salesProdCode}'/>" />
 
                         <c:if test="${not empty compositionJson}">
                             <script type="application/json"
-                                id="compositionData"><c:out value='${compositionJson}'/></script>
+                                id="compositionData"><c:out value='${compositionJson}' escapeXml="false"/></script>
                         </c:if>
 
                         <fmt:formatNumber var="listPriceFormatted"
-                            value="${empty salesProduct.listPrice ? 0 : salesProduct.listPrice}"
-                            type="number" maxFractionDigits="0" groupingUsed="false" />
+                            value="${empty salesProduct.listPrice ? 0 : salesProduct.listPrice}" type="number"
+                            maxFractionDigits="0" groupingUsed="false" />
                         <fmt:formatNumber var="costPriceFormatted"
                             value="${empty salesProduct.costPrice ? (empty salesProduct.listPrice ? 0 : salesProduct.listPrice) : salesProduct.costPrice}"
                             type="number" maxFractionDigits="0" groupingUsed="false" />
                         <fmt:formatNumber var="viewCountFormatted"
-                            value="${empty salesProduct.viewCnt ? 0 : salesProduct.viewCnt}"
-                            type="number" maxFractionDigits="0" groupingUsed="false" />
+                            value="${empty salesProduct.viewCnt ? 0 : salesProduct.viewCnt}" type="number"
+                            maxFractionDigits="0" groupingUsed="false" />
 
                         <!-- 1. 상품일반정보 -->
                         <div class="section-header">상품일반정보</div>
@@ -173,28 +174,26 @@
                                                 value="<c:out value='${listPriceFormatted}' default='0'/>" />
                                             <span class="input-group-text">원</span>
                                         </div>
-                                        <input type="hidden" name="costPrice" id="costPrice"
-                                            value="<c:out value='${costPriceFormatted}' default='0'/>" />
                                     </td>
-                                    <th>원가</th>
+                                    <th>VAT</th>
                                     <td>
                                         <div class="input-group input-group-sm" style="max-width: 220px;">
-                                            <input type="number" class="form-control form-control-sm"
-                                                value="<c:out value='${costPriceFormatted}' default='0'/>" readonly />
+                                            <input type="number" name="vatAmount" id="vatAmount"
+                                                class="form-control form-control-sm"
+                                                value="<c:out value='${empty salesProduct.vatAmount ? 0 : salesProduct.vatAmount}' default='0'/>" />
                                             <span class="input-group-text">원</span>
                                         </div>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th>VAT</th>
+                                    <th>원가</th>
                                     <td>
-                                        <div class="d-flex align-items-center flex-wrap gap-2">
-                                            <div class="input-group input-group-sm" style="max-width: 220px;">
-                                                <input type="number" id="vatAmount"
-                                                    class="form-control form-control-sm" value="0" readonly /><span class="input-group-text">원</span></div>
-                                            <span class="text-muted small">판매가격의 10%</span>
+                                        <div class="input-group input-group-sm" style="max-width: 220px;">
+                                            <input type="number" name="costPrice" id="costPrice"
+                                                class="form-control form-control-sm" step="1" min="0"
+                                                value="<c:out value='${costPriceFormatted}' default='0'/>" />
+                                            <span class="input-group-text">원</span>
                                         </div>
-                                        <input type="hidden" name="vatRate" id="vatRate" value="<c:out value='${empty salesProduct.vatRate ? 10 : salesProduct.vatRate}' default='10'/>" />
                                     </td>
                                     <th>판매상태</th>
                                     <td>
@@ -203,15 +202,23 @@
                                             <c:choose>
                                                 <c:when test="${not empty saleStatuses}">
                                                     <c:forEach var="code" items="${saleStatuses}">
-                                                        <option value="${code.detailCode}" <c:if test="${empty salesProduct.saleStatusCd ? code.detailCode eq 'LIVE' : salesProduct.saleStatusCd eq code.detailCode}">selected</c:if>>
+                                                        <option value="${code.detailCode}" <c:if
+                                                            test="${empty salesProduct.saleStatusCd ? code.detailCode eq 'LIVE' : salesProduct.saleStatusCd eq code.detailCode}">
+                                                            selected</c:if>>
                                                             ${code.detailCodeName}
                                                         </option>
                                                     </c:forEach>
                                                 </c:when>
                                                 <c:otherwise>
-                                                    <option value="LIVE" <c:if test="${empty salesProduct.saleStatusCd or salesProduct.saleStatusCd eq 'LIVE'}">selected</c:if>>판매중</option>
-                                                    <option value="WAIT" <c:if test="${salesProduct.saleStatusCd eq 'WAIT'}">selected</c:if>>판매대기</option>
-                                                    <option value="STOP" <c:if test="${salesProduct.saleStatusCd eq 'STOP'}">selected</c:if>>판매중지</option>
+                                                    <option value="LIVE" <c:if
+                                                        test="${empty salesProduct.saleStatusCd or salesProduct.saleStatusCd eq 'LIVE'}">
+                                                        selected</c:if>>판매중</option>
+                                                    <option value="WAIT" <c:if
+                                                        test="${salesProduct.saleStatusCd eq 'WAIT'}">selected</c:if>
+                                                        >판매대기</option>
+                                                    <option value="STOP" <c:if
+                                                        test="${salesProduct.saleStatusCd eq 'STOP'}">selected</c:if>
+                                                        >판매중지</option>
                                                 </c:otherwise>
                                             </c:choose>
                                         </select>
@@ -232,9 +239,9 @@
                                     </td>
                                     <th>조회수</th>
                                     <td>
-                                        <input type="text" class="form-control form-control-sm" style="max-width: 220px;"
-                                            value="<c:out value='${viewCountFormatted}' default='0'/>"
-                                            readonly />
+                                        <input type="text" class="form-control form-control-sm"
+                                            style="max-width: 220px;"
+                                            value="<c:out value='${viewCountFormatted}' default='0'/>" readonly />
                                     </td>
                                 </tr>
                                 <tr>
@@ -242,25 +249,30 @@
                                     <td>
                                         <select name="exposureStatusCd" id="exposureStatusCd"
                                             class="form-select form-select-sm" style="max-width: 220px;">
-                                            <option value="Y"
-                                                <c:if test="${empty salesProduct.exposureStatusCd or salesProduct.exposureStatusCd eq 'Y'}">selected</c:if>>노출</option>
-                                            <option value="N"
-                                                <c:if test="${salesProduct.exposureStatusCd eq 'N'}">selected</c:if>>비노출</option>
+                                            <option value="Y" <c:if
+                                                test="${empty salesProduct.exposureStatusCd or salesProduct.exposureStatusCd eq 'Y'}">
+                                                selected</c:if>>노출</option>
+                                            <option value="N" <c:if test="${salesProduct.exposureStatusCd eq 'N'}">
+                                                selected</c:if>>비노출</option>
                                         </select>
                                     </td>
                                     <th>사용여부</th>
                                     <td>
                                         <select name="useYn" id="useYn" class="form-select form-select-sm"
                                             style="max-width: 220px;">
-                                            <option value="Y" <c:if test="${empty salesProduct.useYn or salesProduct.useYn eq 'Y'}">selected</c:if>>사용</option>
-                                            <option value="N" <c:if test="${salesProduct.useYn eq 'N'}">selected</c:if>>미사용</option>
+                                            <option value="Y" <c:if
+                                                test="${empty salesProduct.useYn or salesProduct.useYn eq 'Y'}">selected
+                                                </c:if>>사용</option>
+                                            <option value="N" <c:if test="${salesProduct.useYn eq 'N'}">selected</c:if>
+                                                >미사용</option>
                                         </select>
                                     </td>
                                 </tr>
                                 <tr>
                                     <th>판매자(업체명)</th>
                                     <td>
-                                        <c:set var="selectedSellerIdStr" value="${fn:trim(salesProduct.sellerMemberId)}" />
+                                        <c:set var="selectedSellerIdStr"
+                                            value="${fn:trim(salesProduct.sellerMemberId)}" />
                                         <select name="sellerMemberId" id="sellerMemberId"
                                             class="form-select form-select-sm" style="max-width: 220px;">
                                             <option value="">선택</option>
@@ -272,7 +284,7 @@
                                                 <option value="<c:out value='${sellerPkStr}'/>"
                                                     data-legacy-id="<c:out value='${legacySellerId}'/>"
                                                     data-seller-name="<c:out value='${seller.ceoName}'/>"
-                                                    ${sellerSelected ? 'selected' : ''}>
+                                                    ${sellerSelected ? 'selected' : '' }>
                                                     <c:out value='${seller.companyName}' />
                                                 </option>
                                             </c:forEach>
@@ -288,8 +300,8 @@
                                                 <c:set var="legacySellerId" value="${fn:trim(seller.loginId)}" />
                                                 <option value="<c:out value='${seller.ceoName}'/>"
                                                     data-member-id="<c:out value='${sellerPkStr}'/>"
-                                                    data-legacy-id="<c:out value='${legacySellerId}'/>"
-                                                    <c:if test="${seller.ceoName eq salesProduct.sellerName}">selected</c:if>>
+                                                    data-legacy-id="<c:out value='${legacySellerId}'/>" <c:if
+                                                    test="${seller.ceoName eq salesProduct.sellerName}">selected</c:if>>
                                                     <c:out value='${seller.ceoName}' />
                                                 </option>
                                             </c:forEach>
@@ -299,7 +311,8 @@
                                 <tr>
                                     <th>MD 코멘트</th>
                                     <td colspan="3"><textarea name="mdComment" rows="2"
-                                            class="form-control form-control-sm"><c:out value='${salesProduct.mdComment}'/></textarea></td>
+                                            class="form-control form-control-sm"><c:out value='${salesProduct.mdComment}'/></textarea>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -568,13 +581,13 @@
                         componentProductList.forEach((item, index) => {
                             const salePrice = Number(item.listPrice) || 0;
                             const costPrice = Number(item.costPrice) || 0;
-                            const vatAmount = Math.round(salePrice * (Number(item.vatRate) || 0) / 100);
+                            const vatAmount = Number(item.vatAmount) || 0;
 
                             const tr = document.createElement('tr');
                             tr.innerHTML = `
                 <td>\${item.sellerName}</td>
                 <td>\${item.componentProdName}</td>
-                <td>\${item.saleTypeName || item.saleType}</td>
+                <td>\${item.saleTypeName}</td>
                 <td>\${item.saleStatusName}</td>
                 <td class="text-end">\${salePrice.toLocaleString()}</td>
                 <td class="text-end">\${costPrice.toLocaleString()}</td>
@@ -617,7 +630,7 @@
                                 divisionTypeName: data.divisionTypeName || '',
                                 listPrice: data.listPrice || 0,
                                 costPrice: data.costPrice || 0,
-                                vatRate: data.vatRate || 0,
+                                vatAmount: data.vatAmount || 0,
                                 exposureStatusCd: data.exposureStatusCd || 'Y',
                                 sellerMemberId: data.sellerMemberId || null,
                                 sellerName: data.sellerName || '',
@@ -704,14 +717,21 @@
                         const salePriceInput = document.getElementById('listPrice');
                         const costPriceInput = document.getElementById('costPrice');
                         const vatAmountInput = document.getElementById('vatAmount');
-                        const vatRateHidden = document.getElementById('vatRate');
 
                         const salePrice = sanitizeInteger(salePriceInput.value);
-                        const vatRate = sanitizeInteger(vatRateHidden.value || 10);
                         salePriceInput.value = salePrice;
-                        costPriceInput.value = salePrice;
-                        vatAmountInput.value = Math.round(salePrice * vatRate / 100);
-                        vatRateHidden.value = vatRate;
+
+                        // 공급가액이 비어있으면 판매가와 동일하게 세팅 (수동 입력 시)
+                        if (!costPriceInput.value || costPriceInput.value == '0') {
+                            costPriceInput.value = salePrice;
+                        }
+
+                        // 구성상품이 없을 때만 10% 자동계산 (사용자 편의)
+                        if (componentProductList.length === 0) {
+                            if (!vatAmountInput.value || vatAmountInput.value == '0') {
+                                vatAmountInput.value = Math.round(salePrice * 0.1);
+                            }
+                        }
                     }
 
                     function updateProductInfo() {
@@ -725,18 +745,16 @@
                         const exposureStatusSelect = document.getElementById('exposureStatusCd');
 
                         if (componentProductList.length > 0) {
-                            let totalSale = 0, totalVat = 0;
+                            let totalSale = 0, totalCost = 0, totalVat = 0;
                             let rawSellerId = null;
                             let defaultSellerId = null;
                             let forceHidden = false;
                             const today = new Date().toISOString().slice(0, 10);
-                            const vatRate = sanitizeInteger(vatRateHidden.value || 10);
-
                             componentProductList.forEach(item => {
                                 const salePrice = Number(item.listPrice) || 0;
-                                const rate = Number(item.vatRate || vatRate);
                                 totalSale += salePrice;
-                                totalVat += Math.round(salePrice * rate / 100);
+                                totalCost += Number(item.costPrice) || 0;
+                                totalVat += Number(item.vatAmount) || 0;
 
                                 const saleTypeCode = (item.saleType || '').toString();
                                 const saleTypeName = item.saleTypeName || '';
@@ -752,12 +770,11 @@
                             });
 
                             salePriceInput.value = totalSale;
-                            costPriceInput.value = totalSale;
+                            costPriceInput.value = totalCost;
                             vatAmountInput.value = totalVat;
-                            vatRateHidden.value = sanitizeInteger(vatRateHidden.value || 10);
-                            salePriceInput.readOnly = true;
-                            saleStartDateInput.readOnly = true;
-                            saleEndDateInput.readOnly = true;
+                            // salePriceInput.readOnly = true; // User wants these editable
+                            // saleStartDateInput.readOnly = true;
+                            // saleEndDateInput.readOnly = true;
 
                             if (rawSellerId) sellerSelect.value = rawSellerId;
                             else if (defaultSellerId) sellerSelect.value = defaultSellerId;
@@ -774,9 +791,9 @@
                                 alert("구성상품 중 판매 중지(비노출)되거나 판매 기간이 아닌 상품이 포함되어 있어\n전체 상품이 '비노출' 로 설정됩니다.");
                             }
                         } else {
-                            salePriceInput.readOnly = false;
-                            saleStartDateInput.readOnly = false;
-                            saleEndDateInput.readOnly = false;
+                            // salePriceInput.readOnly = false;
+                            // saleStartDateInput.readOnly = false;
+                            // saleEndDateInput.readOnly = false;
                             syncManualPrice();
                         }
 
@@ -939,7 +956,7 @@
                                             divisionTypeName: comp.divisionTypeName || '',
                                             listPrice: comp.listPrice || 0,
                                             costPrice: comp.costPrice || 0,
-                                            vatRate: comp.vatRate || 0,
+                                            vatAmount: comp.vatAmount || 0,
                                             exposureStatusCd: comp.exposureStatusCd || 'Y',
                                             sellerMemberId: comp.sellerMemberId || null,
                                             sellerName: comp.sellerName || '',
@@ -969,7 +986,7 @@
                         syncEditorContent();
 
                         // 숫자 필드 빈 값 처리
-                        ['listPrice', 'costPrice', 'vatRate', 'vatAmount'].forEach(fieldId => {
+                        ['listPrice', 'costPrice', 'vatAmount'].forEach(fieldId => {
                             const field = document.getElementById(fieldId);
                             if (field && !field.value.trim()) field.value = '0';
                         });

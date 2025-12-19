@@ -112,7 +112,9 @@ public class ComponentProductController {
             component.setSaleEndDt(nextYear.getTime());
             component.setExposureStatusCd("Y");
             component.setUseYn("Y");
-            component.setVatRate(BigDecimal.TEN);
+            if (component.getVatAmount() == null) {
+                component.setVatAmount(BigDecimal.ZERO);
+            }
 
             model.addAttribute("component", component);
         } else {

@@ -110,7 +110,9 @@ public class ComponentProductServiceImpl extends EgovAbstractServiceImpl
         }
 
         vo.setCostPrice(vo.getListPrice());
-        vo.setVatRate(BigDecimal.TEN);
+        if (vo.getVatAmount() == null) {
+            vo.setVatAmount(BigDecimal.ZERO);
+        }
         vo.setTotalSaleQty(vo.getListPrice().longValue());
 
         ensureSalePeriod(vo);

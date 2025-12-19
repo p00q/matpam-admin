@@ -28,11 +28,16 @@
 
         <result property="listPrice"         column="LIST_PRICE"/>
         <result property="costPrice"         column="COST_PRICE"/>
-        <result property="vatRate"           column="VAT_RATE"/>
         <result property="vatAmount"         column="VAT_AMOUNT"/>
 
         <result property="exposureStatusCd"  column="EXPOSURE_STATUS_CD"/>
         <result property="saleStatusCd"      column="SALE_STATUS_CD"/>
+        <result property="saleStatusName"    column="SALE_STATUS_NAME"/>
+        <result property="saleTypeName"      column="SALE_TYPE_NAME"/>
+        <result property="storageTypeName"   column="STORAGE_TYPE_NAME"/>
+        <result property="processTypeName"   column="PROCESS_TYPE_NAME"/>
+        <result property="unitTypeName"      column="UNIT_TYPE_NAME"/>
+        <result property="divisionTypeName"  column="DIVISION_TYPE_NAME"/>
         <result property="saleStartDt"       column="SALE_START_DT"/>
         <result property="saleEndDt"         column="SALE_END_DT"/>
     </resultMap>
@@ -60,18 +65,47 @@
 
             cp.LIST_PRICE,
             cp.COST_PRICE,
-            cp.VAT_RATE,
-            CAST(cp.LIST_PRICE * cp.VAT_RATE / 100 AS DECIMAL(18,2)) AS VAT_AMOUNT,
-
+            cp.VAT_AMOUNT,
             cp.EXPOSURE_STATUS_CD,
             cp.SALE_STATUS_CD,
+            sale_status.DETAIL_CODE_NAME AS SALE_STATUS_NAME,
             cp.SALE_START_DT,
-            cp.SALE_END_DT
+            cp.SALE_END_DT,
+
+            sale_type.DETAIL_CODE_NAME   AS SALE_TYPE_NAME,
+            storage_type.DETAIL_CODE_NAME AS STORAGE_TYPE_NAME,
+            process_type.DETAIL_CODE_NAME AS PROCESS_TYPE_NAME,
+            unit_type.DETAIL_CODE_NAME    AS UNIT_TYPE_NAME,
+            cut_type.DETAIL_CODE_NAME     AS DIVISION_TYPE_NAME
         FROM TB_SALES_PRODUCT_COMP c
         JOIN TB_COMPONENT_PRODUCT cp
           ON c.COMPONENT_PROD_ID = cp.COMPONENT_PROD_ID
         LEFT JOIN TB_MEMBER m
           ON cp.SELLER_MEMBER_ID = m.MEMBER_ID
+        LEFT JOIN TB_DETAIL_CODE sale_type
+            ON sale_type.CODE_GROUP_ID = 'SALE_STATUS'
+            AND sale_type.CODE_ID = 'SALE_TYPE'
+            AND sale_type.DETAIL_CODE_ID = cp.SALE_TYPE_CD
+        LEFT JOIN TB_DETAIL_CODE sale_status
+            ON sale_status.CODE_GROUP_ID = 'SALE_STATUS'
+            AND sale_status.CODE_ID = 'SALE_STATUS'
+            AND sale_status.DETAIL_CODE_ID = cp.SALE_STATUS_CD
+        LEFT JOIN TB_DETAIL_CODE storage_type
+            ON storage_type.CODE_GROUP_ID = 'PRODUCT_TYPE'
+            AND storage_type.CODE_ID = 'STORAGE_TYPE'
+            AND storage_type.DETAIL_CODE_ID = cp.STORAGE_TYPE_CD
+        LEFT JOIN TB_DETAIL_CODE process_type
+            ON process_type.CODE_GROUP_ID = 'PRODUCT_TYPE'
+            AND process_type.CODE_ID = 'PROCESS_TYPE'
+            AND process_type.DETAIL_CODE_ID = cp.PROCESS_TYPE_CD
+        LEFT JOIN TB_DETAIL_CODE unit_type
+            ON unit_type.CODE_GROUP_ID = 'PRODUCT_TYPE'
+            AND unit_type.CODE_ID = 'UNIT_TYPE'
+            AND unit_type.DETAIL_CODE_ID = cp.UNIT_TYPE_CD
+        LEFT JOIN TB_DETAIL_CODE cut_type
+            ON cut_type.CODE_GROUP_ID = 'PRODUCT_TYPE'
+            AND cut_type.CODE_ID = 'CUT_TYPE'
+            AND cut_type.DETAIL_CODE_ID = cp.CUT_TYPE_CD
         WHERE c.SALES_PROD_ID = #{value}
           AND c.DEL_YN = 'N'
         ORDER BY c.SORT_ORDER ASC
