@@ -721,7 +721,7 @@
                         const salePrice = sanitizeInteger(salePriceInput.value);
                         salePriceInput.value = salePrice;
 
-                        // 공급가액이 비어있으면 판매가와 동일하게 세팅 (수동 입력 시)
+                        // 원가가 비어있으면 판매가와 동일하게 세팅 (수동 입력 시)
                         if (!costPriceInput.value || costPriceInput.value == '0') {
                             costPriceInput.value = salePrice;
                         }

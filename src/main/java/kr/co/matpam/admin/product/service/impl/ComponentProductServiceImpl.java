@@ -84,7 +84,7 @@ public class ComponentProductServiceImpl extends EgovAbstractServiceImpl
         LOGGER.debug("Update component product ID: {}",
                 componentProductVO.getComponentProdId());
 
-        normalizePrices(componentProductVO);
+        // normalizePrices(componentProductVO);
 
         componentProductDAO.updateComponentProduct(componentProductVO);
     }

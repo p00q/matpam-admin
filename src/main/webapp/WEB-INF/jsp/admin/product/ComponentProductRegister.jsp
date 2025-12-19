@@ -212,7 +212,7 @@
                                     </td>
                                 </tr>
 
-                                <!-- Row 5: 판매가격 / 공급가액 -->
+                                <!-- Row 5: 판매가격 / VAT -->
                                 <tr>
                                     <th>판매가격 <span class="text-danger">*</span></th>
                                     <td>
@@ -226,6 +226,19 @@
                                         <input type="hidden" name="totalSaleQty" id="totalSaleQty"
                                             value="<c:out value='${empty component.totalSaleQty ? component.listPrice : component.totalSaleQty}' default='0'/>" />
                                     </td>
+                                    <th>VAT <span class="text-danger">*</span></th>
+                                    <td>
+                                        <div class="input-group" style="max-width: 200px;">
+                                            <input type="number" name="vatAmount" id="vatAmount"
+                                                class="form-control form-control-sm"
+                                                value="<c:out value='${not empty vatAmountInt ? vatAmountInt : (empty component.vatAmount ? 0 : component.vatAmount)}' default='0'/>" />
+                                            <span class="input-group-text">원</span>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Row 6: 원가 / 판매상태 -->
+                                <tr>
                                     <th>원가 <span class="text-danger">*</span></th>
                                     <td>
                                         <div class="input-group" style="max-width: 200px;">
@@ -233,19 +246,6 @@
                                                 class="form-control form-control-sm" step="1"
                                                 value="<c:out value='${not empty costPriceInt ? costPriceInt : (empty component.costPrice ? 0 : component.costPrice)}' default='0'/>"
                                                 required min="0" />
-                                            <span class="input-group-text">원</span>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <!-- Row 6: VAT / 판매상태 -->
-                                <tr>
-                                    <th>VAT <span class="text-danger">*</span></th>
-                                    <td>
-                                        <div class="input-group" style="max-width: 200px;">
-                                            <input type="number" name="vatAmount" id="vatAmount"
-                                                class="form-control form-control-sm"
-                                                value="<c:out value='${not empty vatAmountInt ? vatAmountInt : (empty component.vatAmount ? 0 : component.vatAmount)}' default='0'/>" />
                                             <span class="input-group-text">원</span>
                                         </div>
                                     </td>
@@ -345,10 +345,6 @@
                         function syncFromSalePrice() {
                             const salePrice = sanitizeInteger(listPriceInput.value);
                             listPriceInput.value = salePrice;
-
-                            if (costPriceInput) {
-                                costPriceInput.value = costPrice;
-                            }
 
                             if (totalSaleQtyInput) {
                                 totalSaleQtyInput.value = salePrice;
