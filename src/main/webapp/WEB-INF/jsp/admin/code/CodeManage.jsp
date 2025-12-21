@@ -123,22 +123,28 @@
                     <div class="card-body p-3">
                         <div class="row g-3 align-items-center">
                             <div class="col-auto">
-                                <label class="col-form-label fw-bold">그룹코드명</label>
+                                <label class="col-form-label fw-bold">그룹코드</label>
                             </div>
                             <div class="col-auto">
-                                <input type="text" id="searchGroupCodeName" class="form-control form-control-sm">
+                                <select id="filterGroupCode" class="form-select form-select-sm">
+                                    <option value="">전체</option>
+                                </select>
                             </div>
                             <div class="col-auto">
-                                <label class="col-form-label fw-bold">코드명</label>
+                                <label class="col-form-label fw-bold">코드</label>
                             </div>
                             <div class="col-auto">
-                                <input type="text" id="searchCodeName" class="form-control form-control-sm">
+                                <select id="filterCode" class="form-select form-select-sm">
+                                    <option value="">전체</option>
+                                </select>
                             </div>
                             <div class="col-auto">
-                                <label class="col-form-label fw-bold">상세코드명</label>
+                                <label class="col-form-label fw-bold">상세코드</label>
                             </div>
                             <div class="col-auto">
-                                <input type="text" id="searchDetailCodeName" class="form-control form-control-sm">
+                                <select id="filterDetailCode" class="form-select form-select-sm">
+                                    <option value="">전체</option>
+                                </select>
                             </div>
                             <div class="col-auto">
                                 <label class="col-form-label fw-bold">사용여부</label>
@@ -239,6 +245,9 @@
                 let currentGroupCode = null;
                 let currentCode = null;
                 let currentDetailCode = null;
+                let filterGroupCode = '';
+                let filterCode = '';
+                let filterDetailCode = '';
 
                 // Arrays to hold local state (including new items)
                 let groupList = [];
@@ -247,11 +256,33 @@
 
                 $(document).ready(function () {
                     fn_search();
+
+                    $('#filterGroupCode').on('change', function () {
+                        filterGroupCode = $(this).val();
+                        filterCode = '';
+                        filterDetailCode = '';
+                        fn_renderCodeSelect([]);
+                        fn_renderDetailSelect([]);
+
+                        if (filterGroupCode) {
+                            fn_loadCodeOptions(filterGroupCode);
+                        }
+                    });
+
+                    $('#filterCode').on('change', function () {
+                        filterCode = $(this).val();
+                        filterDetailCode = '';
+                        fn_renderDetailSelect([]);
+
+                        if (filterGroupCode && filterCode) {
+                            fn_loadDetailOptions(filterGroupCode, filterCode);
+                        }
+                    });
                 });
 
                 function fn_search() {
                     const searchVO = {
-                        groupCodeName: $('#searchGroupCodeName').val(),
+                        groupCodeName: '',
                         useYn: $('#searchUseYn').val()
                     };
 
@@ -264,6 +295,7 @@
                             if (res.success) {
                                 groupList = res.list.map(item => ({ ...item, status: 'NORMAL' }));
                                 fn_renderGroupTable();
+                                fn_renderGroupSelect();
                             } else {
                                 alert(res.message);
                             }
@@ -319,6 +351,22 @@
                         $('#codeTbody').empty();
                         $('#detailTbody').empty();
                     }
+                }
+
+                function fn_renderGroupSelect() {
+                    const select = $('#filterGroupCode');
+                    const selectedValue = select.val() || '';
+                    select.empty();
+                    select.append('<option value="">전체</option>');
+
+                    groupList.forEach(item => {
+                        if (item.status === 'DELETED') return;
+                        const label = item.groupCodeName ? `${item.groupCodeName} (${item.groupCode})` : item.groupCode;
+                        select.append(`<option value="${item.groupCode}">${label}</option>`);
+                    });
+
+                    select.val(selectedValue);
+                    filterGroupCode = select.val() || '';
                 }
 
                 function fn_loadCodeList(groupCode) {
@@ -382,6 +430,35 @@
                     if (!currentCode) $('#detailTbody').empty();
                 }
 
+                function fn_loadCodeOptions(groupCode) {
+                    $.ajax({
+                        url: '<c:url value="/admin/basic/selectCodeList.ajax"/>',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ groupCode: groupCode }),
+                        success: function (res) {
+                            if (res.success) {
+                                fn_renderCodeSelect(res.list || []);
+                            }
+                        }
+                    });
+                }
+
+                function fn_renderCodeSelect(list) {
+                    const select = $('#filterCode');
+                    const selectedValue = select.val() || '';
+                    select.empty();
+                    select.append('<option value="">전체</option>');
+
+                    list.forEach(item => {
+                        const label = item.codeName ? `${item.codeName} (${item.code})` : item.code;
+                        select.append(`<option value="${item.code}">${label}</option>`);
+                    });
+
+                    select.val(selectedValue);
+                    filterCode = select.val() || '';
+                }
+
                 function fn_loadDetailCodeList(groupCode, code) {
                     $.ajax({
                         url: '<c:url value="/admin/basic/selectDetailCodeList.ajax"/>',
@@ -395,6 +472,35 @@
                             }
                         }
                     });
+                }
+
+                function fn_loadDetailOptions(groupCode, code) {
+                    $.ajax({
+                        url: '<c:url value="/admin/basic/selectDetailCodeList.ajax"/>',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ groupCode: groupCode, code: code }),
+                        success: function (res) {
+                            if (res.success) {
+                                fn_renderDetailSelect(res.list || []);
+                            }
+                        }
+                    });
+                }
+
+                function fn_renderDetailSelect(list) {
+                    const select = $('#filterDetailCode');
+                    const selectedValue = select.val() || '';
+                    select.empty();
+                    select.append('<option value="">전체</option>');
+
+                    list.forEach(item => {
+                        const label = item.detailCodeName ? `${item.detailCodeName} (${item.detailCode})` : item.detailCode;
+                        select.append(`<option value="${item.detailCode}">${label}</option>`);
+                    });
+
+                    select.val(selectedValue);
+                    filterDetailCode = select.val() || '';
                 }
 
                 function fn_renderDetailTable() {
