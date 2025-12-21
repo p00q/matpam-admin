@@ -121,7 +121,7 @@
                         </h4>
                         <div>
                             <button type="button" class="btn btn-secondary" onclick="location.href='<c:url value="
-                                /admin/product/salesProductList.do" />'">목록</button>
+                                /admin/product/salesProductList.do" />';">목록</button>
                         </div>
                     </div>
 
@@ -542,7 +542,7 @@
                     function fn_addComponentPopup() {
                         const url = '<c:url value="/admin/product/popup/componentList.do"/>';
                         const name = 'componentPopup';
-                        const option = 'width=1200,height=800,scrollbars=yes';
+                        const option = 'width=1440,height=800,scrollbars=yes';
                         window.open(url, name, option);
                     }
 

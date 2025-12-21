@@ -146,7 +146,7 @@
                         </div>
                         <div class="d-flex gap-2">
                             <button type="button" class="btn btn-success btn-sm"
-                                onclick="location.href='<c:url value='/admin/product/salesProductRegister.do'/>'">
+                                onclick="location.href='<c:url value='/admin/product/salesProductRegister.do'/>';">
                                 <i class="bi bi-plus-circle me-1"></i>신규등록
                             </button>
                             <button type="button" class="btn btn-secondary btn-sm">
@@ -157,36 +157,42 @@
 
                     <!-- 목록 테이블 -->
                     <div class="table-responsive">
-                        <table class="table table-bordered table-hover text-center align-middle bg-white">
+                        <table class="table table-bordered table-hover text-center align-middle bg-white"
+                            style="font-size: 0.9rem;">
                             <thead class="table-light">
                                 <tr>
-                                    <th scope="col" style="width: 8%;">상품번호</th>
-                                    <th scope="col" style="width: 30%;">상품명</th>
-                                    <th scope="col" style="width: 12%;">판매가격</th>
-                                    <th scope="col" style="width: 8%;">조회수</th>
-                                    <th scope="col" style="width: 8%;">주문수</th>
-                                    <th scope="col" style="width: 12%;">등록일</th>
-                                    <th scope="col" style="width: 10%;">판매상태</th>
-                                    <th scope="col" style="width: 12%;">노출상태</th>
+                                    <th scope="col" style="width: 10%;">상품번호</th>
+                                    <th scope="col" style="width: 25%;">상품명</th>
+                                    <th scope="col" style="width: 12%;">업체명</th>
+                                    <th scope="col" style="width: 10%;">판매가격</th>
+                                    <th scope="col" style="width: 7%;">조회수</th>
+                                    <th scope="col" style="width: 7%;">주문수</th>
+                                    <th scope="col" style="width: 10%;">등록일</th>
+                                    <th scope="col" style="width: 9%;">판매상태</th>
+                                    <th scope="col" style="width: 10%;">노출상태</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <c:forEach var="item" items="${salesProductList}" varStatus="status">
                                     <tr>
                                         <td>
-                                            <c:out value="${item.salesProdCode}" />
-                                        </td>
-                                        <td class="text-start">
                                             <a href="<c:url value='/admin/product/salesProductRegister.do?salesProdId=${item.salesProdId}'/>"
                                                 class="text-decoration-none text-primary fw-bold">
-                                                ${item.salesProdName}
+                                                <c:out value="${item.salesProdCode}" />
                                             </a>
+                                        </td>
+                                        <td class="text-start">
+                                            <c:out value="${item.salesProdName}" />
+                                        </td>
+                                        <td>
+                                            <c:out value="${item.sellerName}" />
                                         </td>
                                         <td class="text-end">
                                             <fmt:formatNumber value="${item.listPrice}" type="number" />원
                                         </td>
                                         <td class="text-end">
-                                            <fmt:formatNumber value="${item.viewCnt == null ? 0 : item.viewCnt}" type="number" />
+                                            <fmt:formatNumber value="${item.viewCnt == null ? 0 : item.viewCnt}"
+                                                type="number" />
                                         </td>
                                         <td>0</td>
                                         <td>
@@ -222,7 +228,7 @@
 
                                 <c:if test="${empty salesProductList}">
                                     <tr>
-                                        <td colspan="8" class="py-4 text-center text-muted">
+                                        <td colspan="9" class="py-4 text-center text-muted">
                                             검색된 결과가 없습니다.
                                         </td>
                                     </tr>

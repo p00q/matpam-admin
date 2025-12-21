@@ -319,7 +319,7 @@
                             </button>
 
                             <button type="button" class="btn btn-secondary px-4" onclick="location.href='<c:url value="
-                                /admin/product/componentProductList.do?menu=component" />'">취소</button>
+                                /admin/product/componentProductList.do?menu=component" />';">취소</button>
 
                             <c:if test="${not empty component.componentProdId}">
                                 <button type="button" class="btn btn-danger px-4" onclick="fn_delete()">삭제</button>
