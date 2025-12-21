@@ -9,6 +9,7 @@
             <title>맛팜 관리자</title>
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
             <style>
                 body {
                     margin: 0;
@@ -120,7 +121,7 @@
                             </a>
                         </li>
                         <li>
-                            <a href="<c:url value='/admin/basic/basicList.do'/>"
+                            <a href="<c:url value='/admin/basic/codeManage.do?menu=basic'/>"
                                 class="${param.menu eq 'basic' ? 'active' : ''}">
                                 <i class="bi bi-file-earmark-text-fill"></i>기본정보관리
                             </a>
