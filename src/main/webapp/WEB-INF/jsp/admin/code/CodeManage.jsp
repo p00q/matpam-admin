@@ -39,6 +39,11 @@
                     min-width: 120px;
                 }
 
+                .panel-search .btn {
+                    min-width: 56px;
+                    white-space: nowrap;
+                }
+
                 .panel-body {
                     flex: 1;
                     overflow-y: auto;
@@ -75,11 +80,16 @@
                     cursor: pointer;
                 }
 
-                .panel-table input {
+                .panel-table input[type="text"],
+                .panel-table input[type="number"] {
                     width: 100%;
                     border: none;
                     background: transparent;
                     text-align: center;
+                }
+
+                .panel-table input[type="checkbox"] {
+                    width: auto;
                 }
 
                 .panel-table input:focus {
@@ -184,14 +194,17 @@
                                     class="btn btn-outline-secondary btn-sm">검색</button>
                             </div>
                             <div>
-                                <button class="btn btn-secondary btn-circle" onclick="fn_addRow('group')">+</button>
-                                <button class="btn btn-secondary btn-circle" onclick="fn_removeRow('group')">-</button>
+                                <button type="button" class="btn btn-secondary btn-circle btn-add"
+                                    data-type="group">+</button>
+                                <button type="button" class="btn btn-secondary btn-circle btn-remove"
+                                    data-type="group">-</button>
                             </div>
                         </div>
                         <div class="panel-body">
                             <table class="table panel-table table-bordered text-center" id="groupTable">
                                 <thead>
                                     <tr>
+                                        <th width="5%">선택</th>
                                         <th width="30%">그룹코드</th>
                                         <th width="45%">그룹코드명</th>
                                         <th width="25%">사용여부</th>
@@ -219,14 +232,17 @@
                                     class="btn btn-outline-secondary btn-sm">검색</button>
                             </div>
                             <div>
-                                <button class="btn btn-secondary btn-circle" onclick="fn_addRow('code')">+</button>
-                                <button class="btn btn-secondary btn-circle" onclick="fn_removeRow('code')">-</button>
+                                <button type="button" class="btn btn-secondary btn-circle btn-add"
+                                    data-type="code">+</button>
+                                <button type="button" class="btn btn-secondary btn-circle btn-remove"
+                                    data-type="code">-</button>
                             </div>
                         </div>
                         <div class="panel-body">
                             <table class="table panel-table table-bordered text-center" id="codeTable">
                                 <thead>
                                     <tr>
+                                        <th width="5%">선택</th>
                                         <th width="10%">순서</th>
                                         <th width="35%">코드</th>
                                         <th width="40%">코드명</th>
@@ -255,14 +271,17 @@
                                     class="btn btn-outline-secondary btn-sm">검색</button>
                             </div>
                             <div>
-                                <button class="btn btn-secondary btn-circle" onclick="fn_addRow('detail')">+</button>
-                                <button class="btn btn-secondary btn-circle" onclick="fn_removeRow('detail')">-</button>
+                                <button type="button" class="btn btn-secondary btn-circle btn-add"
+                                    data-type="detail">+</button>
+                                <button type="button" class="btn btn-secondary btn-circle btn-remove"
+                                    data-type="detail">-</button>
                             </div>
                         </div>
                         <div class="panel-body">
                             <table class="table panel-table table-bordered text-center" id="detailTable">
                                 <thead>
                                     <tr>
+                                        <th width="5%">선택</th>
                                         <th width="10%">순서</th>
                                         <th width="35%">상세코드</th>
                                         <th width="40%">상세코드명</th>
@@ -298,6 +317,12 @@
                     $('#btnSave').on('click', function () {
                         console.log('Save button clicked');
                         fn_saveAll();
+                    });
+                    $('.btn-add').off('click').on('click', function () {
+                        fn_addRow($(this).data('type'));
+                    });
+                    $('.btn-remove').off('click').on('click', function () {
+                        fn_removeRow($(this).data('type'));
                     });
 
                     $('#btnGroupSearch').on('click', function () {
@@ -475,6 +500,9 @@
                         const tr = $('<tr>').attr('data-index', index);
                         if (currentGroupCode === item.groupCode && item.groupCode) tr.addClass('selected');
 
+                        const tdSelect = $('<td>').append($('<input type="checkbox" class="row-select">'));
+                        tr.append(tdSelect);
+
                         // Group Code (Editable if NEW)
                         const tdCode = $('<td>');
                         if (item.status === 'NEW') {
@@ -552,6 +580,7 @@
                         if (currentCode === item.code && item.code) tr.addClass('selected');
 
                         // Code (Editable if NEW)
+                        tr.append($('<td>').append($('<input type="checkbox" class="row-select">')));
                         tr.append($('<td>').append($('<input type="number">').val(item.sortOrder).on('change', function () { item.sortOrder = $(this).val(); if (item.status === 'NORMAL') item.status = 'UPDATED'; })));
 
                         const tdCode = $('<td>');
@@ -661,6 +690,7 @@
                         if (currentDetailCode === item.detailCode && item.detailCode) tr.addClass('selected');
 
                         // Detail Code (Editable if NEW)
+                        tr.append($('<td>').append($('<input type="checkbox" class="row-select">')));
                         tr.append($('<td>').append($('<input type="number">').val(item.sortOrder).on('change', function () { item.sortOrder = $(this).val(); if (item.status === 'NORMAL') item.status = 'UPDATED'; })));
 
                         const tdCode = $('<td>');
@@ -711,23 +741,42 @@
                     else if (type === 'code') { list = codeList; renderFn = fn_renderCodeTable; tbody = $('#codeTbody'); }
                     else if (type === 'detail') { list = detailList; renderFn = fn_renderDetailTable; tbody = $('#detailTbody'); }
 
-                    const selectedTr = tbody.find('tr.selected');
-                    if (selectedTr.length === 0) {
+                    const selectedRows = tbody.find('input.row-select:checked').closest('tr');
+                    if (selectedRows.length === 0) {
                         alert('삭제할 행을 선택해주세요.');
                         return;
                     }
 
-                    const index = selectedTr.attr('data-index');
-
-                    if (index >= 0) {
+                    const indices = selectedRows.map(function () { return Number($(this).attr('data-index')); }).get().sort((a, b) => b - a);
+                    indices.forEach(index => {
+                        if (Number.isNaN(index) || index < 0) return;
                         const item = list[index];
+                        if (!item) return;
                         if (item.status === 'NEW') {
                             list.splice(index, 1);
                         } else {
                             item.status = 'DELETED';
                         }
-                        renderFn();
-                    }
+                        if (type === 'group' && item.groupCode === currentGroupCode) {
+                            currentGroupCode = null;
+                            currentCode = null;
+                            currentDetailCode = null;
+                            codeList = [];
+                            detailList = [];
+                            fn_renderCodeTable();
+                            fn_renderDetailTable();
+                        }
+                        if (type === 'code' && item.code === currentCode) {
+                            currentCode = null;
+                            currentDetailCode = null;
+                            detailList = [];
+                            fn_renderDetailTable();
+                        }
+                        if (type === 'detail' && item.detailCode === currentDetailCode) {
+                            currentDetailCode = null;
+                        }
+                    });
+                    renderFn();
                 }
 
                 function fn_saveAll() {
