@@ -103,6 +103,33 @@
         WHERE CODE_GROUP_ID = #{groupCode}
         ORDER BY SORT_ORDER, CODE_ID
     </select>
+
+    <!-- 코드 검색 -->
+    <select id="searchCodeList"
+            parameterType="kr.co.matpam.admin.code.service.CodeVO"
+            resultType="kr.co.matpam.admin.code.service.CodeVO">
+        SELECT 
+            CODE_GROUP_ID AS groupCode,
+            CODE_ID       AS code,
+            CODE_NAME     AS codeName,
+            SORT_ORDER    AS sortOrder,
+            USE_YN        AS useYn,
+            DATE_FORMAT(REG_DATE, '%Y-%m-%d %H:%i:%s') AS regDate,
+            DATE_FORMAT(MOD_DATE, '%Y-%m-%d %H:%i:%s') AS modDate
+        FROM TB_CODE
+        <where>
+            <if test="groupCode != null and groupCode != ''">
+                AND CODE_GROUP_ID LIKE CONCAT('%', #{groupCode}, '%')
+            </if>
+            <if test="code != null and code != ''">
+                AND CODE_ID LIKE CONCAT('%', #{code}, '%')
+            </if>
+            <if test="useYn != null and useYn != ''">
+                AND USE_YN = #{useYn}
+            </if>
+        </where>
+        ORDER BY SORT_ORDER, CODE_ID
+    </select>
     
     <!-- 코드 단건 조회 -->
     <select id="selectCode"
@@ -173,6 +200,37 @@
         FROM TB_DETAIL_CODE
         WHERE CODE_GROUP_ID = #{param1}
           AND CODE_ID       = #{param2}
+        ORDER BY SORT_ORDER, DETAIL_CODE_ID
+    </select>
+
+    <!-- 상세코드 검색 -->
+    <select id="searchDetailCodeList"
+            parameterType="kr.co.matpam.admin.code.service.DetailCodeVO"
+            resultType="kr.co.matpam.admin.code.service.DetailCodeVO">
+        SELECT 
+            CODE_GROUP_ID    AS groupCode,
+            CODE_ID          AS code,
+            DETAIL_CODE_ID   AS detailCode,
+            DETAIL_CODE_NAME AS detailCodeName,
+            SORT_ORDER       AS sortOrder,
+            USE_YN           AS useYn,
+            DATE_FORMAT(REG_DATE, '%Y-%m-%d %H:%i:%s') AS regDate,
+            DATE_FORMAT(MOD_DATE, '%Y-%m-%d %H:%i:%s') AS modDate
+        FROM TB_DETAIL_CODE
+        <where>
+            <if test="groupCode != null and groupCode != ''">
+                AND CODE_GROUP_ID LIKE CONCAT('%', #{groupCode}, '%')
+            </if>
+            <if test="code != null and code != ''">
+                AND CODE_ID LIKE CONCAT('%', #{code}, '%')
+            </if>
+            <if test="detailCode != null and detailCode != ''">
+                AND DETAIL_CODE_ID LIKE CONCAT('%', #{detailCode}, '%')
+            </if>
+            <if test="useYn != null and useYn != ''">
+                AND USE_YN = #{useYn}
+            </if>
+        </where>
         ORDER BY SORT_ORDER, DETAIL_CODE_ID
     </select>
     
