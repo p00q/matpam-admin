@@ -28,6 +28,8 @@ public interface CodeManagementMapper {
     // ========== 코드 ==========
     List<CodeVO> selectCodeList(String groupCode) throws Exception;
 
+    List<CodeVO> searchCodeList(CodeVO searchVO) throws Exception;
+
     CodeVO selectCode(String groupCode, String code) throws Exception;
 
     void insertCode(CodeVO vo) throws Exception;
@@ -38,6 +40,8 @@ public interface CodeManagementMapper {
 
     // ========== 상세코드 ==========
     List<DetailCodeVO> selectDetailCodeList(String groupCode, String code) throws Exception;
+
+    List<DetailCodeVO> searchDetailCodeList(DetailCodeVO searchVO) throws Exception;
 
     DetailCodeVO selectDetailCode(String groupCode, String code, String detailCode) throws Exception;
 

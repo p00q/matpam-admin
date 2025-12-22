@@ -48,6 +48,11 @@ public class CodeManagementServiceImpl implements CodeManagementService {
     }
 
     @Override
+    public List<CodeVO> searchCodeList(CodeVO searchVO) throws Exception {
+        return codeManagementMapper.searchCodeList(searchVO);
+    }
+
+    @Override
     public void saveCode(CodeVO vo) throws Exception {
         CodeVO existing = codeManagementMapper.selectCode(vo.getGroupCode(), vo.getCode());
         if (existing == null) {
@@ -66,6 +71,11 @@ public class CodeManagementServiceImpl implements CodeManagementService {
     @Override
     public List<DetailCodeVO> selectDetailCodeList(String groupCode, String code) throws Exception {
         return codeManagementMapper.selectDetailCodeList(groupCode, code);
+    }
+
+    @Override
+    public List<DetailCodeVO> searchDetailCodeList(DetailCodeVO searchVO) throws Exception {
+        return codeManagementMapper.searchDetailCodeList(searchVO);
     }
 
     @Override
