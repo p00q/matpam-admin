@@ -121,44 +121,43 @@
                 <!-- Filter Bar -->
                 <div class="card mb-3">
                     <div class="card-body p-3">
-                        <div class="row g-3 align-items-center">
-                            <div class="col-auto">
-                                <label class="col-form-label fw-bold">그룹코드</label>
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text fw-bold">그룹코드</span>
+                                    <input type="text" id="filterGroupCode" class="form-control" list="groupCodeList"
+                                        placeholder="입력/선택">
+                                    <datalist id="groupCodeList"></datalist>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text fw-bold">코드</span>
+                                    <input type="text" id="filterCode" class="form-control" list="codeOptionsList"
+                                        placeholder="입력/선택">
+                                    <datalist id="codeOptionsList"></datalist>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text fw-bold">상세코드</span>
+                                    <input type="text" id="filterDetailCode" class="form-control"
+                                        list="detailOptionsList" placeholder="입력/선택">
+                                    <datalist id="detailOptionsList"></datalist>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text fw-bold">사용여부</span>
+                                    <select id="searchUseYn" class="form-select">
+                                        <option value="">전체</option>
+                                        <option value="Y">사용</option>
+                                        <option value="N">미사용</option>
+                                    </select>
+                                </div>
                             </div>
                             <div class="col-auto">
-                                <select id="filterGroupCode" class="form-select form-select-sm">
-                                    <option value="">전체</option>
-                                </select>
-                            </div>
-                            <div class="col-auto">
-                                <label class="col-form-label fw-bold">코드</label>
-                            </div>
-                            <div class="col-auto">
-                                <select id="filterCode" class="form-select form-select-sm">
-                                    <option value="">전체</option>
-                                </select>
-                            </div>
-                            <div class="col-auto">
-                                <label class="col-form-label fw-bold">상세코드</label>
-                            </div>
-                            <div class="col-auto">
-                                <select id="filterDetailCode" class="form-select form-select-sm">
-                                    <option value="">전체</option>
-                                </select>
-                            </div>
-                            <div class="col-auto">
-                                <label class="col-form-label fw-bold">사용여부</label>
-                            </div>
-                            <div class="col-auto">
-                                <select id="searchUseYn" class="form-select form-select-sm">
-                                    <option value="">전체</option>
-                                    <option value="사용">사용</option>
-                                    <option value="미사용">미사용</option>
-                                </select>
-                            </div>
-                            <div class="col-auto ms-auto">
-                                <button type="button" class="btn btn-secondary btn-sm px-3"
-                                    onclick="fn_search()">조회</button>
+                                <button type="button" id="btnSearch" class="btn btn-secondary btn-sm px-3">조회</button>
                             </div>
                         </div>
                     </div>
@@ -166,7 +165,7 @@
 
                 <!-- Action Bar -->
                 <div class="d-flex justify-content-end mb-3">
-                    <button type="button" class="btn btn-dark btn-sm px-4" onclick="fn_saveAll()">저장</button>
+                    <button type="button" id="btnSave" class="btn btn-dark btn-sm px-4">저장</button>
                 </div>
 
                 <!-- 3-Column Content -->
@@ -203,10 +202,10 @@
                             <table class="table panel-table table-bordered text-center" id="codeTable">
                                 <thead>
                                     <tr>
-                                        <th width="25%">코드</th>
-                                        <th width="20%">순서</th>
-                                        <th width="35%">코드명</th>
-                                        <th width="20%">사용여부</th>
+                                        <th width="35%">코드</th>
+                                        <th width="40%">코드명</th>
+                                        <th width="10%">순서</th>
+                                        <th width="15%">사용여부</th>
                                     </tr>
                                 </thead>
                                 <tbody id="codeTbody">
@@ -245,9 +244,6 @@
                 let currentGroupCode = null;
                 let currentCode = null;
                 let currentDetailCode = null;
-                let filterGroupCode = '';
-                let filterCode = '';
-                let filterDetailCode = '';
 
                 // Arrays to hold local state (including new items)
                 let groupList = [];
@@ -257,50 +253,159 @@
                 $(document).ready(function () {
                     fn_search();
 
+                    $('#btnSearch').on('click', function () {
+                        console.log('Search button clicked');
+                        fn_search();
+                    });
+                    $('#btnSave').on('click', function () {
+                        console.log('Save button clicked');
+                        fn_saveAll();
+                    });
+
                     $('#filterGroupCode').on('change', function () {
-                        filterGroupCode = $(this).val();
-                        filterCode = '';
-                        filterDetailCode = '';
+                        const val = $(this).val();
+                        console.log('Group filter changed:', val);
                         fn_renderCodeSelect([]);
                         fn_renderDetailSelect([]);
-
-                        if (filterGroupCode) {
-                            fn_loadCodeOptions(filterGroupCode);
-                        }
+                        if (val) fn_loadCodeOptions(val);
                     });
 
                     $('#filterCode').on('change', function () {
-                        filterCode = $(this).val();
-                        filterDetailCode = '';
+                        const gVal = $('#filterGroupCode').val();
+                        const cVal = $(this).val();
+                        console.log('Code filter changed:', cVal);
                         fn_renderDetailSelect([]);
-
-                        if (filterGroupCode && filterCode) {
-                            fn_loadDetailOptions(filterGroupCode, filterCode);
-                        }
+                        if (gVal && cVal) fn_loadDetailOptions(gVal, cVal);
                     });
                 });
 
                 function fn_search() {
+                    console.log('fn_search execution started');
+                    const groupCodeVal = $('#filterGroupCode').val();
+                    const codeVal = $('#filterCode').val();
+                    const detailCodeVal = $('#filterDetailCode').val();
+                    const useYnVal = $('#searchUseYn').val();
+
+                    // 검색 조건에 따라 적절한 테이블 조회
+                    if (detailCodeVal) {
+                        // 상세코드가 있으면 상세코드 테이블 조회
+                        fn_searchDetailCodes(groupCodeVal, codeVal, detailCodeVal, useYnVal);
+                    } else if (codeVal) {
+                        // 코드가 있으면 코드 테이블 조회
+                        fn_searchCodes(groupCodeVal, codeVal, useYnVal);
+                    } else {
+                        // 그룹코드만 있으면 그룹코드 테이블 조회
+                        fn_searchGroupCodes(groupCodeVal, useYnVal);
+                    }
+                }
+
+                function fn_searchGroupCodes(groupCodeVal, useYnVal) {
                     const searchVO = {
-                        groupCodeName: '',
-                        useYn: $('#searchUseYn').val()
+                        groupCode: groupCodeVal,
+                        useYn: useYnVal
                     };
 
                     $.ajax({
                         url: '<c:url value="/admin/basic/selectGroupCodeList.ajax"/>',
                         type: 'POST',
-                        contentType: 'application/json',
-                        data: JSON.stringify(searchVO),
+                        data: searchVO,
+                        dataType: 'json',
                         success: function (res) {
                             if (res.success) {
                                 groupList = res.list.map(item => ({ ...item, status: 'NORMAL' }));
                                 fn_renderGroupTable();
                                 fn_renderGroupSelect();
+                                // 코드와 상세코드 목록 초기화
+                                codeList = [];
+                                detailList = [];
+                                fn_renderCodeTable();
+                                fn_renderDetailTable();
                             } else {
                                 alert(res.message);
                             }
+                        },
+                        error: function (xhr, status, err) {
+                            console.error('fn_searchGroupCodes error:', err);
                         }
                     });
+                }
+
+                function fn_searchCodes(groupCodeVal, codeVal, useYnVal) {
+                    const searchVO = {
+                        groupCode: groupCodeVal,
+                        code: codeVal,
+                        useYn: useYnVal
+                    };
+
+                    $.ajax({
+                        url: '<c:url value="/admin/basic/searchCodeList.ajax"/>',
+                        type: 'POST',
+                        data: searchVO,
+                        dataType: 'json',
+                        success: function (res) {
+                            if (res.success) {
+                                codeList = res.list.map(item => ({ ...item, status: 'NORMAL' }));
+                                fn_renderCodeTable();
+                                // 상세코드 목록 초기화
+                                detailList = [];
+                                fn_renderDetailTable();
+                                // 그룹코드 목록도 업데이트 (해당 코드가 속한 그룹만)
+                                fn_updateGroupListFromCodes(res.list);
+                            } else {
+                                alert(res.message);
+                            }
+                        },
+                        error: function (xhr, status, err) {
+                            console.error('fn_searchCodes error:', err);
+                        }
+                    });
+                }
+
+                function fn_searchDetailCodes(groupCodeVal, codeVal, detailCodeVal, useYnVal) {
+                    const searchVO = {
+                        groupCode: groupCodeVal,
+                        code: codeVal,
+                        detailCode: detailCodeVal,
+                        useYn: useYnVal
+                    };
+
+                    $.ajax({
+                        url: '<c:url value="/admin/basic/searchDetailCodeList.ajax"/>',
+                        type: 'POST',
+                        data: searchVO,
+                        dataType: 'json',
+                        success: function (res) {
+                            if (res.success) {
+                                detailList = res.list.map(item => ({ ...item, status: 'NORMAL' }));
+                                fn_renderDetailTable();
+                                // 코드와 그룹코드 목록도 업데이트
+                                fn_updateCodeListFromDetails(res.list);
+                            } else {
+                                alert(res.message);
+                            }
+                        },
+                        error: function (xhr, status, err) {
+                            console.error('fn_searchDetailCodes error:', err);
+                        }
+                    });
+                }
+
+                function fn_updateGroupListFromCodes(codes) {
+                    const uniqueGroups = [...new Set(codes.map(c => c.groupCode))];
+                    groupList = uniqueGroups.map(gc => ({ groupCode: gc, status: 'NORMAL' }));
+                    fn_renderGroupTable();
+                    fn_renderGroupSelect();
+                }
+
+                function fn_updateCodeListFromDetails(details) {
+                    const uniqueCodes = [...new Set(details.map(d => ({ groupCode: d.groupCode, code: d.code })))];
+                    codeList = uniqueCodes.map(c => ({ ...c, status: 'NORMAL' }));
+                    fn_renderCodeTable();
+
+                    const uniqueGroups = [...new Set(details.map(d => d.groupCode))];
+                    groupList = uniqueGroups.map(gc => ({ groupCode: gc, status: 'NORMAL' }));
+                    fn_renderGroupTable();
+                    fn_renderGroupSelect();
                 }
 
                 function fn_renderGroupTable() {
@@ -324,9 +429,9 @@
                         tr.append($('<td>').append($('<input>').val(item.groupCodeName).on('change', function () { item.groupCodeName = $(this).val(); if (item.status === 'NORMAL') item.status = 'UPDATED'; })));
 
                         const selUseYn = $('<select class="form-select form-select-sm">')
-                            .append('<option value="사용">사용</option>')
-                            .append('<option value="미사용">미사용</option>')
-                            .val(item.useYn || '사용')
+                            .append('<option value="Y">사용</option>')
+                            .append('<option value="N">미사용</option>')
+                            .val((item.useYn === '사용' || item.useYn === 'Y') ? 'Y' : 'N')
                             .on('change', function () { item.useYn = $(this).val(); if (item.status === 'NORMAL') item.status = 'UPDATED'; });
                         tr.append($('<td>').append(selUseYn));
 
@@ -354,27 +459,22 @@
                 }
 
                 function fn_renderGroupSelect() {
-                    const select = $('#filterGroupCode');
-                    const selectedValue = select.val() || '';
-                    select.empty();
-                    select.append('<option value="">전체</option>');
+                    const datalist = $('#groupCodeList');
+                    datalist.empty();
 
                     groupList.forEach(item => {
                         if (item.status === 'DELETED') return;
-                        const label = item.groupCodeName ? `${item.groupCodeName} (${item.groupCode})` : item.groupCode;
-                        select.append(`<option value="${item.groupCode}">${label}</option>`);
+                        const label = item.groupCodeName ? item.groupCodeName + ' (' + item.groupCode + ')' : item.groupCode;
+                        datalist.append('<option value="' + item.groupCode + '">' + label + '</option>');
                     });
-
-                    select.val(selectedValue);
-                    filterGroupCode = select.val() || '';
                 }
 
                 function fn_loadCodeList(groupCode) {
                     $.ajax({
                         url: '<c:url value="/admin/basic/selectCodeList.ajax"/>',
                         type: 'POST',
-                        contentType: 'application/json',
-                        data: JSON.stringify({ groupCode: groupCode }),
+                        data: { groupCode: groupCode },
+                        dataType: 'json',
                         success: function (res) {
                             if (res.success) {
                                 codeList = res.list.map(item => ({ ...item, status: 'NORMAL' }));
@@ -406,9 +506,9 @@
                         tr.append($('<td>').append($('<input>').val(item.codeName).on('change', function () { item.codeName = $(this).val(); if (item.status === 'NORMAL') item.status = 'UPDATED'; })));
 
                         const selUseYn = $('<select class="form-select form-select-sm">')
-                            .append('<option value="사용">사용</option>')
-                            .append('<option value="미사용">미사용</option>')
-                            .val(item.useYn || '사용')
+                            .append('<option value="Y">사용</option>')
+                            .append('<option value="N">미사용</option>')
+                            .val((item.useYn === '사용' || item.useYn === 'Y') ? 'Y' : 'N')
                             .on('change', function () { item.useYn = $(this).val(); if (item.status === 'NORMAL') item.status = 'UPDATED'; });
                         tr.append($('<td>').append(selUseYn));
 
@@ -434,8 +534,8 @@
                     $.ajax({
                         url: '<c:url value="/admin/basic/selectCodeList.ajax"/>',
                         type: 'POST',
-                        contentType: 'application/json',
-                        data: JSON.stringify({ groupCode: groupCode }),
+                        data: { groupCode: groupCode },
+                        dataType: 'json',
                         success: function (res) {
                             if (res.success) {
                                 fn_renderCodeSelect(res.list || []);
@@ -445,26 +545,21 @@
                 }
 
                 function fn_renderCodeSelect(list) {
-                    const select = $('#filterCode');
-                    const selectedValue = select.val() || '';
-                    select.empty();
-                    select.append('<option value="">전체</option>');
+                    const datalist = $('#codeOptionsList');
+                    datalist.empty();
 
                     list.forEach(item => {
-                        const label = item.codeName ? `${item.codeName} (${item.code})` : item.code;
-                        select.append(`<option value="${item.code}">${label}</option>`);
+                        const label = item.codeName ? item.codeName + ' (' + item.code + ')' : item.code;
+                        datalist.append('<option value="' + item.code + '">' + label + '</option>');
                     });
-
-                    select.val(selectedValue);
-                    filterCode = select.val() || '';
                 }
 
                 function fn_loadDetailCodeList(groupCode, code) {
                     $.ajax({
                         url: '<c:url value="/admin/basic/selectDetailCodeList.ajax"/>',
                         type: 'POST',
-                        contentType: 'application/json',
-                        data: JSON.stringify({ groupCode: groupCode, code: code }),
+                        data: { groupCode: groupCode, code: code },
+                        dataType: 'json',
                         success: function (res) {
                             if (res.success) {
                                 detailList = res.list.map(item => ({ ...item, status: 'NORMAL' }));
@@ -478,8 +573,8 @@
                     $.ajax({
                         url: '<c:url value="/admin/basic/selectDetailCodeList.ajax"/>',
                         type: 'POST',
-                        contentType: 'application/json',
-                        data: JSON.stringify({ groupCode: groupCode, code: code }),
+                        data: { groupCode: groupCode, code: code },
+                        dataType: 'json',
                         success: function (res) {
                             if (res.success) {
                                 fn_renderDetailSelect(res.list || []);
@@ -489,18 +584,13 @@
                 }
 
                 function fn_renderDetailSelect(list) {
-                    const select = $('#filterDetailCode');
-                    const selectedValue = select.val() || '';
-                    select.empty();
-                    select.append('<option value="">전체</option>');
+                    const datalist = $('#detailOptionsList');
+                    datalist.empty();
 
                     list.forEach(item => {
-                        const label = item.detailCodeName ? `${item.detailCodeName} (${item.detailCode})` : item.detailCode;
-                        select.append(`<option value="${item.detailCode}">${label}</option>`);
+                        const label = item.detailCodeName ? item.detailCodeName + ' (' + item.detailCode + ')' : item.detailCode;
+                        datalist.append('<option value="' + item.detailCode + '">' + label + '</option>');
                     });
-
-                    select.val(selectedValue);
-                    filterDetailCode = select.val() || '';
                 }
 
                 function fn_renderDetailTable() {
@@ -525,9 +615,9 @@
                         tr.append($('<td>').append($('<input>').val(item.detailCodeName).on('change', function () { item.detailCodeName = $(this).val(); if (item.status === 'NORMAL') item.status = 'UPDATED'; })));
 
                         const selUseYn = $('<select class="form-select form-select-sm">')
-                            .append('<option value="사용">사용</option>')
-                            .append('<option value="미사용">미사용</option>')
-                            .val(item.useYn || '사용')
+                            .append('<option value="Y">사용</option>')
+                            .append('<option value="N">미사용</option>')
+                            .val((item.useYn === '사용' || item.useYn === 'Y') ? 'Y' : 'N')
                             .on('change', function () { item.useYn = $(this).val(); if (item.status === 'NORMAL') item.status = 'UPDATED'; });
                         tr.append($('<td>').append(selUseYn));
 
@@ -544,15 +634,15 @@
 
                 function fn_addRow(type) {
                     if (type === 'group') {
-                        groupList.push({ groupCode: '', groupCodeName: '', useYn: '사용', status: 'NEW' });
+                        groupList.push({ groupCode: '', groupCodeName: '', useYn: 'Y', status: 'NEW' });
                         fn_renderGroupTable();
                     } else if (type === 'code') {
                         if (!currentGroupCode) { alert('그룹코드를 선택해주세요.'); return; }
-                        codeList.push({ groupCode: currentGroupCode, code: '', codeName: '', sortOrder: codeList.length + 1, useYn: '사용', status: 'NEW' });
+                        codeList.push({ groupCode: currentGroupCode, code: '', codeName: '', sortOrder: codeList.length + 1, useYn: 'Y', status: 'NEW' });
                         fn_renderCodeTable();
                     } else if (type === 'detail') {
                         if (!currentCode) { alert('코드를 선택해주세요.'); return; }
-                        detailList.push({ groupCode: currentGroupCode, code: currentCode, detailCode: '', detailCodeName: '', sortOrder: detailList.length + 1, useYn: '사용', status: 'NEW' });
+                        detailList.push({ groupCode: currentGroupCode, code: currentCode, detailCode: '', detailCodeName: '', sortOrder: detailList.length + 1, useYn: 'Y', status: 'NEW' });
                         fn_renderDetailTable();
                     }
                 }
@@ -583,10 +673,8 @@
                 }
 
                 function fn_saveAll() {
+                    console.log('fn_saveAll execution started');
                     if (!confirm('모든 변경사항을 저장하시겠습니까?')) return;
-
-                    // This is a simplified sequential save. For better UX, batch API is preferred.
-                    // We'll save Groups, then Codes, then Details.
 
                     const groupsToSave = groupList.filter(item => item.status !== 'NORMAL');
                     const codesToSave = codeList.filter(item => item.status !== 'NORMAL');
@@ -597,21 +685,20 @@
                         return;
                     }
 
-                    // Recursive save helper
                     const savePromises = [];
 
                     groupsToSave.forEach(item => {
                         let url = '<c:url value="/admin/basic/saveGroupCode.ajax"/>';
                         if (item.status === 'DELETED') url = '<c:url value="/admin/basic/deleteGroupCode.ajax"/>';
-                        savePromises.push($.ajax({ url: url, type: 'POST', contentType: 'application/json', data: JSON.stringify(item) }));
+                        savePromises.push($.ajax({ url: url, type: 'POST', data: item, dataType: 'json' }));
                     });
 
                     codesToSave.forEach(item => {
-                        savePromises.push($.ajax({ url: '<c:url value="/admin/basic/saveCode.ajax"/>', type: 'POST', contentType: 'application/json', data: JSON.stringify(item) }));
+                        savePromises.push($.ajax({ url: '<c:url value="/admin/basic/saveCode.ajax"/>', type: 'POST', data: item, dataType: 'json' }));
                     });
 
                     detailsToSave.forEach(item => {
-                        savePromises.push($.ajax({ url: '<c:url value="/admin/basic/saveDetailCode.ajax"/>', type: 'POST', contentType: 'application/json', data: JSON.stringify(item) }));
+                        savePromises.push($.ajax({ url: '<c:url value="/admin/basic/saveDetailCode.ajax"/>', type: 'POST', data: item, dataType: 'json' }));
                     });
 
                     Promise.all(savePromises).then(() => {
@@ -619,7 +706,7 @@
                         fn_search();
                     }).catch(err => {
                         alert('저장 중 오류가 발생했습니다.');
-                        console.error(err);
+                        console.error('fn_saveAll error:', err);
                     });
                 }
             </script>

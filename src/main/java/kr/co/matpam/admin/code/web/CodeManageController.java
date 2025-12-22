@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -44,9 +43,9 @@ public class CodeManageController {
     /**
      * 그룹코드 목록 조회
      */
-    @RequestMapping(value = "/admin/basic/selectGroupCodeList.ajax", method = RequestMethod.POST)
+    @RequestMapping(value = "/admin/basic/selectGroupCodeList.ajax", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public Map<String, Object> selectGroupCodeList(@RequestBody GroupCodeVO searchVO) {
+    public Map<String, Object> selectGroupCodeList(GroupCodeVO searchVO) {
         Map<String, Object> result = new HashMap<>();
         try {
             List<GroupCodeVO> list = codeManagementService.selectGroupCodeList(searchVO);
@@ -63,9 +62,9 @@ public class CodeManageController {
     /**
      * 그룹코드 저장
      */
-    @RequestMapping(value = "/admin/basic/saveGroupCode.ajax", method = RequestMethod.POST)
+    @RequestMapping(value = "/admin/basic/saveGroupCode.ajax", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public Map<String, Object> saveGroupCode(@RequestBody GroupCodeVO vo) {
+    public Map<String, Object> saveGroupCode(GroupCodeVO vo) {
         Map<String, Object> result = new HashMap<>();
         try {
             codeManagementService.saveGroupCode(vo);
@@ -99,9 +98,9 @@ public class CodeManageController {
     /**
      * 코드 목록 조회
      */
-    @RequestMapping(value = "/admin/basic/selectCodeList.ajax", method = RequestMethod.POST)
+    @RequestMapping(value = "/admin/basic/selectCodeList.ajax", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public Map<String, Object> selectCodeList(@RequestBody CodeVO searchVO) {
+    public Map<String, Object> selectCodeList(CodeVO searchVO) {
         Map<String, Object> result = new HashMap<>();
         try {
             List<CodeVO> list = codeManagementService.selectCodeList(searchVO.getGroupCode());
@@ -116,11 +115,49 @@ public class CodeManageController {
     }
 
     /**
+     * 코드 검색 (필터링)
+     */
+    @RequestMapping(value = "/admin/basic/searchCodeList.ajax", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public Map<String, Object> searchCodeList(CodeVO searchVO) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            List<CodeVO> list = codeManagementService.searchCodeList(searchVO);
+            result.put("success", true);
+            result.put("list", list);
+        } catch (Exception e) {
+            LOGGER.error("코드 검색 오류", e);
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+        return result;
+    }
+
+    /**
+     * 상세코드 검색 (필터링)
+     */
+    @RequestMapping(value = "/admin/basic/searchDetailCodeList.ajax", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public Map<String, Object> searchDetailCodeList(DetailCodeVO searchVO) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            List<DetailCodeVO> list = codeManagementService.searchDetailCodeList(searchVO);
+            result.put("success", true);
+            result.put("list", list);
+        } catch (Exception e) {
+            LOGGER.error("상세코드 검색 오류", e);
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+        return result;
+    }
+
+    /**
      * 코드 저장
      */
-    @RequestMapping(value = "/admin/basic/saveCode.ajax", method = RequestMethod.POST)
+    @RequestMapping(value = "/admin/basic/saveCode.ajax", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public Map<String, Object> saveCode(@RequestBody CodeVO vo) {
+    public Map<String, Object> saveCode(CodeVO vo) {
         Map<String, Object> result = new HashMap<>();
         try {
             codeManagementService.saveCode(vo);
@@ -136,9 +173,9 @@ public class CodeManageController {
     /**
      * 상세코드 목록 조회
      */
-    @RequestMapping(value = "/admin/basic/selectDetailCodeList.ajax", method = RequestMethod.POST)
+    @RequestMapping(value = "/admin/basic/selectDetailCodeList.ajax", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public Map<String, Object> selectDetailCodeList(@RequestBody DetailCodeVO searchVO) {
+    public Map<String, Object> selectDetailCodeList(DetailCodeVO searchVO) {
         Map<String, Object> result = new HashMap<>();
         try {
             List<DetailCodeVO> list = codeManagementService.selectDetailCodeList(searchVO.getGroupCode(),
@@ -156,9 +193,9 @@ public class CodeManageController {
     /**
      * 상세코드 저장
      */
-    @RequestMapping(value = "/admin/basic/saveDetailCode.ajax", method = RequestMethod.POST)
+    @RequestMapping(value = "/admin/basic/saveDetailCode.ajax", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public Map<String, Object> saveDetailCode(@RequestBody DetailCodeVO vo) {
+    public Map<String, Object> saveDetailCode(DetailCodeVO vo) {
         Map<String, Object> result = new HashMap<>();
         try {
             codeManagementService.saveDetailCode(vo);

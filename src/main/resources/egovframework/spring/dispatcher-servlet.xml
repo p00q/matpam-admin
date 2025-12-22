@@ -14,13 +14,6 @@
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
 	</context:component-scan>
 
-	<bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
-		<property name="webBindingInitializer">
-			<bean class="org.springframework.web.bind.support.ConfigurableWebBindingInitializer">
-				<property name="validator" ref="validator" />
-			</bean>
-		</property>
-	</bean>
 
 
 <!-- 파일 업로드 처리용 Multipart Resolver -->
@@ -32,7 +25,6 @@
 	</bean>
 
 	
-	<bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping"/>
 
 	<bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean"/>
 
@@ -40,5 +32,5 @@
 		p:viewClass="org.springframework.web.servlet.view.JstlView"
 		p:prefix="/WEB-INF/jsp/" p:suffix=".jsp"/>
 
-	<mvc:annotation-driven />
+	<mvc:annotation-driven validator="validator" />
 </beans>

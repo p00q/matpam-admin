@@ -30,6 +30,11 @@ public interface CodeManagementService {
     List<CodeVO> selectCodeList(String groupCode) throws Exception;
 
     /**
+     * 코드 검색 (필터링)
+     */
+    List<CodeVO> searchCodeList(CodeVO searchVO) throws Exception;
+
+    /**
      * 코드 저장 (INSERT/UPDATE)
      */
     void saveCode(CodeVO vo) throws Exception;
@@ -44,6 +49,11 @@ public interface CodeManagementService {
      * 상세코드 목록 조회 (코드별)
      */
     List<DetailCodeVO> selectDetailCodeList(String groupCode, String code) throws Exception;
+
+    /**
+     * 상세코드 검색 (필터링)
+     */
+    List<DetailCodeVO> searchDetailCodeList(DetailCodeVO searchVO) throws Exception;
 
     /**
      * 상세코드 저장 (INSERT/UPDATE)

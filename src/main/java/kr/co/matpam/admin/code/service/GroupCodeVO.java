@@ -11,6 +11,10 @@ public class GroupCodeVO {
     private String regDate; // 등록일시
     private String modDate; // 수정일시
 
+    // 검색 필터용 필드
+    private String code; // 코드 필터
+    private String detailCode; // 상세코드 필터
+
     public String getGroupCode() {
         return groupCode;
     }
@@ -49,5 +53,21 @@ public class GroupCodeVO {
 
     public void setModDate(String modDate) {
         this.modDate = modDate;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getDetailCode() {
+        return detailCode;
+    }
+
+    public void setDetailCode(String detailCode) {
+        this.detailCode = detailCode;
     }
 }

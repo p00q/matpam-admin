@@ -18,10 +18,24 @@
             DATE_FORMAT(MOD_DATE, '%Y-%m-%d %H:%i:%s') AS modDate
         FROM TB_GROUP_CODE
         <where>
-            <if test="groupCodeName != null and groupCodeName != ''">
-                AND CODE_GROUP_NAME LIKE CONCAT('%', #{groupCodeName}, '%')
+            <if test="groupCode != null and groupCode != ''">
+                AND CODE_GROUP_ID LIKE CONCAT('%', #{groupCode}, '%')
             </if>
-            <if test="useYn != null and useYn != '' and useYn != '전체'">
+            <if test="code != null and code != ''">
+                AND EXISTS (
+                    SELECT 1 FROM TB_CODE 
+                    WHERE TB_CODE.CODE_GROUP_ID = TB_GROUP_CODE.CODE_GROUP_ID
+                      AND TB_CODE.CODE_ID LIKE CONCAT('%', #{code}, '%')
+                )
+            </if>
+            <if test="detailCode != null and detailCode != ''">
+                AND EXISTS (
+                    SELECT 1 FROM TB_DETAIL_CODE 
+                    WHERE TB_DETAIL_CODE.CODE_GROUP_ID = TB_GROUP_CODE.CODE_GROUP_ID
+                      AND TB_DETAIL_CODE.DETAIL_CODE_ID LIKE CONCAT('%', #{detailCode}, '%')
+                )
+            </if>
+            <if test="useYn != null and useYn != ''">
                 AND USE_YN = #{useYn}
             </if>
         </where>
