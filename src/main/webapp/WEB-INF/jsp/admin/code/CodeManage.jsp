@@ -227,9 +227,9 @@
                             <table class="table panel-table table-bordered text-center" id="codeTable">
                                 <thead>
                                     <tr>
+                                        <th width="10%">순서</th>
                                         <th width="35%">코드</th>
                                         <th width="40%">코드명</th>
-                                        <th width="10%">순서</th>
                                         <th width="15%">사용여부</th>
                                     </tr>
                                 </thead>
@@ -263,10 +263,10 @@
                             <table class="table panel-table table-bordered text-center" id="detailTable">
                                 <thead>
                                     <tr>
-                                        <th width="25%">코드</th>
-                                        <th width="20%">순서</th>
-                                        <th width="35%">상세코드명</th>
-                                        <th width="20%">사용여부</th>
+                                        <th width="10%">순서</th>
+                                        <th width="35%">상세코드</th>
+                                        <th width="40%">상세코드명</th>
+                                        <th width="15%">사용여부</th>
                                     </tr>
                                 </thead>
                                 <tbody id="detailTbody">
@@ -552,6 +552,8 @@
                         if (currentCode === item.code && item.code) tr.addClass('selected');
 
                         // Code (Editable if NEW)
+                        tr.append($('<td>').append($('<input type="number">').val(item.sortOrder).on('change', function () { item.sortOrder = $(this).val(); if (item.status === 'NORMAL') item.status = 'UPDATED'; })));
+
                         const tdCode = $('<td>');
                         if (item.status === 'NEW') {
                             tdCode.append($('<input>').val(item.code).on('change', function () { item.code = $(this).val(); }));
@@ -559,8 +561,6 @@
                             tdCode.text(item.code);
                         }
                         tr.append(tdCode);
-
-                        tr.append($('<td>').append($('<input type="number">').val(item.sortOrder).on('change', function () { item.sortOrder = $(this).val(); if (item.status === 'NORMAL') item.status = 'UPDATED'; })));
                         tr.append($('<td>').append($('<input>').val(item.codeName).on('change', function () { item.codeName = $(this).val(); if (item.status === 'NORMAL') item.status = 'UPDATED'; })));
 
                         const selUseYn = $('<select class="form-select form-select-sm">')
@@ -661,6 +661,8 @@
                         if (currentDetailCode === item.detailCode && item.detailCode) tr.addClass('selected');
 
                         // Detail Code (Editable if NEW)
+                        tr.append($('<td>').append($('<input type="number">').val(item.sortOrder).on('change', function () { item.sortOrder = $(this).val(); if (item.status === 'NORMAL') item.status = 'UPDATED'; })));
+
                         const tdCode = $('<td>');
                         if (item.status === 'NEW') {
                             tdCode.append($('<input>').val(item.detailCode).on('change', function () { item.detailCode = $(this).val(); }));
@@ -668,8 +670,6 @@
                             tdCode.text(item.detailCode);
                         }
                         tr.append(tdCode);
-
-                        tr.append($('<td>').append($('<input type="number">').val(item.sortOrder).on('change', function () { item.sortOrder = $(this).val(); if (item.status === 'NORMAL') item.status = 'UPDATED'; })));
                         tr.append($('<td>').append($('<input>').val(item.detailCodeName).on('change', function () { item.detailCodeName = $(this).val(); if (item.status === 'NORMAL') item.status = 'UPDATED'; })));
 
                         const selUseYn = $('<select class="form-select form-select-sm">')
