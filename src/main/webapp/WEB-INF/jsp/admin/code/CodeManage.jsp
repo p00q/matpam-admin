@@ -24,8 +24,19 @@
                     padding: 10px 15px;
                     border-bottom: 1px solid #dee2e6;
                     display: flex;
-                    justify-content: flex-end;
+                    justify-content: space-between;
                     align-items: center;
+                }
+
+                .panel-search {
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                }
+
+                .panel-search .form-control,
+                .panel-search .form-select {
+                    min-width: 120px;
                 }
 
                 .panel-body {
@@ -122,38 +133,25 @@
                 <div class="card mb-3">
                     <div class="card-body p-3">
                         <div class="row g-2 align-items-center">
-                            <div class="col-md-3">
-                                <div class="input-group input-group-sm">
-                                    <span class="input-group-text fw-bold">그룹코드</span>
-                                    <input type="text" id="filterGroupCode" class="form-control" list="groupCodeList"
-                                        placeholder="입력/선택">
-                                    <datalist id="groupCodeList"></datalist>
-                                </div>
-                            </div>
-                            <div class="col-md-2">
+                            <div class="col-md-4">
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text fw-bold">코드</span>
-                                    <input type="text" id="filterCode" class="form-control" list="codeOptionsList"
-                                        placeholder="입력/선택">
-                                    <datalist id="codeOptionsList"></datalist>
+                                    <input type="text" id="filterCode" class="form-control" placeholder="입력">
                                 </div>
                             </div>
-                            <div class="col-md-2">
-                                <div class="input-group input-group-sm">
-                                    <span class="input-group-text fw-bold">상세코드</span>
-                                    <input type="text" id="filterDetailCode" class="form-control"
-                                        list="detailOptionsList" placeholder="입력/선택">
-                                    <datalist id="detailOptionsList"></datalist>
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <div class="input-group input-group-sm">
-                                    <span class="input-group-text fw-bold">사용여부</span>
-                                    <select id="searchUseYn" class="form-select">
-                                        <option value="">전체</option>
-                                        <option value="Y">사용</option>
-                                        <option value="N">미사용</option>
-                                    </select>
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="fw-bold">사용여부</span>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="topUseYn" id="topUseYnY"
+                                            value="Y" checked>
+                                        <label class="form-check-label" for="topUseYnY">사용</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="topUseYn" id="topUseYnN"
+                                            value="N">
+                                        <label class="form-check-label" for="topUseYnN">미사용</label>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-auto">
@@ -173,8 +171,22 @@
                     <!-- 1. Group Code Panel -->
                     <div class="code-panel">
                         <div class="panel-header">
-                            <button class="btn btn-secondary btn-circle" onclick="fn_addRow('group')">+</button>
-                            <button class="btn btn-secondary btn-circle" onclick="fn_removeRow('group')">-</button>
+                            <div class="panel-search">
+                                <input type="text" id="groupSearchCode" class="form-control form-control-sm"
+                                    list="groupCodeList" placeholder="그룹코드">
+                                <datalist id="groupCodeList"></datalist>
+                                <select id="groupSearchUseYn" class="form-select form-select-sm">
+                                    <option value="">전체</option>
+                                    <option value="Y">사용</option>
+                                    <option value="N">미사용</option>
+                                </select>
+                                <button type="button" id="btnGroupSearch"
+                                    class="btn btn-outline-secondary btn-sm">검색</button>
+                            </div>
+                            <div>
+                                <button class="btn btn-secondary btn-circle" onclick="fn_addRow('group')">+</button>
+                                <button class="btn btn-secondary btn-circle" onclick="fn_removeRow('group')">-</button>
+                            </div>
                         </div>
                         <div class="panel-body">
                             <table class="table panel-table table-bordered text-center" id="groupTable">
@@ -195,8 +207,21 @@
                     <!-- 2. Code Panel -->
                     <div class="code-panel">
                         <div class="panel-header">
-                            <button class="btn btn-secondary btn-circle" onclick="fn_addRow('code')">+</button>
-                            <button class="btn btn-secondary btn-circle" onclick="fn_removeRow('code')">-</button>
+                            <div class="panel-search">
+                                <input type="text" id="codeSearchCode" class="form-control form-control-sm"
+                                    placeholder="코드">
+                                <select id="codeSearchUseYn" class="form-select form-select-sm">
+                                    <option value="">전체</option>
+                                    <option value="Y">사용</option>
+                                    <option value="N">미사용</option>
+                                </select>
+                                <button type="button" id="btnCodeSearch"
+                                    class="btn btn-outline-secondary btn-sm">검색</button>
+                            </div>
+                            <div>
+                                <button class="btn btn-secondary btn-circle" onclick="fn_addRow('code')">+</button>
+                                <button class="btn btn-secondary btn-circle" onclick="fn_removeRow('code')">-</button>
+                            </div>
                         </div>
                         <div class="panel-body">
                             <table class="table panel-table table-bordered text-center" id="codeTable">
@@ -218,8 +243,21 @@
                     <!-- 3. Detail Code Panel -->
                     <div class="code-panel">
                         <div class="panel-header">
-                            <button class="btn btn-secondary btn-circle" onclick="fn_addRow('detail')">+</button>
-                            <button class="btn btn-secondary btn-circle" onclick="fn_removeRow('detail')">-</button>
+                            <div class="panel-search">
+                                <input type="text" id="detailSearchCode" class="form-control form-control-sm"
+                                    placeholder="상세코드">
+                                <select id="detailSearchUseYn" class="form-select form-select-sm">
+                                    <option value="">전체</option>
+                                    <option value="Y">사용</option>
+                                    <option value="N">미사용</option>
+                                </select>
+                                <button type="button" id="btnDetailSearch"
+                                    class="btn btn-outline-secondary btn-sm">검색</button>
+                            </div>
+                            <div>
+                                <button class="btn btn-secondary btn-circle" onclick="fn_addRow('detail')">+</button>
+                                <button class="btn btn-secondary btn-circle" onclick="fn_removeRow('detail')">-</button>
+                            </div>
                         </div>
                         <div class="panel-body">
                             <table class="table panel-table table-bordered text-center" id="detailTable">
@@ -251,55 +289,56 @@
                 let detailList = [];
 
                 $(document).ready(function () {
-                    fn_search();
+                    fn_searchAll();
 
                     $('#btnSearch').on('click', function () {
                         console.log('Search button clicked');
-                        fn_search();
+                        fn_searchAll();
                     });
                     $('#btnSave').on('click', function () {
                         console.log('Save button clicked');
                         fn_saveAll();
                     });
 
-                    $('#filterGroupCode').on('change', function () {
-                        const val = $(this).val();
-                        console.log('Group filter changed:', val);
-                        fn_renderCodeSelect([]);
-                        fn_renderDetailSelect([]);
-                        if (val) fn_loadCodeOptions(val);
+                    $('#btnGroupSearch').on('click', function () {
+                        const groupCodeVal = $('#groupSearchCode').val();
+                        const useYnVal = $('#groupSearchUseYn').val();
+                        fn_searchGroupCodes(groupCodeVal, useYnVal);
                     });
 
-                    $('#filterCode').on('change', function () {
-                        const gVal = $('#filterGroupCode').val();
-                        const cVal = $(this).val();
-                        console.log('Code filter changed:', cVal);
-                        fn_renderDetailSelect([]);
-                        if (gVal && cVal) fn_loadDetailOptions(gVal, cVal);
+                    $('#btnCodeSearch').on('click', function () {
+                        const groupCodeVal = $('#groupSearchCode').val();
+                        const codeVal = $('#codeSearchCode').val();
+                        const useYnVal = $('#codeSearchUseYn').val();
+                        const searchGroupCode = groupCodeVal ? groupCodeVal : '';
+                        fn_searchCodes(searchGroupCode, codeVal, useYnVal);
+                    });
+
+                    $('#btnDetailSearch').on('click', function () {
+                        const groupCodeVal = $('#groupSearchCode').val();
+                        const detailCodeVal = $('#detailSearchCode').val();
+                        const useYnVal = $('#detailSearchUseYn').val();
+                        const searchGroupCode = groupCodeVal ? groupCodeVal : '';
+                        fn_searchDetailCodes(searchGroupCode, '', detailCodeVal, useYnVal);
                     });
                 });
 
-                function fn_search() {
-                    console.log('fn_search execution started');
-                    const groupCodeVal = $('#filterGroupCode').val();
+                function fn_searchAll() {
+                    console.log('fn_searchAll execution started');
                     const codeVal = $('#filterCode').val();
-                    const detailCodeVal = $('#filterDetailCode').val();
-                    const useYnVal = $('#searchUseYn').val();
+                    const useYnVal = $('input[name="topUseYn"]:checked').val();
 
-                    // 검색 조건에 따라 적절한 테이블 조회
-                    if (detailCodeVal) {
-                        // 상세코드가 있으면 상세코드 테이블 조회
-                        fn_searchDetailCodes(groupCodeVal, codeVal, detailCodeVal, useYnVal);
-                    } else if (codeVal) {
-                        // 코드가 있으면 코드 테이블 조회
-                        fn_searchCodes(groupCodeVal, codeVal, useYnVal);
-                    } else {
-                        // 그룹코드만 있으면 그룹코드 테이블 조회
-                        fn_searchGroupCodes(groupCodeVal, useYnVal);
-                    }
+                    fn_searchGroupCodes(codeVal, useYnVal, { resetDependents: false });
+                    fn_searchCodes('', codeVal, useYnVal, { resetDetail: false, updateGroupFromCodes: false });
+                    fn_searchDetailCodes('', '', codeVal, useYnVal, { updateCodeFromDetails: false });
                 }
 
-                function fn_searchGroupCodes(groupCodeVal, useYnVal) {
+                function fn_searchGroupCodes(groupCodeVal, useYnVal, options = {}) {
+                    const settings = {
+                        resetDependents: true,
+                        updateSelect: true,
+                        ...options
+                    };
                     const searchVO = {
                         groupCode: groupCodeVal,
                         useYn: useYnVal
@@ -314,12 +353,16 @@
                             if (res.success) {
                                 groupList = res.list.map(item => ({ ...item, status: 'NORMAL' }));
                                 fn_renderGroupTable();
-                                fn_renderGroupSelect();
-                                // 코드와 상세코드 목록 초기화
-                                codeList = [];
-                                detailList = [];
-                                fn_renderCodeTable();
-                                fn_renderDetailTable();
+                                if (settings.updateSelect) {
+                                    fn_renderGroupSelect();
+                                }
+                                if (settings.resetDependents) {
+                                    // 코드와 상세코드 목록 초기화
+                                    codeList = [];
+                                    detailList = [];
+                                    fn_renderCodeTable();
+                                    fn_renderDetailTable();
+                                }
                             } else {
                                 alert(res.message);
                             }
@@ -330,7 +373,12 @@
                     });
                 }
 
-                function fn_searchCodes(groupCodeVal, codeVal, useYnVal) {
+                function fn_searchCodes(groupCodeVal, codeVal, useYnVal, options = {}) {
+                    const settings = {
+                        resetDetail: true,
+                        updateGroupFromCodes: true,
+                        ...options
+                    };
                     const searchVO = {
                         groupCode: groupCodeVal,
                         code: codeVal,
@@ -346,11 +394,15 @@
                             if (res.success) {
                                 codeList = res.list.map(item => ({ ...item, status: 'NORMAL' }));
                                 fn_renderCodeTable();
-                                // 상세코드 목록 초기화
-                                detailList = [];
-                                fn_renderDetailTable();
-                                // 그룹코드 목록도 업데이트 (해당 코드가 속한 그룹만)
-                                fn_updateGroupListFromCodes(res.list);
+                                if (settings.resetDetail) {
+                                    // 상세코드 목록 초기화
+                                    detailList = [];
+                                    fn_renderDetailTable();
+                                }
+                                if (settings.updateGroupFromCodes) {
+                                    // 그룹코드 목록도 업데이트 (해당 코드가 속한 그룹만)
+                                    fn_updateGroupListFromCodes(res.list);
+                                }
                             } else {
                                 alert(res.message);
                             }
@@ -361,7 +413,11 @@
                     });
                 }
 
-                function fn_searchDetailCodes(groupCodeVal, codeVal, detailCodeVal, useYnVal) {
+                function fn_searchDetailCodes(groupCodeVal, codeVal, detailCodeVal, useYnVal, options = {}) {
+                    const settings = {
+                        updateCodeFromDetails: true,
+                        ...options
+                    };
                     const searchVO = {
                         groupCode: groupCodeVal,
                         code: codeVal,
@@ -378,8 +434,10 @@
                             if (res.success) {
                                 detailList = res.list.map(item => ({ ...item, status: 'NORMAL' }));
                                 fn_renderDetailTable();
-                                // 코드와 그룹코드 목록도 업데이트
-                                fn_updateCodeListFromDetails(res.list);
+                                if (settings.updateCodeFromDetails) {
+                                    // 코드와 그룹코드 목록도 업데이트
+                                    fn_updateCodeListFromDetails(res.list);
+                                }
                             } else {
                                 alert(res.message);
                             }
