@@ -1604,6 +1604,285 @@ pay_total_amt = goods_total_amt + delivery_total_amt + vat_total_amt - (coupon/m
 그래서 “상품단 라인금액”과 “할인 상세”를 분리해 두는 게 안전합니다.
 
 
+use matpam;
+
+ALTER TABLE TB_COMPONENT_PRODUCT
+ADD COLUMN VAT_AMOUNT DECIMAL(18,2) NOT NULL DEFAULT 0
+COMMENT '부가세 금액'
+AFTER VAT_RATE;
+
+ALTER TABLE TB_SALES_PRODUCT
+ADD COLUMN VAT_AMOUNT DECIMAL(18,2) NOT NULL DEFAULT 0
+COMMENT '부가세 금액'
+AFTER VAT_RATE;
+
+
+SELECT
+            sp.SALES_PROD_ID,
+            sp.SALES_PROD_CODE,
+            sp.SALES_PROD_NAME,
+            sp.SELLER_MEMBER_ID,
+            m.COMPANY_NAME AS SELLER_NAME,
+            spd.DETAIL_HTML,
+            spd.PAYMENT_INFO,
+            spd.DELIVERY_INFO,
+            spd.RETURN_INFO,
+            spd.REFUND_INFO,
+            sp.LIST_PRICE,
+            CAST(sp.COST_PRICE AS DECIMAL(18,0)) AS COST_PRICE,
+            sp.VAT_RATE,
+            CAST(sp.LIST_PRICE * sp.VAT_RATE / 100 AS DECIMAL(18,2)) AS VAT_AMOUNT,
+            sp.EXPOSURE_STATUS_CD,
+            sp.SALE_STATUS_CD,
+            sp.SALE_START_DT,
+            sp.SALE_END_DT,
+            sp.VIEW_CNT,
+            sp.SUMMARY,
+            sp.MD_COMMENT,
+            sp.USE_YN,
+            sp.DEL_YN,
+            sp.REG_ID,
+            sp.REG_DT,
+            sp.MOD_ID,
+            sp.MOD_DT
+        FROM TB_SALES_PRODUCT sp
+        LEFT JOIN TB_MEMBER m
+            ON sp.SELLER_MEMBER_ID = m.MEMBER_ID
+        LEFT JOIN TB_SALES_PRODUCT_DETAIL spd
+            ON sp.SALES_PROD_ID = spd.SALES_PROD_ID
+           AND spd.DEL_YN = 'N'
+        WHERE sp.DEL_YN = 'N'
+        
+          AND 
 
 
 
+SELECT
+            c.COMPONENT_PROD_ID,
+            c.COMPONENT_PROD_CODE,
+            c.COMPONENT_PROD_NAME,
+            c.SELLER_MEMBER_ID,
+            m.COMPANY_NAME AS SELLER_NAME,
+            c.SALE_TYPE_CD,
+            sale_type.DETAIL_CODE_NAME   AS SALE_TYPE_NAME,
+            c.STORAGE_TYPE_CD,
+            storage_type.DETAIL_CODE_NAME AS STORAGE_TYPE_NAME,
+            c.CUT_TYPE_CD,
+            cut_type.DETAIL_CODE_NAME    AS CUT_TYPE_NAME,
+            c.PROCESS_TYPE_CD,
+            process_type.DETAIL_CODE_NAME AS PROCESS_TYPE_NAME,
+            c.UNIT_TYPE_CD,
+            unit_type.DETAIL_CODE_NAME   AS UNIT_TYPE_NAME,
+            c.LIST_PRICE,
+            c.COST_PRICE,
+            c.VAT_AMOUNT,
+            c.EXPOSURE_STATUS_CD,
+            c.SALE_STATUS_CD,
+            sale_status.DETAIL_CODE_NAME AS SALE_STATUS_NAME,
+            c.SALE_START_DT,
+            c.SALE_END_DT,
+            c.TOTAL_SALE_QTY,
+            c.USE_YN,
+            c.DEL_YN,
+            c.REG_ID,
+            c.REG_DT,
+            c.MOD_ID,
+            c.MOD_DT
+        FROM TB_COMPONENT_PRODUCT c
+        LEFT JOIN TB_MEMBER m
+            ON c.SELLER_MEMBER_ID = m.MEMBER_ID
+        LEFT JOIN TB_DETAIL_CODE sale_type
+            ON sale_type.CODE_GROUP_ID = 'SALE_STATUS'
+            AND sale_type.CODE_ID = 'SALE_TYPE'
+            AND sale_type.DETAIL_CODE_ID = c.SALE_TYPE_CD
+        LEFT JOIN TB_DETAIL_CODE sale_status
+            ON sale_status.CODE_GROUP_ID = 'SALE_STATUS'
+            AND sale_status.CODE_ID = 'SALE_STATUS'
+            AND sale_status.DETAIL_CODE_ID = c.SALE_STATUS_CD
+        LEFT JOIN TB_DETAIL_CODE storage_type
+            ON storage_type.CODE_GROUP_ID = 'PRODUCT_TYPE'
+            AND storage_type.CODE_ID = 'STORAGE_TYPE'
+            AND storage_type.DETAIL_CODE_ID = c.STORAGE_TYPE_CD
+        LEFT JOIN TB_DETAIL_CODE cut_type
+            ON cut_type.CODE_GROUP_ID = 'PRODUCT_TYPE'
+            AND cut_type.CODE_ID = 'CUT_TYPE'
+            AND cut_type.DETAIL_CODE_ID = c.CUT_TYPE_CD
+        LEFT JOIN TB_DETAIL_CODE process_type
+            ON process_type.CODE_GROUP_ID = 'PRODUCT_TYPE'
+            AND process_type.CODE_ID = 'PROCESS_TYPE'
+            AND process_type.DETAIL_CODE_ID = c.PROCESS_TYPE_CD
+        LEFT JOIN TB_DETAIL_CODE unit_type
+            ON unit_type.CODE_GROUP_ID = 'PRODUCT_TYPE'
+            AND unit_type.CODE_ID = 'UNIT_TYPE'
+            AND unit_type.DETAIL_CODE_ID = c.UNIT_TYPE_CD
+        WHERE c.COMPONENT_PROD_ID = 1
+        
+        
+        
+  `sales_prod_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '판매상품ID',
+  `sales_prod_code` varchar(50) NOT NULL COMMENT '판매상품번호',
+  `sales_prod_name` varchar(200) NOT NULL COMMENT '판매상품명',
+  `seller_member_id` bigint(20) NOT NULL COMMENT '판매자회원ID(FK: tb_member.member_id)',
+  `list_price` decimal(18,2) NOT NULL DEFAULT 0.00 COMMENT '정가(표시가)',
+  `sale_price` decimal(18,2) NOT NULL DEFAULT 0.00 COMMENT '판매가(할인 적용 후, 쿠폰 전)',
+  `discount_type_cd` varchar(30) DEFAULT NULL COMMENT '할인유형코드(RATE/AMOUNT)',
+  `discount_value` decimal(18,2) DEFAULT NULL COMMENT '할인값(정률: %값, 정액: 금액)',
+  `discount_start_dt` datetime DEFAULT NULL COMMENT '할인시작일시',
+  `discount_end_dt` datetime DEFAULT NULL COMMENT '할인종료일시',
+  `cost_price` decimal(18,2) DEFAULT NULL COMMENT '원가',
+  `vat_rate` decimal(5,2) NOT NULL DEFAULT 0.00 COMMENT '부가세율(0 또는 10 등)',
+  `VAT_AMOUNT` decimal(18,2) NOT NULL DEFAULT 0.00 COMMENT '부가세 금액',
+  `exposure_status_cd` varchar(30) NOT NULL COMMENT '노출상태코드',
+  `sale_status_cd` varchar(30) NOT NULL COMMENT '판매상태코드',
+  `sale_start_dt` datetime DEFAULT NULL COMMENT '판매시작일시',
+  `sale_end_dt` datetime DEFAULT NULL COMMENT '판매종료일시',
+  `view_cnt` bigint(20) NOT NULL DEFAULT 0 COMMENT '조회수',
+  `summary` varchar(1000) DEFAULT NULL COMMENT '상품요약',
+  `md_comment` varchar(2000) DEFAULT NULL COMMENT 'MD 코멘트',
+  `use_yn` char(1) NOT NULL DEFAULT 'Y' COMMENT '사용여부',
+  `del_yn` char(1) NOT NULL DEFAULT 'N' COMMENT '삭제여부',
+  
+-- 3. Sample Orders
+-- Order 1: ORDERED status
+  `order_no` varchar(30) NOT NULL COMMENT '주문번호(표시용)',
+  `buyer_member_id` bigint(20) NOT NULL COMMENT '구매회원ID(FK: tb_member.member_id)',
+  `order_dt` datetime NOT NULL COMMENT '주문일시',
+  `order_status_cd` varchar(30) NOT NULL COMMENT '주문상태코드(ORDER_STATUS)',
+  `delivery_type_cd` varchar(30) NOT NULL COMMENT '배송유형코드(DELIVERY_TYPE: 택배/화물/공장수령 등)',
+  `delivery_status_cd` varchar(30) NOT NULL COMMENT '배송상태코드(DELIVERY_STATUS)',
+  `shipping_method_cd` varchar(30) DEFAULT NULL COMMENT '배송방법코드(DIRECT/PARCEL 등)',
+  `payment_method_cd` varchar(30) DEFAULT NULL COMMENT '결제수단코드(미트머니/계좌이체 등)',
+  `payment_status_cd` varchar(30) DEFAULT NULL COMMENT '결제상태코드',
+  `payment_approved_dt` datetime DEFAULT NULL COMMENT '결제승인일시',
+  `pg_provider_cd` varchar(30) DEFAULT NULL COMMENT 'PG사코드',
+  `pg_tid` varchar(100) DEFAULT NULL COMMENT 'PG거래ID(TID)',
+  `payment_cancel_dt` datetime DEFAULT NULL COMMENT '결제취소/환불일시',
+  `refund_total_amt` decimal(18,2) NOT NULL DEFAULT 0.00 COMMENT '총환불금액(누적)',
+  `goods_total_amt` decimal(18,2) NOT NULL DEFAULT 0.00 COMMENT '총주문금액(상품합계)',
+  `delivery_total_amt` decimal(18,2) NOT NULL DEFAULT 0.00 COMMENT '총배송비',
+  `discount_total_amt` decimal(18,2) NOT NULL DEFAULT 0.00 COMMENT '총할인금액',
+  `vat_total_amt` decimal(18,2) NOT NULL DEFAULT 0.00 COMMENT '총부가세액',
+  `vat_calc_type_cd` varchar(30) DEFAULT NULL COMMENT '부가세계산방식(VAT_INCLUDED/VAT_EXCLUDED)',
+  `pay_total_amt` decimal(18,2) NOT NULL DEFAULT 0.00 COMMENT '총결제금액',
+  `receiver_name` varchar(100) NOT NULL COMMENT '수취인명',
+  `receiver_mobile` varchar(20) NOT NULL COMMENT '수취인휴대폰',
+  `receiver_tel` varchar(20) DEFAULT NULL COMMENT '수취인전화',
+  `zip_code` varchar(10) NOT NULL COMMENT '우편번호',
+  `addr1` varchar(200) NOT NULL COMMENT '기본주소',
+  `addr2` varchar(200) DEFAULT NULL COMMENT '상세주소',
+  `region_sido_cd` varchar(30) DEFAULT NULL COMMENT '시도코드',
+  `region_sigungu_cd` varchar(30) DEFAULT NULL COMMENT '시군구코드',
+  `delivery_req_msg` varchar(500) DEFAULT NULL COMMENT '배송요구사항',
+  `use_yn` char(1) NOT NULL DEFAULT 'Y' COMMENT '사용여부',
+  `del_yn` char(1) NOT NULL DEFAULT 'N' COMMENT '삭제여부',
+  `reg_id` varchar(20) NOT NULL COMMENT '등록자ID',
+  `reg_dt` datetime NOT NULL DEFAULT current_timestamp() COMMENT '등록일시',
+  `mod_id` varchar(20) DEFAULT NULL COMMENT '수정자ID',
+  `mod_dt` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp() COMMENT '수정일시',
+  `agree_third_party_yn` char(1) NOT NULL DEFAULT 'N' COMMENT '개인정보 제3자 제공 동의',
+  `agree_safe_service_yn` char(1) NOT NULL DEFAULT 'N' COMMENT '구매안전 서비스 안내 동의',
+  
+  
+INSERT INTO TB_ORDER (
+    ORDER_NO, 
+    ORDER_DT, 
+    buyer_member_id,
+    ORDER_STATUS_CD, 
+    DELIVERY_TYPE_CD, 
+    DELIVERY_STATUS_CD,
+    GOODS_TOTAL_AMT, 
+    DELIVERY_TOTAL_AMT, 
+    DISCOUNT_TOTAL_AMT, 
+    VAT_TOTAL_AMT, 
+    PAY_TOTAL_AMT,
+    BUYER_MEMBER_ID, 
+    REGION_SIDO_CD, 
+    REGION_SIGUNGU_CD, 
+    RECEIVER_NAME, 
+    RECEIVER_MOBILE, 
+    ZIP_CODE, 
+    RECEIVER_ADDR1, 
+    RECEIVER_ADDR2, 
+    DELIVERY_MEMO,
+    DEL_YN, 
+    USE_YN, 
+    REG_ID, 
+    REG_DT
+) VALUES (
+    '20241026-0001', 
+    '2024-10-26 11:22:33',
+    'ORDERED', 'PARCEL', 'READY',
+    230120, 4000, 34518, 2057, 199602,
+    100,
+    '41', '41590', 
+    'Default Shipping', '010-5656-8878', '12314', 'Gyeonggi-do Hwaseong-si Dongtan-daero 677-12', 'Room 302', 'Please leave at the door.',
+    'N', 'Y', 'admin', NOW()
+) ON DUPLICATE KEY UPDATE ORDER_NO='20241026-0001';
+
+-- Order 1 Items
+INSERT INTO TB_ORDER_ITEM (
+    ORDER_ITEM_ID, ORDER_ID, LINE_NO,
+    SALES_PROD_ID, SALES_PROD_NAME, 
+    SALES_PRICE, ORDER_QTY, TOTAL_AMT, 
+    DEL_YN, REG_DT, REG_ID
+) VALUES 
+(2001, 1000, 1, 100, '[Chilled] Boiled Pork Head Cutting 2kg', 20920, 11, 230120, 'N', NOW(), 'admin'),
+(2002, 1000, 2, 101, '[Frozen] Boiled Pork Rectum 5kg', 47610, 3, 142830, 'N', NOW(), 'admin')
+ON DUPLICATE KEY UPDATE ORDER_ID=1000;
+
+-- Order 2: PREPARING status
+INSERT INTO TB_ORDER (
+    ORDER_ID, ORDER_NO, ORDER_DT, 
+    ORDER_STATUS_CD, DELIVERY_TYPE_CD, DELIVERY_STATUS_CD,
+    GOODS_TOTAL_AMT, DELIVERY_TOTAL_AMT, DISCOUNT_TOTAL_AMT, VAT_TOTAL_AMT, PAY_TOTAL_AMT,
+    BUYER_MEMBER_ID, 
+    REGION_SIDO_CD, REGION_SIGUNGU_CD, 
+    RECEIVER_NAME, RECEIVER_MOBILE, ZIP_CODE, RECEIVER_ADDR1, RECEIVER_ADDR2, DELIVERY_MEMO,
+    DEL_YN, USE_YN, REG_ID, REG_DT
+) VALUES (
+    1001, '20241221-0002', NOW(),
+    'PREPARING', 'DIRECT', 'PENDING',
+    50000, 0, 0, 5000, 55000,
+    100,
+    '11', '11110', 
+    'Direct Receiver', '010-9999-8888', '03030', 'Seoul Jongno-gu Sejong-daero', '123', 'Call before arrival',
+    'N', 'Y', 'admin', NOW()
+) ON DUPLICATE KEY UPDATE ORDER_NO='20241221-0002';
+
+-- Order 2 Items
+INSERT INTO TB_ORDER_ITEM (
+    ORDER_ITEM_ID, ORDER_ID, LINE_NO,
+    SALES_PROD_ID, SALES_PROD_NAME, 
+    SALES_PRICE, ORDER_QTY, TOTAL_AMT, 
+    DEL_YN, REG_DT, REG_ID
+) VALUES 
+(2003, 1001, 1, 101, '[Frozen] Boiled Pork Rectum 5kg', 47610, 1, 47610, 'N', NOW(), 'admin')
+ON DUPLICATE KEY UPDATE ORDER_ID=1001;
+
+-- 4. Sample Delivery Parcel for Order 1
+INSERT INTO TB_ORDER_DELIVERY_PARCEL (
+    ORDER_ID, COURIER_CD, TRACKING_NO, SHIPPED_DT,
+    USE_YN, DEL_YN, REG_ID, REG_DT
+) VALUES (
+    1000, 'POST', '1234567890', NOW(),
+    'Y', 'N', 'admin', NOW()
+) ON DUPLICATE KEY UPDATE TRACKING_NO='1234567890';
+       
+
+
+        SELECT 
+            CODE_GROUP_ID   AS groupCode,
+            CODE_GROUP_NAME AS groupCodeName,
+            USE_YN          AS useYn,
+            DATE_FORMAT(REG_DATE, '%Y-%m-%d %H:%i:%s') AS regDate,
+            DATE_FORMAT(MOD_DATE, '%Y-%m-%d %H:%i:%s') AS modDate
+        FROM TB_GROUP_CODE
+        <where>
+            <if test="groupCodeName != null and groupCodeName != ''">
+                AND CODE_GROUP_NAME LIKE CONCAT('%', #{groupCodeName}, '%')
+            </if>
+            <if test="useYn != null and useYn != '' and useYn != '전체'">
+                AND USE_YN = #{useYn}
+            </if>
+        </where>
+        ORDER BY CODE_GROUP_ID
