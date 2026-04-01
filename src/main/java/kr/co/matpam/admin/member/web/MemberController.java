@@ -15,6 +15,14 @@ import org.egovframe.rte.ptl.mvc.tags.ui.pagination.PaginationInfo;
 import kr.co.matpam.admin.member.service.MemberDefaultVO;
 import kr.co.matpam.admin.member.service.MemberService;
 import kr.co.matpam.admin.member.service.MemberVO;
+import kr.co.matpam.admin.member.service.MeatMoneyService;
+import java.math.BigDecimal;
+import javax.servlet.http.HttpServletRequest;
+import org.springframework.web.bind.annotation.ResponseBody;
+import java.util.Map;
+import java.util.HashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Controller
 public class MemberController {
@@ -22,12 +30,24 @@ public class MemberController {
     @Resource(name = "memberService")
     private MemberService memberService;
 
+    @Resource(name = "meatMoneyService")
+    private MeatMoneyService meatMoneyService;
+
     @Resource(name = "codeManagementService")
     private kr.co.matpam.admin.code.service.CodeManagementService codeManagementService;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MemberController.class);
+
     @RequestMapping(value = "/admin/member/memberList.do")
-    public String selectMemberList(@ModelAttribute("searchVO") MemberDefaultVO searchVO, ModelMap model)
+    public String selectMemberList(@ModelAttribute("searchVO") MemberDefaultVO searchVO, HttpServletRequest request, ModelMap model)
             throws Exception {
+        
+        // 🔐 opType 격리 적용
+        String opType = (String) request.getAttribute("opType");
+        if (opType != null && !opType.isEmpty()) {
+            searchVO.setDeliveryTypeCd(opType);
+        }
+
         PaginationInfo paginationInfo = new PaginationInfo();
         paginationInfo.setCurrentPageNo(searchVO.getPageIndex());
         paginationInfo.setRecordCountPerPage(searchVO.getPageUnit());
@@ -51,6 +71,8 @@ public class MemberController {
         model.addAttribute("statusCodes", codeManagementService.selectDetailCodeList("JOIN_STATUS", "JOIN_STATUS"));
         // ✅ 회원등급
         model.addAttribute("memberGrades", codeManagementService.selectDetailCodeList("MEMBER_GRADE", "MEMBER_GRADE"));
+        // ✅ 배송/운영유형
+        model.addAttribute("deliveryTypes", codeManagementService.selectDetailCodeList("DELIVERY_TYPE", "DELIVERY_TYPE"));
 
         // Set content page for layout
         model.addAttribute("contentPage", "/WEB-INF/jsp/admin/member/MemberList.jsp");
@@ -64,6 +86,7 @@ public class MemberController {
         model.addAttribute("memberTypes", codeManagementService.selectDetailCodeList("MEMBER_TYPE", "MEMBER_ROLE"));
         model.addAttribute("memberGrades", codeManagementService.selectDetailCodeList("MEMBER_GRADE", "MEMBER_GRADE"));
         model.addAttribute("statusCodes", codeManagementService.selectDetailCodeList("JOIN_STATUS", "JOIN_STATUS"));
+        model.addAttribute("deliveryTypes", codeManagementService.selectDetailCodeList("DELIVERY_TYPE", "DELIVERY_TYPE"));
 
         model.addAttribute("mode", "insert");
 
@@ -151,6 +174,7 @@ public class MemberController {
         model.addAttribute("memberTypes", codeManagementService.selectDetailCodeList("MEMBER_TYPE", "MEMBER_ROLE"));
         model.addAttribute("memberGrades", codeManagementService.selectDetailCodeList("MEMBER_GRADE", "MEMBER_GRADE"));
         model.addAttribute("statusCodes", codeManagementService.selectDetailCodeList("JOIN_STATUS", "JOIN_STATUS"));
+        model.addAttribute("deliveryTypes", codeManagementService.selectDetailCodeList("DELIVERY_TYPE", "DELIVERY_TYPE"));
 
         model.addAttribute("contentPage", "/WEB-INF/jsp/admin/member/MemberRegister.jsp");
         return "layout/main";
@@ -181,11 +205,13 @@ public class MemberController {
 
         // 셀렉트박스 코드 다시 세팅
         model.addAttribute("memberTypes",
-                codeManagementService.selectDetailCodeList("003", "003001")); // 회원타입
+                codeManagementService.selectDetailCodeList("MEMBER_TYPE", "MEMBER_ROLE")); // 회원타입
         model.addAttribute("memberGrades",
-                codeManagementService.selectDetailCodeList("005", "005001")); // 회원등급
+                codeManagementService.selectDetailCodeList("MEMBER_GRADE", "MEMBER_GRADE")); // 회원등급
         model.addAttribute("statusCodes",
-                codeManagementService.selectDetailCodeList("004", "004001")); // 가입상태
+                codeManagementService.selectDetailCodeList("JOIN_STATUS", "JOIN_STATUS")); // 가입상태
+        model.addAttribute("deliveryTypes",
+                codeManagementService.selectDetailCodeList("DELIVERY_TYPE", "DELIVERY_TYPE")); // 배송유형
 
         // 기존 입력값 그대로 다시 내려줌
         model.addAttribute("member", memberVO);
@@ -194,5 +220,63 @@ public class MemberController {
         // 레이아웃용
         model.addAttribute("contentPage", "/WEB-INF/jsp/admin/member/MemberRegister.jsp");
         return "layout/main";
+    }
+
+    /**
+     * 머니 충전/차감 처리 (AJAX)
+     */
+    @RequestMapping(value = "/admin/member/updateMeatMoney.ajax")
+    @ResponseBody
+    public Map<String, Object> updateMeatMoney(
+            @RequestParam("memberId") Long memberId,
+            @RequestParam("amount") BigDecimal amount,
+            @RequestParam("type") String type, // CHARGE, DEDUCT
+            @RequestParam(value = "remark", required = false) String remark,
+            HttpServletRequest request) {
+        
+        Map<String, Object> result = new HashMap<>();
+        try {
+            String adminId = (String) request.getSession().getAttribute("adminId");
+            if (adminId == null) adminId = "SYSTEM";
+
+            if ("CHARGE".equals(type)) {
+                meatMoneyService.chargeMoney(memberId, amount, adminId);
+            } else if ("DEDUCT".equals(type)) {
+                meatMoneyService.deductMoney(memberId, amount, "MANUAL_" + System.currentTimeMillis());
+            } else {
+                throw new IllegalArgumentException("올바르지 않은 처리 타입입니다.");
+            }
+
+            result.put("status", "success");
+            result.put("message", "처리가 완료되었습니다.");
+            result.put("newBalance", meatMoneyService.getBalance(memberId));
+        } catch (Exception e) {
+            LOGGER.error("Money update error", e);
+            result.put("status", "error");
+            result.put("message", e.getMessage());
+        }
+        return result;
+    }
+
+    /**
+     * 머니 이력 조회 (AJAX)
+     */
+    @RequestMapping(value = "/admin/member/moneyHistoryList.ajax")
+    @ResponseBody
+    public Map<String, Object> getMoneyHistoryList(@RequestParam("memberId") Long memberId) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            Map<String, Object> params = new HashMap<>();
+            params.put("memberId", memberId);
+            List<Map<String, Object>> history = meatMoneyService.selectMoneyHistoryList(params);
+            
+            result.put("status", "success");
+            result.put("data", history);
+        } catch (Exception e) {
+            LOGGER.error("Money history fetch error", e);
+            result.put("status", "error");
+            result.put("message", e.getMessage());
+        }
+        return result;
     }
 }

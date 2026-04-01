@@ -52,6 +52,7 @@ public class SalesProductCompositionVO implements Serializable {
     private String processTypeName;
     private String unitTypeName;
     private String divisionTypeName;
+    private String saleTypeCd;
     private Date saleStartDt;
     private Date saleEndDt;
 
@@ -271,5 +272,13 @@ public class SalesProductCompositionVO implements Serializable {
 
     public void setDivisionTypeName(String divisionTypeName) {
         this.divisionTypeName = divisionTypeName;
+    }
+
+    public String getSaleTypeCd() {
+        return saleTypeCd;
+    }
+
+    public void setSaleTypeCd(String saleTypeCd) {
+        this.saleTypeCd = saleTypeCd;
     }
 }

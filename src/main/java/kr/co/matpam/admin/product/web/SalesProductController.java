@@ -2,12 +2,9 @@ package kr.co.matpam.admin.product.web;
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,8 +40,6 @@ import kr.co.matpam.admin.product.service.SalesProductImageVO;
 public class SalesProductController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SalesProductController.class);
-
-    private static final SimpleDateFormat DF = new SimpleDateFormat("yyyy-MM-dd");
 
     @Resource(name = "codeManagementService")
     private CodeManagementService codeManagementService;
@@ -105,30 +100,20 @@ public class SalesProductController {
      */
     @RequestMapping(value = "/admin/product/salesProductRegister.do", method = RequestMethod.POST)
     public String saveSalesProduct(
-            @RequestParam(value = "salesProdId", required = false) Long salesProdId,
-            @RequestParam(value = "salesProdName", required = false) String salesProdName,
-            @RequestParam(value = "sellerMemberId", required = false) Long sellerMemberId,
-            @RequestParam(value = "sellerName", required = false) String sellerName,
-            @RequestParam(value = "listPrice", required = false) BigDecimal listPrice,
-            @RequestParam(value = "costPrice", required = false) BigDecimal costPrice,
-            @RequestParam(value = "vatAmount", required = false) BigDecimal vatAmount,
-            @RequestParam(value = "exposureStatusCd", required = false) String exposureStatusCd,
-            @RequestParam(value = "saleStatusCd", required = false) String saleStatusCd,
-            @RequestParam(value = "saleStartDt", required = false) String saleStartDt,
-            @RequestParam(value = "saleEndDt", required = false) String saleEndDt,
-            @RequestParam(value = "summary", required = false) String summary,
-            @RequestParam(value = "mdComment", required = false) String mdComment,
-            @RequestParam(value = "detailHtml", required = false) String detailHtml,
-            @RequestParam(value = "paymentInfo", required = false) String paymentInfo,
-            @RequestParam(value = "deliveryInfo", required = false) String deliveryInfo,
-            @RequestParam(value = "returnInfo", required = false) String returnInfo,
-            @RequestParam(value = "refundInfo", required = false) String refundInfo,
+            @ModelAttribute("salesProduct") SalesProductVO salesProduct,
             @RequestParam(value = "files", required = false) List<MultipartFile> files,
             HttpServletRequest request,
             RedirectAttributes redirectAttributes) throws Exception {
 
-        if (saleStatusCd == null || saleStatusCd.trim().isEmpty()) {
-            saleStatusCd = "LIVE";
+        // 1) 자동 데이터 세팅 (인터셉터에서 주입된 값 활용)
+        String opType = (String) request.getAttribute("opType");
+        String loginId = (String) request.getAttribute("loginId");
+        salesProduct.setOpType(opType);
+        salesProduct.setRegId(loginId);
+        salesProduct.setModId(loginId);
+
+        if (salesProduct.getSaleStatusCd() == null || salesProduct.getSaleStatusCd().trim().isEmpty()) {
+            salesProduct.setSaleStatusCd("LIVE");
         }
 
         // 1) 이미지 처리 (기존 SalesProductImageVO 재사용 - 프로젝트에 맞게 클래스명 변경 가능)
@@ -165,49 +150,24 @@ public class SalesProductController {
             }
         }
 
-        // 2) VO 구성 (A안: DB 컬럼명/VO 필드명과 1:1로 맞춤)
-        SalesProductVO vo = new SalesProductVO();
-        vo.setSalesProdId(salesProdId);
-        vo.setSalesProdName(salesProdName);
-        vo.setSellerMemberId(sellerMemberId);
-        vo.setSellerName(sellerName);
-
-        vo.setListPrice(listPrice != null ? listPrice : BigDecimal.ZERO);
-        vo.setCostPrice(costPrice != null ? costPrice : BigDecimal.ZERO);
-        vo.setVatAmount(vatAmount != null ? vatAmount : BigDecimal.ZERO);
-
-        vo.setExposureStatusCd(exposureStatusCd);
-        vo.setSaleStatusCd(saleStatusCd);
-
-        vo.setSaleStartDt(parseDate(saleStartDt));
-        vo.setSaleEndDt(parseDate(saleEndDt));
-
-        vo.setSummary(summary);
-        vo.setMdComment(mdComment);
-        vo.setDetailHtml(detailHtml);
-        vo.setPaymentInfo(paymentInfo);
-        vo.setDeliveryInfo(deliveryInfo);
-        vo.setReturnInfo(returnInfo);
-        vo.setRefundInfo(refundInfo);
-
-        // 이미지 목록 (프로젝트 표준에 맞게 VO 필드명 조정)
-        vo.setImageList(imageList);
-
-        // 3) 구성상품 목록 추출: compositionList[i].componentProdId
+        // 3) 구성상품 목록 추출
         List<SalesProductCompositionVO> compositionList = extractCompositionList(request);
-        vo.setCompositionList(compositionList);
+        salesProduct.setCompositionList(compositionList);
 
-        LOGGER.info("저장 요청 - salesProdId={}, name={}, sellerMemberId={}, compositions={}",
-                salesProdId, salesProdName, sellerMemberId,
+        // 4) 이미지 목록 설정
+        salesProduct.setImageList(imageList);
+
+        LOGGER.info("저장 요청 - salesProdId={}, name={}, opType={}, compositions={}",
+                salesProduct.getSalesProdId(), salesProduct.getSalesProdName(), salesProduct.getOpType(),
                 (compositionList != null ? compositionList.size() : 0));
 
-        // 4) 저장/수정
+        // 5) 저장/수정
         try {
-            if (vo.getSalesProdId() == null) {
-                salesProductService.insertSalesProduct(vo);
+            if (salesProduct.getSalesProdId() == null) {
+                salesProductService.insertSalesProduct(salesProduct);
                 redirectAttributes.addFlashAttribute("message", "판매상품이 정상적으로 등록되었습니다.");
             } else {
-                salesProductService.updateSalesProduct(vo);
+                salesProductService.updateSalesProduct(salesProduct);
                 redirectAttributes.addFlashAttribute("message", "판매상품이 정상적으로 수정되었습니다.");
             }
         } catch (Exception e) {
@@ -223,33 +183,30 @@ public class SalesProductController {
      * 판매상품 목록 화면
      */
     @RequestMapping(value = "/admin/product/salesProductList.do")
-    public String salesProductList(@ModelAttribute("searchVO") SalesProductVO searchVO, ModelMap model)
-            throws Exception {
+    public String salesProductList(@ModelAttribute("searchVO") SalesProductVO searchVO, 
+            HttpServletRequest request, ModelMap model) throws Exception {
 
-        // Pagination Info settings (egov 표준)
-        int currentPage = (searchVO.getPageIndex() != null) ? searchVO.getPageIndex() : 1;
+        // 1) 자동 데이터 격리 (인터셉터에서 주입된 opType 사용)
+        String opType = (String) request.getAttribute("opType");
+        searchVO.setOpType(opType);
+
+        // 2) 페이징 설정
         int recordsPerPage = (searchVO.getPageUnit() != null) ? searchVO.getPageUnit() : 10;
-        int pageSize = (searchVO.getPageSize() != null) ? searchVO.getPageSize() : 10;
-
         org.egovframe.rte.ptl.mvc.tags.ui.pagination.PaginationInfo paginationInfo = new org.egovframe.rte.ptl.mvc.tags.ui.pagination.PaginationInfo();
-        paginationInfo.setCurrentPageNo(currentPage);
+        paginationInfo.setCurrentPageNo(searchVO.getPageIndex() != null ? searchVO.getPageIndex() : 1);
         paginationInfo.setRecordCountPerPage(recordsPerPage);
-        paginationInfo.setPageSize(pageSize);
+        paginationInfo.setPageSize(10);
 
         searchVO.setFirstIndex(paginationInfo.getFirstRecordIndex());
-        searchVO.setLastIndex(paginationInfo.getLastRecordIndex());
         searchVO.setRecordCountPerPage(paginationInfo.getRecordCountPerPage());
-        searchVO.setPageIndex(currentPage);
-        searchVO.setPageUnit(recordsPerPage);
-        searchVO.setPageSize(pageSize);
 
+        // 3) 조회
         List<SalesProductVO> list = salesProductService.selectSalesProductList(searchVO);
-        model.addAttribute("salesProductList", list);
-
         int totCnt = salesProductService.selectSalesProductListTotCnt(searchVO);
         paginationInfo.setTotalRecordCount(totCnt);
-        model.addAttribute("paginationInfo", paginationInfo);
 
+        model.addAttribute("salesProductList", list);
+        model.addAttribute("paginationInfo", paginationInfo);
         model.addAttribute("contentPage", "/WEB-INF/jsp/admin/product/SalesProductList.jsp");
         return "layout/main";
     }
@@ -287,22 +244,6 @@ public class SalesProductController {
         return "admin/product/popup/SalesProductPreview";
     }
 
-    /*
-     * =========================================================
-     * 내부 유틸
-     * =========================================================
-     */
-
-    private Date parseDate(String yyyyMMdd) {
-        if (yyyyMMdd == null || yyyyMMdd.trim().isEmpty())
-            return null;
-        try {
-            return DF.parse(yyyyMMdd.trim());
-        } catch (ParseException e) {
-            LOGGER.warn("Invalid date: {}", yyyyMMdd);
-            return null;
-        }
-    }
 
     /**
      * SalesProductRegister.jsp는 구성상품을 hidden input으로 componentProdId만 보내도록 되어 있음

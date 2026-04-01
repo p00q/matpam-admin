@@ -45,7 +45,9 @@ public class MemberVO implements Serializable {
     private String agreeMarketing;
     private String agreeSms;
     private String joinDate;
-
+    private String deliveryTypeCd;   // 배송/운영유형코드
+    private String deliveryTypeName; // 배송/운영유형명
+ 
     private List<MemberManagerVO> memberManagers;
 
     public Long getMemberPk() {
@@ -318,5 +320,21 @@ public class MemberVO implements Serializable {
 
     public void setMemberManagers(List<MemberManagerVO> memberManagers) {
         this.memberManagers = memberManagers;
+    }
+
+    public String getDeliveryTypeCd() {
+        return deliveryTypeCd;
+    }
+
+    public void setDeliveryTypeCd(String deliveryTypeCd) {
+        this.deliveryTypeCd = deliveryTypeCd;
+    }
+
+    public String getDeliveryTypeName() {
+        return deliveryTypeName;
+    }
+
+    public void setDeliveryTypeName(String deliveryTypeName) {
+        this.deliveryTypeName = deliveryTypeName;
     }
 }

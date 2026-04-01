@@ -281,11 +281,11 @@
 
                                 saleStatusName: "${item.saleStatusName}",
                                 exposureStatusCd: "${item.exposureStatusCd}",
-
-                                saleStartDt: "<fmt:formatDate value='${item.saleStartDt}' pattern='yyyy-MM-dd' />",
-                                saleEndDt: "<fmt:formatDate value='${item.saleEndDt}' pattern='yyyy-MM-dd' />",
-                                regDt: "<fmt:formatDate value='${item.regDt}' pattern='yyyy-MM-dd' />",
-                                modDt: "<fmt:formatDate value='${item.modDt}' pattern='yyyy-MM-dd' />"
+                                    taxType: "${item.taxType}",
+                                    saleStartDt: "<fmt:formatDate value='${item.saleStartDt}' pattern='yyyy-MM-dd' />",
+                                    saleEndDt: "<fmt:formatDate value='${item.saleEndDt}' pattern='yyyy-MM-dd' />",
+                                    regDt: "<fmt:formatDate value='${item.regDt}' pattern='yyyy-MM-dd' />",
+                                    modDt: "<fmt:formatDate value='${item.modDt}' pattern='yyyy-MM-dd' />"
                                 };
                             </c:forEach>
 

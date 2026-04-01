@@ -3,299 +3,216 @@
         <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
             <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
-                <style>
-                    .detail-table th {
-                        background-color: #f1f3f5;
-                        width: 15%;
-                        text-align: left;
-                        padding-left: 15px;
-                        font-weight: 600;
-                        vertical-align: middle;
-                    }
+<div class="animate-fade-in shadow-none">
+    <!-- Breadcrumb & Title -->
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1" style="font-size: 0.85rem;">
+                    <li class="breadcrumb-item text-muted">주문 관리</li>
+                    <li class="breadcrumb-item">주문 목록</li>
+                    <li class="breadcrumb-item active">주문 상세</li>
+                </ol>
+            </nav>
+            <h3 class="fw-bold mb-0" style="letter-spacing: -1px; color: var(--primary);">주문 <span class="text-accent" style="color:var(--accent)">상세 내역</span></h3>
+        </div>
+        <div class="gap-2 d-flex">
+            <button type="button" class="btn btn-outline-secondary btn-premium px-4 shadow-sm" onclick="location.href='<c:url value='/admin/order/orderList.do'/>';">
+                <i class="bi bi-list me-2"></i>목록으로
+            </button>
+            <button type="button" class="btn btn-primary btn-premium px-4 shadow-sm" onclick="fn_printInvoice()">
+                <i class="bi bi-printer me-2"></i>거래명세서 출력
+            </button>
+        </div>
+    </div>
 
-                    .detail-table td {
-                        width: 35%;
-                        vertical-align: middle;
-                    }
-
-                    .item-table th {
-                        background-color: #f1f3f5;
-                        text-align: center;
-                        vertical-align: middle;
-                        font-weight: 600;
-                    }
-
-                    .item-table td {
-                        vertical-align: middle;
-                    }
-
-                    .product-img {
-                        width: 60px;
-                        height: 60px;
-                        object-fit: cover;
-                        border-radius: 4px;
-                        border: 1px solid #dee2e6;
-                    }
-
-                    .summary-row {
-                        background-color: #f8f9fa;
-                        font-weight: bold;
-                    }
-
-                    .section-title {
-                        font-size: 1rem;
-                        font-weight: 700;
-                        margin-top: 20px;
-                        margin-bottom: 10px;
-                        border-left: 4px solid #343a40;
-                        padding-left: 10px;
-                    }
-                </style>
-
-                <div class="container-fluid p-4">
-                    <!-- Breadcrumb -->
-                    <nav aria-label="breadcrumb" class="mb-3">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><i class="bi bi-house-door-fill"></i></li>
-                            <li class="breadcrumb-item">주문상세</li>
-                            <li class="breadcrumb-item active" aria-current="page">주문건별 상세</li>
-                        </ol>
-                    </nav>
-
-                    <div class="d-flex justify-content-end mb-3 gap-2">
-                        <button type="button" class="btn btn-secondary btn-sm"
-                            onclick="location.href='<c:url value='/admin/order/orderList.do'/>'">목록</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm">거래명세서출력</button>
+    <div class="row g-4 mb-4">
+        <!-- 1. 주문 일반 정보 -->
+        <div class="col-lg-7">
+            <div class="premium-card h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-info-circle me-2 text-primary"></i>주문 기본 정보</h5>
+                    <span class="badge rounded-pill bg-soft-primary text-primary px-3 border border-primary">${orderDetail.orderStatusName}</span>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-muted mini-text mb-1">주문번호</label>
+                        <div class="fw-bold fs-5 text-primary">${orderDetail.orderNo}</div>
                     </div>
-
-                    <!-- Tabs -->
-                    <ul class="nav nav-tabs mb-4">
-                        <li class="nav-item">
-                            <a class="nav-link active" href="#">주문건별</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">상품별</a>
-                        </li>
-                    </ul>
-
-                    <!-- 1. 주문일반정보 -->
-                    <div class="section-title">주문일반정보</div>
-                    <table class="table table-bordered detail-table">
-                        <tr>
-                            <th>주문번호</th>
-                            <td>${orderDetail.orderNo}</td>
-                            <th>주문상태</th>
-                            <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <span class="badge bg-secondary">${orderDetail.orderStatusName}</span>
-                                    <select class="form-select form-select-sm" style="width: auto;">
-                                        <option value="${orderDetail.orderStatusCd}">${orderDetail.orderStatusName}
-                                        </option>
-                                        <!-- 상태 변경 로직 추가 가능 -->
-                                    </select>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>주문업체명</th>
-                            <td>${orderDetail.buyerCompanyName}</td>
-                            <th>주문일</th>
-                            <td>
-                                <fmt:formatDate value="${orderDetail.orderDt}" pattern="yyyy-MM-dd HH:mm:ss" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>총 주문금액</th>
-                            <td>
-                                <fmt:formatNumber value="${orderDetail.goodsTotalAmt}" pattern="#,###" />원
-                            </td>
-                            <th>총 배송비</th>
-                            <td>
-                                <fmt:formatNumber value="${orderDetail.deliveryTotalAmt}" pattern="#,###" />원
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>총 할인금액</th>
-                            <td>
-                                <fmt:formatNumber value="${orderDetail.discountTotalAmt}" pattern="#,###" />원
-                                <span class="text-muted text-small">(등급)</span>
-                            </td>
-                            <th>총 결제금액(VAT)</th>
-                            <td>
-                                <span class="fw-bold text-danger">
-                                    <fmt:formatNumber value="${orderDetail.payTotalAmt}" pattern="#,###" />원
-                                </span>
-                                <span class="text-muted">(${orderDetail.vatTotalAmt}원)</span>
-                            </td>
-                        </tr>
-                    </table>
-
-                    <!-- 2. 배송정보 -->
-                    <div class="section-title">배송정보</div>
-                    <table class="table table-bordered detail-table">
-                        <tr>
-                            <th>배송지명</th>
-                            <td>기본배송지</td> <!-- VO에 추가 필요하거나 고정? -->
-                            <th>배송상태</th>
-                            <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <span class="badge bg-info text-dark">${orderDetail.deliveryStatusName}</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>주소</th>
-                            <td>[${orderDetail.receiverZipCode}] ${orderDetail.receiverAddr1}
-                                ${orderDetail.receiverAddr2}</td>
-                            <th>상세주소</th>
-                            <td>${orderDetail.receiverAddr2}</td> <!-- 중복? -->
-                        </tr>
-                    </table>
-
-                    <!-- 배송 폼 (수정 가능 영역) -->
-                    <form id="deliveryForm">
-                        <input type="hidden" name="orderId" value="${orderDetail.orderId}" />
-
-                        <table class="table table-bordered detail-table mt-2" style="border-top: 2px solid #ced4da;">
-                            <!-- 택배 / 직접배송 선택 -->
-                            <tr>
-                                <th>배송방법</th>
-                                <td>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="deliveryTypeCd"
-                                            id="dt_parcel" value="PARCEL" ${orderDetail.deliveryTypeCd eq 'PARCEL'
-                                            ? 'checked' : '' }>
-                                        <label class="form-check-label" for="dt_parcel">택배</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="deliveryTypeCd"
-                                            id="dt_direct" value="DIRECT" ${orderDetail.deliveryTypeCd eq 'DIRECT'
-                                            ? 'checked' : '' }>
-                                        <label class="form-check-label" for="dt_direct">직접배송</label>
-                                    </div>
-                                </td>
-                                <th>운송장 정보</th>
-                                <td>
-                                    <div class="d-flex gap-2">
-                                        <select class="form-select form-select-sm" name="courierCd"
-                                            style="width: 120px;">
-                                            <option value="">택배사 선택</option>
-                                            <!-- 공통코드 반복 -->
-                                            <option value="POST">우체국</option>
-                                            <option value="CJ">CJ대한통운</option>
-                                        </select>
-                                        <input type="text" class="form-control form-control-sm" name="trackingNo"
-                                            placeholder="운송장번호" value="">
-                                    </div>
-                                </td>
-                            </tr>
-                            <!-- 화물/기사 정보 (조건부 표시 가능) -->
-                            <tr id="freightRow" style="display:none;"> <!-- JS로 제어 필요 -->
-                                <th>운전기사</th>
-                                <td>
-                                    <select class="form-select form-select-sm" name="driverId">
-                                        <option value="">기사 선택</option>
-                                        <!-- 드라이버 목록 -->
-                                    </select>
-                                </td>
-                                <th>연락처</th>
-                                <td><input type="text" class="form-control form-control-sm" name="driverMobile"
-                                        readonly></td>
-                            </tr>
-                        </table>
-                    </form>
-
-                    <!-- 3. 주문상세정보 (아이템 리스트) -->
-                    <div class="section-title">주문상세정보</div>
-                    <div class="table-responsive">
-                        <table class="table table-bordered item-table">
-                            <thead>
-                                <tr>
-                                    <th style="width: 50%;">상품명 / 구성품목</th>
-                                    <th style="width: 10%;">단가</th>
-                                    <th style="width: 10%;">수량</th>
-                                    <th style="width: 10%;">구매가</th>
-                                    <th style="width: 10%;">등급할인</th>
-                                    <th style="width: 10%;">배송비</th>
-                                    <th style="width: 10%;">총결제금액(VAT)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <c:forEach var="item" items="${orderItemList}">
-                                    <tr>
-                                        <td class="text-start">
-                                            <div class="d-flex align-items-center">
-                                                <img src="${pageContext.request.contextPath}${item.salesProdMainImgPath}"
-                                                    class="product-img me-3" onerror="this.src='/images/no-image.png'">
-                                                <div>
-                                                    <div class="fw-bold">${item.salesProdName}</div>
-                                                    <div class="text-muted small mt-1">
-                                                        <!-- 구성품목 예시 -->
-                                                        - [구성] 상세 구성품 1<br>
-                                                        - [구성] 상세 구성품 2
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="text-end">
-                                            <fmt:formatNumber value="${item.salesPrice}" pattern="#,###" />원
-                                        </td>
-                                        <td class="text-center">${item.orderQty}</td>
-                                        <td class="text-end">
-                                            <fmt:formatNumber value="${item.supplyAmt}" pattern="#,###" />원
-                                        </td> <!-- 구매가 = 공급가? -->
-                                        <td class="text-end">
-                                            <fmt:formatNumber value="${item.itemDiscountAmt}" pattern="#,###" />원
-                                        </td>
-                                        <td class="text-end">
-                                            <fmt:formatNumber value="${item.itemDeliveryAmt}" pattern="#,###" />원
-                                        </td>
-                                        <td class="text-end fw-bold">
-                                            <div class="text-danger">
-                                                <fmt:formatNumber value="${item.totalAmt}" pattern="#,###" />원
-                                            </div>
-                                            <div class="small text-muted">(
-                                                <fmt:formatNumber value="${item.vatAmt}" pattern="#,###" />원)
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </c:forEach>
-                            </tbody>
-                            <!-- 합계 행 -->
-                            <tfoot>
-                                <tr class="summary-row">
-                                    <td class="text-center">합계</td>
-                                    <td class="text-end">-</td>
-                                    <td class="text-center">${orderDetail.totalOrderQty}</td> <!-- 총 수량 -->
-                                    <td class="text-end">
-                                        <fmt:formatNumber value="${orderDetail.goodsTotalAmt}" pattern="#,###" />원
-                                    </td>
-                                    <td class="text-end">
-                                        <fmt:formatNumber value="${orderDetail.discountTotalAmt}" pattern="#,###" />원
-                                    </td>
-                                    <td class="text-end">
-                                        <fmt:formatNumber value="${orderDetail.deliveryTotalAmt}" pattern="#,###" />원
-                                    </td>
-                                    <td class="text-end text-danger">
-                                        <fmt:formatNumber value="${orderDetail.payTotalAmt}" pattern="#,###" />원
-                                    </td>
-                                </tr>
-                            </tfoot>
-                        </table>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted mini-text mb-1">주문일시</label>
+                        <div class="text-dark"><fmt:formatDate value="${orderDetail.orderDt}" pattern="yyyy-MM-dd HH:mm:ss" /></div>
                     </div>
-
-                    <div class="d-flex justify-content-center gap-2 mt-4">
-                        <button type="button" class="btn btn-secondary px-4" onclick="history.back();">취소</button>
-                        <button type="button" class="btn btn-primary px-4" onclick="fn_save();">확인</button>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted mini-text mb-1">주문업체명</label>
+                        <div class="fw-semibold">${orderDetail.buyerCompanyName}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted mini-text mb-1">총 결제금액 (VAT 포함)</label>
+                        <div class="text-accent fs-5 fw-bold" style="color:var(--accent)">
+                            <fmt:formatNumber value="${orderDetail.payTotalAmt}" pattern="#,###" /> <span class="small fw-normal">원</span>
+                            <span class="text-muted mini-text ms-2 font-normal">(VAT <fmt:formatNumber value="${orderDetail.vatTotalAmt}" pattern="#,###" />원)</span>
+                        </div>
                     </div>
                 </div>
+                <hr class="my-4 opacity-10">
+                <div class="row g-2 text-center">
+                    <div class="col-4 border-end">
+                        <div class="text-muted mini-text mb-1">상품 합계</div>
+                        <div class="fw-bold"><fmt:formatNumber value="${orderDetail.goodsTotalAmt}" pattern="#,###" />원</div>
+                    </div>
+                    <div class="col-4 border-end">
+                        <div class="text-muted mini-text mb-1">배송비 합계</div>
+                        <div class="fw-bold"><fmt:formatNumber value="${orderDetail.deliveryTotalAmt}" pattern="#,###" />원</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-muted mini-text mb-1">할인 합계</div>
+                        <div class="fw-bold text-danger">-<fmt:formatNumber value="${orderDetail.discountTotalAmt}" pattern="#,###" />원</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 배송 상태 및 처리 -->
+        <div class="col-lg-5">
+            <div class="premium-card h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-truck me-2 text-primary"></i>배송 정보 및 처리</h5>
+                    <span class="badge rounded-pill bg-soft-info text-info px-3 border border-info">${orderDetail.deliveryStatusName}</span>
+                </div>
+                <form id="deliveryForm">
+                    <input type="hidden" name="orderId" value="${orderDetail.orderId}" />
+                    <div class="mb-3">
+                        <label class="form-label text-muted mini-text mb-1">배송 방법</label>
+                        <div class="d-flex gap-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="deliveryTypeCd" id="dt_parcel" value="PARCEL" ${orderDetail.deliveryTypeCd eq 'PARCEL' ? 'checked' : '' }>
+                                <label class="form-check-label fw-semibold" for="dt_parcel" style="cursor:pointer;">택배 배송</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="deliveryTypeCd" id="dt_direct" value="DIRECT" ${orderDetail.deliveryTypeCd eq 'DIRECT' ? 'checked' : '' }>
+                                <label class="form-check-label fw-semibold" for="dt_direct" style="cursor:pointer;">직접 배송</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-md-5">
+                            <label class="form-label text-muted mini-text mb-1">운송업체</label>
+                            <select class="form-select" name="courierCd">
+                                <option value="">업체 선택</option>
+                                <option value="POST">우체국</option>
+                                <option value="CJ">CJ대한통운</option>
+                            </select>
+                        </div>
+                        <div class="col-md-7">
+                            <label class="form-label text-muted mini-text mb-1">운송장 번호</label>
+                            <input type="text" class="form-control" name="trackingNo" placeholder="번호를 입력하세요." value="${orderDetail.trackingNo}">
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label class="form-label text-muted mini-text mb-1">수령인 정보</label>
+                        <div class="p-3 bg-light rounded shadow-inner" style="background-color: #f8f9fa !important; border: 1px inset #eee;">
+                            <div class="fw-bold text-dark mb-1">기본 배송지</div>
+                            <div class="small text-muted">[${orderDetail.receiverZipCode}] ${orderDetail.receiverAddr1} ${orderDetail.receiverAddr2}</div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 주문 상세 품목 리스트 -->
+    <div class="premium-card">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="fw-bold mb-0"><i class="bi bi-box-seam me-2 text-primary"></i>주문 상세 품목</h5>
+            <div class="text-muted small">총 <span class="text-primary fw-bold">${fn:length(orderItemList)}</span>종의 상품</div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th style="width: 45%;">상품명 및 구성 정보</th>
+                        <th class="text-end" style="width: 10%;">단가</th>
+                        <th class="text-center" style="width: 8%;">수량</th>
+                        <th class="text-end" style="width: 10%;">공급가액</th>
+                        <th class="text-end" style="width: 10%;">등급할인</th>
+                        <th class="text-end" style="width: 8%;">배송비</th>
+                        <th class="text-end" style="width: 12%;">최종 결제액 (VAT)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <c:forEach var="item" items="${orderItemList}">
+                        <tr>
+                            <td class="text-start">
+                                <div class="d-flex align-items-center py-1">
+                                    <div class="position-relative">
+                                        <img src="${pageContext.request.contextPath}${item.salesProdMainImgPath}"
+                                             class="rounded shadow-sm border" style="width: 50px; height: 50px; object-fit: cover;"
+                                             onerror="this.src='${pageContext.request.contextPath}/resources/img/no-image.png'">
+                                    </div>
+                                    <div class="ms-3">
+                                        <div class="fw-bold text-dark">${item.salesProdName}</div>
+                                        <div class="mini-text text-muted mt-1">
+                                            <i class="bi bi-info-circle mini-text me-1"></i>표준 규격 상품
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-end fw-semibold">
+                                <fmt:formatNumber value="${item.salesPrice}" pattern="#,###" /> <span class="mini-text font-normal text-muted">원</span>
+                            </td>
+                            <td class="text-center fw-bold">
+                                ${item.orderQty} <span class="mini-text font-normal text-muted">개</span>
+                            </td>
+                            <td class="text-end">
+                                <fmt:formatNumber value="${item.supplyAmt}" pattern="#,###" /> <span class="mini-text text-muted">원</span>
+                            </td>
+                            <td class="text-end text-danger pt-2">
+                                <div class="fw-semibold">-<fmt:formatNumber value="${item.itemDiscountAmt}" pattern="#,###" />원</div>
+                                <div class="mini-text text-muted opacity-75">(회원등급 혜택)</div>
+                            </td>
+                            <td class="text-end text-info">
+                                <fmt:formatNumber value="${item.itemDeliveryAmt}" pattern="#,###" />원
+                            </td>
+                            <td class="text-end">
+                                <div class="fw-bold text-accent" style="color:var(--accent)"><fmt:formatNumber value="${item.totalAmt}" pattern="#,###" />원</div>
+                                <div class="mini-text text-muted">(VAT <fmt:formatNumber value="${item.vatAmt}" pattern="#,###" />원)</div>
+                            </td>
+                        </tr>
+                    </c:forEach>
+                </tbody>
+                <tfoot class="bg-soft-primary" style="background-color: rgba(10, 48, 91, 0.03) !important;">
+                    <tr class="fw-bold">
+                        <td class="text-center py-3">합 계</td>
+                        <td class="text-end">-</td>
+                        <td class="text-center">${orderDetail.totalOrderQty}</td>
+                        <td class="text-end"><fmt:formatNumber value="${orderDetail.goodsTotalAmt}" pattern="#,###" />원</td>
+                        <td class="text-end text-danger"><fmt:formatNumber value="${orderDetail.discountTotalAmt}" pattern="#,###" />원</td>
+                        <td class="text-end text-info"><fmt:formatNumber value="${orderDetail.deliveryTotalAmt}" pattern="#,###" />원</td>
+                        <td class="text-end text-accent fs-6" style="color:var(--accent)"><fmt:formatNumber value="${orderDetail.payTotalAmt}" pattern="#,###" />원</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-center gap-3 mt-4 mb-5">
+        <button type="button" class="btn btn-outline-secondary btn-premium px-5" onclick="history.back();">취소 및 뒤로가기</button>
+        <button type="button" class="btn btn-primary btn-premium px-5 shadow-sm" onclick="fn_save();">설정 저장하기</button>
+    </div>
+</div>
 
                 <script>
                     function fn_save() {
-                        if (!confirm('저장하시겠습니까?')) return;
+                        if (!confirm('배송 정보와 주문 설정을 저장하시겠습니까?')) return;
                         // 저장 로직 (AJAX)
                         // const formData = $('#deliveryForm').serialize();
                         // $.ajax({...})
-                        alert('저장 기능은 구현 중입니다.');
+                        alert('저장 기능은 현재 엔드포인트 연결 중입니다.');
+                    }
+
+                    function fn_printInvoice() {
+                        alert('거래명세서 출력 모듈을 로딩 중입니다.');
                     }
                 </script>

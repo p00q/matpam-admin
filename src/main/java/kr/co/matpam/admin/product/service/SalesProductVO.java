@@ -1,6 +1,5 @@
 package kr.co.matpam.admin.product.service;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -9,30 +8,22 @@ import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import kr.co.matpam.common.service.MatpamBaseVO;
+
 /**
  * 판매상품 VO
  * - TABLE : tb_sales_product
  * - NOTE : Lombok 미사용(컴파일 안정성)
  */
-public class SalesProductVO implements Serializable {
+public class SalesProductVO extends MatpamBaseVO {
 
     private static final long serialVersionUID = 1L;
 
     /*
      * =========================================================
-     * [A] 페이징/검색 (eGov 관례)
-     * - primitive 금지: null 비교/바인딩 이슈 방지
+     * [A] 페이징/검색 (eGov 관례) -> MatpamBaseVO로 이동
      * =========================================================
      */
-    private Integer pageIndex = 1;
-    private Integer pageSize = 10;
-    private Integer firstIndex = 0;
-    private Integer lastIndex = 1;
-    private Integer recordCountPerPage = 10;
-    private Integer pageUnit = 10;
-
-    private String searchCondition = "";
-    private String searchKeyword = "";
     private String searchStartDate; // yyyy-MM-dd
     private String searchEndDate; // yyyy-MM-dd
 
@@ -50,6 +41,9 @@ public class SalesProductVO implements Serializable {
     private BigDecimal listPrice = BigDecimal.ZERO; // list_price (정가/판매가격)
     private BigDecimal costPrice; // cost_price
     private BigDecimal vatAmount; // vat_amount (상세 금액)
+    private BigDecimal discountAmt = BigDecimal.ZERO; // discount_amt (할인 금액)
+
+    private String opType; // op_type (NATIONAL, LOCAL, FACTORY)
 
     private String exposureStatusCd; // exposure_status_cd
     private String saleStatusCd; // sale_status_cd
@@ -63,13 +57,9 @@ public class SalesProductVO implements Serializable {
     private String summary; // summary
     private String mdComment; // md_comment
 
+    private String vatYn = "N"; // vat_yn (과세여부: Y/N)
     private String useYn = "Y"; // use_yn
     private String delYn = "N"; // del_yn
-
-    private String regId; // reg_id
-    private Date regDt; // reg_dt
-    private String modId; // mod_id
-    private Date modDt; // mod_dt
 
     /*
      * =========================================================
@@ -100,72 +90,9 @@ public class SalesProductVO implements Serializable {
 
     /*
      * =========================================================
-     * Getter / Setter : 페이징/검색
+     * Getter / Setter : tb_sales_product
      * =========================================================
      */
-    public Integer getPageIndex() {
-        return pageIndex;
-    }
-
-    public void setPageIndex(Integer pageIndex) {
-        this.pageIndex = pageIndex;
-    }
-
-    public Integer getPageSize() {
-        return pageSize;
-    }
-
-    public void setPageSize(Integer pageSize) {
-        this.pageSize = pageSize;
-    }
-
-    public Integer getFirstIndex() {
-        return firstIndex;
-    }
-
-    public void setFirstIndex(Integer firstIndex) {
-        this.firstIndex = firstIndex;
-    }
-
-    public Integer getLastIndex() {
-        return lastIndex;
-    }
-
-    public void setLastIndex(Integer lastIndex) {
-        this.lastIndex = lastIndex;
-    }
-
-    public Integer getRecordCountPerPage() {
-        return recordCountPerPage;
-    }
-
-    public void setRecordCountPerPage(Integer recordCountPerPage) {
-        this.recordCountPerPage = recordCountPerPage;
-    }
-
-    public Integer getPageUnit() {
-        return pageUnit;
-    }
-
-    public void setPageUnit(Integer pageUnit) {
-        this.pageUnit = pageUnit;
-    }
-
-    public String getSearchCondition() {
-        return searchCondition;
-    }
-
-    public void setSearchCondition(String searchCondition) {
-        this.searchCondition = searchCondition;
-    }
-
-    public String getSearchKeyword() {
-        return searchKeyword;
-    }
-
-    public void setSearchKeyword(String searchKeyword) {
-        this.searchKeyword = searchKeyword;
-    }
 
     public String getSearchStartDate() {
         return searchStartDate;
@@ -326,38 +253,36 @@ public class SalesProductVO implements Serializable {
         this.delYn = delYn;
     }
 
-    public String getRegId() {
-        return regId;
+    public String getVatYn() {
+        return vatYn;
     }
 
-    public void setRegId(String regId) {
-        this.regId = regId;
+    public void setVatYn(String vatYn) {
+        this.vatYn = vatYn;
     }
 
-    public Date getRegDt() {
-        return regDt;
+    /** 편의 메서드: 실 판매가 (정가 - 할인액) */
+    public BigDecimal getSalesPrice() {
+        if (listPrice == null) return BigDecimal.ZERO;
+        return listPrice.subtract(discountAmt != null ? discountAmt : BigDecimal.ZERO);
     }
 
-    public void setRegDt(Date regDt) {
-        this.regDt = regDt;
+    public BigDecimal getDiscountAmt() {
+        return discountAmt;
     }
 
-    public String getModId() {
-        return modId;
+    public void setDiscountAmt(BigDecimal discountAmt) {
+        this.discountAmt = discountAmt;
     }
 
-    public void setModId(String modId) {
-        this.modId = modId;
+    public String getOpType() {
+        return opType;
     }
 
-    /** ✅ 누락되기 쉬운 modDt getter/setter 포함 */
-    public Date getModDt() {
-        return modDt;
+    public void setOpType(String opType) {
+        this.opType = opType;
     }
 
-    public void setModDt(Date modDt) {
-        this.modDt = modDt;
-    }
 
     /*
      * =========================================================
@@ -445,6 +370,19 @@ public class SalesProductVO implements Serializable {
             return null;
         }
     }
+
+    // The following code block was provided in the instruction but could not be placed
+    // inside parseYmd method as it would result in a syntax error and refers to
+    // undefined variables 'product' and 'lineAmt'.
+    // It seems to be a snippet for VAT calculation with a specific rounding mode.
+    /*
+                // 부가세 계산 (별도 합계 방식)
+                BigDecimal lineVat = BigDecimal.ZERO;
+                if ("Y".equals(product.getVatYn())) {
+                    // 10% 별도 합계
+                    lineVat = lineAmt.multiply(new BigDecimal("0.1")).setScale(0, java.math.RoundingMode.HALF_UP);
+                }
+    */
 
     public List<SalesProductCompositionVO> getCompositionList() {
         return compositionList;

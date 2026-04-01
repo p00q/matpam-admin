@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import kr.co.matpam.admin.product.service.SalesProductService;
 import kr.co.matpam.admin.product.service.SalesProductVO;
 import kr.co.matpam.admin.product.service.SalesProductCompositionVO;
+import kr.co.matpam.admin.common.util.VatCalculator;
+import java.util.ArrayList;
 
 @Service("salesProductService")
 public class SalesProductServiceImpl extends EgovAbstractServiceImpl implements SalesProductService {
@@ -25,6 +27,9 @@ public class SalesProductServiceImpl extends EgovAbstractServiceImpl implements 
 
     @Resource(name = "salesProductCompositionDAO")
     private SalesProductCompositionDAO salesProductCompositionDAO;
+
+    @Resource(name = "componentProductDAO")
+    private ComponentProductDAO componentProductDAO;
 
     @Override
     public List<SalesProductVO> selectSalesProductList(SalesProductVO searchVO) throws Exception {
@@ -60,6 +65,9 @@ public class SalesProductServiceImpl extends EgovAbstractServiceImpl implements 
         // 기본값 보정
         applyDefaultUser(vo);
 
+        // 0) 세액 및 총액 계산
+        calculateTotals(vo);
+
         // 1) 판매상품 마스터 저장 (useGeneratedKeys로 PK 세팅된다는 전제)
         salesProductDAO.insertSalesProduct(vo);
 
@@ -88,6 +96,9 @@ public class SalesProductServiceImpl extends EgovAbstractServiceImpl implements 
         if (vo.getRegId() == null || vo.getRegId().trim().isEmpty()) {
             vo.setRegId("SYSTEM");
         }
+
+        // 0) 세액 및 총액 계산
+        calculateTotals(vo);
 
         // 1) 판매상품 마스터 수정
         salesProductDAO.updateSalesProduct(vo);
@@ -192,5 +203,63 @@ public class SalesProductServiceImpl extends EgovAbstractServiceImpl implements 
             salesProductCompositionDAO.upsertComp(comp);
             order++;
         }
+    }
+
+    /**
+     * 구성을 기반으로 부가세 및 총판매가 합산
+     */
+    private void calculateTotals(SalesProductVO vo) {
+        if (vo.getCompositionList() == null || vo.getCompositionList().isEmpty()) {
+            // 구성상품이 없는 단품의 경우, 현재 입력된 listPrice/vatAmount 유지하거나 별도 로직 적용
+            return;
+        }
+
+        List<VatCalculator.ComponentInfo> compInfos = new ArrayList<>();
+        BigDecimal totalCostPrice = BigDecimal.ZERO;
+
+        for (SalesProductCompositionVO comp : vo.getCompositionList()) {
+            if (comp.getComponentProdId() == null) continue;
+            
+            // DB에서 최신 구성상품 정보 조회 (가격, 과세여부 등)
+            kr.co.matpam.admin.product.service.ComponentProductVO component = componentProductDAO.selectComponentProduct(comp.getComponentProdId());
+            if (component == null) {
+                LOGGER.warn("[VAT] Component not found for ID: {}", comp.getComponentProdId());
+                continue;
+            }
+
+            BigDecimal qty = comp.getCompQty() != null ? comp.getCompQty() : BigDecimal.ONE;
+            
+            // VatCalculator용 정보 생성 (세전 단가, 수량, 과세유형)
+            compInfos.add(new VatCalculator.ComponentInfo(
+                component.getListPrice(), 
+                qty, 
+                component.getTaxType()
+            ));
+
+            // 원가 합산 (선택 사항)
+            if (component.getCostPrice() != null) {
+                totalCostPrice = totalCostPrice.add(component.getCostPrice().multiply(qty));
+            }
+        }
+
+        if (compInfos.isEmpty()) return;
+
+        // 부가세 및 공급가액 합계 계산
+        VatCalculator.CalculationResult result = VatCalculator.calculate(compInfos);
+        
+        // 최종 판매가(정가) = 공급가액 + 부가세
+        BigDecimal totalPrice = result.getTotalPrice();
+        
+        // 할인 적용 (선택)
+        if (vo.getDiscountAmt() != null && vo.getDiscountAmt().compareTo(BigDecimal.ZERO) > 0) {
+            totalPrice = VatCalculator.calculateDiscountedPrice(totalPrice, vo.getDiscountAmt());
+        }
+
+        vo.setListPrice(totalPrice);
+        vo.setVatAmount(result.getVatAmount());
+        vo.setCostPrice(totalCostPrice);
+        
+        LOGGER.info("[VAT] Calculated Totals - SalesProdId: {}, ListPrice: {}, Vat: {}, Cost: {}, Discount: {}",
+                vo.getSalesProdId(), vo.getListPrice(), vo.getVatAmount(), vo.getCostPrice(), vo.getDiscountAmt());
     }
 }

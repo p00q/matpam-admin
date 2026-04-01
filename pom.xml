@@ -330,7 +330,7 @@
         <version>10.0.15</version>
         <configuration>
           <httpConnector>
-            <port>5050</port>
+            <port>5051</port>
           </httpConnector>
           <webApp>
             <contextPath>/</contextPath>

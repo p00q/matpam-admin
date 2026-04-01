@@ -47,6 +47,10 @@
             o.DEL_YN = 'N'
             AND o.USE_YN = 'Y'
 
+            <if test="opType != null and opType != ''">
+                AND o.OP_TYPE = #{opType}
+            </if>
+
             <if test="orderStatusCd != null and orderStatusCd != ''">
                 AND o.ORDER_STATUS_CD = #{orderStatusCd}
             </if>

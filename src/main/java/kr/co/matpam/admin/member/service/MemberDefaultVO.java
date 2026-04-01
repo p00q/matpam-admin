@@ -30,6 +30,9 @@ public class MemberDefaultVO implements Serializable {
     /** 검색어 */
     private String searchKeyword;
 
+    /** 배송/운영 유형 (opType 격리용) */
+    private String deliveryTypeCd;
+
     /** 현재 페이지 번호 */
     private int pageIndex = 1;
 
@@ -110,6 +113,14 @@ public class MemberDefaultVO implements Serializable {
 
     public void setSearchKeyword(String searchKeyword) {
         this.searchKeyword = searchKeyword;
+    }
+
+    public String getDeliveryTypeCd() {
+        return deliveryTypeCd;
+    }
+
+    public void setDeliveryTypeCd(String deliveryTypeCd) {
+        this.deliveryTypeCd = deliveryTypeCd;
     }
 
     public int getPageIndex() {

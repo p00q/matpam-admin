@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>첨부이미지_텍스트추출</title>
+<style>
+  body{font-family:"Malgun Gothic","맑은 고딕",sans-serif; line-height:1.55; font-size:11pt;}
+  h1{font-size:18pt; margin:18px 0 8px;}
+  h2{font-size:14pt; margin:16px 0 6px;}
+  .center{text-align:center;}
+  table{border-collapse:collapse; width:100%; margin:8px 0;}
+  th,td{border:1px solid #000; padding:6px; vertical-align:top;}
+  th{background:#f2f2f2;}
+  .small{font-size:10pt;}
+  .indent{margin-left:16px;}
+  .mono{white-space:pre-wrap;}
+</style>
+</head>
+<body>
+
+<h1>공영도매시장 시설현대화 사업(상품화 기능 확대) 공모신청서</h1>
+<p><b>붙임1</b></p>
+
+<p class="center"><b>○○○○도매시장 시설현대화사업 추진계획</b><br>
+<b>(상품화 기능 확대)</b></p>
+
+<table>
+  <tr><th style="width:18%;">사업명</th><td>○○○○도매시장 시설현대화사업(상품화 기능 확대)</td></tr>
+  <tr><th>개설자</th><td>□□시</td></tr>
+  <tr><th>작성자</th><td>소속: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 직위: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 성명:</td></tr>
+  <tr><th>연락처</th><td>사무실: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 핸드폰:</td></tr>
+</table>
+
+<hr>
+
+<h1>Ⅴ 사업·점검 및 환류</h1>
+
+<p><b>[사업시행자]</b></p>
+<p>○ 사업시행자는 분기별 ‘도매시장 관리운영 위원회’를 개최하여 자체적으로 사업추진상황을 점검한 후 그 결과를 농림축산식품부장관과 한국농수산식품유통공사에 제출</p>
+<p class="indent">- 사업 지연이 없도록 공정률과 예산 실집행률 분기별 점검 등 실시</p>
+<p>○ 사업시행자는 ‘도매시장 관리 운영 위원회’의 지적사항을 반영하여 사업 보완·개선 등 추진</p>
+
+<p><b>[농림축산식품부·공영도매시장 시설정비위원회]</b></p>
+<p>○ 농림축산식품부장관은 공영도매시장 시설정비위원회와 반기별로 사업추진 상황 현장 점검 실시</p>
+<p class="indent">- 공영도매시장 시설정비위원회 사무국은 농림축산식품부와 위원회가 사업 추진상황 현장 점검을 원활하게 추진할 수 있도록 사업추진상황 점검 계획과 사업시행자 선정을 위한 평가 계획 및 반기별 현장점검결과를 농림축산식품부장관에게 보고</p>
+<p class="indent">* 사업추진 내실화를 위한 특별점검 등 추진 가능</p>
+<p>○ 농림축산식품부는 현장점검 결과를 토대로 문제점 발굴 및 사업시행자에 개선지시, 필요시 사업 시행지침 개정 등 환류</p>
+<p class="indent">- 특히, 도매시장개설자가 사업의 공정률과 예산 실집행 지연이 없도록 관리·감독 철저 및 개선방안 지침개정 추진</p>
+
+<hr>
+
+<h1>Ⅲ 표준프로세스(SP)에 따른 담당기관 역할</h1>
+
+<h2>1. 사업 신청</h2>
+
+<p><b>[농림축산식품부]</b></p>
+<p>○ 농림축산식품부장관은 당해연도 사업추진계획* 및 사업자 공모계획을 수립하여 공영도매시장 개설자(지자체)에게 통보(2026.1월)</p>
+<p class="indent">* 평가 추진체계 및 기준(서면·현장실사·공개발표), 제출용 서류 양식 등 포함</p>
+
+<p><b>[사업신청자(공영도매시장 개설자)]</b></p>
+<p>○ 사업을 희망하는 공영도매시장 개설자는 도매시장 시설현대화 사업추진계획서를 작성하여 농림축산식품부에 제출(2026.2월)</p>
+<p class="indent">* 제출경로: 특별시·광역시 → 농식품부, 시(市) → 시·도 → 농식품부</p>
+<p>○ 사업신청자는 사업추진계획서를 농림축산식품부에 제출하기 전에 자체적으로 ‘도매시장 관리운영 위원회’를 구성·개최하여 동 계획서 심의 및 확정</p>
+<p class="indent">- 보조사업 계획의 구체성, 실현 가능성, 자부담 확보 가능 여부, 사업기간 내 집행 가능성(사업추진일정), 인허가 가능성, 부지확보 여부 및 해당 부지의 관계 법령상 저촉 여부 등에 대해 철저 확인</p>
+
+<h2>2. 사업자 선정</h2>
+
+<p><b>[농림축산식품부]</b></p>
+<p>○ 농림축산식품부장관은 접수된 사업추진계획서를 ‘공영도매시장 시설정비위원회’(사무국: 한국농수산식품유통공사 도매시장부)에 전달하고, 사업대상자 선정을 위한 평가 요청</p>
+<p>○ 시설정비위원회로부터 제출받은 평가결과 등을 종합하여 사업대상자 선정</p>
+
+<hr>
+
+<h1>Ⅱ 지원계획</h1>
+
+<p><b>1. 사업시행자: 공영도매시장 개설자 및 관리공사</b></p>
+<p>○ 「농안법」 제2조 제3호 및 제4호에 따른 농산물도매시장 개설자 및 동법 제21조에 따른 관리공사</p>
+
+<p><b>2. 사업대상자(사업수혜자)</b></p>
+<p>○ 공영도매시장 개설자(출하농업인, 도매시장 법인, 중도매인, 매매참가인, 소비자)</p>
+
+<p><b>3. 전체사업비: 3,600백만원('29년까지 국비 총액 14,400백만원)</b></p>
+
+<p><b>4. 지원형태 및 지원조건</b></p>
+<p>○ 지원형태: 국비 30%, 지방비 70%</p>
+<p class="indent">- 관리공사가 참여 할 경우 지방비의 일부를 관리공사가 부담하는 것은 가능하나<br>
+&nbsp;&nbsp;개설자는 지방비를 총사업비의 40% 이상 부담해야 함</p>
+
+<p><b>5. 연차별 투자계획</b> <span class="small">(단위: 백만원)</span></p>
+<table>
+  <tr>
+    <th style="width:16%;">구분</th>
+    <th>2026</th><th>2027</th><th>2028</th><th>2029</th><th>계</th>
+  </tr>
+  <tr><th>합계</th><td class="center">12,000</td><td class="center">12,000</td><td class="center">12,000</td><td class="center">12,000</td><td class="center">48,000</td></tr>
+  <tr><th>국고</th><td class="center">3,600</td><td class="center">3,600</td><td class="center">3,600</td><td class="center">3,600</td><td class="center">14,400</td></tr>
+  <tr><th>지방비</th><td class="center">8,400</td><td class="center">8,400</td><td class="center">8,400</td><td class="center">8,400</td><td class="center">33,600</td></tr>
+  <tr><th>사업량</th><td class="center">3개소</td><td class="center">3개소</td><td class="center">3개소</td><td class="center">3개소</td><td class="center">12개소</td></tr>
+</table>
+
+<p><b>6. 세부산출 내역</b></p>
+<p>○ 도매시장 별 여건 및 상품화 마케팅 전략에 따라 적정 시설규모 산정 및 신청<br>
+다만, 국비는 확보된 범위 내에서만 지원할 계획으로 과도한 사업계획 지양</p>
+<p class="indent">- 개소당 기준 사업비: 4,000백만원(국비 1,200, 지방비 2,800)</p>
+<p class="indent">* 기준 사업비 이내: 총사업비의 30% 지원</p>
+<p class="indent">* 기준 사업비 초과: 국비 가용 범위 내에서 총사업비의 30% 지원(지원되는 국비 이외의 잔여 사업비는 지방비로 추진)</p>
+
+<hr>
+
+<h1>공영도매시장 상품화 기능 확대 지원사업 시행 지침</h1>
+
+<table>
+  <tr>
+    <th style="width:18%;">세부사업명</th><td style="width:42%;">공영도매시장 시설현대화</td>
+    <th style="width:18%;">세목</th><td style="width:22%;">자치단체 자본보조</td>
+  </tr>
+  <tr>
+    <th>내역사업명</th><td>상품화 기능 확대</td>
+    <th>예산(백만원)</th><td>보조 3,600</td>
+  </tr>
+  <tr>
+    <th>사업목적</th>
+    <td colspan="3" class="mono">○ 농산물 도매시장의 기존 원물 유통방식과 단순 분산 기능을 넘어서
+  공공급식, 로컬푸드매장 등과 연계할 수 있는 소비지 상품화지원</td>
+  </tr>
+  <tr>
+    <th>근거법령</th>
+    <td colspan="3">○ 농수산물유통 및 가격안정에 관한 법률 제20조(도매시장 개설자의 의무), 제57조(기금의 용도), 제67조(유통시설의 개선 등), 제73조(재정지원)</td>
+  </tr>
+  <tr>
+    <th>사업 주요내용</th>
+    <td colspan="3">○ 농산물 공영도매시장 상품화 기능 확대에 필요한 소분·재포장 등 시설 지원</td>
+  </tr>
+  <tr>
+    <th>지원자격 및 요건</th>
+    <td colspan="3">○ 농산물 공영도매시장 개설자 등</td>
+  </tr>
+  <tr>
+    <th>지원내용</th>
+    <td colspan="3">○ 소분·재포장 시설 건립에 필요한 토목, 건축공사, 전기, 상품화 기능 확대에 필요한 설비·장치류 구축 비용 지원</td>
+  </tr>
+  <tr>
+    <th>사업 신청</th>
+    <td colspan="3" class="mono">○ 신청서 작성 후 농림축산식품부에 신청
+○ 신청 방법: 공문 및 관계서류 서면 제출</td>
+  </tr>
+  <tr>
+    <th>지원대상 선정</th>
+    <td colspan="3">○ 농림축산식품부 시설정비위원회에서 서면·현장평가를 통해 최종 선정</td>
+  </tr>
+  <tr>
+    <th>재원구성(%)</th>
+    <td colspan="3">국고보조 30&nbsp;&nbsp;&nbsp; 지방비 70&nbsp;&nbsp;&nbsp; 국고융자 -&nbsp;&nbsp;&nbsp; 자부담 -</td>
+  </tr>
+</table>
+
+<p><b>연도별 재정투입 현황</b> <span class="small">(단위: 백만원)</span></p>
+<table>
+  <tr><th style="width:18%;">구분</th><th>2024년</th><th>2025년</th><th>2026년</th></tr>
+  <tr><th>합계</th><td class="center">12,000</td><td class="center">12,000</td><td class="center">12,000</td></tr>
+  <tr><th>국비</th><td class="center">3,600</td><td class="center">3,600</td><td class="center">3,600</td></tr>
+  <tr><th>지방비</th><td class="center">8,400</td><td class="center">8,400</td><td class="center">8,400</td></tr>
+</table>
+
+<table>
+  <tr><th style="width:25%;">담당기관</th><th style="width:25%;">담당과</th><th style="width:25%;">담당자</th><th style="width:25%;">연락처</th></tr>
+  <tr>
+    <th>농림축산식품부</th><td class="center">유통정책과</td><td class="center">사무관<br>주무관</td><td class="center">044-201-2228<br>044-201-2229</td>
+  </tr>
+  <tr>
+    <th>한국농수산식품유통공사</th><td class="center">도매시장부</td><td class="center">부 장<br>과 장</td><td class="center">061-931-1040<br>061-931-1043</td>
+  </tr>
+</table>
+
+<hr>
+
+<h1 class="center">강원특별자치도</h1>
+<p class="center">새로운 강원! 특별 자치시대!</p>
+
+<p>수신&nbsp;&nbsp;수신자 참조<br>
+(경유)</p>
+<p><b>제목&nbsp;&nbsp;2026년 농산물 공영도매시장 상품화기능 확대 사업 시행지침 및 계획 알림</b></p>
+
+<p>1. 관련 : 농림축산식품부 유통정책과-329(2026.1.20.)호.</p>
+<p>2. 농림축산식품부에서는 농산물 공영도매시장 상품화기능 확대에 필요한 소분·재포장 등 시설 지원을 통한 유통 효율성을 제고하고자 공영도매시장 상품화기능 확대 지원사업을 시행하고 있습니다.</p>
+<p>3. 2026년 농산물 공영도매시장 상품화기능 확대 지원 사업 시행지침 및 선정계획을 붙임과 같이 알려드리니, 시군에서는 2026.2.10.(화)까지 신청서 등을 제출해 주시기 바랍니다.</p>
+
+<p class="mono">붙임  1. 2026년 공영도매시장 상품화기능 확대 지원 시행 지침 1부.
+      2. 2026년 공영도매시장 상품화기능 확대 사업대상자 선정 계획 1부. 끝.</p>
+
+<p class="center"><b>강원특별자치도지사</b></p>
+
+<p class="mono">수신자  춘천시농업기술센터소장(농산물유통과장), 원주시농업기술센터소장(로컬푸드과장), 원주시농산물도매시장 관리사무소장, 강릉시농업기술센터소장(유통지원과장)</p>
+
+<table class="small">
+  <tr><th>주무관</th><td class="center">지은희</td><th>유통정책팀장</th><td class="center">진현숙</td></tr>
+  <tr><th>농산물유통과장</th><td class="center">김경민</td><th>전결</th><td class="center">2026. 1. 22.</td></tr>
+  <tr><th>시행</th><td class="center">농산물유통과-860 (2026. 1. 22.)</td><th>접수</th><td class="center">유통지원과-897 (2026. 1. 23.)</td></tr>
+</table>
+
+<p class="mono">우 24266  강원특별자치도 춘천시 중앙로 1
+전화번호 033-249-2621    팩스번호 033-249-4041
+https://state.gwd.go.kr
+jeh002468@korea.kr
+대국민 공개</p>
+
+<p>대한민국 관광수도, 강원특별자치도!</p>
+
+</body>
+</html>

@@ -35,6 +35,8 @@
         <result property="agreeMarketing" column="AGREE_MARKETING" />
         <result property="agreeSms" column="AGREE_SMS" />
         <result property="joinDate" column="JOIN_DATE" jdbcType="DATE" />
+        <result property="deliveryTypeCd" column="DELIVERY_TYPE_CD" />
+        <result property="deliveryTypeName" column="DELIVERY_TYPE_NAME" />
     </resultMap>
 
     <!-- 검색 조건 -->
@@ -48,6 +50,11 @@
             <!-- 회원타입 : TB_MEMBER.member_type_cd -->
             <if test="memberType != null and memberType != ''">
                 AND m.MEMBER_TYPE_CD = #{memberType}
+            </if>
+            
+            <!-- 배송/운영유형 : TB_MEMBER.delivery_type_cd -->
+            <if test="deliveryTypeCd != null and deliveryTypeCd != ''">
+                AND m.DELIVERY_TYPE_CD = #{deliveryTypeCd}
             </if>
 
             <!-- 가입일자 FROM/TO : TB_MEMBER.join_dt -->
@@ -84,7 +91,6 @@
             parameterType="kr.co.matpam.admin.member.service.MemberDefaultVO">
         SELECT
             m.MEMBER_ID        AS MEMBER_ID,
-            m.MEMBER_ID        AS MEMBER_ID,
             m.MEMBER_TYPE_CD   AS MEMBER_TYPE,
             mt.DETAIL_CODE_NAME AS MEMBER_TYPE_NAME,
             m.LOGIN_ID         AS LOGIN_ID,
@@ -113,6 +119,8 @@
             ag.AGREE_MARKETING,
             ag.AGREE_SMS,
             m.JOIN_DT          AS JOIN_DATE,
+            m.DELIVERY_TYPE_CD AS DELIVERY_TYPE_CD,
+            dt.DETAIL_CODE_NAME AS DELIVERY_TYPE_NAME,
             m.USE_YN
         FROM TB_MEMBER m
             LEFT JOIN (
@@ -138,6 +146,9 @@
             LEFT JOIN TB_DETAIL_CODE mg ON m.MEMBER_GRADE_CD = mg.DETAIL_CODE_ID
                 AND mg.CODE_GROUP_ID = 'MEMBER_GRADE'
                 AND mg.CODE_ID       = 'MEMBER_GRADE'
+            LEFT JOIN TB_DETAIL_CODE dt ON m.DELIVERY_TYPE_CD = dt.DETAIL_CODE_ID
+                AND dt.CODE_GROUP_ID = 'DELIVERY_TYPE'
+                AND dt.CODE_ID       = 'DELIVERY_TYPE'
         <include refid="memberWhere" />
         ORDER BY m.JOIN_DT DESC
         LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
@@ -155,7 +166,6 @@
     <select id="selectMember" resultMap="memberResultMap" parameterType="long">
         SELECT
             m.MEMBER_ID        AS MEMBER_ID,
-            m.MEMBER_ID        AS MEMBER_ID,
             m.MEMBER_TYPE_CD   AS MEMBER_TYPE,
             mt.DETAIL_CODE_NAME AS MEMBER_TYPE_NAME,
             m.LOGIN_ID         AS LOGIN_ID,
@@ -183,6 +193,8 @@
             ag.AGREE_MARKETING,
             ag.AGREE_SMS,
             m.JOIN_DT          AS JOIN_DATE,
+            m.DELIVERY_TYPE_CD AS DELIVERY_TYPE_CD,
+            dt.DETAIL_CODE_NAME AS DELIVERY_TYPE_NAME,
             m.USE_YN
         FROM TB_MEMBER m
             LEFT JOIN (
@@ -205,6 +217,9 @@
             LEFT JOIN TB_DETAIL_CODE st ON m.JOIN_STATUS_CD = st.DETAIL_CODE_ID
                 AND st.CODE_GROUP_ID = 'JOIN_STATUS'
                 AND st.CODE_ID       = 'JOIN_STATUS'
+            LEFT JOIN TB_DETAIL_CODE dt ON m.DELIVERY_TYPE_CD = dt.DETAIL_CODE_ID
+                AND dt.CODE_GROUP_ID = 'DELIVERY_TYPE'
+                AND dt.CODE_ID       = 'DELIVERY_TYPE'
         WHERE m.MEMBER_ID = #{value}
     </select>
 
@@ -212,7 +227,6 @@
     <select id="selectMemberById" resultMap="memberResultMap" parameterType="string">
         SELECT
             m.MEMBER_ID        AS MEMBER_ID,
-            m.MEMBER_ID        AS MEMBER_ID,
             m.MEMBER_TYPE_CD   AS MEMBER_TYPE,
             mt.DETAIL_CODE_NAME AS MEMBER_TYPE_NAME,
             m.LOGIN_ID         AS LOGIN_ID,
@@ -240,6 +254,8 @@
             ag.AGREE_MARKETING,
             ag.AGREE_SMS,
             m.JOIN_DT          AS JOIN_DATE,
+            m.DELIVERY_TYPE_CD AS DELIVERY_TYPE_CD,
+            dt.DETAIL_CODE_NAME AS DELIVERY_TYPE_NAME,
             m.USE_YN
         FROM TB_MEMBER m
             LEFT JOIN (
@@ -262,6 +278,9 @@
             LEFT JOIN TB_DETAIL_CODE st ON m.JOIN_STATUS_CD = st.DETAIL_CODE_ID
                 AND st.CODE_GROUP_ID = 'JOIN_STATUS'
                 AND st.CODE_ID       = 'JOIN_STATUS'
+            LEFT JOIN TB_DETAIL_CODE dt ON m.DELIVERY_TYPE_CD = dt.DETAIL_CODE_ID
+                AND dt.CODE_GROUP_ID = 'DELIVERY_TYPE'
+                AND dt.CODE_ID       = 'DELIVERY_TYPE'
         WHERE m.LOGIN_ID = #{value}
     </select>
 
@@ -284,6 +303,7 @@
             JOIN_STATUS_CD,
             MEMBER_GRADE_CD,
             JOIN_DT,
+            DELIVERY_TYPE_CD,
             USE_YN,
             REG_ID
         ) VALUES (
@@ -302,6 +322,7 @@
             #{status},              -- 가입상태 코드
             #{memberGrade},         -- 회원등급 코드
             #{joinDate},            -- 가입일자 (컨트롤러에서 default today 세팅)
+            #{deliveryTypeCd},      -- 배송/운영유형
             'Y',                    -- USE_YN
             'SYSTEM'                -- REG_ID (로그인한 관리자 ID로 바꾸고 싶으면 여기만 변경)
         )
@@ -321,6 +342,7 @@
                ADDR2           = #{addressDetail},
                JOIN_STATUS_CD  = #{status},
                MEMBER_GRADE_CD = #{memberGrade},
+               DELIVERY_TYPE_CD = #{deliveryTypeCd},
                MOD_ID          = 'SYSTEM',
                MOD_DT          = CURRENT_TIMESTAMP
          WHERE MEMBER_ID       = #{memberNo}

@@ -130,32 +130,24 @@
                                                     </c:forEach>
                                                 </select>
                                             </td>
-                                            <th>지역</th>
-                                            <td>
-                                                <select name="region" class="form-select form-select-sm"
-                                                    style="max-width: 200px;">
-                                                    <option value="" <c:if test="${empty member.region}">selected</c:if>
-                                                        >
-                                                        전체
-                                                    </option>
-                                                    <option value="SEOUL" <c:if test="${member.region eq 'SEOUL'}">
-                                                        selected</c:if>>
-                                                        서울
-                                                    </option>
-                                                    <option value="GYEONGGI" <c:if
-                                                        test="${member.region eq 'GYEONGGI'}">selected</c:if>>
-                                                        경기
-                                                    </option>
-                                                    <option value="INCHEON" <c:if test="${member.region eq 'INCHEON'}">
-                                                        selected</c:if>>
-                                                        인천
-                                                    </option>
-                                                    <option value="GANGWON" <c:if test="${member.region eq 'GANGWON'}">
-                                                        selected</c:if>>
-                                                        강원
-                                                    </option>
-                                                </select>
-                                            </td>
+                                             <th>운영 유형 <span class="text-danger">*</span></th>
+                                             <td>
+                                                 <select name="deliveryTypeCd" class="form-select form-select-sm"
+                                                     style="max-width: 200px;" required>
+                                                     <option value="" disabled <c:if test="${empty member.deliveryTypeCd}">
+                                                         selected</c:if>>
+                                                         운영 유형 선택
+                                                     </option>
+                                                     <c:forEach var="dt" items="${deliveryTypes}">
+                                                         <option value="${dt.detailCode}" <c:if
+                                                             test="${member.deliveryTypeCd eq dt.detailCode}">
+                                                             selected="selected"
+                                                             </c:if>>
+                                                             ${dt.detailCodeName}
+                                                         </option>
+                                                     </c:forEach>
+                                                 </select>
+                                             </td>
                                         </tr>
                                         <tr>
                                             <th>아이디 <span class="text-danger">*</span></th>

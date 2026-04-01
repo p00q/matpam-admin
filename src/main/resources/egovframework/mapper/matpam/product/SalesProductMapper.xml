@@ -38,6 +38,9 @@
 
         <result property="useYn"             column="USE_YN"/>
         <result property="delYn"             column="DEL_YN"/>
+        <result property="opType"            column="OP_TYPE"/>
+        <result property="discountAmt"      column="DISCOUNT_AMT"/>
+        <result property="vatYn"            column="VAT_YN"/>
 
         <result property="regId"             column="REG_ID"/>
         <result property="regDt"             column="REG_DT"/>
@@ -81,6 +84,9 @@
                     OR sp.SALES_PROD_CODE LIKE CONCAT('%', #{searchKeyword}, '%')
                 )
             </if>
+
+            <!-- 운영 타입 기반 데이터 격리 -->
+            <include refid="kr.co.matpam.common.mapper.MatpamCommonMapper.opTypeFilter"/>
         </where>
     </sql>
 
@@ -113,6 +119,9 @@
 
             sp.USE_YN,
             sp.DEL_YN,
+            sp.OP_TYPE,
+            sp.DISCOUNT_AMT,
+            sp.VAT_YN,
 
             sp.REG_ID,
             sp.REG_DT,
@@ -123,9 +132,7 @@
             ON sp.SELLER_MEMBER_ID = m.MEMBER_ID
         <include refid="salesProductWhere"/>
         ORDER BY sp.SALES_PROD_ID DESC
-        <if test="recordCountPerPage != null and firstIndex != null">
-            LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
-        </if>
+        <include refid="kr.co.matpam.common.mapper.MatpamCommonMapper.pagingFooter"/>
     </select>
 
     <!-- =========================================================
@@ -175,6 +182,9 @@
 
             sp.USE_YN,
             sp.DEL_YN,
+            sp.DISCOUNT_AMT,
+            sp.VAT_YN,
+            sp.OP_TYPE,
 
             sp.REG_ID,
             sp.REG_DT,
@@ -218,6 +228,9 @@
 
             USE_YN,
             DEL_YN,
+            OP_TYPE,
+            DISCOUNT_AMT,
+            VAT_YN,
 
             REG_ID,
             REG_DT,
@@ -250,6 +263,9 @@
 
             #{useYn},
             'N',
+            #{opType},
+            #{discountAmt},
+            #{vatYn},
 
             #{regId},
             NOW(),
@@ -281,6 +297,8 @@
             MD_COMMENT           = #{mdComment},
 
             USE_YN               = #{useYn},
+            DISCOUNT_AMT         = #{discountAmt},
+            VAT_YN               = #{vatYn},
 
             MOD_ID               = #{modId},
             MOD_DT               = NOW()

@@ -42,6 +42,9 @@ public class OrderManageController {
     @Resource(name = "orderManageService")
     private OrderManageService orderManageService;
 
+    @Resource(name = "orderService")
+    private kr.co.matpam.admin.order.service.OrderService orderService;
+
     @Resource(name = "codeManagementService")
     private CodeManagementService codeManagementService;
 
@@ -90,9 +93,15 @@ public class OrderManageController {
      */
     @RequestMapping(value = "/admin/order/selectOrderList.ajax", method = RequestMethod.POST)
     @ResponseBody
-    public Map<String, Object> selectOrderList(@ModelAttribute("searchVO") OrderSearchVO searchVO) {
+    public Map<String, Object> selectOrderList(@ModelAttribute("searchVO") OrderSearchVO searchVO, HttpServletRequest request) {
 
         Map<String, Object> result = new HashMap<>();
+        
+        // 운영권한 격리
+        String opType = (String) request.getAttribute("opType");
+        if (opType != null && !"NATIONAL".equals(opType)) {
+            searchVO.setOpType(opType);
+        }
 
         try {
             // 페이징 계산
@@ -132,13 +141,81 @@ public class OrderManageController {
     }
 
     /**
+     * 수기 주문 등록 및 맛팜 머니 차감 (AJAX)
+     */
+    @RequestMapping(value = "/admin/order/insertManualOrder.ajax", method = RequestMethod.POST)
+    @ResponseBody
+    public Map<String, Object> insertManualOrder(
+            @RequestParam("buyerMemberId") Long buyerMemberId,
+            @RequestParam("payTotalAmt") java.math.BigDecimal payTotalAmt,
+            HttpServletRequest request) {
+
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+            kr.co.matpam.admin.order.service.OrderVO orderVO = new kr.co.matpam.admin.order.service.OrderVO();
+            orderVO.setBuyerMemberId(buyerMemberId);
+            orderVO.setTotalPayAmt(payTotalAmt);
+            orderVO.setTotalOrderAmt(payTotalAmt);
+            orderVO.setTotalVatAmt(java.math.BigDecimal.ZERO);
+            orderVO.setTotalDiscountAmt(java.math.BigDecimal.ZERO);
+            orderVO.setReceiverName("수기주문");
+            orderVO.setReceiverHp("010-0000-0000");
+            orderVO.setReceiverZip("00000");
+            orderVO.setReceiverAddr("수기주문");
+            orderVO.setReceiverAddrDetail("");
+            
+            // 운영권한 주입
+            String opType = (String) request.getAttribute("opType");
+            if (opType != null && !"NATIONAL".equals(opType)) {
+                orderVO.setOpType(opType);
+            } else {
+                orderVO.setOpType("NATIONAL");
+            }
+
+            // 단일 가짜 주문 아이템 생성
+            kr.co.matpam.admin.order.service.OrderItemVO dummyItem = new kr.co.matpam.admin.order.service.OrderItemVO();
+            dummyItem.setSalesProdId(0L); // 수기주문 더미키
+            dummyItem.setUnitPrice(payTotalAmt);
+            dummyItem.setQty(1L);
+            dummyItem.setItemOrderAmt(payTotalAmt);
+            dummyItem.setItemVatAmt(java.math.BigDecimal.ZERO);
+            dummyItem.setItemPayAmt(payTotalAmt);
+            dummyItem.setOpType(orderVO.getOpType());
+            
+            orderVO.setOrderItems(java.util.Collections.singletonList(dummyItem));
+            
+            String loginId = (String) request.getAttribute("loginId");
+            orderVO.setRegId(loginId != null ? loginId : "admin");
+
+            orderService.processOrder(orderVO);
+
+            result.put("success", true);
+            result.put("message", "수기 주문 등록 및 결제 처리가 완료되었습니다.");
+
+        } catch (Exception e) {
+            LOGGER.error("수기 주문 등록 오류", e);
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+
+        return result;
+    }
+
+    /**
      * KPI 합계 조회 (AJAX)
      */
     @RequestMapping(value = "/admin/order/selectOrderSummary.ajax", method = RequestMethod.POST)
     @ResponseBody
-    public Map<String, Object> selectOrderSummary(@ModelAttribute("searchVO") OrderSearchVO searchVO) {
+    public Map<String, Object> selectOrderSummary(@ModelAttribute("searchVO") OrderSearchVO searchVO, HttpServletRequest request) {
 
         Map<String, Object> result = new HashMap<>();
+        
+        // 운영권한 격리
+        String opType = (String) request.getAttribute("opType");
+        if (opType != null && !"NATIONAL".equals(opType)) {
+            searchVO.setOpType(opType);
+        }
 
         try {
             OrderSummaryVO summary = orderManageService.selectOrderSummary(searchVO);

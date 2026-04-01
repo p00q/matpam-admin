@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="matpam.member.MoneyMapper">
+
+    <!-- 잔액 업데이트 (차감/충전 공용) -->
+    <update id="updateMeatMoneyBalance" parameterType="map">
+        UPDATE TB_MEMBER
+           SET MEAT_MONEY = MEAT_MONEY + #{changeAmt}
+         WHERE MEMBER_ID = #{memberId}
+           <if test="isDeduct == 'Y'">
+               AND MEAT_MONEY + #{changeAmt} >= 0
+           </if>
+    </update>
+
+    <!-- 이력 저장 -->
+    <insert id="insertMoneyHistory" parameterType="map">
+        INSERT INTO tb_money_history (
+            member_id,
+            trx_type_cd,
+            change_amt,
+            balance,
+            ref_order_no,
+            remark,
+            reg_id,
+            reg_dt
+        ) VALUES (
+            #{memberId},
+            #{trxType},
+            #{changeAmt},
+            (SELECT MEAT_MONEY FROM TB_MEMBER WHERE MEMBER_ID = #{memberId}),
+            #{refOrderNo},
+            #{remark},
+            #{regId},
+            CURRENT_TIMESTAMP
+        )
+    </insert>
+
+    <!-- 머니 이력 조회 -->
+    <select id="selectMoneyHistoryList" parameterType="map" resultType="egovMap">
+        SELECT 
+            money_hist_id,
+            member_id,
+            trx_type_cd,
+            change_amt,
+            balance,
+            ref_order_no,
+            remark,
+            reg_dt
+        FROM tb_money_history
+        WHERE member_id = #{memberId}
+        ORDER BY reg_dt DESC
+    </select>
+
+</mapper>

@@ -1,141 +1,151 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-    <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-        <!DOCTYPE html>
-        <html lang="ko">
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<!DOCTYPE html>
+<html lang="ko">
 
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>맛팜 관리자</title>
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-            <style>
-                body {
-                    margin: 0;
-                    padding: 0;
-                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>맛팜 관리자 | Premium Admin</title>
+    
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Custom Premium Styles -->
+    <link rel="stylesheet" href="<c:url value='/resources/css/admin-premium.css'/>">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <span style="color: var(--accent);">MATPAM</span> ADMIN
+        </div>
+        <nav class="sidebar-nav">
+            <a href="<c:url value='/admin/member/memberList.do?menu=member'/>"
+                class="nav-item ${param.menu eq 'member' ? 'active' : ''}">
+                <i class="bi bi-people-fill"></i>회원 관리
+            </a>
+            <a href="<c:url value='/admin/order/orderList.do?menu=order'/>"
+                class="nav-item ${param.menu eq 'order' ? 'active' : ''}">
+                <i class="bi bi-cart-fill"></i>주문 관리
+            </a>
+            <a href="<c:url value='/admin/product/salesProductList.do?menu=product'/>"
+                class="nav-item ${param.menu eq 'product' ? 'active' : ''}">
+                <i class="bi bi-box-seam-fill"></i>판매상품 관리
+            </a>
+            <a href="<c:url value='/admin/product/componentProductList.do?menu=component'/>"
+                class="nav-item ${param.menu eq 'component' ? 'active' : ''}">
+                <i class="bi bi-gear-fill"></i>구성상품 관리
+            </a>
+            <a href="<c:url value='/admin/settlement/settlementList.do?menu=settlement'/>"
+                class="nav-item ${param.menu eq 'settlement' ? 'active' : ''}">
+                <i class="bi bi-currency-exchange"></i>정산/보상 관리
+            </a>
+            <a href="<c:url value='/admin/basic/codeManage.do?menu=basic'/>"
+                class="nav-item ${param.menu eq 'basic' ? 'active' : ''}">
+                <i class="bi bi-file-earmark-text-fill"></i>시스템 설정
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="d-flex align-items-center">
+            <h5 class="mb-0 fw-bold" style="color: var(--primary);">
+                <c:choose>
+                    <c:when test="${param.menu eq 'member'}">회원 관리</c:when>
+                    <c:when test="${param.menu eq 'order'}">주문 관리</c:when>
+                    <c:when test="${param.menu eq 'product'}">판매상품 관리</c:when>
+                    <c:when test="${param.menu eq 'component'}">구성상품 관리</c:when>
+                    <c:when test="${param.menu eq 'settlement'}">정산/보상 관리</c:when>
+                    <c:when test="${param.menu eq 'basic'}">시스템 설정</c:when>
+                    <c:otherwise>대시보드</c:otherwise>
+                </c:choose>
+            </h5>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="badge bg-light text-dark px-3 py-2 border shadow-sm">
+                <i class="bi bi-person-circle me-2"></i>운영자 권한: <strong>${sessionScope.loginVO.opType}</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Wrapper -->
+    <main class="main-wrapper">
+        <div class="container-fluid p-4">
+            <jsp:include page="${contentPage}" />
+        </div>
+    </main>
+
+    <!-- Global Loading Overlay -->
+    <div id="global-loader">
+        <div class="loader-spinner mb-3"></div>
+        <div class="fw-bold text-primary animate-pulse">처리 중입니다...</div>
+    </div>
+
+    <!-- Global Toast Notifications -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-4">
+        <div id="premiumToast" class="toast premium-toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto" id="toastTitle">알림</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body d-flex align-items-center">
+                <i id="toastIcon" class="bi"></i>
+                <span id="toastMessage"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle & Core Logic -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // --- 1. Global AJAX Loader ---
+            $(document).ajaxStart(function() {
+                $('#global-loader').css('display', 'flex');
+            }).ajaxStop(function() {
+                $('#global-loader').hide();
+            });
+
+            // --- 2. Toast Utility ---
+            window.fn_toast = function(message, type = 'info') {
+                const toastEl = document.getElementById('premiumToast');
+                const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+                
+                const $toast = $('#premiumToast');
+                const $icon = $('#toastIcon');
+                
+                // Reset classes
+                $toast.removeClass('toast-success toast-danger toast-info');
+                $icon.removeClass('bi-check-circle-fill bi-exclamation-triangle-fill bi-info-circle-fill');
+                
+                if (type === 'success') {
+                    $toast.addClass('toast-success');
+                    $icon.addClass('bi-check-circle-fill text-success');
+                    $('#toastTitle').text('성공');
+                } else if (type === 'danger') {
+                    $toast.addClass('toast-danger');
+                    $icon.addClass('bi-check-circle-fill text-danger');
+                    $('#toastTitle').text('오류');
+                } else {
+                    $toast.addClass('toast-info');
+                    $icon.addClass('bi-info-circle-fill text-primary');
+                    $('#toastTitle').text('알림');
                 }
+                
+                $('#toastMessage').text(message);
+                toast.show();
+            };
+        });
+    </script>
+</body>
 
-                /* Header Navigation */
-                .main-header {
-                    background: linear-gradient(135deg, #2c5f7c 0%, #3a7ca5 100%);
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                }
-
-                .main-nav {
-                    display: flex;
-                    list-style: none;
-                    margin: 0;
-                    padding: 0;
-                }
-
-                .main-nav li {
-                    margin: 0;
-                }
-
-                .main-nav a {
-                    display: block;
-                    padding: 1rem 1.5rem;
-                    color: rgba(255, 255, 255, 0.9);
-                    text-decoration: none;
-                    font-weight: 500;
-                    font-size: 0.95rem;
-                    transition: all 0.3s ease;
-                    border-bottom: 3px solid transparent;
-                }
-
-                .main-nav a:hover {
-                    background-color: rgba(255, 255, 255, 0.1);
-                    color: white;
-                }
-
-                .main-nav a.active {
-                    background-color: rgba(255, 255, 255, 0.15);
-                    color: white;
-                    border-bottom-color: #ffc107;
-                }
-
-                .main-nav i {
-                    margin-right: 0.5rem;
-                }
-
-                /* Content Area */
-                .main-content {
-                    min-height: calc(100vh - 60px);
-                    background-color: #f8f9fa;
-                }
-
-                /* Breadcrumb */
-                .breadcrumb-section {
-                    background-color: white;
-                    padding: 1rem 0;
-                    border-bottom: 1px solid #e9ecef;
-                }
-
-                .breadcrumb {
-                    margin-bottom: 0;
-                    background-color: transparent;
-                }
-
-                .breadcrumb-item.active {
-                    color: #2c5f7c;
-                    font-weight: 600;
-                }
-            </style>
-        </head>
-
-        <body>
-            <!-- Main Header with Tab Navigation -->
-            <header class="main-header">
-                <nav>
-                    <ul class="main-nav">
-                        <li>
-                            <a href="<c:url value='/admin/member/memberList.do'/>"
-                                class="${param.menu eq 'member' ? 'active' : ''}">
-                                <i class="bi bi-people-fill"></i>회원관리
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<c:url value='/admin/order/orderList.do'/>"
-                                class="${param.menu eq 'order' ? 'active' : ''}">
-                                <i class="bi bi-cart-fill"></i>주문관리
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<c:url value='/admin/product/salesProductList.do?menu=product'/>"
-                                class="${param.menu eq 'product' ? 'active' : ''}">
-                                <i class="bi bi-box-seam-fill"></i>판매상품관리
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<c:url value='/admin/product/componentProductList.do?menu=component'/>"
-                                class="${param.menu eq 'component' ? 'active' : ''}">
-                                <i class="bi bi-gear-fill"></i>구성상품관리
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<c:url value='/admin/settlement/settlementList.do'/>"
-                                class="${param.menu eq 'settlement' ? 'active' : ''}">
-                                <i class="bi bi-currency-exchange"></i>교환/정산/보상
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<c:url value='/admin/basic/codeManage.do?menu=basic'/>"
-                                class="${param.menu eq 'basic' ? 'active' : ''}">
-                                <i class="bi bi-file-earmark-text-fill"></i>기본정보관리
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-            </header>
-
-            <!-- Main Content Area -->
-            <main class="main-content">
-                <jsp:include page="${contentPage}" />
-            </main>
-
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        </body>
-
-        </html>
+</html>

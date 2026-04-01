@@ -265,8 +265,16 @@
                                     </td>
                                 </tr>
 
-                                <!-- Row 7: 노출상태 / 사용여부 -->
+                                <!-- Row 7: 과세여부 / 노출상태 -->
                                 <tr>
+                                    <th>과세여부</th>
+                                    <td>
+                                        <select name="taxType" class="form-select form-select-sm"
+                                            style="max-width: 200px;">
+                                            <option value="TAXABLE" <c:if test="${empty component.taxType or component.taxType eq 'TAXABLE'}">selected</c:if>>과세</option>
+                                            <option value="FREE" <c:if test="${component.taxType eq 'FREE'}">selected</c:if>>면세</option>
+                                        </select>
+                                    </td>
                                     <th>노출상태</th>
                                     <td>
                                         <select name="exposureStatusCd" class="form-select form-select-sm"
@@ -277,6 +285,10 @@
                                                 </c:if>>미노출</option>
                                         </select>
                                     </td>
+                                </tr>
+
+                                <!-- Row 8: 사용여부 / 판매 기간 -->
+                                <tr>
                                     <th>사용여부</th>
                                     <td>
                                         <select name="useYn" class="form-select form-select-sm"
@@ -288,10 +300,7 @@
                                             </option>
                                         </select>
                                     </td>
-                                </tr>
 
-                                <!-- Row 8: 판매 기간 -->
-                                <tr>
                                     <th>판매 기간</th>
                                     <td colspan="3">
                                         <div class="d-flex align-items-center gap-2 flex-wrap">
@@ -318,8 +327,7 @@
                                 </c:choose>
                             </button>
 
-                            <button type="button" class="btn btn-secondary px-4" onclick="location.href='<c:url value="
-                                /admin/product/componentProductList.do?menu=component" />';">취소</button>
+                            <button type="button" class="btn btn-secondary px-4" onclick="location.href='<c:url value="/admin/product/componentProductList.do?menu=component"/>';">취소</button>
 
                             <c:if test="${not empty component.componentProdId}">
                                 <button type="button" class="btn btn-danger px-4" onclick="fn_delete()">삭제</button>

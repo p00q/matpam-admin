@@ -41,6 +41,8 @@
 
         <result property="useYn" column="USE_YN"/>
         <result property="delYn" column="DEL_YN"/>
+        <result property="opType"            column="OP_TYPE"/>
+        <result property="taxType" column="TAX_TYPE"/>
 
         <result property="regId" column="REG_ID"/>
         <result property="regDt" column="REG_DT"/>
@@ -101,6 +103,9 @@
                     OR c.COMPONENT_PROD_CODE LIKE CONCAT('%', #{searchKeyword}, '%')
                 )
             </if>
+
+            <!-- 운영 타입 기반 데이터 격리 -->
+            <include refid="kr.co.matpam.common.mapper.MatpamCommonMapper.opTypeFilter"/>
         </where>
     </sql>
 
@@ -143,6 +148,8 @@
             c.TOTAL_SALE_QTY,
             c.USE_YN,
             c.DEL_YN,
+            c.OP_TYPE,
+            c.TAX_TYPE,
 
             c.REG_ID,
             c.REG_DT,
@@ -177,9 +184,7 @@
             AND unit_type.DETAIL_CODE_ID = c.UNIT_TYPE_CD
         <include refid="componentProductWhere"/>
         ORDER BY c.COMPONENT_PROD_ID DESC
-        <if test="recordCountPerPage != null and firstIndex != null">
-            LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
-        </if>
+        <include refid="kr.co.matpam.common.mapper.MatpamCommonMapper.pagingFooter"/>
     </select>
 
     <!-- =========================================================
@@ -231,6 +236,8 @@
             c.TOTAL_SALE_QTY,
             c.USE_YN,
             c.DEL_YN,
+            c.OP_TYPE,
+            c.TAX_TYPE,
 
             c.REG_ID,
             c.REG_DT,
@@ -298,6 +305,8 @@
             TOTAL_SALE_QTY,
             USE_YN,
             DEL_YN,
+            OP_TYPE,
+            TAX_TYPE,
 
             REG_ID,
             REG_DT,
@@ -326,6 +335,8 @@
             COALESCE(#{totalSaleQty}, #{listPrice}, 0),
             #{useYn},
             'N',
+            #{opType},
+            #{taxType},
 
             #{regId},
             NOW(),

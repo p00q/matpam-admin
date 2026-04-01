@@ -1,26 +1,19 @@
 package kr.co.matpam.admin.order.service;
 
-import java.io.Serializable;
+import kr.co.matpam.common.service.MatpamBaseVO;
 
 /**
  * 주문관리 검색 VO
  * - 주문건별/상품별 목록 조회 조건
  */
-public class OrderSearchVO implements Serializable {
+public class OrderSearchVO extends MatpamBaseVO {
 
     private static final long serialVersionUID = 1L;
 
     /*
      * =========================================================
      * 페이징 (eGov 표준)
-     * =========================================================
-     */
-    private Integer pageIndex = 1;
-    private Integer pageSize = 20;
-    private Integer firstIndex = 0;
-    private Integer lastIndex = 1;
-    private Integer recordCountPerPage = 20;
-    private Integer pageUnit = 10;
+
 
     /*
      * =========================================================
@@ -57,53 +50,7 @@ public class OrderSearchVO implements Serializable {
      * =========================================================
      */
 
-    public Integer getPageIndex() {
-        return pageIndex;
-    }
 
-    public void setPageIndex(Integer pageIndex) {
-        this.pageIndex = pageIndex;
-    }
-
-    public Integer getPageSize() {
-        return pageSize;
-    }
-
-    public void setPageSize(Integer pageSize) {
-        this.pageSize = pageSize;
-    }
-
-    public Integer getFirstIndex() {
-        return firstIndex;
-    }
-
-    public void setFirstIndex(Integer firstIndex) {
-        this.firstIndex = firstIndex;
-    }
-
-    public Integer getLastIndex() {
-        return lastIndex;
-    }
-
-    public void setLastIndex(Integer lastIndex) {
-        this.lastIndex = lastIndex;
-    }
-
-    public Integer getRecordCountPerPage() {
-        return recordCountPerPage;
-    }
-
-    public void setRecordCountPerPage(Integer recordCountPerPage) {
-        this.recordCountPerPage = recordCountPerPage;
-    }
-
-    public Integer getPageUnit() {
-        return pageUnit;
-    }
-
-    public void setPageUnit(Integer pageUnit) {
-        this.pageUnit = pageUnit;
-    }
 
     public String getOrderStatusCd() {
         return orderStatusCd;

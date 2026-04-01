@@ -4,351 +4,235 @@
             <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
                 <!-- 판매상품 등록/수정 -->
-                <style>
-                    .section-header {
-                        display: flex;
-                        align-items: center;
-                        gap: 8px;
-                        font-weight: 700;
-                        margin: 16px 0 8px;
-                    }
+                <!-- 판매상품 등록/수정 -->
+<style>
+    /* Page specific overrides if any */
+    .image-upload-box {
+        width: 100%;
+        height: 160px;
+        border: 2px dashed var(--border-color);
+        border-radius: var(--radius-md);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        background-color: #fff;
+        position: relative;
+        overflow: hidden;
+        transition: var(--transition);
+    }
 
-                    .section-header::before {
-                        content: "";
-                        display: inline-block;
-                        width: 4px;
-                        height: 16px;
-                        background: #2c3e50;
-                    }
+    .image-upload-box:hover {
+        border-color: var(--accent);
+        background-color: #fefce8;
+    }
 
-                    .form-table th,
-                    .form-table td {
-                        padding: 0.5rem 0.75rem !important;
-                        vertical-align: middle;
-                    }
+    .image-upload-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
 
-                    .date-range {
-                        flex-wrap: wrap;
-                        gap: 6px;
-                    }
+    .tax-summary-card {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 1.25rem;
+    }
 
-                    .preview-wrapper {
-                        border: 1px dashed #cbd5e1;
-                        border-radius: 8px;
-                        height: 120px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        cursor: pointer;
-                        overflow: hidden;
-                        position: relative;
-                    }
+    .tax-summary-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
 
-                    .preview-wrapper.has-image {
-                        border-style: solid;
-                    }
+    .tax-summary-total {
+        border-top: 1px solid var(--border-color);
+        padding-top: 0.75rem;
+        margin-top: 0.75rem;
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: var(--primary);
+    }
+</style>
 
-                    .preview-wrapper img {
-                        max-width: 100%;
-                        max-height: 100%;
-                    }
+<div class="animate-fade-in">
+    <!-- Breadcrumb & Title -->
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1" style="font-size: 0.85rem;">
+                    <li class="breadcrumb-item text-muted">상품 관리</li>
+                    <li class="breadcrumb-item active">판매상품</li>
+                </ol>
+            </nav>
+            <h3 class="fw-bold mb-0" style="letter-spacing: -1px; color: var(--primary);">
+                <c:choose>
+                    <c:when test="${salesProduct.salesProdId != null}">판매상품 <span class="text-accent" style="color:var(--accent)">상세 정보</span></c:when>
+                    <c:otherwise>새로운 판매상품 <span class="text-accent" style="color:var(--accent)">등록</span></c:otherwise>
+                </c:choose>
+            </h3>
+        </div>
+        <div>
+            <button type="button" class="btn btn-outline-secondary btn-premium px-4" onclick="fn_goList()">
+                <i class="bi bi-list me-2"></i>목록으로
+            </button>
+        </div>
+    </div>
 
-                    .btn-upload {
-                        position: absolute;
-                        inset: 0;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                    }
+    <form name="productForm" method="post" action="${pageContext.request.contextPath}/admin/product/salesProductRegister.do" enctype="multipart/form-data">
+        <input type="hidden" name="salesProdId" value="<c:out value='${salesProduct.salesProdId}'/>" />
+        <input type="hidden" name="salesProdCode" value="<c:out value='${salesProduct.salesProdCode}'/>" />
 
-                    /* 중간에 끼여있던 CSS를 이곳으로 이동 */
-                    .image-upload-box {
-                        width: 100%;
-                        height: 150px;
-                        border: 1px solid #dee2e6;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        cursor: pointer;
-                        background-color: #fff;
-                        position: relative;
-                        overflow: hidden;
-                    }
+        <c:if test="${not empty compositionJson}">
+            <script type="application/json" id="compositionData"><c:out value='${compositionJson}' escapeXml="false"/></script>
+        </c:if>
 
-                    .image-upload-box:hover {
-                        background-color: #f8f9fa;
-                    }
-
-                    .image-upload-box img {
-                        width: 100%;
-                        height: 100%;
-                        object-fit: cover;
-                    }
-
-                    .image-change-btn {
-                        position: absolute;
-                        top: 6px;
-                        right: 6px;
-                    }
-
-                    /* SmartEditor 영역을 폼 입력과 동일한 타이포로 맞춤 */
-                    #mdContent,
-                    .se2_inputarea,
-                    .se2_inputarea textarea,
-                    .se2_textarea iframe {
-                        font-family: inherit !important;
-                        font-size: 0.875rem !important;
-                        color: #212529;
-                    }
-                </style>
-
-                <div class="container-fluid p-4">
-                    <!-- Breadcrumb -->
-                    <nav aria-label="breadcrumb" class="mb-3">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><i class="bi bi-house-door-fill"></i></li>
-                            <li class="breadcrumb-item">판매상품관리</li>
-                            <li class="breadcrumb-item active" aria-current="page">판매상품 등록</li>
-                        </ol>
-                    </nav>
-
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4>
-                            <c:choose>
-                                <c:when test="${salesProduct.salesProdId != null}">판매상품 상세</c:when>
-                                <c:otherwise>판매상품 등록</c:otherwise>
-                            </c:choose>
-                        </h4>
-                        <div>
-                            <button type="button" class="btn btn-secondary" onclick="location.href='<c:url value="
-                                /admin/product/salesProductList.do" />';">목록</button>
-                        </div>
-                    </div>
-
-                    <form name="productForm" method="post"
-                        action="${pageContext.request.contextPath}/admin/product/salesProductRegister.do"
-                        enctype="multipart/form-data">
-                        <input type="hidden" name="salesProdId" value="<c:out value='${salesProduct.salesProdId}'/>" />
-                        <input type="hidden" name="salesProdCode"
-                            value="<c:out value='${salesProduct.salesProdCode}'/>" />
-
-                        <c:if test="${not empty compositionJson}">
-                            <script type="application/json"
-                                id="compositionData"><c:out value='${compositionJson}' escapeXml="false"/></script>
-                        </c:if>
-
-                        <fmt:formatNumber var="listPriceFormatted"
-                            value="${empty salesProduct.listPrice ? 0 : salesProduct.listPrice}" type="number"
-                            maxFractionDigits="0" groupingUsed="false" />
-                        <fmt:formatNumber var="costPriceFormatted"
-                            value="${empty salesProduct.costPrice ? (empty salesProduct.listPrice ? 0 : salesProduct.listPrice) : salesProduct.costPrice}"
-                            type="number" maxFractionDigits="0" groupingUsed="false" />
+        <fmt:formatNumber var="listPriceFormatted" value="${empty salesProduct.listPrice ? 0 : salesProduct.listPrice}" type="number" maxFractionDigits="0" groupingUsed="false" />
+        <fmt:formatNumber var="costPriceFormatted" value="${empty salesProduct.costPrice ? (empty salesProduct.listPrice ? 0 : salesProduct.listPrice) : salesProduct.costPrice}" type="number" maxFractionDigits="0" groupingUsed="false" />
                         <fmt:formatNumber var="viewCountFormatted"
                             value="${empty salesProduct.viewCnt ? 0 : salesProduct.viewCnt}" type="number"
                             maxFractionDigits="0" groupingUsed="false" />
 
-                        <!-- 1. 상품일반정보 -->
-                        <div class="section-header">상품일반정보</div>
-                        <table class="table table-bordered form-table">
-                            <colgroup>
-                                <col style="width: 12%;">
-                                <col style="width: 38%;">
-                                <col style="width: 12%;">
-                                <col style="width: 38%;">
-                            </colgroup>
-                            <tbody>
-                                <tr>
-                                    <th>상품명</th>
-                                    <td><input type="text" name="salesProdName" class="form-control form-control-sm"
-                                            value="<c:out value='${salesProduct.salesProdName}'/>" required /></td>
-                                    <th>상품 요약</th>
-                                    <td><input type="text" name="summary" class="form-control form-control-sm"
-                                            value="<c:out value='${salesProduct.summary}'/>" /></td>
-                                </tr>
-                                <tr>
-                                    <th>판매 가격</th>
-                                    <td>
-                                        <div class="input-group input-group-sm" style="max-width: 220px;">
-                                            <input type="number" name="listPrice" id="listPrice"
-                                                class="form-control form-control-sm" step="1" min="0"
-                                                value="<c:out value='${listPriceFormatted}' default='0'/>" />
-                                            <span class="input-group-text">원</span>
-                                        </div>
-                                    </td>
-                                    <th>VAT</th>
-                                    <td>
-                                        <div class="input-group input-group-sm" style="max-width: 220px;">
-                                            <input type="number" name="vatAmount" id="vatAmount"
-                                                class="form-control form-control-sm"
-                                                value="<c:out value='${empty salesProduct.vatAmount ? 0 : salesProduct.vatAmount}' default='0'/>" />
-                                            <span class="input-group-text">원</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>원가</th>
-                                    <td>
-                                        <div class="input-group input-group-sm" style="max-width: 220px;">
-                                            <input type="number" name="costPrice" id="costPrice"
-                                                class="form-control form-control-sm" step="1" min="0"
-                                                value="<c:out value='${costPriceFormatted}' default='0'/>" />
-                                            <span class="input-group-text">원</span>
-                                        </div>
-                                    </td>
-                                    <th>판매상태</th>
-                                    <td>
-                                        <select name="saleStatusCd" id="saleStatusCd" class="form-select form-select-sm"
-                                            style="max-width: 220px;">
-                                            <c:choose>
-                                                <c:when test="${not empty saleStatuses}">
-                                                    <c:forEach var="code" items="${saleStatuses}">
-                                                        <option value="${code.detailCode}" <c:if
-                                                            test="${empty salesProduct.saleStatusCd ? code.detailCode eq 'LIVE' : salesProduct.saleStatusCd eq code.detailCode}">
-                                                            selected</c:if>>
-                                                            ${code.detailCodeName}
-                                                        </option>
-                                                    </c:forEach>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <option value="LIVE" <c:if
-                                                        test="${empty salesProduct.saleStatusCd or salesProduct.saleStatusCd eq 'LIVE'}">
-                                                        selected</c:if>>판매중</option>
-                                                    <option value="WAIT" <c:if
-                                                        test="${salesProduct.saleStatusCd eq 'WAIT'}">selected</c:if>
-                                                        >판매대기</option>
-                                                    <option value="STOP" <c:if
-                                                        test="${salesProduct.saleStatusCd eq 'STOP'}">selected</c:if>
-                                                        >판매중지</option>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>판매기간</th>
-                                    <td>
-                                        <div class="d-flex align-items-center gap-2 flex-wrap">
-                                            <input type="date" name="saleStartDt" id="saleStartDt"
-                                                class="form-control form-control-sm" style="max-width: 180px;"
-                                                value="<fmt:formatDate value='${salesProduct.saleStartDt}' pattern='yyyy-MM-dd'/>" />
-                                            <span class="text-muted">~</span>
-                                            <input type="date" name="saleEndDt" id="saleEndDt"
-                                                class="form-control form-control-sm" style="max-width: 180px;"
-                                                value="<fmt:formatDate value='${salesProduct.saleEndDt}' pattern='yyyy-MM-dd'/>" />
-                                        </div>
-                                    </td>
-                                    <th>조회수</th>
-                                    <td>
-                                        <input type="text" class="form-control form-control-sm"
-                                            style="max-width: 220px;"
-                                            value="<c:out value='${viewCountFormatted}' default='0'/>" readonly />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>노출여부</th>
-                                    <td>
-                                        <select name="exposureStatusCd" id="exposureStatusCd"
-                                            class="form-select form-select-sm" style="max-width: 220px;">
-                                            <option value="Y" <c:if
-                                                test="${empty salesProduct.exposureStatusCd or salesProduct.exposureStatusCd eq 'Y'}">
-                                                selected</c:if>>노출</option>
-                                            <option value="N" <c:if test="${salesProduct.exposureStatusCd eq 'N'}">
-                                                selected</c:if>>비노출</option>
-                                        </select>
-                                    </td>
-                                    <th>사용여부</th>
-                                    <td>
-                                        <select name="useYn" id="useYn" class="form-select form-select-sm"
-                                            style="max-width: 220px;">
-                                            <option value="Y" <c:if
-                                                test="${empty salesProduct.useYn or salesProduct.useYn eq 'Y'}">selected
-                                                </c:if>>사용</option>
-                                            <option value="N" <c:if test="${salesProduct.useYn eq 'N'}">selected</c:if>
-                                                >미사용</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>판매자(업체명)</th>
-                                    <td>
-                                        <c:set var="selectedSellerIdStr"
-                                            value="${fn:trim(salesProduct.sellerMemberId)}" />
-                                        <select name="sellerMemberId" id="sellerMemberId"
-                                            class="form-select form-select-sm" style="max-width: 220px;">
-                                            <option value="">선택</option>
-                                            <c:forEach var="seller" items="${sellers}">
-                                                <c:set var="sellerPkStr" value="${fn:trim(seller.memberPk)}" />
-                                                <c:set var="legacySellerId" value="${fn:trim(seller.loginId)}" />
-                                                <c:set var="sellerSelected"
-                                                    value="${selectedSellerIdStr eq sellerPkStr or selectedSellerIdStr eq legacySellerId}" />
-                                                <option value="<c:out value='${sellerPkStr}'/>"
-                                                    data-legacy-id="<c:out value='${legacySellerId}'/>"
-                                                    data-seller-name="<c:out value='${seller.ceoName}'/>"
-                                                    ${sellerSelected ? 'selected' : '' }>
-                                                    <c:out value='${seller.companyName}' />
-                                                </option>
-                                            </c:forEach>
-                                        </select>
-                                    </td>
-                                    <th>판매자명</th>
-                                    <td>
-                                        <select name="sellerName" id="sellerName" class="form-select form-select-sm"
-                                            style="max-width: 220px;">
-                                            <option value="">선택</option>
-                                            <c:forEach var="seller" items="${sellers}">
-                                                <c:set var="sellerPkStr" value="${fn:trim(seller.memberPk)}" />
-                                                <c:set var="legacySellerId" value="${fn:trim(seller.loginId)}" />
-                                                <option value="<c:out value='${seller.ceoName}'/>"
-                                                    data-member-id="<c:out value='${sellerPkStr}'/>"
-                                                    data-legacy-id="<c:out value='${legacySellerId}'/>" <c:if
-                                                    test="${seller.ceoName eq salesProduct.sellerName}">selected</c:if>>
-                                                    <c:out value='${seller.ceoName}' />
-                                                </option>
-                                            </c:forEach>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>MD 코멘트</th>
-                                    <td colspan="3"><textarea name="mdComment" rows="2"
-                                            class="form-control form-control-sm"><c:out value='${salesProduct.mdComment}'/></textarea>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <!-- 2. 상품 구성 목록 -->
-                        <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
-                            <div class="section-header" style="margin:0;">상품 구성 목록</div>
-                            <button type="button" class="btn btn-secondary btn-sm" id="addComponentButton"
-                                onclick="fn_addComponentPopup()">구성 추가</button>
+                                <!-- 1. 상품일반정보 & Tax Summary -->
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="premium-card h-100">
+                    <div class="section-title">기본 정보</div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">상품명</label>
+                            <input type="text" name="salesProdName" class="form-control" value="<c:out value='${salesProduct.salesProdName}'/>" required />
                         </div>
-                        <!-- 구성 상품 테이블 영역 (JS로 렌더링 될 부분 - 테이블 태그가 필요하다면 추가해야 함) -->
-                        <table class="table table-bordered table-hover text-center" style="font-size: 0.9rem;">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>판매자</th>
-                                    <th>구성상품명</th>
-                                    <th>판매유형</th>
-                                    <th>판매상태</th>
-                                    <th>판매가</th>
-                                    <th>원가</th>
-                                    <th>VAT</th>
-                                    <th>보관구분</th>
-                                    <th>가공구분</th>
-                                    <th>구분</th>
-                                    <th>등록일</th>
-                                    <th>수정일</th>
-                                    <th>노출여부</th>
-                                    <th>관리</th>
-                                </tr>
-                            </thead>
-                            <tbody id="componentTableBody">
-                                <tr id="emptyRow">
-                                    <td colspan="14" class="text-muted py-4">구성 상품이 없습니다.</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">상품 요약</label>
+                            <input type="text" name="summary" class="form-control" value="<c:out value='${salesProduct.summary}'/>" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small">판매 가격</label>
+                            <div class="input-group border border-primary-subtle rounded">
+                                <input type="number" name="listPrice" id="listPrice" class="form-control fw-bold text-primary" step="1" min="0" value="<c:out value='${listPriceFormatted}' default='0'/>" />
+                                <span class="input-group-text bg-primary-subtle text-primary border-0">원</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small">VAT (자동 계산)</label>
+                            <div class="input-group">
+                                <input type="number" name="vatAmount" id="vatAmount" class="form-control bg-light" value="<c:out value='${empty salesProduct.vatAmount ? 0 : salesProduct.vatAmount}' default='0'/>" readonly />
+                                <span class="input-group-text">원</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small">원가</label>
+                            <div class="input-group">
+                                <input type="number" name="costPrice" id="costPrice" class="form-control" step="1" min="0" value="<c:out value='${costPriceFormatted}' default='0'/>" />
+                                <span class="input-group-text">원</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-danger">할인 금액</label>
+                            <div class="input-group">
+                                <input type="number" name="discountAmt" id="discountAmt" class="form-control border-danger-subtle" step="1" min="0" value="<c:out value='${empty salesProduct.discountAmt ? 0 : salesProduct.discountAmt}' default='0'/>" />
+                                <span class="input-group-text border-danger-subtle text-danger">원</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small">판매 상태</label>
+                            <select name="saleStatusCd" id="saleStatusCd" class="form-select">
+                                <c:choose>
+                                    <c:when test="${not empty saleStatuses}">
+                                        <c:forEach var="code" items="${saleStatuses}">
+                                            <option value="${code.detailCode}" <c:if test="${empty salesProduct.saleStatusCd ? code.detailCode eq 'LIVE' : salesProduct.saleStatusCd eq code.detailCode}">selected</c:if>>${code.detailCodeName}</option>
+                                        </c:forEach>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <option value="LIVE" <c:if test="${empty salesProduct.saleStatusCd or salesProduct.saleStatusCd eq 'LIVE'}">selected</c:if>>판매중</option>
+                                        <option value="WAIT" <c:if test="${salesProduct.saleStatusCd eq 'WAIT'}">selected</c:if>>판매대기</option>
+                                        <option value="STOP" <c:if test="${salesProduct.saleStatusCd eq 'STOP'}">selected</c:if>>판매중지</option>
+                                    </c:otherwise>
+                                </c:choose>
+                            </select>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold small">판매 기간</label>
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="date" name="saleStartDt" id="saleStartDt" class="form-control" value="<fmt:formatDate value='${salesProduct.saleStartDt}' pattern='yyyy-MM-dd'/>" />
+                                <span class="text-muted">~</span>
+                                <input type="date" name="saleEndDt" id="saleEndDt" class="form-control" value="<fmt:formatDate value='${salesProduct.saleEndDt}' pattern='yyyy-MM-dd'/>" />
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold small">MD 코멘트</label>
+                            <textarea name="mdComment" rows="2" class="form-control"><c:out value='${salesProduct.mdComment}'/></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="premium-card h-100">
+                    <div class="section-title">세금 정산 요약</div>
+                    <div class="tax-summary-card mt-2">
+                        <div class="tax-summary-item">
+                            <span class="text-muted">세전 가격 (공급가액)</span>
+                            <span id="summarySupplyAmt">0 원</span>
+                        </div>
+                        <div class="tax-summary-item">
+                            <span class="text-muted">부가가치세 (VAT 10%)</span>
+                            <span id="summaryVatAmt" class="text-warning fw-bold">0 원</span>
+                        </div>
+                        <div class="tax-summary-item">
+                            <span class="text-muted">면세 금액 합계</span>
+                            <span id="summaryFreeAmt" class="text-primary">0 원</span>
+                        </div>
+                        <div class="tax-summary-total">
+                            <span>최종 판매가</span>
+                            <span id="summaryTotalAmt">0 원</span>
+                        </div>
+                    </div>
+                    <div class="alert alert-info py-2 mt-3 mb-0" style="font-size: 0.8rem;">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        가공품 구성상품에 대해서만 10%의 부가세가 계산되어 합산됩니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                                <!-- 2. 상품 구성 목록 -->
+        <div class="premium-card mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="section-title mb-0">상품 구성 소싱</div>
+                <button type="button" class="btn btn-primary btn-premium btn-sm" onclick="fn_addComponentPopup()">
+                    <i class="bi bi-plus-lg me-1"></i>구성상품 추가
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="premium-table">
+                    <thead>
+                        <tr>
+                            <th>판매자</th>
+                            <th>구성상품명</th>
+                            <th>상태</th>
+                            <th class="text-end">판매가</th>
+                            <th class="text-end">VAT</th>
+                            <th>구분</th>
+                            <th class="text-center">노출</th>
+                            <th class="text-center">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody id="componentTableBody">
+                        <tr id="emptyRow">
+                            <td colspan="8" class="text-muted py-5 text-center">
+                                <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                                구성 상품을 추가해주세요.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
 
                         <!-- 3. 이미지 등록 -->
@@ -365,31 +249,87 @@
                                             onchange="fn_previewImage(this, 'imageBox${status.index}')">
 
                                         <c:choose>
-                                            <c:when test="${not empty image}">
-                                                <img src="${image.imgUrl}" alt="상품 이미지 ${status.index}"
-                                                    class="product-image-thumb" data-full-url="${image.imgUrl}" />
-                                                <button type="button" class="btn btn-light btn-sm image-change-btn"
-                                                    onclick="event.stopPropagation(); document.getElementById('file${status.index}').click();">변경</button>
-                                                <input type="hidden" name="existingImages[${status.index-1}].imgId"
-                                                    value="${image.imgId}" />
-                                            </c:when>
-                                            <c:otherwise>
-                                                <div class="text-center text-muted small">
-                                                    <i class="bi bi-cloud-upload fs-3 d-block mb-2"></i>
-                                                    클릭하여 이미지 업로드
-                                                </div>
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </div>
+                        <!-- 3. 이미지 및 상세 설명 -->
+        <div class="row g-4 mt-1">
+            <div class="col-md-4">
+                <div class="premium-card h-100">
+                    <div class="section-title">대표 이미지</div>
+                    <div class="image-upload-box" onclick="document.getElementById('imgFile1').click();">
+                        <c:choose>
+                            <c:when test="${not empty salesProduct.imgUrl1}">
+                                <img src="${salesProduct.imgUrl1}" id="previewImg1" alt="Preview" />
+                                <div class="image-change-btn btn btn-dark btn-sm rounded-circle p-1 opacity-75">
+                                    <i class="bi bi-pencil-fill px-1"></i>
                                 </div>
-                            </c:forEach>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="text-center">
+                                    <i class="bi bi-image text-muted fs-1 mb-2"></i>
+                                    <p class="mb-0 text-muted small px-3">클릭하여 이미지 업로드<br>(권장: 800x800)</p>
+                                </div>
+                                <img id="previewImg1" style="display:none;" />
+                            </c:otherwise>
+                        </c:choose>
+                        <input type="file" name="imgFile1" id="imgFile1" class="d-none" onchange="previewImage(this, 'previewImg1')" accept="image/*" />
+                    </div>
+                    <div class="mt-3">
+                        <label class="form-label fw-bold small">추가 이미지 (선택)</label>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="image-upload-box" style="height: 100px;" onclick="document.getElementById('imgFile2').click();">
+                                    <c:choose>
+                                        <c:when test="${not empty salesProduct.imgUrl2}">
+                                            <img src="${salesProduct.imgUrl2}" id="previewImg2" />
+                                        </c:when>
+                                        <c:otherwise>
+                                            <i class="bi bi-plus text-muted fs-3"></i>
+                                            <img id="previewImg2" style="display:none;" />
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <input type="file" name="imgFile2" id="imgFile2" class="d-none" onchange="previewImage(this, 'previewImg2')" accept="image/*" />
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="image-upload-box" style="height: 100px;" onclick="document.getElementById('imgFile3').click();">
+                                    <c:choose>
+                                        <c:when test="${not empty salesProduct.imgUrl3}">
+                                            <img src="${salesProduct.imgUrl3}" id="previewImg3" />
+                                        </c:when>
+                                        <c:otherwise>
+                                            <i class="bi bi-plus text-muted fs-3"></i>
+                                            <img id="previewImg3" style="display:none;" />
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <input type="file" name="imgFile3" id="imgFile3" class="d-none" onchange="previewImage(this, 'previewImg3')" accept="image/*" />
+                                </div>
+                            </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-8">
+                <div class="premium-card h-100">
+                    <div class="section-title">상세 설명</div>
+                    <div class="bg-light p-2 rounded border">
+                        <!-- SmartEditor / Textarea -->
+                        <textarea name="description" id="mdContent" style="width:100%; height:320px;" class="form-control"><c:out value="${salesProduct.description}" /></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                        <!-- 4. 상품 상세 설명 -->
-                        <div class="section-header">상품 상세 설명</div>
-                        <textarea id="mdContent" name="detailHtml" class="form-control"
-                            style="width:100%; height:300px;"><c:out value='${salesProduct.detailHtml}'/></textarea>
-                        <div class="form-text">상세 설명은 네이버 스마트에디터가 적용되며, 이미지 삽입 후 미리보기로 확인할 수 있습니다.</div>
+        <!-- 4. 하단 버튼 영역 -->
+        <div class="d-flex justify-content-center gap-3 mt-5 mb-5 pb-5 animate-fade-in" style="animation-delay: 0.3s;">
+            <c:if test="${not empty salesProduct.salesProdId}">
+                <button type="button" class="btn btn-outline-danger btn-premium btn-lg px-5 border-2" onclick="fn_delete()">
+                    <i class="bi bi-trash3 me-2"></i>삭제하기
+                </button>
+            </c:if>
+            <button type="button" class="btn btn-primary btn-premium btn-lg px-5 shadow-sm" onclick="fn_save()">
+                <i class="bi bi-check2-circle me-2"></i>저장하기
+            </button>
+        </div>
 
                         <!-- 5. 안내 정보 -->
                         <div class="section-header">안내 정보</div>
@@ -430,13 +370,6 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- 6. 하단 버튼 -->
-                        <div class="d-flex justify-content-end gap-2 mt-5 mb-5">
-                            <button type="button" class="btn btn-secondary px-4" onclick="fn_preview()">미리보기</button>
-                            <button type="button" class="btn btn-secondary px-4" onclick="fn_save();">저장</button>
-                            <button type="button" class="btn btn-secondary px-4" onclick="history.back()">취소</button>
                         </div>
 
                     </form>
@@ -490,6 +423,11 @@
                         const salePriceInput = document.getElementById('listPrice');
                         if (salePriceInput) {
                             salePriceInput.addEventListener('input', syncManualPrice);
+                        }
+
+                        const discountInput = document.getElementById('discountAmt');
+                        if (discountInput) {
+                            discountInput.addEventListener('input', updateProductInfo);
                         }
 
                         const sellerSelect = document.getElementById('sellerMemberId');
@@ -567,45 +505,44 @@
                         return { start: latestStart, end: earliestEnd };
                     }
 
-                    function renderComponentTable() {
+                                        function renderComponentTable() {
                         const tbody = document.getElementById('componentTableBody');
-                        if (!tbody) return; // 테이블이 없을 경우 방어
+                        if (!tbody) return;
 
                         tbody.innerHTML = '';
 
                         if (componentProductList.length === 0) {
-                            tbody.innerHTML = '<tr id="emptyRow"><td colspan="14" class="text-muted py-4">구성 상품이 없습니다.</td></tr>';
+                            tbody.innerHTML = '<tr id="emptyRow"><td colspan="8" class="text-muted py-5 text-center"><i class="bi bi-inbox fs-2 d-block mb-2"></i>구성 상품을 추가해주세요.</td></tr>';
+                            updateProductInfo();
                             return;
                         }
 
                         componentProductList.forEach((item, index) => {
                             const salePrice = Number(item.listPrice) || 0;
-                            const costPrice = Number(item.costPrice) || 0;
                             const vatAmount = Number(item.vatAmount) || 0;
+                            const isTaxable = item.taxType === 'TAXABLE';
+                            const taxBadge = isTaxable ? '<span class="badge bg-danger-subtle text-danger px-2 border border-danger-subtle" style="font-size:0.7rem">과세</span>' 
+                                                       : '<span class="badge bg-primary-subtle text-primary px-2 border border-primary-subtle" style="font-size:0.7rem">면세</span>';
 
                             const tr = document.createElement('tr');
                             tr.innerHTML = `
-                <td>\${item.sellerName}</td>
-                <td>\${item.componentProdName}</td>
-                <td>\${item.saleTypeName}</td>
-                <td>\${item.saleStatusName}</td>
-                <td class="text-end">\${salePrice.toLocaleString()}</td>
-                <td class="text-end">\${costPrice.toLocaleString()}</td>
-                <td class="text-end">\${vatAmount.toLocaleString()}</td>
-                <td>\${item.storageTypeName}</td>
-                <td>\${item.processTypeName}</td>
-                <td>\${item.divisionTypeName}</td>
-                <td>\${item.regDt}</td>
-                <td>\${item.modDt}</td>
-                <td>\${item.exposureStatusCd == 'Y' ? '노출' : '비노출'}</td>
-                <td>
-                    <button type="button" class="btn btn-secondary btn-sm" style="font-size:0.8rem;" onclick="removeComponentRow(\${index})">삭제</button>
-                </td>
-            `;
+                                <td><span class="text-muted small">\${item.sellerName || '-'}</span></td>
+                                <td>
+                                    <div class="fw-bold">\${item.componentProdName}</div>
+                                    <div class="mt-1">\${taxBadge} <span class="text-muted" style="font-size:0.75rem">\${item.saleStatusName || ''}</span></div>
+                                </td>
+                                <td class="text-center"><span class="badge bg-light text-dark border">\${item.divisionTypeName || '-'}</span></td>
+                                <td class="text-end fw-bold">\${salePrice.toLocaleString()} 원</td>
+                                <td class="text-end text-warning">\${Math.round(isTaxable ? salePrice * 0.1 : 0).toLocaleString()} 원</td>
+                                <td class="text-center"><span class="text-muted small">\${item.saleTypeName || ''}</span></td>
+                                <td class="text-center">\${item.exposureStatusCd == 'N' ? '<i class="bi bi-eye-slash text-danger"></i>' : '<i class="bi bi-eye-fill text-success"></i>'}</td>
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-outline-danger btn-sm p-1 px-2" onclick="removeComponentRow(\${index})"><i class="bi bi-trash"></i></button>
+                                </td>
+                            `;
                             tbody.appendChild(tr);
                         });
 
-                        // 테이블 갱신 시 가격 정보도 업데이트
                         updateProductInfo();
                     }
 
@@ -628,6 +565,7 @@
                                 storageTypeName: data.storageTypeName || '',
                                 processTypeName: data.processTypeName || '',
                                 divisionTypeName: data.divisionTypeName || '',
+                                taxType: data.taxType || 'TAXABLE',
                                 listPrice: data.listPrice || 0,
                                 costPrice: data.costPrice || 0,
                                 vatAmount: data.vatAmount || 0,
@@ -734,66 +672,73 @@
                         }
                     }
 
-                    function updateProductInfo() {
+                                        function updateProductInfo() {
                         const salePriceInput = document.getElementById('listPrice');
                         const costPriceInput = document.getElementById('costPrice');
                         const vatAmountInput = document.getElementById('vatAmount');
-                        const vatRateHidden = document.getElementById('vatRate');
                         const saleStartDateInput = document.getElementById('saleStartDt');
                         const saleEndDateInput = document.getElementById('saleEndDt');
                         const sellerSelect = document.getElementById('sellerMemberId');
                         const exposureStatusSelect = document.getElementById('exposureStatusCd');
 
+                        const discountInput = document.getElementById('discountAmt');
+
                         if (componentProductList.length > 0) {
-                            let totalSale = 0, totalCost = 0, totalVat = 0;
+                            let totalSale = 0, totalCost = 0, totalVat = 0, totalFree = 0, totalSupply = 0;
                             let rawSellerId = null;
                             let defaultSellerId = null;
                             let forceHidden = false;
-                            const today = new Date().toISOString().slice(0, 10);
+
                             componentProductList.forEach(item => {
                                 const salePrice = Number(item.listPrice) || 0;
-                                totalSale += salePrice;
+                                const isTaxable = item.taxType === 'TAXABLE';
+                                const vatAmt = Math.round(isTaxable ? salePrice * 0.1 : 0);
+                                
+                                totalSupply += salePrice;
+                                totalSale += (salePrice + vatAmt);
                                 totalCost += Number(item.costPrice) || 0;
-                                totalVat += Number(item.vatAmount) || 0;
+                                totalVat += vatAmt;
+                                
+                                if(!isTaxable) totalFree += salePrice;
 
-                                const saleTypeCode = (item.saleType || '').toString();
                                 const saleTypeName = item.saleTypeName || '';
-                                const isRawMaterial = saleTypeName.indexOf('원물') > -1 || saleTypeCode.toLowerCase().indexOf('raw') > -1;
+                                const isRawMaterial = saleTypeName.indexOf('원물') > -1;
 
                                 if (!defaultSellerId && item.sellerMemberId) defaultSellerId = item.sellerMemberId;
                                 if (!rawSellerId && isRawMaterial && item.sellerMemberId) rawSellerId = item.sellerMemberId;
 
-                                const isHidden = item.exposureStatusCd === 'N';
-                                const outOfPeriod = (item.saleStartDt && item.saleStartDt > today) || (item.saleEndDt && item.saleEndDt < today);
-
-                                if (isHidden || outOfPeriod) forceHidden = true;
+                                if (item.exposureStatusCd === 'N') forceHidden = true;
                             });
 
-                            salePriceInput.value = totalSale;
+                            // 할인 적용
+                            const discount = sanitizeInteger(discountInput ? discountInput.value : 0);
+                            const finalPrice = Math.max(0, totalSale - discount);
+
+                            salePriceInput.value = finalPrice;
                             costPriceInput.value = totalCost;
                             vatAmountInput.value = totalVat;
-                            // salePriceInput.readOnly = true; // User wants these editable
-                            // saleStartDateInput.readOnly = true;
-                            // saleEndDateInput.readOnly = true;
+
+                            // Update visual summary
+                            if(sumSupply) sumSupply.innerText = totalSupply.toLocaleString() + ' 원';
+                            if(sumVat) sumVat.innerText = totalVat.toLocaleString() + ' 원';
+                            if(sumFree) sumFree.innerText = totalFree.toLocaleString() + ' 원';
+                            if(sumTotal) sumTotal.innerText = finalPrice.toLocaleString() + ' 원';
 
                             if (rawSellerId) sellerSelect.value = rawSellerId;
                             else if (defaultSellerId) sellerSelect.value = defaultSellerId;
 
                             const { start, end } = calculateSalePeriod(componentProductList);
-                            saleStartDateInput.value = start;
-                            saleEndDateInput.value = end;
-                            const hasCalculatedPeriod = !!(start && end);
-                            saleStartDateInput.readOnly = hasCalculatedPeriod;
-                            saleEndDateInput.readOnly = hasCalculatedPeriod;
+                            if(start) saleStartDateInput.value = start;
+                            if(end) saleEndDateInput.value = end;
 
                             if (forceHidden && exposureStatusSelect && exposureStatusSelect.value !== 'N') {
                                 exposureStatusSelect.value = 'N';
-                                alert("구성상품 중 판매 중지(비노출)되거나 판매 기간이 아닌 상품이 포함되어 있어\n전체 상품이 '비노출' 로 설정됩니다.");
                             }
                         } else {
-                            // salePriceInput.readOnly = false;
-                            // saleStartDateInput.readOnly = false;
-                            // saleEndDateInput.readOnly = false;
+                            if(sumSupply) sumSupply.innerText = '0 원';
+                            if(sumVat) sumVat.innerText = '0 원';
+                            if(sumFree) sumFree.innerText = '0 원';
+                            if(sumTotal) sumTotal.innerText = '0 원';
                             syncManualPrice();
                         }
 
@@ -809,7 +754,7 @@
                         const height = 800;
                         const left = (window.screen.width / 2) - (width / 2);
                         const top = (window.screen.height / 2) - (height / 2);
-                        window.open('about:blank', 'productPreviewPopup', `width=\${width},height=\${height},top=\${top},left=\${left},scrollbars=yes,resizable=yes`);
+                        window.open('about:blank', 'productPreviewPopup', `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,resizable=yes`);
 
                         const form = document.querySelector('form[name="productForm"]');
                         const originalAction = form.action;
@@ -954,6 +899,7 @@
                                             storageTypeName: comp.storageTypeName || '',
                                             processTypeName: comp.processTypeName || '',
                                             divisionTypeName: comp.divisionTypeName || '',
+                                            taxType: comp.taxType || 'TAXABLE',
                                             listPrice: comp.listPrice || 0,
                                             costPrice: comp.costPrice || 0,
                                             vatAmount: comp.vatAmount || 0,

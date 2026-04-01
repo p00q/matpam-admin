@@ -8,6 +8,8 @@
 	</settings>
 	
 	<typeAliases>
-		<!-- Add type aliases here if needed -->
+		<typeAlias alias="matpamBaseVO" type="kr.co.matpam.common.service.MatpamBaseVO"/>
+		<typeAlias alias="salesProductVO" type="kr.co.matpam.admin.product.service.SalesProductVO"/>
+		<typeAlias alias="componentProductVO" type="kr.co.matpam.admin.product.service.ComponentProductVO"/>
 	</typeAliases>
 </configuration>

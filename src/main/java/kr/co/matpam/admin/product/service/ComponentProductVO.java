@@ -1,39 +1,17 @@
 package kr.co.matpam.admin.product.service;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import kr.co.matpam.common.service.MatpamBaseVO;
 
 /**
  * 구성상품 VO (tb_component_product 기준)
- * - ERD 컬럼 1:1 매핑
- * - 화면 표시를 위한 조인/코드명 필드 일부 포함
+ * - MatpamBaseVO 상속 (opType, 페이징, 공통메타데이터)
  */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class ComponentProductVO implements Serializable {
-
-    // ====== 검색/페이징(egov PaginationInfo 호환) ======
-    private Integer pageIndex; // 현재 페이지
-    private Integer pageUnit; // 페이지당 목록 개수
-    private Integer pageSize; // 페이지 리스트 크기
-    private Integer firstIndex;
-    private Integer lastIndex;
-    private Integer recordCountPerPage;
-    private Integer totalRecordCount;
-    private Integer totalPageCount;
-    private Integer startPage;
-    private Integer endPage;
-    private Integer searchPage;
+public class ComponentProductVO extends MatpamBaseVO {
 
     private static final long serialVersionUID = 1L;
 
@@ -42,16 +20,9 @@ public class ComponentProductVO implements Serializable {
      * tb_component_product (PK/기본정보)
      * =========================================================
      */
-    /** 구성상품ID (PK) */
     private Long componentProdId;
-
-    /** 구성상품코드 */
     private String componentProdCode;
-
-    /** 구성상품명 */
     private String componentProdName;
-
-    /** 판매자회원ID (tb_member.member_id) */
     private Long sellerMemberId;
 
     /*
@@ -73,10 +44,12 @@ public class ComponentProductVO implements Serializable {
     private BigDecimal listPrice;
     private BigDecimal costPrice;
 
-    /** 노출상태코드 */
-    private String exposureStatusCd;
+    /** 운영 타입 (NATIONAL, LOCAL, FACTORY) */
+    private String opType;
 
-    /** 판매상태코드 */
+    /** 과세 여부 (TAXABLE, FREE) */
+    private String taxType;
+    private String exposureStatusCd;
     private String saleStatusCd;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
@@ -85,39 +58,16 @@ public class ComponentProductVO implements Serializable {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date saleEndDt;
 
-    /** 누적판매수량 (ERD: total_sale_qty bigint) */
     private Long totalSaleQty;
-
-    /** 사용여부 */
     private String useYn;
-
-    /** 삭제여부 */
     private String delYn;
-
-    /*
-     * =========================================================
-     * 공통 등록/수정
-     * =========================================================
-     */
-    private String regId;
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date regDt;
-
-    private String modId;
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date modDt;
 
     /*
      * =========================================================
      * 화면 표시용(조인/계산/코드명) - DB컬럼 아님
      * =========================================================
      */
-    /** 판매자명 (tb_member.company_name) */
     private String sellerName;
-
-    /** 코드명(조인 결과 표시용) */
     private String saleTypeName;
     private String storageTypeName;
     private String cutTypeName;
@@ -125,120 +75,121 @@ public class ComponentProductVO implements Serializable {
     private String unitTypeName;
     private String exposureStatusName;
     private String saleStatusName;
-
-    /** 부가세 금액 */
     private BigDecimal vatAmount;
 
     /*
      * =========================================================
-     * tb_sales_product_comp 연동용(선택) - 판매상품 구성에서 사용할 때만
+     * tb_sales_product_comp 연동용(선택)
      * =========================================================
      */
-    /** 판매상품ID */
     private Long salesProdId;
-
-    /** 구성수량 */
     private BigDecimal compQty;
-
-    /** 정렬순서 */
     private Integer sortOrder;
 
-    /** 검색어 */
-    private String searchKeyword;
+    // Getter / Setter
+    public Long getComponentProdId() { return componentProdId; }
+    public void setComponentProdId(Long componentProdId) { this.componentProdId = componentProdId; }
 
-    // ====== 레거시 호환 메서드 (컨트롤러 수정 없이 빌드 통과) ======
-    public Date getSaleStartDate() {
-        return this.saleStartDt;
-    }
+    public String getComponentProdCode() { return componentProdCode; }
+    public void setComponentProdCode(String componentProdCode) { this.componentProdCode = componentProdCode; }
 
-    public void setSaleStartDate(Date d) {
-        this.saleStartDt = d;
-    }
+    public String getComponentProdName() { return componentProdName; }
+    public void setComponentProdName(String componentProdName) { this.componentProdName = componentProdName; }
 
-    public Date getSaleEndDate() {
-        return this.saleEndDt;
-    }
+    public Long getSellerMemberId() { return sellerMemberId; }
+    public void setSellerMemberId(Long sellerMemberId) { this.sellerMemberId = sellerMemberId; }
 
-    public void setSaleEndDate(Date d) {
-        this.saleEndDt = d;
-    }
+    public String getSaleTypeCd() { return saleTypeCd; }
+    public void setSaleTypeCd(String saleTypeCd) { this.saleTypeCd = saleTypeCd; }
 
-    /**
-     * displayYn이 기존 Y/N이라면:
-     * exposureStatusCd 정책이 Y/N이면 그대로 매핑,
-     * 코드값이면 여기서 변환 로직을 태우거나, 우선 임시로 동일 저장.
-     */
-    public String getDisplayYn() {
-        return this.exposureStatusCd;
-    }
+    public String getStorageTypeCd() { return storageTypeCd; }
+    public void setStorageTypeCd(String storageTypeCd) { this.storageTypeCd = storageTypeCd; }
 
-    public void setDisplayYn(String yn) {
-        this.exposureStatusCd = yn;
-    }
+    public String getCutTypeCd() { return cutTypeCd; }
+    public void setCutTypeCd(String cutTypeCd) { this.cutTypeCd = cutTypeCd; }
 
-    // productName -> componentProdName alias
-    public String getProductName() {
-        return this.componentProdName;
-    }
+    public String getProcessTypeCd() { return processTypeCd; }
+    public void setProcessTypeCd(String processTypeCd) { this.processTypeCd = processTypeCd; }
 
-    public void setProductName(String name) {
-        this.componentProdName = name;
-    }
+    public String getUnitTypeCd() { return unitTypeCd; }
+    public void setUnitTypeCd(String unitTypeCd) { this.unitTypeCd = unitTypeCd; }
 
-    public String getSearchKeyword() {
-        return searchKeyword;
-    }
+    public BigDecimal getListPrice() { return listPrice; }
+    public void setListPrice(BigDecimal listPrice) { this.listPrice = listPrice; }
 
-    public void setSearchKeyword(String searchKeyword) {
-        this.searchKeyword = searchKeyword;
-    }
+    public BigDecimal getCostPrice() { return costPrice; }
+    public void setCostPrice(BigDecimal costPrice) { this.costPrice = costPrice; }
 
-    public Integer getPageIndex() {
-        return pageIndex;
-    }
+    public String getExposureStatusCd() { return exposureStatusCd; }
+    public void setExposureStatusCd(String exposureStatusCd) { this.exposureStatusCd = exposureStatusCd; }
 
-    public void setPageIndex(Integer pageIndex) {
-        this.pageIndex = pageIndex;
-    }
+    public String getSaleStatusCd() { return saleStatusCd; }
+    public void setSaleStatusCd(String saleStatusCd) { this.saleStatusCd = saleStatusCd; }
 
-    public Integer getPageUnit() {
-        return pageUnit;
-    }
+    public Date getSaleStartDt() { return saleStartDt; }
+    public void setSaleStartDt(Date saleStartDt) { this.saleStartDt = saleStartDt; }
 
-    public void setPageUnit(Integer pageUnit) {
-        this.pageUnit = pageUnit;
-    }
+    public Date getSaleEndDt() { return saleEndDt; }
+    public void setSaleEndDt(Date saleEndDt) { this.saleEndDt = saleEndDt; }
 
-    public Integer getPageSize() {
-        return pageSize;
-    }
+    public Long getTotalSaleQty() { return totalSaleQty; }
+    public void setTotalSaleQty(Long totalSaleQty) { this.totalSaleQty = totalSaleQty; }
 
-    public void setPageSize(Integer pageSize) {
-        this.pageSize = pageSize;
-    }
+    public String getUseYn() { return useYn; }
+    public void setUseYn(String useYn) { this.useYn = useYn; }
 
-    public Integer getFirstIndex() {
-        return firstIndex;
-    }
+    public String getDelYn() { return delYn; }
+    public void setDelYn(String delYn) { this.delYn = delYn; }
 
-    public void setFirstIndex(Integer firstIndex) {
-        this.firstIndex = firstIndex;
-    }
+    public String getOpType() { return opType; }
+    public void setOpType(String opType) { this.opType = opType; }
 
-    public Integer getLastIndex() {
-        return lastIndex;
-    }
+    public String getTaxType() { return taxType; }
+    public void setTaxType(String taxType) { this.taxType = taxType; }
 
-    public void setLastIndex(Integer lastIndex) {
-        this.lastIndex = lastIndex;
-    }
+    public String getSellerName() { return sellerName; }
+    public void setSellerName(String sellerName) { this.sellerName = sellerName; }
 
-    public Integer getRecordCountPerPage() {
-        return recordCountPerPage;
-    }
+    public String getSaleTypeName() { return saleTypeName; }
+    public void setSaleTypeName(String saleTypeName) { this.saleTypeName = saleTypeName; }
 
-    public void setRecordCountPerPage(Integer recordCountPerPage) {
-        this.recordCountPerPage = recordCountPerPage;
-    }
+    public String getStorageTypeName() { return storageTypeName; }
+    public void setStorageTypeName(String storageTypeName) { this.storageTypeName = storageTypeName; }
 
+    public String getCutTypeName() { return cutTypeName; }
+    public void setCutTypeName(String cutTypeName) { this.cutTypeName = cutTypeName; }
+
+    public String getProcessTypeName() { return processTypeName; }
+    public void setProcessTypeName(String processTypeName) { this.processTypeName = processTypeName; }
+
+    public String getUnitTypeName() { return unitTypeName; }
+    public void setUnitTypeName(String unitTypeName) { this.unitTypeName = unitTypeName; }
+
+    public String getExposureStatusName() { return exposureStatusName; }
+    public void setExposureStatusName(String exposureStatusName) { this.exposureStatusName = exposureStatusName; }
+
+    public String getSaleStatusName() { return saleStatusName; }
+    public void setSaleStatusName(String saleStatusName) { this.saleStatusName = saleStatusName; }
+
+    public BigDecimal getVatAmount() { return vatAmount; }
+    public void setVatAmount(BigDecimal vatAmount) { this.vatAmount = vatAmount; }
+
+    public Long getSalesProdId() { return salesProdId; }
+    public void setSalesProdId(Long salesProdId) { this.salesProdId = salesProdId; }
+
+    public BigDecimal getCompQty() { return compQty; }
+    public void setCompQty(BigDecimal compQty) { this.compQty = compQty; }
+
+    public Integer getSortOrder() { return sortOrder; }
+    public void setSortOrder(Integer sortOrder) { this.sortOrder = sortOrder; }
+
+    // Legacy Aliases
+    public Date getSaleStartDate() { return this.saleStartDt; }
+    public void setSaleStartDate(Date d) { this.saleStartDt = d; }
+    public Date getSaleEndDate() { return this.saleEndDt; }
+    public void setSaleEndDate(Date d) { this.saleEndDt = d; }
+    public String getDisplayYn() { return this.exposureStatusCd; }
+    public void setDisplayYn(String yn) { this.exposureStatusCd = yn; }
+    public String getProductName() { return this.componentProdName; }
+    public void setProductName(String name) { this.componentProdName = name; }
 }

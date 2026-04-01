@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.matpam.common.mapper.MatpamCommonMapper">
+
+    <!-- 1. 페이징: Header (MySQL/MariaDB) -->
+    <sql id="pagingHeader">
+        <!-- Pagination Start (No specific syntax for MySQL, but placeholder for consistency) -->
+    </sql>
+
+    <!-- 2. 페이징: Footer (MySQL/MariaDB) -->
+    <sql id="pagingFooter">
+        <if test="pageIndex != null and recordCountPerPage != null">
+            LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
+        </if>
+    </sql>
+
+    <!-- 3. 운영 타입(opType) 기반 데이터 격리 (Where절용) -->
+    <sql id="opTypeFilter">
+        <if test="opType != null and opType != ''">
+            AND op_type = #{opType}
+        </if>
+    </sql>
+
+</mapper>
