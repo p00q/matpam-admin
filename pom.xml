@@ -195,6 +195,12 @@
         <artifactId>mysql-connector-j</artifactId>
         <version>8.0.33</version>
     </dependency>
+    <dependency>
+        <groupId>com.h2database</groupId>
+        <artifactId>h2</artifactId>
+        <version>2.2.224</version>
+        <scope>runtime</scope>
+    </dependency>
     
     <!-- JSON-B 구현체 -->
     <dependency>
@@ -317,13 +323,13 @@
           </container>
           <configuration>
             <properties>
-              <cargo.servlet.port>5050</cargo.servlet.port>
+              <cargo.servlet.port>5051</cargo.servlet.port>
             </properties>
           </configuration>
         </configuration>
       </plugin>
 
-      <!-- Jetty Plugin for Port 5050 (Compatible with javax.servlet) -->
+      <!-- Jetty Plugin for Port 5051 (Compatible with javax.servlet) -->
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
