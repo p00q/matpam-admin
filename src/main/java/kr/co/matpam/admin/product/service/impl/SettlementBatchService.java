@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import kr.co.matpam.admin.settlement.service.SettlementService;
+import kr.co.matpam.admin.settlement.service.SettlementVO;
 
 /**
  * 일 단위 정산 배치 서비스
@@ -36,12 +37,14 @@ public class SettlementBatchService {
 
         // 1. 전일(Yesterday) 날짜 산정
         LocalDate yesterday = LocalDate.now().minusDays(1);
-        String settleDateStr = yesterday.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String settleDateStr = yesterday.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
         try {
             // 전일 정산 실행 (판매자별 집계 및 저장)
             LOGGER.info("[SettlementBatch] Executing settlement for {}", settleDateStr);
-            settlementService.executeDailySettlement(settleDateStr);
+            SettlementVO searchVO = new SettlementVO();
+            searchVO.setSettleDate(settleDateStr);
+            settlementService.executeDailySettlement(searchVO);
             
             LOGGER.info("[SettlementBatch] Batch completed successfully for {}.", settleDateStr);
 

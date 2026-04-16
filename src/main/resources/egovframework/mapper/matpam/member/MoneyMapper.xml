@@ -13,40 +13,46 @@
     </update>
 
     <!-- 이력 저장 -->
-    <insert id="insertMoneyHistory" parameterType="map">
-        INSERT INTO tb_money_history (
+    <insert id="insertMoneyHistory" parameterType="kr.co.matpam.admin.member.service.MemberMoneyHistoryVO">
+        INSERT INTO tb_meatmoney_txn (
             member_id,
-            trx_type_cd,
-            change_amt,
-            balance,
-            ref_order_no,
-            remark,
+            txn_dt,
+            txn_type_cd,
+            io_type_cd,
+            summary,
+            order_id,
+            use_amt,
+            earn_amt,
+            balance_amt,
             reg_id,
             reg_dt
         ) VALUES (
-            #{memberId},
-            #{trxType},
-            #{changeAmt},
-            (SELECT MEAT_MONEY FROM TB_MEMBER WHERE MEMBER_ID = #{memberId}),
-            #{refOrderNo},
-            #{remark},
+            #{memberPk},
+            NOW(),
+            #{changeType},
+            CASE WHEN #{changeAmt} >= 0 THEN 'I' ELSE 'O' END,
+            #{reason},
+            #{refId},
+            CASE WHEN #{changeAmt} &lt; 0 THEN ABS(#{changeAmt}) ELSE 0 END,
+            CASE WHEN #{changeAmt} > 0 THEN #{changeAmt} ELSE 0 END,
+            #{balanceAmt},
             #{regId},
-            CURRENT_TIMESTAMP
+            NOW()
         )
     </insert>
 
     <!-- 머니 이력 조회 -->
     <select id="selectMoneyHistoryList" parameterType="map" resultType="egovMap">
         SELECT 
-            money_hist_id,
-            member_id,
-            trx_type_cd,
-            change_amt,
-            balance,
-            ref_order_no,
-            remark,
+            txn_id          AS history_id,
+            member_id       AS member_id,
+            txn_type_cd     AS trx_type_cd,
+            CASE WHEN io_type_cd = 'I' THEN earn_amt ELSE use_amt * -1 END AS change_amt,
+            balance_amt     AS balance,
+            order_id        AS ref_order_no,
+            summary         AS remark,
             reg_dt
-        FROM tb_money_history
+        FROM tb_meatmoney_txn
         WHERE member_id = #{memberId}
         ORDER BY reg_dt DESC
     </select>

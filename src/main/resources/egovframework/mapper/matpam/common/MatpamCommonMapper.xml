@@ -14,9 +14,10 @@
         </if>
     </sql>
 
-    <!-- 3. 운영 타입(opType) 기반 데이터 격리 (Where절용) -->
+    <!-- 3. 운영 타입(opType) 기반 데이터 격리 (Where절용) - alias는 각 Mapper에서 직접 명시 -->
     <sql id="opTypeFilter">
-        <if test="opType != null and opType != ''">
+        <!-- 이 fragment는 하위 호환성을 위해 유지. 신규 쿼리는 각 Mapper에서 인라인으로 처리 -->
+        <if test="opType != null and opType != '' and opType != 'NATIONAL'">
             AND op_type = #{opType}
         </if>
     </sql>

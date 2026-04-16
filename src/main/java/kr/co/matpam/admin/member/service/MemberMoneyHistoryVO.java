@@ -2,18 +2,9 @@ package kr.co.matpam.admin.member.service;
 
 import java.io.Serializable;
 import java.util.Date;
-import lombok.Data;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-
 /**
  * 맛팜 머니(meatMoney) 변동 이력 VO
  */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class MemberMoneyHistoryVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -29,4 +20,23 @@ public class MemberMoneyHistoryVO implements Serializable {
 
     private String regId;
     private Date regDt;
+
+    public Long getHistoryId() { return historyId; }
+    public void setHistoryId(Long historyId) { this.historyId = historyId; }
+    public Long getMemberPk() { return memberPk; }
+    public void setMemberPk(Long memberPk) { this.memberPk = memberPk; }
+    public String getChangeType() { return changeType; }
+    public void setChangeType(String changeType) { this.changeType = changeType; }
+    public Long getChangeAmt() { return changeAmt; }
+    public void setChangeAmt(Long changeAmt) { this.changeAmt = changeAmt; }
+    public Long getBalanceAmt() { return balanceAmt; }
+    public void setBalanceAmt(Long balanceAmt) { this.balanceAmt = balanceAmt; }
+    public String getReason() { return reason; }
+    public void setReason(String reason) { this.reason = reason; }
+    public Long getRefId() { return refId; }
+    public void setRefId(Long refId) { this.refId = refId; }
+    public String getRegId() { return regId; }
+    public void setRegId(String regId) { this.regId = regId; }
+    public Date getRegDt() { return regDt; }
+    public void setRegDt(Date regDt) { this.regDt = regDt; }
 }

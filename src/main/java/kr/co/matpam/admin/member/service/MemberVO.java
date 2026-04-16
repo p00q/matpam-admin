@@ -2,10 +2,10 @@ package kr.co.matpam.admin.member.service;
 
 import java.io.Serializable;
 import java.util.List;
-
+import kr.co.matpam.common.service.MatpamBaseVO;
 import kr.co.matpam.admin.member.service.manager.MemberManagerVO;
 
-public class MemberVO implements Serializable {
+public class MemberVO extends MatpamBaseVO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -90,12 +90,15 @@ public class MemberVO implements Serializable {
         this.region = region;
     }
 
-    public String getMemberId() {
-        return memberId;
-    }
-
     public void setMemberId(String memberId) {
         this.memberId = memberId;
+        if (this.loginId == null || this.loginId.isEmpty()) {
+            this.loginId = memberId;
+        }
+    }
+
+    public String getMemberId() {
+        return memberId;
     }
 
     public String getLoginId() {
@@ -104,6 +107,9 @@ public class MemberVO implements Serializable {
 
     public void setLoginId(String loginId) {
         this.loginId = loginId;
+        if (this.memberId == null || this.memberId.isEmpty()) {
+            this.memberId = loginId;
+        }
     }
 
     public String getLoginPw() {

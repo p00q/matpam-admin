@@ -50,13 +50,21 @@ public class ComponentProductServiceImpl extends EgovAbstractServiceImpl
     }
 
     /**
+     * 구성상품 자동생성 코드 조회
+     */
+    @Override
+    public String selectNextComponentProdCode() throws Exception {
+        return componentProductDAO.selectNextComponentProdCode();
+    }
+
+    /**
      * 구성상품 상세 조회
      */
     @Override
     public ComponentProductVO selectComponentProduct(
-            Long componentProdId) throws Exception {
+            ComponentProductVO vo) throws Exception {
 
-        return componentProductDAO.selectComponentProduct(componentProdId);
+        return componentProductDAO.selectComponentProduct(vo);
     }
 
     /**
@@ -68,6 +76,12 @@ public class ComponentProductServiceImpl extends EgovAbstractServiceImpl
 
         LOGGER.debug("Insert component product: {}",
                 componentProductVO.getComponentProdName());
+
+        if (componentProductVO.getComponentProdCode() == null || componentProductVO.getComponentProdCode().trim().isEmpty()) {
+            String nextCode = selectNextComponentProdCode();
+            componentProductVO.setComponentProdCode(nextCode);
+            LOGGER.debug("Auto-generated ComponentProdCode: {}", nextCode);
+        }
 
         normalizePrices(componentProductVO);
 
@@ -94,11 +108,11 @@ public class ComponentProductServiceImpl extends EgovAbstractServiceImpl
      */
     @Override
     public void deleteComponentProduct(
-            Long componentProdId) throws Exception {
+            ComponentProductVO vo) throws Exception {
 
-        LOGGER.debug("Delete component product ID: {}", componentProdId);
+        LOGGER.debug("Delete component product ID: {}", vo.getComponentProdId());
 
-        componentProductDAO.deleteComponentProduct(componentProdId);
+        componentProductDAO.deleteComponentProduct(vo);
     }
 
     /**
@@ -109,11 +123,21 @@ public class ComponentProductServiceImpl extends EgovAbstractServiceImpl
             vo.setListPrice(BigDecimal.ZERO);
         }
 
-        vo.setCostPrice(vo.getListPrice());
-        if (vo.getVatAmount() == null) {
-            vo.setVatAmount(BigDecimal.ZERO);
+        // costPrice가 입력되지 않았을 경우에만 listPrice로 세팅 (프론트 변경사항 반영)
+        if (vo.getCostPrice() == null) {
+            vo.setCostPrice(vo.getListPrice());
         }
-        vo.setTotalSaleQty(vo.getListPrice().longValue());
+
+        // vatAmount값이 프론트에서 넘어왔다면 vatRate(저장소)에 세팅
+        if (vo.getVatAmount() != null) {
+            vo.setVatRate(vo.getVatAmount());
+        } else if (vo.getVatRate() == null) {
+            vo.setVatRate(BigDecimal.ZERO);
+        }
+
+        if (vo.getTotalSaleQty() == null) {
+            vo.setTotalSaleQty(vo.getListPrice().longValue());
+        }
 
         ensureSalePeriod(vo);
     }

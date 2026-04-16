@@ -55,15 +55,23 @@ public class SalesProductController {
      */
     @RequestMapping(value = "/admin/product/salesProductRegister.do", method = RequestMethod.GET)
     public String salesProductRegister(@RequestParam(value = "salesProdId", required = false) Long salesProdId,
-            ModelMap model) throws Exception {
+            HttpServletRequest request, ModelMap model) throws Exception {
+
+        String opType = (String) request.getAttribute("opType");
+        SalesProductVO salesProduct = null;
 
         if (salesProdId != null) {
-            salesProductService.increaseViewCount(salesProdId);
+            SalesProductVO paramVO = new SalesProductVO();
+            paramVO.setSalesProdId(salesProdId);
+            paramVO.setOpType(opType);
+            
+            salesProductService.increaseViewCount(paramVO);
+            salesProduct = salesProductService.selectSalesProduct(paramVO);
         }
 
-        SalesProductVO salesProduct = (salesProdId != null)
-                ? salesProductService.selectSalesProduct(salesProdId)
-                : new SalesProductVO();
+        if (salesProduct == null) {
+            salesProduct = new SalesProductVO();
+        }
 
         // 기본값
         if (salesProduct.getExposureStatusCd() == null || salesProduct.getExposureStatusCd().trim().isEmpty()) {

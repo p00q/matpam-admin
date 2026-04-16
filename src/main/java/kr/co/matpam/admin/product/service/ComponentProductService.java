@@ -22,7 +22,12 @@ public interface ComponentProductService {
     /**
      * 구성상품(컴포넌트상품) 상세 조회
      */
-    ComponentProductVO selectComponentProduct(Long componentProdId) throws Exception;
+    ComponentProductVO selectComponentProduct(ComponentProductVO vo) throws Exception;
+
+    /**
+     * 구성상품 자동생성 코드 조회
+     */
+    String selectNextComponentProdCode() throws Exception;
 
     /**
      * 구성상품(컴포넌트상품) 등록
@@ -37,5 +42,5 @@ public interface ComponentProductService {
     /**
      * 구성상품(컴포넌트상품) 삭제
      */
-    void deleteComponentProduct(Long componentProdId) throws Exception;
+    void deleteComponentProduct(ComponentProductVO vo) throws Exception;
 }

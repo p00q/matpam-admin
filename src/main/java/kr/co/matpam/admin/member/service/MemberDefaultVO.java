@@ -30,8 +30,11 @@ public class MemberDefaultVO implements Serializable {
     /** 검색어 */
     private String searchKeyword;
 
-    /** 배송/운영 유형 (opType 격리용) */
+    /** 배송/운영 유형 (UI용) */
     private String deliveryTypeCd;
+
+    /** 운영타입 (격리용) */
+    private String opType;
 
     /** 현재 페이지 번호 */
     private int pageIndex = 1;
@@ -121,6 +124,14 @@ public class MemberDefaultVO implements Serializable {
 
     public void setDeliveryTypeCd(String deliveryTypeCd) {
         this.deliveryTypeCd = deliveryTypeCd;
+    }
+
+    public String getOpType() {
+        return opType;
+    }
+
+    public void setOpType(String opType) {
+        this.opType = opType;
     }
 
     public int getPageIndex() {

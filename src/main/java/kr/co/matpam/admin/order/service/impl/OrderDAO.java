@@ -43,15 +43,15 @@ public class OrderDAO extends EgovAbstractMapper {
     /**
      * 주문 상세 조회
      */
-    public OrderVO selectOrder(Long orderId) {
-        return (OrderVO) selectOne("matpam.order.OrderMapper.selectOrder", orderId);
+    public OrderVO selectOrder(OrderVO orderVO) {
+        return (OrderVO) selectOne("matpam.order.OrderMapper.selectOrder", orderVO);
     }
 
     /**
      * 주문 상품 상세 조회
      */
-    public List<OrderItemVO> selectOrderItemList(Long orderId) {
-        return selectList("matpam.order.OrderMapper.selectOrderItemList", orderId);
+    public List<OrderItemVO> selectOrderItemList(OrderItemVO itemVO) {
+        return selectList("matpam.order.OrderMapper.selectOrderItemList", itemVO);
     }
 
     /**

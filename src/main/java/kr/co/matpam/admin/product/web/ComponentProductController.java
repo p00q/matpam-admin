@@ -6,6 +6,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,8 +63,12 @@ public class ComponentProductController {
      * 구성상품 목록 화면
      */
     @RequestMapping(value = "/admin/product/componentProductList.do")
-    public String componentProductList(@ModelAttribute("searchVO") ComponentProductVO searchVO, ModelMap model)
+    public String componentProductList(@ModelAttribute("searchVO") ComponentProductVO searchVO, ModelMap model, HttpServletRequest request)
             throws Exception {
+
+        // 운영권한 격리
+        String opTypeFromAttr = (String) request.getAttribute("opType");
+        searchVO.setOpType(opTypeFromAttr);
 
         int currentPage = searchVO.getPageIndex() != null ? searchVO.getPageIndex() : 1;
         int recordsPerPage = searchVO.getPageUnit() != null ? searchVO.getPageUnit() : 10;
@@ -99,7 +104,9 @@ public class ComponentProductController {
      */
     @RequestMapping(value = "/admin/product/componentProductForm.do")
     public String componentProductForm(@RequestParam(value = "componentProdId", required = false) Long componentProdId,
-            ModelMap model) throws Exception {
+            HttpServletRequest request, ModelMap model) throws Exception {
+
+        String opType = (String) request.getAttribute("opType");
 
         if (componentProdId == null) {
             Date today = new Date();
@@ -118,7 +125,11 @@ public class ComponentProductController {
 
             model.addAttribute("component", component);
         } else {
-            ComponentProductVO component = componentProductService.selectComponentProduct(componentProdId);
+            ComponentProductVO paramVO = new ComponentProductVO();
+            paramVO.setComponentProdId(componentProdId);
+            paramVO.setOpType(opType);
+            
+            ComponentProductVO component = componentProductService.selectComponentProduct(paramVO);
             model.addAttribute("component", component);
         }
 
@@ -157,12 +168,15 @@ public class ComponentProductController {
      * 구성상품 등록 처리
      */
     @RequestMapping(value = "/admin/product/insertComponentProduct.do", method = RequestMethod.POST)
-    public String insertComponentProduct(ComponentProductVO componentProductVO) throws Exception {
+    public String insertComponentProduct(ComponentProductVO componentProductVO, HttpServletRequest request) throws Exception {
 
-        LOGGER.debug("Insert Component Product (name): {}", componentProductVO.getProductName());
-
-        // 등록자/수정자 세팅은 로그인 연동 후 표준 방식으로 세팅하는게 정석
-        // (현재는 기존 코드 패턴을 유지한다고 가정)
+        // 1) 자동 데이터 세팅 (인터셉터에서 주입된 값 활용)
+        String opType = (String) request.getAttribute("opType");
+        String loginId = (String) request.getAttribute("loginId");
+        
+        componentProductVO.setOpType(opType);
+        componentProductVO.setRegId(loginId);
+        componentProductVO.setModId(loginId);
 
         componentProductService.insertComponentProduct(componentProductVO);
 
@@ -173,10 +187,16 @@ public class ComponentProductController {
      * 구성상품 상세/수정 화면
      */
     @RequestMapping(value = "/admin/product/componentDetail.do")
-    public String componentDetailForm(@RequestParam("componentProdId") Long componentProdId, ModelMap model)
+    public String componentDetailForm(@RequestParam("componentProdId") Long componentProdId, 
+            HttpServletRequest request, ModelMap model)
             throws Exception {
 
-        ComponentProductVO component = componentProductService.selectComponentProduct(componentProdId);
+        String opType = (String) request.getAttribute("opType");
+        ComponentProductVO paramVO = new ComponentProductVO();
+        paramVO.setComponentProdId(componentProdId);
+        paramVO.setOpType(opType);
+
+        ComponentProductVO component = componentProductService.selectComponentProduct(paramVO);
         model.addAttribute("component", component);
 
         addComponentDropdowns(model);
@@ -189,7 +209,13 @@ public class ComponentProductController {
      * 구성상품 수정 처리
      */
     @RequestMapping(value = "/admin/product/updateComponentProduct.do", method = RequestMethod.POST)
-    public String updateComponentProduct(ComponentProductVO componentProductVO) throws Exception {
+    public String updateComponentProduct(ComponentProductVO componentProductVO, HttpServletRequest request) throws Exception {
+
+        String opType = (String) request.getAttribute("opType");
+        String loginId = (String) request.getAttribute("loginId");
+        
+        componentProductVO.setOpType(opType);
+        componentProductVO.setModId(loginId);
 
         componentProductService.updateComponentProduct(componentProductVO);
 
@@ -200,9 +226,14 @@ public class ComponentProductController {
      * 구성상품 삭제 처리
      */
     @RequestMapping(value = "/admin/product/deleteComponentProduct.do")
-    public String deleteComponentProduct(@RequestParam("componentProdId") Long componentProdId) throws Exception {
+    public String deleteComponentProduct(@RequestParam("componentProdId") Long componentProdId, HttpServletRequest request) throws Exception {
 
-        componentProductService.deleteComponentProduct(componentProdId);
+        String opType = (String) request.getAttribute("opType");
+        ComponentProductVO paramVO = new ComponentProductVO();
+        paramVO.setComponentProdId(componentProdId);
+        paramVO.setOpType(opType);
+
+        componentProductService.deleteComponentProduct(paramVO);
 
         return "redirect:/admin/product/componentProductList.do?menu=component";
     }
@@ -224,8 +255,12 @@ public class ComponentProductController {
      * 구성상품 조회 팝업
      */
     @RequestMapping(value = "/admin/product/popup/componentList.do")
-    public String componentProductPopup(@ModelAttribute("searchVO") ComponentProductVO searchVO, ModelMap model)
+    public String componentProductPopup(@ModelAttribute("searchVO") ComponentProductVO searchVO, 
+            HttpServletRequest request, ModelMap model)
             throws Exception {
+
+        String opType = (String) request.getAttribute("opType");
+        searchVO.setOpType(opType);
 
         int currentPage = searchVO.getPageIndex() != null ? searchVO.getPageIndex() : 1;
         int recordsPerPage = searchVO.getPageUnit() != null ? searchVO.getPageUnit() : 10;

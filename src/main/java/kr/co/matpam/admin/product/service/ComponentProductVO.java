@@ -43,9 +43,8 @@ public class ComponentProductVO extends MatpamBaseVO {
      */
     private BigDecimal listPrice;
     private BigDecimal costPrice;
+    private BigDecimal vatRate = BigDecimal.ZERO; // New: vat_rate
 
-    /** 운영 타입 (NATIONAL, LOCAL, FACTORY) */
-    private String opType;
 
     /** 과세 여부 (TAXABLE, FREE) */
     private String taxType;
@@ -141,8 +140,6 @@ public class ComponentProductVO extends MatpamBaseVO {
     public String getDelYn() { return delYn; }
     public void setDelYn(String delYn) { this.delYn = delYn; }
 
-    public String getOpType() { return opType; }
-    public void setOpType(String opType) { this.opType = opType; }
 
     public String getTaxType() { return taxType; }
     public void setTaxType(String taxType) { this.taxType = taxType; }
@@ -173,6 +170,9 @@ public class ComponentProductVO extends MatpamBaseVO {
 
     public BigDecimal getVatAmount() { return vatAmount; }
     public void setVatAmount(BigDecimal vatAmount) { this.vatAmount = vatAmount; }
+
+    public BigDecimal getVatRate() { return vatRate; }
+    public void setVatRate(BigDecimal vatRate) { this.vatRate = vatRate; }
 
     public Long getSalesProdId() { return salesProdId; }
     public void setSalesProdId(Long salesProdId) { this.salesProdId = salesProdId; }

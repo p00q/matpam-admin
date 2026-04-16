@@ -47,6 +47,9 @@ public class OrderDeliveryFactoryVO implements Serializable {
     /** 수정일시 */
     private Date modDt;
 
+    /** 운영구분 (NATIONAL, LOCAL, FACTORY) */
+    private String opType;
+
     /*
      * =========================================================
      * Getter / Setter
@@ -147,5 +150,13 @@ public class OrderDeliveryFactoryVO implements Serializable {
 
     public void setModDt(Date modDt) {
         this.modDt = modDt;
+    }
+
+    public String getOpType() {
+        return opType;
+    }
+
+    public void setOpType(String opType) {
+        this.opType = opType;
     }
 }

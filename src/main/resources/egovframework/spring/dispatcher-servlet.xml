@@ -8,6 +8,10 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
 		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd">
 
+	<context:component-scan base-package="kr.co.matpam">
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service"/>
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
 	</context:component-scan>
 
 
@@ -33,28 +37,12 @@
 	<!-- Interceptor 설정 (로그인 및 공통 파라미터 opType 주입) -->
 	<mvc:interceptors>
 		<mvc:interceptor>
-			<mvc:mapping path="/**/*.ajax"/>
-			<mvc:mapping path="/**/*.do"/>
-			<mvc:exclude-mapping path="/login.do"/>
-			<mvc:exclude-mapping path="/resources/**"/>
-			<bean class="kr.co.matpam.common.interceptor.MatpamAuthInterceptor"/>
-		</mvc:interceptor>
-	</mvc:interceptors>
-
-	<mvc:annotation-driven validator="validator" />
-
-	<!-- AuthInterceptor 등록 (데이터 격리 및 인증 관리용) -->
-	<mvc:interceptors>
-		<mvc:interceptor>
 			<mvc:mapping path="/admin/**/*.do" />
+			<mvc:mapping path="/admin/**/*.ajax" />
 			<mvc:exclude-mapping path="/admin/loginForm.do" />
 			<mvc:exclude-mapping path="/admin/login.do" />
 			<bean class="kr.co.matpam.admin.common.interceptor.AuthInterceptor" />
 		</mvc:interceptor>
-	</mvc:interceptors>
-
-	<!-- FrontInterceptor 등록 (소비자 쇼핑몰 세션 관리) -->
-	<mvc:interceptors>
 		<mvc:interceptor>
 			<mvc:mapping path="/front/**" />
 			<mvc:exclude-mapping path="/front/login.do" />
@@ -62,5 +50,8 @@
 			<bean class="kr.co.matpam.admin.common.interceptor.FrontInterceptor" />
 		</mvc:interceptor>
 	</mvc:interceptors>
+
+	<mvc:annotation-driven />
+
 
 </beans>

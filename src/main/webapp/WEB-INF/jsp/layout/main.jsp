@@ -24,31 +24,33 @@
     <!-- Sidebar Navigation -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <span style="color: var(--accent);">MATPAM</span> ADMIN
+            <a href="<c:url value='/admin/dashboard/main.do'/>" style="text-decoration: none; color: inherit;">
+                <span class="logo-text">MATPAM ADMIN</span>
+            </a>
         </div>
         <nav class="sidebar-nav">
-            <a href="<c:url value='/admin/member/memberList.do?menu=member'/>"
-                class="nav-item ${param.menu eq 'member' ? 'active' : ''}">
+            <a href="<c:url value='/admin/member/memberList.do'/>"
+                class="nav-item ${currentMenu eq 'member' ? 'active' : ''}">
                 <i class="bi bi-people-fill"></i>회원 관리
             </a>
-            <a href="<c:url value='/admin/order/orderList.do?menu=order'/>"
-                class="nav-item ${param.menu eq 'order' ? 'active' : ''}">
+            <a href="<c:url value='/admin/order/orderList.do'/>"
+                class="nav-item ${currentMenu eq 'order' ? 'active' : ''}">
                 <i class="bi bi-cart-fill"></i>주문 관리
             </a>
-            <a href="<c:url value='/admin/product/salesProductList.do?menu=product'/>"
-                class="nav-item ${param.menu eq 'product' ? 'active' : ''}">
+            <a href="<c:url value='/admin/product/salesProductList.do'/>"
+                class="nav-item ${currentMenu eq 'product' ? 'active' : ''}">
                 <i class="bi bi-box-seam-fill"></i>판매상품 관리
             </a>
-            <a href="<c:url value='/admin/product/componentProductList.do?menu=component'/>"
-                class="nav-item ${param.menu eq 'component' ? 'active' : ''}">
+            <a href="<c:url value='/admin/product/componentProductList.do'/>"
+                class="nav-item ${currentMenu eq 'component' ? 'active' : ''}">
                 <i class="bi bi-gear-fill"></i>구성상품 관리
             </a>
-            <a href="<c:url value='/admin/settlement/settlementList.do?menu=settlement'/>"
-                class="nav-item ${param.menu eq 'settlement' ? 'active' : ''}">
-                <i class="bi bi-currency-exchange"></i>정산/보상 관리
+            <a href="<c:url value='/admin/settlement/settlementList.do'/>"
+                class="nav-item ${currentMenu eq 'settlement' ? 'active' : ''}">
+                <i class="bi bi-currency-exchange"></i>정산관리
             </a>
-            <a href="<c:url value='/admin/basic/codeManage.do?menu=basic'/>"
-                class="nav-item ${param.menu eq 'basic' ? 'active' : ''}">
+            <a href="<c:url value='/admin/basic/codeManage.do'/>"
+                class="nav-item ${currentMenu eq 'basic' ? 'active' : ''}">
                 <i class="bi bi-file-earmark-text-fill"></i>시스템 설정
             </a>
         </nav>
@@ -58,15 +60,7 @@
     <div class="top-bar">
         <div class="d-flex align-items-center">
             <h5 class="mb-0 fw-bold" style="color: var(--primary);">
-                <c:choose>
-                    <c:when test="${param.menu eq 'member'}">회원 관리</c:when>
-                    <c:when test="${param.menu eq 'order'}">주문 관리</c:when>
-                    <c:when test="${param.menu eq 'product'}">판매상품 관리</c:when>
-                    <c:when test="${param.menu eq 'component'}">구성상품 관리</c:when>
-                    <c:when test="${param.menu eq 'settlement'}">정산/보상 관리</c:when>
-                    <c:when test="${param.menu eq 'basic'}">시스템 설정</c:when>
-                    <c:otherwise>대시보드</c:otherwise>
-                </c:choose>
+                <c:out value="${pageTitle}" default="대시보드" />
             </h5>
         </div>
         <div class="d-flex align-items-center gap-3">

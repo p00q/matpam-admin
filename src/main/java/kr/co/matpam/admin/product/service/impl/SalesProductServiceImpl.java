@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import kr.co.matpam.admin.product.service.SalesProductService;
 import kr.co.matpam.admin.product.service.SalesProductVO;
 import kr.co.matpam.admin.product.service.SalesProductCompositionVO;
+import kr.co.matpam.admin.product.service.SalesProductImageVO;
 import kr.co.matpam.admin.common.util.VatCalculator;
 import java.util.ArrayList;
 
@@ -42,18 +43,33 @@ public class SalesProductServiceImpl extends EgovAbstractServiceImpl implements 
     }
 
     @Override
-    public SalesProductVO selectSalesProduct(Long salesProdId) throws Exception {
-        SalesProductVO vo = salesProductDAO.selectSalesProduct(salesProdId);
+    public SalesProductVO selectSalesProduct(SalesProductVO searchVO) throws Exception {
+        Long salesProdId = searchVO.getSalesProdId();
+        SalesProductVO vo = salesProductDAO.selectSalesProduct(searchVO);
         if (vo != null && salesProdId != null) {
+            // 1) 구성 목록 조회
             vo.setCompositionList(salesProductCompositionDAO.selectCompListBySalesProdId(salesProdId));
+            
+            // 2) 이미지 목록 조회 및 바인딩 (imgUrl1~3)
+            List<SalesProductImageVO> imageList = salesProductDAO.selectSalesProductImageList(searchVO);
+            vo.setImageList(imageList);
+            
+            if (imageList != null) {
+                for (int i = 0; i < imageList.size(); i++) {
+                    SalesProductImageVO img = imageList.get(i);
+                    if (i == 0) vo.setImgUrl1(img.getImgUrl());
+                    else if (i == 1) vo.setImgUrl2(img.getImgUrl());
+                    else if (i == 2) vo.setImgUrl3(img.getImgUrl());
+                }
+            }
         }
         return vo;
     }
 
     @Override
-    public void increaseViewCount(Long salesProdId) throws Exception {
-        if (salesProdId == null) return;
-        salesProductDAO.increaseViewCount(salesProdId);
+    public void increaseViewCount(SalesProductVO vo) throws Exception {
+        if (vo.getSalesProdId() == null) return;
+        salesProductDAO.increaseViewCount(vo);
     }
 
     /**
@@ -62,20 +78,36 @@ public class SalesProductServiceImpl extends EgovAbstractServiceImpl implements 
     @Override
     @Transactional
     public void insertSalesProduct(SalesProductVO vo) throws Exception {
-        // 기본값 보정
-        applyDefaultUser(vo);
+        LOGGER.info("판매상품 등록 시작: {}", vo.getSalesProdName());
+        
+        try {
+            // 기본값 보정
+            applyDefaultUser(vo);
 
-        // 0) 세액 및 총액 계산
-        calculateTotals(vo);
+            // 0) 세액 및 총액 계산
+            calculateTotals(vo);
 
-        // 1) 판매상품 마스터 저장 (useGeneratedKeys로 PK 세팅된다는 전제)
-        salesProductDAO.insertSalesProduct(vo);
+            // 1) 판매상품 마스터 저장 (useGeneratedKeys로 PK 세팅된다는 전제)
+            salesProductDAO.insertSalesProduct(vo);
+            
+            if (vo.getSalesProdId() == null) {
+                throw new Exception("판매상품 ID 생성 실패");
+            }
 
-        // 2) 상세/정책 저장 (분리 테이블)
-        salesProductDAO.upsertSalesProductDetail(vo);
+            // 2) 상세/정책 저장 (분리 테이블)
+            salesProductDAO.upsertSalesProductDetail(vo);
 
-        // 3) 구성 저장
-        saveComposition(vo.getSalesProdId(), vo.getCompositionList(), vo.getRegId(), vo.getModId());
+            // 3) 구성 저장
+            saveComposition(vo.getSalesProdId(), vo.getCompositionList(), vo.getRegId(), vo.getModId());
+
+            // 4) 이미지 저장
+            saveImages(vo);
+            
+            LOGGER.info("판매상품 등록 완료: ID={}", vo.getSalesProdId());
+        } catch (Exception e) {
+            LOGGER.error("판매상품 등록 중 오류 발생: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     /**
@@ -108,6 +140,9 @@ public class SalesProductServiceImpl extends EgovAbstractServiceImpl implements 
 
         // 3) 구성 저장(전량 교체 + upsert)
         saveComposition(vo.getSalesProdId(), vo.getCompositionList(), vo.getRegId(), vo.getModId());
+
+        // 4) 이미지 저장
+        saveImages(vo);
     }
 
     /**
@@ -117,16 +152,16 @@ public class SalesProductServiceImpl extends EgovAbstractServiceImpl implements 
      */
     @Override
     @Transactional
-    public void deleteSalesProduct(Long salesProdId) throws Exception {
-        if (salesProdId == null) {
+    public void deleteSalesProduct(SalesProductVO vo) throws Exception {
+        if (vo.getSalesProdId() == null) {
             throw new IllegalArgumentException("salesProdId는 필수입니다.");
         }
 
-        // 판매상품 논리삭제 (SalesProductMapper.xml에 deleteSalesProduct가 del_yn='Y' 처리여야 함)
-        salesProductDAO.deleteSalesProduct(salesProdId);
+        // 판매상품 논리삭제
+        salesProductDAO.deleteSalesProduct(vo);
 
-        // 구성도 논리삭제
-        salesProductCompositionDAO.deleteCompBySalesProdId(salesProdId);
+        // 구성도 논리삭제 (TODO: 필요시 opType 반영)
+        salesProductCompositionDAO.deleteCompBySalesProdId(vo.getSalesProdId());
     }
 
     /*
@@ -206,6 +241,44 @@ public class SalesProductServiceImpl extends EgovAbstractServiceImpl implements 
     }
 
     /**
+     * 이미지 저장
+     * - 기존 이미지 논리 삭제 후 신규 등록
+     */
+    private void saveImages(SalesProductVO vo) {
+        if (vo.getImageList() == null || vo.getImageList().size() == 0) {
+            LOGGER.debug("저장할 이미지 정보 없음. ID={}", vo.getSalesProdId());
+            return;
+        }
+
+        LOGGER.info("이미지 정보 저장 시작: ID={}, Count={}", vo.getSalesProdId(), vo.getImageList().size());
+        
+        try {
+            // 1) 기존 이미지 삭제
+            salesProductDAO.deleteSalesProductImages(vo);
+
+            // 2) 신규 이미지 등록
+            for (Object obj : vo.getImageList()) {
+                if (!(obj instanceof SalesProductImageVO)) continue;
+                SalesProductImageVO img = (SalesProductImageVO) obj;
+                
+                if (img.getImgUrl() == null || img.getImgUrl().trim().isEmpty()) continue;
+                
+                img.setSalesProdId(vo.getSalesProdId());
+                img.setRegId(vo.getRegId());
+                img.setModId(vo.getModId());
+                img.setUseYn("Y");
+                img.setDelYn("N");
+                
+                salesProductDAO.insertSalesProductImage(img);
+            }
+            LOGGER.debug("이미지 정보 저장 완료. ID={}", vo.getSalesProdId());
+        } catch (Exception e) {
+            LOGGER.error("이미지 정보 저장 중 오류 발생: ID={}, Message={}", vo.getSalesProdId(), e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
      * 구성을 기반으로 부가세 및 총판매가 합산
      */
     private void calculateTotals(SalesProductVO vo) {
@@ -221,7 +294,11 @@ public class SalesProductServiceImpl extends EgovAbstractServiceImpl implements 
             if (comp.getComponentProdId() == null) continue;
             
             // DB에서 최신 구성상품 정보 조회 (가격, 과세여부 등)
-            kr.co.matpam.admin.product.service.ComponentProductVO component = componentProductDAO.selectComponentProduct(comp.getComponentProdId());
+            kr.co.matpam.admin.product.service.ComponentProductVO searchComponentVO = new kr.co.matpam.admin.product.service.ComponentProductVO();
+            searchComponentVO.setComponentProdId(comp.getComponentProdId());
+            searchComponentVO.setOpType(vo.getOpType()); // 부가세 계산 시에도 지역 권한 유지
+            
+            kr.co.matpam.admin.product.service.ComponentProductVO component = componentProductDAO.selectComponentProduct(searchComponentVO);
             if (component == null) {
                 LOGGER.warn("[VAT] Component not found for ID: {}", comp.getComponentProdId());
                 continue;
@@ -256,10 +333,27 @@ public class SalesProductServiceImpl extends EgovAbstractServiceImpl implements 
         }
 
         vo.setListPrice(totalPrice);
-        vo.setVatAmount(result.getVatAmount());
         vo.setCostPrice(totalCostPrice);
-        
-        LOGGER.info("[VAT] Calculated Totals - SalesProdId: {}, ListPrice: {}, Vat: {}, Cost: {}, Discount: {}",
-                vo.getSalesProdId(), vo.getListPrice(), vo.getVatAmount(), vo.getCostPrice(), vo.getDiscountAmt());
+
+        // 실판매가 계산 (할인 적용)
+        BigDecimal salePrice = totalPrice;
+        if (vo.getDiscountAmt() != null && vo.getDiscountAmt().compareTo(BigDecimal.ZERO) > 0) {
+            salePrice = VatCalculator.calculateDiscountedPrice(totalPrice, vo.getDiscountAmt());
+        }
+        vo.setSalePrice(salePrice);
+
+        // 부가세율 결정 (단순화: 하나라도 과세면 10%, 모두 면세면 0%)
+        boolean hasTaxable = false;
+        for (VatCalculator.ComponentInfo info : compInfos) {
+            if ("TAXABLE".equals(info.getTaxType())) {
+                hasTaxable = true;
+                break;
+            }
+        }
+        vo.setVatRate(hasTaxable ? new BigDecimal("10") : BigDecimal.ZERO);
+        vo.setVatAmount(result.getVatAmount()); // 레거시 필드 유지
+
+        LOGGER.info("[VAT] Calculated Totals - SalesProdId: {}, ListPrice: {}, SalePrice: {}, VatRate: {}, Cost: {}",
+                vo.getSalesProdId(), vo.getListPrice(), vo.getSalePrice(), vo.getVatRate(), vo.getCostPrice());
     }
 }

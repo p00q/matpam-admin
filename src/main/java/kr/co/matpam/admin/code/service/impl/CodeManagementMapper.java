@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
+import org.apache.ibatis.annotations.Param;
+
 import kr.co.matpam.admin.code.service.CodeVO;
 import kr.co.matpam.admin.code.service.DetailCodeVO;
 import kr.co.matpam.admin.code.service.GroupCodeVO;
@@ -30,24 +32,24 @@ public interface CodeManagementMapper {
 
     List<CodeVO> searchCodeList(CodeVO searchVO) throws Exception;
 
-    CodeVO selectCode(String groupCode, String code) throws Exception;
+    CodeVO selectCode(@Param("groupCode") String groupCode, @Param("code") String code) throws Exception;
 
     void insertCode(CodeVO vo) throws Exception;
 
     void updateCode(CodeVO vo) throws Exception;
 
-    void deleteCode(String groupCode, String code) throws Exception;
+    void deleteCode(@Param("groupCode") String groupCode, @Param("code") String code) throws Exception;
 
     // ========== 상세코드 ==========
-    List<DetailCodeVO> selectDetailCodeList(String groupCode, String code) throws Exception;
+    List<DetailCodeVO> selectDetailCodeList(@Param("groupCode") String groupCode, @Param("code") String code) throws Exception;
 
     List<DetailCodeVO> searchDetailCodeList(DetailCodeVO searchVO) throws Exception;
 
-    DetailCodeVO selectDetailCode(String groupCode, String code, String detailCode) throws Exception;
+    DetailCodeVO selectDetailCode(@Param("groupCode") String groupCode, @Param("code") String code, @Param("detailCode") String detailCode) throws Exception;
 
     void insertDetailCode(DetailCodeVO vo) throws Exception;
 
     void updateDetailCode(DetailCodeVO vo) throws Exception;
 
-    void deleteDetailCode(String groupCode, String code, String detailCode) throws Exception;
+    void deleteDetailCode(@Param("groupCode") String groupCode, @Param("code") String code, @Param("detailCode") String detailCode) throws Exception;
 }

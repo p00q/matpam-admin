@@ -76,6 +76,8 @@
                             value="<c:out value='${not empty member.creditLimit ? member.creditLimit : 0}'/>" />
                         <input type="hidden" name="meatMoney"
                             value="<c:out value='${not empty member.meatMoney ? member.meatMoney : 0}'/>" />
+                        <input type="hidden" name="opType"
+                            value="<c:out value='${not empty member.opType ? member.opType : "NATIONAL"}'/>" />
 
                         <!-- Tab Navigation -->
                         <ul class="nav nav-tabs mb-3" id="memberTab" role="tablist">
@@ -132,8 +134,8 @@
                                             </td>
                                              <th>운영 유형 <span class="text-danger">*</span></th>
                                              <td>
-                                                 <select name="deliveryTypeCd" class="form-select form-select-sm"
-                                                     style="max-width: 200px;" required>
+                                                 <select name="deliveryTypeCd" id="deliveryTypeCd" class="form-select form-select-sm"
+                                                     style="max-width: 200px;" required onchange="syncOpType(this.value)">
                                                      <option value="" disabled <c:if test="${empty member.deliveryTypeCd}">
                                                          selected</c:if>>
                                                          운영 유형 선택
@@ -493,12 +495,21 @@
                             memberTypeSelect.addEventListener('change', toggleManagerArea);
                         }
 
-                        const renderedManagers =
-                            document.querySelectorAll('#managerContainer .manager-section').length;
                         if (renderedManagers > 0) {
                             managerIndex = renderedManagers - 1;
                         }
+                        
+                        // 초기 opType 동기화
+                        const dtSelect = document.getElementById('deliveryTypeCd');
+                        if(dtSelect) syncOpType(dtSelect.value);
                     });
+
+                    function syncOpType(val) {
+                        const opTypeInput = document.querySelector('input[name="opType"]');
+                        if (opTypeInput) {
+                            opTypeInput.value = val;
+                        }
+                    }
 
                     function attachPhoneFormatter(inputs) {
                         inputs.forEach(input => {

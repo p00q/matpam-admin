@@ -135,8 +135,8 @@ public class MemberServiceImpl extends EgovAbstractServiceImpl implements Member
     }
 
     @Override
-    public MemberVO selectMember(Long memberNo) throws Exception {
-        return memberDAO.selectMember(memberNo);
+    public MemberVO selectMember(MemberVO memberVO) throws Exception {
+        return memberDAO.selectMember(memberVO);
     }
 
     @Override

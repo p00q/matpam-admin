@@ -35,8 +35,11 @@ public class BuyerApiController {
      * 상품 목록 조회
      */
     @GetMapping("/products")
-    public Map<String, Object> getProducts(SalesProductVO searchVO) throws Exception {
+    public Map<String, Object> getProducts(SalesProductVO searchVO, javax.servlet.http.HttpServletRequest request) throws Exception {
         Map<String, Object> result = new HashMap<>();
+
+        // 운영권한 격리
+        searchVO.setOpType((String) request.getAttribute("opType"));
         
         // 기본 페이징 설정 (필요시)
         searchVO.setPageUnit(20);

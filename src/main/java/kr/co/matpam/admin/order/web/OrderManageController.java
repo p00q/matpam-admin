@@ -69,7 +69,10 @@ public class OrderManageController {
      * 주문 상세 화면
      */
     @RequestMapping(value = "/admin/order/orderDetail.do", method = RequestMethod.GET)
-    public String orderDetail(@ModelAttribute("searchVO") OrderSearchVO searchVO, ModelMap model) throws Exception {
+    public String orderDetail(@ModelAttribute("searchVO") OrderSearchVO searchVO, ModelMap model, HttpServletRequest request) throws Exception {
+
+        // 운영권한 격리
+        searchVO.setOpType((String) request.getAttribute("opType"));
 
         // 1. 주문 상세 정보 조회
         OrderDetailVO orderDetail = orderManageService.selectOrderDetail(searchVO);
@@ -257,10 +260,12 @@ public class OrderManageController {
                 return result;
             }
 
-            // 수정자 ID (세션에서 가져오거나 기본값)
-            String modId = "admin"; // TODO: 세션에서 로그인 사용자 ID 가져오기
+            // 수정자 ID (세션에서 가져오기)
+            String loginId = (String) request.getAttribute("loginId");
+            String modId = loginId != null ? loginId : "admin";
+            String opType = (String) request.getAttribute("opType");
 
-            int updatedCount = orderManageService.updateOrderStatusBatch(orderIds, orderStatusCd, modId);
+            int updatedCount = orderManageService.updateOrderStatusBatch(orderIds, orderStatusCd, modId, opType);
 
             result.put("success", true);
             result.put("updatedCount", updatedCount);
@@ -280,12 +285,14 @@ public class OrderManageController {
      */
     @RequestMapping(value = "/admin/order/selectDeliveryParcel.ajax", method = RequestMethod.POST)
     @ResponseBody
-    public Map<String, Object> selectDeliveryParcel(@RequestParam("orderId") Long orderId) {
+    public Map<String, Object> selectDeliveryParcel(@ModelAttribute OrderDeliveryParcelVO vo, HttpServletRequest request) {
 
         Map<String, Object> result = new HashMap<>();
 
         try {
-            OrderDeliveryParcelVO parcel = orderManageService.selectDeliveryParcel(orderId);
+            vo.setOpType((String) request.getAttribute("opType"));
+
+            OrderDeliveryParcelVO parcel = orderManageService.selectDeliveryParcel(vo);
             result.put("success", true);
             result.put("parcel", parcel);
 
@@ -303,13 +310,17 @@ public class OrderManageController {
      */
     @RequestMapping(value = "/admin/order/saveDeliveryParcel.ajax", method = RequestMethod.POST)
     @ResponseBody
-    public Map<String, Object> saveDeliveryParcel(@ModelAttribute OrderDeliveryParcelVO vo) {
+    public Map<String, Object> saveDeliveryParcel(@ModelAttribute OrderDeliveryParcelVO vo, HttpServletRequest request) {
 
         Map<String, Object> result = new HashMap<>();
 
         try {
-            vo.setRegId("admin"); // TODO: 세션에서 로그인 사용자 ID 가져오기
-            vo.setModId("admin");
+            String loginId = (String) request.getAttribute("loginId");
+            String opType = (String) request.getAttribute("opType");
+            
+            vo.setRegId(loginId != null ? loginId : "admin");
+            vo.setModId(loginId != null ? loginId : "admin");
+            vo.setOpType(opType);
 
             int cnt = orderManageService.saveDeliveryParcel(vo);
 
@@ -330,12 +341,14 @@ public class OrderManageController {
      */
     @RequestMapping(value = "/admin/order/selectDeliveryFreight.ajax", method = RequestMethod.POST)
     @ResponseBody
-    public Map<String, Object> selectDeliveryFreight(@RequestParam("orderId") Long orderId) {
+    public Map<String, Object> selectDeliveryFreight(@ModelAttribute OrderDeliveryFreightVO vo, HttpServletRequest request) {
 
         Map<String, Object> result = new HashMap<>();
 
         try {
-            OrderDeliveryFreightVO freight = orderManageService.selectDeliveryFreight(orderId);
+            vo.setOpType((String) request.getAttribute("opType"));
+
+            OrderDeliveryFreightVO freight = orderManageService.selectDeliveryFreight(vo);
             result.put("success", true);
             result.put("freight", freight);
 
@@ -353,13 +366,17 @@ public class OrderManageController {
      */
     @RequestMapping(value = "/admin/order/saveDeliveryFreight.ajax", method = RequestMethod.POST)
     @ResponseBody
-    public Map<String, Object> saveDeliveryFreight(@ModelAttribute OrderDeliveryFreightVO vo) {
+    public Map<String, Object> saveDeliveryFreight(@ModelAttribute OrderDeliveryFreightVO vo, HttpServletRequest request) {
 
         Map<String, Object> result = new HashMap<>();
 
         try {
-            vo.setRegId("admin");
-            vo.setModId("admin");
+            String loginId = (String) request.getAttribute("loginId");
+            String opType = (String) request.getAttribute("opType");
+
+            vo.setRegId(loginId != null ? loginId : "admin");
+            vo.setModId(loginId != null ? loginId : "admin");
+            vo.setOpType(opType);
 
             int cnt = orderManageService.saveDeliveryFreight(vo);
 
@@ -380,12 +397,14 @@ public class OrderManageController {
      */
     @RequestMapping(value = "/admin/order/selectDeliveryFactory.ajax", method = RequestMethod.POST)
     @ResponseBody
-    public Map<String, Object> selectDeliveryFactory(@RequestParam("orderId") Long orderId) {
+    public Map<String, Object> selectDeliveryFactory(@ModelAttribute OrderDeliveryFactoryVO vo, HttpServletRequest request) {
 
         Map<String, Object> result = new HashMap<>();
 
         try {
-            OrderDeliveryFactoryVO factory = orderManageService.selectDeliveryFactory(orderId);
+            vo.setOpType((String) request.getAttribute("opType"));
+
+            OrderDeliveryFactoryVO factory = orderManageService.selectDeliveryFactory(vo);
             result.put("success", true);
             result.put("factory", factory);
 
@@ -403,13 +422,17 @@ public class OrderManageController {
      */
     @RequestMapping(value = "/admin/order/saveDeliveryFactory.ajax", method = RequestMethod.POST)
     @ResponseBody
-    public Map<String, Object> saveDeliveryFactory(@ModelAttribute OrderDeliveryFactoryVO vo) {
+    public Map<String, Object> saveDeliveryFactory(@ModelAttribute OrderDeliveryFactoryVO vo, HttpServletRequest request) {
 
         Map<String, Object> result = new HashMap<>();
 
         try {
-            vo.setRegId("admin");
-            vo.setModId("admin");
+            String loginId = (String) request.getAttribute("loginId");
+            String opType = (String) request.getAttribute("opType");
+
+            vo.setRegId(loginId != null ? loginId : "admin");
+            vo.setModId(loginId != null ? loginId : "admin");
+            vo.setOpType(opType);
 
             int cnt = orderManageService.saveDeliveryFactory(vo);
 

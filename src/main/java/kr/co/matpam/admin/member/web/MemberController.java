@@ -42,10 +42,11 @@ public class MemberController {
     public String selectMemberList(@ModelAttribute("searchVO") MemberDefaultVO searchVO, HttpServletRequest request, ModelMap model)
             throws Exception {
         
-        // 🔐 opType 격리 적용
+        // 운영권한 격리 (NATIONAL 은 전체조회)
         String opType = (String) request.getAttribute("opType");
-        if (opType != null && !opType.isEmpty()) {
-            searchVO.setDeliveryTypeCd(opType);
+        if (opType != null && !"NATIONAL".equals(opType)) {
+            searchVO.setOpType(opType);
+            searchVO.setDeliveryTypeCd(opType); // UI 필터도 동기화
         }
 
         PaginationInfo paginationInfo = new PaginationInfo();
@@ -65,14 +66,14 @@ public class MemberController {
         model.addAttribute("paginationInfo", paginationInfo);
 
         // ✅ 코드값 세팅
-        // 회원타입
-        model.addAttribute("memberTypes", codeManagementService.selectDetailCodeList("MEMBER_TYPE", "MEMBER_ROLE"));
-        // 가입상태
-        model.addAttribute("statusCodes", codeManagementService.selectDetailCodeList("JOIN_STATUS", "JOIN_STATUS"));
-        // ✅ 회원등급
-        model.addAttribute("memberGrades", codeManagementService.selectDetailCodeList("MEMBER_GRADE", "MEMBER_GRADE"));
-        // ✅ 배송/운영유형
-        model.addAttribute("deliveryTypes", codeManagementService.selectDetailCodeList("DELIVERY_TYPE", "DELIVERY_TYPE"));
+        // 회원타입 (MEMBER_TYPE)
+        model.addAttribute("memberTypes", codeManagementService.selectDetailCodeList("MEMBER_TYPE", null));
+        // 가입상태 (JOIN_STATUS)
+        model.addAttribute("statusCodes", codeManagementService.selectDetailCodeList("JOIN_STATUS", null));
+        // ✅ 회원등급 (MEMBER_GRADE)
+        model.addAttribute("memberGrades", codeManagementService.selectDetailCodeList("MEMBER_GRADE", null));
+        // ✅ 배송/운영유형 (DELIVERY_TYPE)
+        model.addAttribute("deliveryTypes", codeManagementService.selectDetailCodeList("DELIVERY_TYPE", null));
 
         // Set content page for layout
         model.addAttribute("contentPage", "/WEB-INF/jsp/admin/member/MemberList.jsp");
@@ -82,11 +83,11 @@ public class MemberController {
 
     @RequestMapping(value = "/admin/member/memberRegisterForm.do")
     public String memberRegisterForm(ModelMap model) throws Exception {
-        // Load codes for dropdowns
-        model.addAttribute("memberTypes", codeManagementService.selectDetailCodeList("MEMBER_TYPE", "MEMBER_ROLE"));
-        model.addAttribute("memberGrades", codeManagementService.selectDetailCodeList("MEMBER_GRADE", "MEMBER_GRADE"));
-        model.addAttribute("statusCodes", codeManagementService.selectDetailCodeList("JOIN_STATUS", "JOIN_STATUS"));
-        model.addAttribute("deliveryTypes", codeManagementService.selectDetailCodeList("DELIVERY_TYPE", "DELIVERY_TYPE"));
+        // Load codes for dropdowns (MEMBER_TYPE, MEMBER_GRADE, JOIN_STATUS, DELIVERY_TYPE)
+        model.addAttribute("memberTypes", codeManagementService.selectDetailCodeList("MEMBER_TYPE", null));
+        model.addAttribute("memberGrades", codeManagementService.selectDetailCodeList("MEMBER_GRADE", null));
+        model.addAttribute("statusCodes", codeManagementService.selectDetailCodeList("JOIN_STATUS", null));
+        model.addAttribute("deliveryTypes", codeManagementService.selectDetailCodeList("DELIVERY_TYPE", null));
 
         model.addAttribute("mode", "insert");
 
@@ -98,7 +99,11 @@ public class MemberController {
     @RequestMapping(value = "/admin/member/insertMember.do")
     public String insertMember(@ModelAttribute("memberVO") MemberVO memberVO,
             org.springframework.validation.BindingResult bindingResult,
+            HttpServletRequest request,
             ModelMap model) throws Exception {
+
+        // 운영권한 격리
+        memberVO.setOpType((String) request.getAttribute("opType"));
 
         // 1) 스프링 바인딩 에러 체크
         if (bindingResult.hasErrors()) {
@@ -156,8 +161,13 @@ public class MemberController {
     }
 
     @RequestMapping(value = "/admin/member/memberDetail.do")
-    public String selectMember(@RequestParam("memberId") String memberId, ModelMap model) throws Exception {
-        MemberVO member = memberService.selectMemberById(memberId);
+    public String selectMember(@RequestParam("memberNo") Long memberNo, HttpServletRequest request, ModelMap model) throws Exception {
+        
+        MemberVO searchVO = new MemberVO();
+        searchVO.setMemberNo(memberNo);
+        searchVO.setOpType((String) request.getAttribute("opType"));
+
+        MemberVO member = memberService.selectMember(searchVO);
         if (member == null) {
             return "redirect:/admin/member/memberList.do?menu=member";
         }
@@ -171,10 +181,10 @@ public class MemberController {
         model.addAttribute("managers", managerList);
 
         model.addAttribute("mode", "update");
-        model.addAttribute("memberTypes", codeManagementService.selectDetailCodeList("MEMBER_TYPE", "MEMBER_ROLE"));
-        model.addAttribute("memberGrades", codeManagementService.selectDetailCodeList("MEMBER_GRADE", "MEMBER_GRADE"));
-        model.addAttribute("statusCodes", codeManagementService.selectDetailCodeList("JOIN_STATUS", "JOIN_STATUS"));
-        model.addAttribute("deliveryTypes", codeManagementService.selectDetailCodeList("DELIVERY_TYPE", "DELIVERY_TYPE"));
+        model.addAttribute("memberTypes", codeManagementService.selectDetailCodeList("MEMBER_TYPE", null));
+        model.addAttribute("memberGrades", codeManagementService.selectDetailCodeList("MEMBER_GRADE", null));
+        model.addAttribute("statusCodes", codeManagementService.selectDetailCodeList("JOIN_STATUS", null));
+        model.addAttribute("deliveryTypes", codeManagementService.selectDetailCodeList("DELIVERY_TYPE", null));
 
         model.addAttribute("contentPage", "/WEB-INF/jsp/admin/member/MemberRegister.jsp");
         return "layout/main";
@@ -183,7 +193,11 @@ public class MemberController {
     @RequestMapping(value = "/admin/member/updateMember.do")
     public String updateMember(@ModelAttribute("memberVO") MemberVO memberVO,
             org.springframework.validation.BindingResult bindingResult,
+            HttpServletRequest request,
             ModelMap model) throws Exception {
+
+        // 운영권한 격리
+        memberVO.setOpType((String) request.getAttribute("opType"));
 
         if (bindingResult.hasErrors()) {
             return returnFormWithError("입력값 오류가 있습니다.", memberVO, model, "update");
@@ -205,13 +219,13 @@ public class MemberController {
 
         // 셀렉트박스 코드 다시 세팅
         model.addAttribute("memberTypes",
-                codeManagementService.selectDetailCodeList("MEMBER_TYPE", "MEMBER_ROLE")); // 회원타입
+                codeManagementService.selectDetailCodeList("MEMBER_TYPE", null)); // 회원타입
         model.addAttribute("memberGrades",
-                codeManagementService.selectDetailCodeList("MEMBER_GRADE", "MEMBER_GRADE")); // 회원등급
+                codeManagementService.selectDetailCodeList("MEMBER_GRADE", null)); // 회원등급
         model.addAttribute("statusCodes",
-                codeManagementService.selectDetailCodeList("JOIN_STATUS", "JOIN_STATUS")); // 가입상태
+                codeManagementService.selectDetailCodeList("JOIN_STATUS", null)); // 가입상태
         model.addAttribute("deliveryTypes",
-                codeManagementService.selectDetailCodeList("DELIVERY_TYPE", "DELIVERY_TYPE")); // 배송유형
+                codeManagementService.selectDetailCodeList("DELIVERY_TYPE", null)); // 배송유형
 
         // 기존 입력값 그대로 다시 내려줌
         model.addAttribute("member", memberVO);
@@ -239,6 +253,11 @@ public class MemberController {
             String adminId = (String) request.getSession().getAttribute("adminId");
             if (adminId == null) adminId = "SYSTEM";
 
+            String opType = (String) request.getAttribute("opType");
+
+            // TODO: meatMoneyService 에 opType 적용 여부 검토 (현재는 memberId PK 기반)
+            // 격리 강화를 위해 memberId + opType 검증 로직 추가 권장
+
             if ("CHARGE".equals(type)) {
                 meatMoneyService.chargeMoney(memberId, amount, adminId);
             } else if ("DEDUCT".equals(type)) {
@@ -263,11 +282,12 @@ public class MemberController {
      */
     @RequestMapping(value = "/admin/member/moneyHistoryList.ajax")
     @ResponseBody
-    public Map<String, Object> getMoneyHistoryList(@RequestParam("memberId") Long memberId) {
+    public Map<String, Object> getMoneyHistoryList(@RequestParam("memberId") Long memberId, HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
         try {
             Map<String, Object> params = new HashMap<>();
             params.put("memberId", memberId);
+            params.put("opType", (String) request.getAttribute("opType"));
             List<Map<String, Object>> history = meatMoneyService.selectMoneyHistoryList(params);
             
             result.put("status", "success");

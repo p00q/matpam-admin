@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.matpam.admin.dashboard.service.impl.DashboardMapper">
+
+    <select id="selectDashboardSummary" parameterType="string" resultType="kr.co.matpam.admin.dashboard.service.DashboardSummaryVO">
+        SELECT
+            (SELECT IFNULL(SUM(pay_total_amt), 0) FROM tb_order 
+             WHERE DATE(order_dt) = CURDATE()
+             <if test="opType != null and opType != 'NATIONAL'">
+                 AND op_type = #{opType}
+             </if>
+            ) AS todaySales,
+            
+            (SELECT COUNT(*) FROM tb_order 
+             WHERE DATE(order_dt) = CURDATE()
+             <if test="opType != null and opType != 'NATIONAL'">
+                 AND op_type = #{opType}
+             </if>
+            ) AS todayOrderCount,
+            
+            (SELECT COUNT(*) FROM tb_order 
+             WHERE order_status_cd = 'PAY_COMP'
+             <if test="opType != null and opType != 'NATIONAL'">
+                 AND op_type = #{opType}
+             </if>
+            ) AS readyShippingCount,
+            
+            (SELECT COUNT(*) FROM tb_member 
+             WHERE DATE(JOIN_DT) = CURDATE()
+             <if test="opType != null and opType != 'NATIONAL'">
+                 AND OP_TYPE = #{opType}
+             </if>
+            ) AS todayNewMemberCount
+    </select>
+
+    <select id="selectDashboardChart" parameterType="string" resultType="kr.co.matpam.admin.dashboard.service.DashboardChartVO">
+        SELECT 
+            DATE_FORMAT(order_dt, '%m-%d') AS saleDate,
+            IFNULL(SUM(pay_total_amt), 0) AS dailySales
+        FROM tb_order
+        WHERE order_dt &gt;= CURDATE() - INTERVAL 6 DAY
+        <if test="opType != null and opType != 'NATIONAL'">
+            AND op_type = #{opType}
+        </if>
+        GROUP BY DATE_FORMAT(order_dt, '%m-%d')
+        ORDER BY saleDate ASC
+    </select>
+
+    <select id="selectRecentOrderList" parameterType="string" resultType="kr.co.matpam.admin.dashboard.service.DashboardRecentOrderVO">
+        SELECT 
+            order_id AS orderId,
+            order_no AS orderTitle,
+            goods_total_amt AS totalAmt,
+            pay_total_amt AS payAmt,
+            order_status_cd AS orderStatus,
+            DATE_FORMAT(order_dt, '%Y-%m-%d %H:%i') AS regDt,
+            buyer_member_id AS memberId,
+            receiver_name AS ordererName
+        FROM tb_order
+        WHERE del_yn = 'N'
+        <if test="opType != null and opType != 'NATIONAL'">
+            AND op_type = #{opType}
+        </if>
+        ORDER BY order_dt DESC
+        LIMIT 5
+    </select>
+
+</mapper>

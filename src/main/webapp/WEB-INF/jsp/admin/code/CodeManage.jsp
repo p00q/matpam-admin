@@ -130,7 +130,7 @@
                     <li class="breadcrumb-item active">공통코드 관리</li>
                 </ol>
             </nav>
-            <h3 class="fw-bold mb-0" style="letter-spacing: -1px; color: var(--primary);">시스템 <span class="text-accent" style="color:var(--accent)">공통코드 대시보드</span></h3>
+            <h3 class="fw-bold mb-0" style="letter-spacing: -1px; color: var(--primary);"><c:out value="${pageTitle}"/> <span class="text-accent" style="color:var(--accent)">관리</span></h3>
         </div>
         <div class="gap-2 d-flex">
             <button type="button" class="btn btn-outline-secondary btn-premium px-4 shadow-sm" onclick="fn_searchAll()">
@@ -305,17 +305,17 @@
             if (item.status === 'DELETED') return;
             if (filter && !item.groupCode.toLowerCase().includes(filter) && !item.groupCodeName.toLowerCase().includes(filter)) return;
 
-            displayCount++;
-            const isActive = currentGroupCode === item.groupCode;
+            item.displayCount++;
+            const isActive = currentGroupCode == item.groupCode;
             let statusBadge = '';
-            if (item.status === 'NEW') statusBadge = '<span class="status-dot status-new"></span>';
-            else if (item.status === 'UPDATED') statusBadge = '<span class="status-dot status-updated"></span>';
+            if (item.status == 'NEW') statusBadge = '<span class="status-dot status-new"></span>';
+            else if (item.status == 'UPDATED') statusBadge = '<span class="status-dot status-updated"></span>';
 
             const itemHtml = `
-                <div class="code-item ${isActive ? 'active' : ''}" onclick="fn_selectGroup(${index})">
+                <div class="code-item \${isActive ? 'active' : ''}" onclick="fn_selectGroup(\${index})">
                     <div>
-                        <div class="code-label fs-6">${statusBadge}${item.groupCodeName || '(신규)'}</div>
-                        <div class="code-name small">${item.groupCode || 'NEW_CODE'}</div>
+                        <div class="code-label fs-6">\${statusBadge}\${item.groupCodeName || '(신규)'}</div>
+                        <div class="code-name small">\${item.groupCode || 'NEW_CODE'}</div>
                     </div>
                     <i class="bi bi-chevron-right text-muted small"></i>
                 </div>
@@ -364,15 +364,15 @@
             if (filter && !item.code.toLowerCase().includes(filter) && !item.codeName.toLowerCase().includes(filter)) return;
 
             displayCount++;
-            const isActive = currentCode === item.code;
+            const isActive = currentCode == item.code;
             const rowClass = isActive ? 'bg-light fw-bold' : '';
 
             const tr = `
-                <tr class="${rowClass}" onclick="fn_selectCode(${index})">
-                    <td><input type="number" class="form-control form-control-sm text-center border-0 bg-transparent" value="${item.sortOrder}" onchange="fn_updateItem('code', ${index}, 'sortOrder', this.value)"></td>
-                    <td class="small">${item.status === 'NEW' ? `<input type='text' class='form-control form-control-sm' value='${item.code}' onchange="fn_updateItem('code', ${index}, 'code', this.value)">` : item.code}</td>
-                    <td><input type="text" class="form-control form-control-sm text-center border-0 bg-transparent" value="${item.codeName}" onchange="fn_updateItem('code', ${index}, 'codeName', this.value)"></td>
-                    <td><button class="btn btn-link link-danger p-0" onclick="fn_deleteItem('code', ${index})"><i class="bi bi-x-circle"></i></button></td>
+                <tr class="\${rowClass}" onclick="fn_selectCode(\${index})">
+                    <td><input type="number" class="form-control form-control-sm text-center border-0 bg-transparent" value="\${item.sortOrder}" onchange="fn_updateItem('code', \${index}, 'sortOrder', this.value)"></td>
+                    <td class="small">\${item.status == 'NEW' ? \`<input type='text' class='form-control form-control-sm' value='\${item.code}' onchange="fn_updateItem('code', \${index}, 'code', this.value)">\` : item.code}</td>
+                    <td><input type="text" class="form-control form-control-sm text-center border-0 bg-transparent" value="\${item.codeName}" onchange="fn_updateItem('code', \${index}, 'codeName', this.value)"></td>
+                    <td><button class="btn btn-link link-danger p-0" onclick="fn_deleteItem('code', \${index})"><i class="bi bi-x-circle"></i></button></td>
                 </tr>
             `;
             tbody.append(tr);
@@ -415,15 +415,15 @@
             if (filter && !item.detailCode.toLowerCase().includes(filter) && !item.detailCodeName.toLowerCase().includes(filter)) return;
 
             displayCount++;
-            const checked = (item.useYn === 'Y' || item.useYn === '사용') ? 'checked' : '';
+            const checked = (item.useYn == 'Y' || item.useYn == '사용') ? 'checked' : '';
 
             const tr = `
                 <tr>
-                    <td><input type="number" class="form-control form-control-sm text-center border-0 bg-transparent" value="${item.sortOrder}" onchange="fn_updateItem('detail', ${index}, 'sortOrder', this.value)"></td>
-                    <td class="small">${item.status === 'NEW' ? `<input type='text' class='form-control form-control-sm' value='${item.detailCode}' onchange="fn_updateItem('detail', ${index}, 'detailCode', this.value)">` : item.detailCode}</td>
-                    <td><input type="text" class="form-control form-control-sm text-center border-0 bg-transparent" value="${item.detailCodeName}" onchange="fn_updateItem('detail', ${index}, 'detailCodeName', this.value)"></td>
-                    <td><div class="form-check form-switch d-flex justify-content-center"><input class="form-check-input" type="checkbox" ${checked} onchange="fn_updateItem('detail', ${index}, 'useYn', this.checked ? 'Y' : 'N')"></div></td>
-                    <td><button class="btn btn-link link-danger p-0" onclick="fn_deleteItem('detail', ${index})"><i class="bi bi-x-circle"></i></button></td>
+                    <td><input type="number" class="form-control form-control-sm text-center border-0 bg-transparent" value="\${item.sortOrder}" onchange="fn_updateItem('detail', \${index}, 'sortOrder', this.value)"></td>
+                    <td class="small">\${item.status == 'NEW' ? \`<input type='text' class='form-control form-control-sm' value='\${item.detailCode}' onchange="fn_updateItem('detail', \${index}, 'detailCode', this.value)">\` : item.detailCode}</td>
+                    <td><input type="text" class="form-control form-control-sm text-center border-0 bg-transparent" value="\${item.detailCodeName}" onchange="fn_updateItem('detail', \${index}, 'detailCodeName', this.value)"></td>
+                    <td><div class="form-check form-switch d-flex justify-content-center"><input class="form-check-input" type="checkbox" \${checked} onchange="fn_updateItem('detail', \${index}, 'useYn', this.checked ? 'Y' : 'N')"></div></td>
+                    <td><button class="btn btn-link link-danger p-0" onclick="fn_deleteItem('detail', \${index})"><i class="bi bi-x-circle"></i></button></td>
                 </tr>
             `;
             tbody.append(tr);

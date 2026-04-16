@@ -7,6 +7,7 @@ import javax.annotation.Resource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import kr.co.matpam.admin.settlement.service.SettlementService;
+import kr.co.matpam.admin.settlement.service.SettlementVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,14 +31,16 @@ public class SettlementScheduler {
         LOGGER.info(">>> Daily Settlement Batch Started >>>");
         
         try {
-            // 전일 날짜 구해오기 (yyyyMMdd)
+            // 전일 날짜 구해오기 (yyyy-MM-dd)
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.DATE, -1);
-            String settleDate = new SimpleDateFormat("yyyyMMdd").format(cal.getTime());
+            String settleDate = new SimpleDateFormat("yyyy-MM-dd").format(cal.getTime());
 
             LOGGER.info(">>> Target Settle Date: {}", settleDate);
             
-            settlementService.executeDailySettlement(settleDate);
+            SettlementVO searchVO = new SettlementVO();
+            searchVO.setSettleDate(settleDate);
+            settlementService.executeDailySettlement(searchVO);
             
             LOGGER.info(">>> Daily Settlement Batch Completed Successfully for Date: {}", settleDate);
         } catch (Exception e) {

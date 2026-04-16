@@ -1,4 +1,4 @@
-﻿-- ========================================
+-- ========================================
 -- 코드 데이터 INSERT 쿼리 (이미지 기반)
 -- ========================================
 
@@ -252,9 +252,9 @@ ON DUPLICATE KEY UPDATE CODE_NAME = VALUES(CODE_NAME), SORT_ORDER = VALUES(SORT_
 -- 상세코드 등록 - 006001 (배송유형)
 -- ========================================
 INSERT INTO TB_DETAIL_CODE (GROUP_CODE, CODE, DETAIL_CODE, DETAIL_CODE_NAME, SORT_ORDER, USE_YN) VALUES
-('006', '006001', '006001001', '택배', 1, 'Y'),
-('006', '006001', '006001002', '화물', 2, 'Y'),
-('006', '006001', '006001003', '공장', 3, 'Y')
+('006', '006001', '006001001', '전국택배', 1, 'Y'),
+('006', '006001', '006001002', '직배송', 2, 'Y'),
+('006', '006001', '006001003', '공장수령', 3, 'Y')
 ON DUPLICATE KEY UPDATE DETAIL_CODE_NAME = VALUES(DETAIL_CODE_NAME), SORT_ORDER = VALUES(SORT_ORDER), USE_YN = VALUES(USE_YN);
 
 -- ========================================

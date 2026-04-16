@@ -15,7 +15,7 @@ public interface OrderService {
     /**
      * 주문 상세 조회
      */
-    OrderVO selectOrder(Long orderId) throws Exception;
+    OrderVO selectOrder(OrderVO orderVO) throws Exception;
 
     /**
      * 주문 목록 조회
@@ -30,5 +30,5 @@ public interface OrderService {
     /**
      * 주문 취소
      */
-    void cancelOrder(Long orderId) throws Exception;
+    void cancelOrder(OrderVO orderVO) throws Exception;
 }

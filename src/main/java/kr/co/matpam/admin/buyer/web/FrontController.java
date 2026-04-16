@@ -89,7 +89,9 @@ public class FrontController {
     @GetMapping("/front/product/detail.do")
     public String productDetail(@RequestParam Long prodId, ModelMap model) {
         try {
-            SalesProductVO product = salesProductService.selectSalesProduct(prodId);
+            SalesProductVO searchVO = new SalesProductVO();
+            searchVO.setSalesProdId(prodId);
+            SalesProductVO product = salesProductService.selectSalesProduct(searchVO);
             model.addAttribute("product", product);
             model.addAttribute("pageTitle", product.getSalesProdName() + " | 맛팜");
             model.addAttribute("contentPage", "/WEB-INF/jsp/front/product/ProductDetail.jsp");
@@ -143,12 +145,12 @@ public class FrontController {
                     ? member.getCompanyName() : member.getManagerName();
 
             // 세션 loginVO 생성
-            LoginVO loginVO = LoginVO.builder()
-                    .memberPk(member.getMemberPk())
-                    .loginId(member.getLoginId())
-                    .memberName(displayName)
-                    .memberType(member.getMemberType() != null ? member.getMemberType() : "LOCAL")
-                    .build();
+            LoginVO loginVO = new LoginVO(
+                    member.getMemberPk(),
+                    member.getLoginId(),
+                    displayName,
+                    member.getMemberType() != null ? member.getMemberType() : "LOCAL"
+            );
 
             session.setAttribute("loginVO", loginVO);
             result.put("success", true);
@@ -295,7 +297,9 @@ public class FrontController {
 
         Map<String, Object> result = new HashMap<>();
         try {
-            SalesProductVO product = salesProductService.selectSalesProduct(prodId);
+            SalesProductVO searchVO = new SalesProductVO();
+            searchVO.setSalesProdId(prodId);
+            SalesProductVO product = salesProductService.selectSalesProduct(searchVO);
             if (product == null) {
                 result.put("success", false);
                 result.put("message", "상품을 찾을 수 없습니다.");
@@ -373,7 +377,9 @@ public class FrontController {
 
             for (Map<String, Object> item : cart) {
                 Long prodId = Long.parseLong(item.get("prodId").toString());
-                SalesProductVO product = salesProductService.selectSalesProduct(prodId);
+                SalesProductVO searchVO = new SalesProductVO();
+                searchVO.setSalesProdId(prodId);
+                SalesProductVO product = salesProductService.selectSalesProduct(searchVO);
                 
                 if (product == null) continue;
 

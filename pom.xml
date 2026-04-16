@@ -323,20 +323,20 @@
           </container>
           <configuration>
             <properties>
-              <cargo.servlet.port>5051</cargo.servlet.port>
+              <cargo.servlet.port>5052</cargo.servlet.port>
             </properties>
           </configuration>
         </configuration>
       </plugin>
 
-      <!-- Jetty Plugin for Port 5051 (Compatible with javax.servlet) -->
+      <!-- Jetty Plugin for Port 5052 (Compatible with javax.servlet) -->
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
         <version>10.0.15</version>
         <configuration>
           <httpConnector>
-            <port>5051</port>
+            <port>5052</port>
           </httpConnector>
           <webApp>
             <contextPath>/</contextPath>

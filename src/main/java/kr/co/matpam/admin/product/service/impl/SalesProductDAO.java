@@ -28,12 +28,12 @@ public class SalesProductDAO extends EgovAbstractMapper {
     }
 
     /** 판매상품 상세 */
-    public SalesProductVO selectSalesProduct(Long salesProdId) {
-        return selectOne(NAMESPACE + ".selectSalesProduct", salesProdId);
+    public SalesProductVO selectSalesProduct(SalesProductVO vo) {
+        return selectOne(NAMESPACE + ".selectSalesProduct", vo);
     }
 
-    public void increaseViewCount(Long salesProdId) {
-        update(NAMESPACE + ".increaseViewCount", salesProdId);
+    public void increaseViewCount(SalesProductVO vo) {
+        update(NAMESPACE + ".increaseViewCount", vo);
     }
 
     /** 판매상품 등록 */
@@ -52,8 +52,22 @@ public class SalesProductDAO extends EgovAbstractMapper {
         return update(NAMESPACE + ".updateSalesProduct", vo);
     }
 
-    /** 판매상품 삭제(논리삭제) */
-    public int deleteSalesProduct(Long salesProdId) {
-        return update(NAMESPACE + ".deleteSalesProduct", salesProdId);
+    public int deleteSalesProduct(SalesProductVO vo) {
+        return update(NAMESPACE + ".deleteSalesProduct", vo);
+    }
+
+    /** 판매상품 이미지 등록 */
+    public int insertSalesProductImage(kr.co.matpam.admin.product.service.SalesProductImageVO vo) {
+        return insert(NAMESPACE + ".insertSalesProductImage", vo);
+    }
+
+    /** 판매상품 이미지 삭제(관리용) */
+    public int deleteSalesProductImages(SalesProductVO vo) {
+        return delete(NAMESPACE + ".deleteSalesProductImages", vo);
+    }
+
+    /** 판매상품 이미지 목록 조회 */
+    public List<kr.co.matpam.admin.product.service.SalesProductImageVO> selectSalesProductImageList(SalesProductVO vo) {
+        return selectList(NAMESPACE + ".selectSalesProductImageList", vo);
     }
 }

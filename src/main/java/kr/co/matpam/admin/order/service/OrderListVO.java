@@ -3,12 +3,13 @@ package kr.co.matpam.admin.order.service;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
+import kr.co.matpam.common.service.MatpamBaseVO;
 
 /**
  * 주문관리 목록 VO
  * - 주문건별 목록 1행 데이터
  */
-public class OrderListVO implements Serializable {
+public class OrderListVO extends MatpamBaseVO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

@@ -42,6 +42,7 @@
     <div class="premium-card mb-4">
         <form name="searchForm" id="searchForm" action="<c:url value='/admin/product/salesProductList.do'/>" method="get">
             <input type="hidden" name="pageIndex" value="<c:out value='${searchVO.pageIndex}' default='1'/>" />
+            <input type="hidden" name="opType" value="<c:out value='${searchVO.opType}'/>" />
             
             <div class="row g-3">
                 <div class="col-md-4">

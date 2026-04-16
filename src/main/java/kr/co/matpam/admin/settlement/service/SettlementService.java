@@ -10,7 +10,17 @@ public interface SettlementService {
     /**
      * 일일 정산 수행 (전일 주문 기준)
      */
-    void executeDailySettlement(String settleDate) throws Exception;
+    void executeDailySettlement(SettlementVO settlementVO) throws Exception;
+
+    /**
+     * 정산 데이터 집계
+     */
+    void aggregateSettlementData(SettlementVO settlementVO) throws Exception;
+
+    /**
+     * 특정 일자 정산 데이터 삭제
+     */
+    void deleteSettlementByDate(SettlementVO settlementVO) throws Exception;
 
     /**
      * 정산 목록 조회

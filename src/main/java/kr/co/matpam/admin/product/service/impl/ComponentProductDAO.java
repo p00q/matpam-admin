@@ -33,8 +33,8 @@ public class ComponentProductDAO extends EgovAbstractMapper {
     /**
      * 구성상품 상세 조회
      */
-    public ComponentProductVO selectComponentProduct(Long componentProdId) {
-        return selectOne("matpam.product.ComponentProductMapper.selectComponentProduct", componentProdId);
+    public ComponentProductVO selectComponentProduct(ComponentProductVO vo) {
+        return selectOne("matpam.product.ComponentProductMapper.selectComponentProduct", vo);
     }
 
     /**
@@ -52,10 +52,17 @@ public class ComponentProductDAO extends EgovAbstractMapper {
     }
 
     /**
+     * 구성상품 자동생성 코드 조회
+     */
+    public String selectNextComponentProdCode() {
+        return selectOne("matpam.product.ComponentProductMapper.selectNextComponentProdCode");
+    }
+
+    /**
      * 구성상품 삭제
      * - 권장: 논리삭제(DEL_YN='Y') 방식
      */
-    public void deleteComponentProduct(Long componentProdId) {
-        update("matpam.product.ComponentProductMapper.deleteComponentProduct", componentProdId);
+    public void deleteComponentProduct(ComponentProductVO vo) {
+        update("matpam.product.ComponentProductMapper.deleteComponentProduct", vo);
     }
 }

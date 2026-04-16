@@ -51,7 +51,8 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label fw-bold small">운영 유형</label>
-                    <select name="deliveryTypeCd" class="form-select">
+                    <input type="hidden" name="opType" value="${searchVO.opType}" />
+                    <select name="deliveryTypeCd" class="form-select" onchange="this.form.opType.value=this.value">
                         <option value="">전체</option>
                         <c:forEach var="dt" items="${deliveryTypes}">
                             <option value="${dt.detailCode}" <c:if test="${searchVO.deliveryTypeCd eq dt.detailCode}">selected</c:if>>
@@ -106,11 +107,14 @@
                 <thead>
                     <tr>
                         <th style="width: 5%;">순번</th>
-                        <th style="width: 12%;">아이디 / 타입</th>
-                                            <th class="text-end" style="width: 10%;">여신</th>
-                        <th class="text-end" style="width: 12%;">미트머니</th>
-                        <th class="text-center" style="width: 8%;">운영 유형</th>
-                        <th class="text-center" style="width: 8%;">상태</th>
+                        <th style="width: 10%;">아이디 / 타입</th>
+                        <th style="width: 15%;">업체정보</th>
+                        <th style="width: 12%;">연락처 / 대표자</th>
+                        <th style="width: 12%;">담당자정보</th>
+                        <th class="text-end" style="width: 10%;">여신</th>
+                        <th class="text-end" style="width: 10%;">미트머니</th>
+                        <th class="text-center" style="width: 7%;">운영 유형</th>
+                        <th class="text-center" style="width: 7%;">상태</th>
                         <th class="text-center" style="width: 10%;">관리</th>
                     </tr>
                 </thead>
@@ -125,7 +129,7 @@
                                 <div class="text-muted mini-text" style="font-size: 0.7rem;">${member.memberTypeName}</div>
                             </td>
                             <td>
-                                <div class="fw-semibold text-primary">${member.companyName}</div>
+                                <div class="fw-semibold text-primary" style="cursor: pointer;" onclick="fn_edit_member('${member.memberNo}')" title="상세보기">${member.companyName}</div>
                                 <div class="mt-1">
                                     <span class="badge rounded-pill bg-soft-secondary text-secondary border border-secondary mini-text" style="font-size: 0.65rem;">${member.memberGradeName}</span>
                                 </div>
@@ -158,13 +162,13 @@
                             </td>
                             <td class="text-center">
                                 <c:choose>
-                                    <c:when test="${member.deliveryTypeCd eq 'NATIONAL'}">
+                                    <c:when test="${member.opType eq 'NATIONAL'}">
                                         <span class="badge rounded-pill bg-soft-primary text-primary border border-primary mini-text">전국</span>
                                     </c:when>
-                                    <c:when test="${member.deliveryTypeCd eq 'LOCAL'}">
+                                    <c:when test="${member.opType eq 'LOCAL'}">
                                         <span class="badge rounded-pill bg-soft-success text-success border border-success mini-text">로컬</span>
                                     </c:when>
-                                    <c:when test="${member.deliveryTypeCd eq 'FACTORY'}">
+                                    <c:when test="${member.opType eq 'FACTORY'}">
                                         <span class="badge rounded-pill bg-soft-warning text-warning border border-warning mini-text">공장</span>
                                     </c:when>
                                     <c:otherwise>
@@ -186,7 +190,7 @@
                                 </c:choose>
                             </td>
                             <td class="text-center">
-                                <button type="button" class="btn btn-outline-primary btn-sm p-1 px-2 mb-1" onclick="fn_edit_member('${member.memberId}')" title="수정">
+                                <button type="button" class="btn btn-outline-primary btn-sm p-1 px-2 mb-1" onclick="fn_edit_member('${member.memberNo}')" title="수정">
                                     <i class="bi bi-pencil-square"></i>
                                 </button>
                             </td>
@@ -303,6 +307,7 @@
     <input type="hidden" name="pageIndex" value="${searchVO.pageIndex}" />
     <input type="hidden" name="status" value="${searchVO.status}" />
     <input type="hidden" name="deliveryTypeCd" value="${searchVO.deliveryTypeCd}" />
+    <input type="hidden" name="opType" value="${searchVO.opType}" />
     <input type="hidden" name="joinDateFrom" value="${searchVO.joinDateFrom}" />
     <input type="hidden" name="joinDateTo" value="${searchVO.joinDateTo}" />
     <input type="hidden" name="memberGrade" value="${searchVO.memberGrade}" />
@@ -315,6 +320,7 @@
         var form = document.searchForm;
         form.status.value = "";
         form.deliveryTypeCd.value = "";
+        form.opType.value = "";
         form.joinDateFrom.value = "";
         form.joinDateTo.value = "";
         form.memberGrade.value = "";
@@ -333,7 +339,7 @@
     }
 
     function fn_edit_member(id) {
-        location.href = '<c:url value="/admin/member/memberDetail.do?menu=member"/>&memberId=' + id;
+        location.href = '<c:url value="/admin/member/memberDetail.do?menu=member"/>&memberNo=' + id;
     }
 
     // Money Modal functions
@@ -432,11 +438,4 @@
             }
         });
     }
-</script>
-o?menu=member"/>';
-                    }
-
-                    function fn_edit_member(id) {
-                        location.href = '<c:url value="/admin/member/memberDetail.do?menu=member"/>&memberId=' + id;
-                    }
-                </script>
+</script>

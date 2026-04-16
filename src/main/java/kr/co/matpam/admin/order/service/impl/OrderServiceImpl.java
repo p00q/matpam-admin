@@ -64,10 +64,13 @@ public class OrderServiceImpl extends EgovAbstractServiceImpl implements OrderSe
     }
 
     @Override
-    public OrderVO selectOrder(Long orderId) throws Exception {
-        OrderVO order = orderDAO.selectOrder(orderId);
+    public OrderVO selectOrder(OrderVO orderVO) throws Exception {
+        OrderVO order = orderDAO.selectOrder(orderVO);
         if (order != null) {
-            order.setOrderItems(orderDAO.selectOrderItemList(orderId));
+            OrderItemVO itemVO = new OrderItemVO();
+            itemVO.setOrderId(order.getOrderId());
+            itemVO.setOpType(orderVO.getOpType());
+            order.setOrderItems(orderDAO.selectOrderItemList(itemVO));
         }
         return order;
     }
@@ -84,8 +87,8 @@ public class OrderServiceImpl extends EgovAbstractServiceImpl implements OrderSe
 
     @Override
     @Transactional
-    public void cancelOrder(Long orderId) throws Exception {
-        OrderVO order = orderDAO.selectOrder(orderId);
+    public void cancelOrder(OrderVO orderVO) throws Exception {
+        OrderVO order = orderDAO.selectOrder(orderVO);
         if (order == null) throw new Exception("주문 정보를 찾을 수 없습니다.");
         
         if ("CANCEL".equals(order.getOrderStatusCd())) {
@@ -94,6 +97,7 @@ public class OrderServiceImpl extends EgovAbstractServiceImpl implements OrderSe
 
         // 상태 변경
         order.setOrderStatusCd("CANCEL");
+        order.setModId(orderVO.getModId()); // 수정자 설정
         orderDAO.updateOrderStatus(order);
 
         // 머니 환불 (결제되었던 경우)

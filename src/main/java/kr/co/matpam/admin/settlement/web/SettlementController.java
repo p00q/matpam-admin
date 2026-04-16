@@ -56,9 +56,10 @@ public class SettlementController {
         LoginVO loginVO = (LoginVO) session.getAttribute("loginVO");
 
         try {
-            // 권한 기반 데이터 격리
-            if (loginVO != null && !"NATIONAL".equals(loginVO.getOpType())) {
-                searchVO.setOpType(loginVO.getOpType());
+            // 1) 자동 데이터 세팅 (인터셉터에서 주입된 값 활용)
+            String opType = (String) request.getAttribute("opType");
+            if (opType != null && !"NATIONAL".equals(opType)) {
+                searchVO.setOpType(opType);
             }
 
             // 페이징 설정
@@ -101,9 +102,9 @@ public class SettlementController {
         LoginVO loginVO = (LoginVO) session.getAttribute("loginVO");
 
         try {
-            if (loginVO != null && !"NATIONAL".equals(loginVO.getOpType())) {
-                searchVO.setOpType(loginVO.getOpType());
-            }
+            // 1) 자동 데이터 세팅 (인터셉터에서 주입된 값 활용)
+            String opType = (String) request.getAttribute("opType");
+            searchVO.setOpType(opType);
 
             EgovMap summary = settlementService.selectSettlementSummary(searchVO);
             result.put("success", true);
@@ -122,10 +123,17 @@ public class SettlementController {
      */
     @RequestMapping(value = "/admin/settlement/executeSettlement.ajax", method = RequestMethod.POST)
     @ResponseBody
-    public Map<String, Object> executeSettlement(@RequestParam("settleDate") String settleDate) {
+    public Map<String, Object> executeSettlement(@RequestParam("settleDate") String settleDate, HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
         try {
-            settlementService.executeDailySettlement(settleDate.replace("-", ""));
+            String opType = (String) request.getAttribute("opType");
+            
+            SettlementVO vo = new SettlementVO();
+            vo.setSettleDate(settleDate.replace("-", ""));
+            vo.setOpType(opType);
+
+            settlementService.executeDailySettlement(vo);
+            
             result.put("success", true);
             result.put("message", "정산이 성공적으로 수행되었습니다.");
         } catch (Exception e) {

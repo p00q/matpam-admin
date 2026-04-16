@@ -28,7 +28,7 @@
 
         <result property="listPrice"         column="LIST_PRICE"/>
         <result property="costPrice"         column="COST_PRICE"/>
-        <result property="vatAmount"         column="VAT_AMOUNT"/>
+        <result property="vatRate"           column="VAT_RATE"/>
 
         <result property="exposureStatusCd"  column="EXPOSURE_STATUS_CD"/>
         <result property="saleStatusCd"      column="SALE_STATUS_CD"/>
@@ -65,7 +65,7 @@
 
             cp.LIST_PRICE,
             cp.COST_PRICE,
-            cp.VAT_AMOUNT,
+            cp.VAT_RATE,
             cp.EXPOSURE_STATUS_CD,
             cp.SALE_STATUS_CD,
             sale_status.DETAIL_CODE_NAME AS SALE_STATUS_NAME,

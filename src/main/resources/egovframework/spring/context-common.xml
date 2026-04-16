@@ -17,18 +17,19 @@
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
 	</context:component-scan>
 
-	<!-- DataSource Configuration (Pivot to H2 In-Memory for Zero-Config Local Run) -->
+	<!-- DataSource Configuration (Pivot to Local MySQL) -->
 	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
-		<property name="driverClassName" value="org.h2.Driver"/>
-		<property name="url" value="jdbc:h2:mem:matpam;MODE=MySQL;DB_CLOSE_DELAY=-1"/>
-		<property name="username" value="sa"/>
-		<property name="password" value=""/>
+		<property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
+		<property name="url" value="jdbc:mysql://localhost:3306/matpam?serverTimezone=Asia/Seoul&amp;useUniCode=true&amp;characterEncoding=utf8"/>
+		<property name="username" value="root"/>
+		<property name="password" value="root"/>
 	</bean>
 
-	<!-- SQL Initializer for H2 In-Memory DB -->
+	<!-- SQL Initializer (Disabled for Local MySQL to prevent data corruption)
 	<jdbc:initialize-database data-source="dataSource" ignore-failures="ALL">
 		<jdbc:script location="classpath:sql/NewTable_NewData.sql" encoding="UTF-8"/>
 	</jdbc:initialize-database>
+	-->
 
 	<!-- MyBatis SqlSessionFactory : 이름을 sqlSession 로 변경 -->
 	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionFactoryBean">
@@ -47,6 +48,7 @@
 	<!-- MyBatis Mapper Scanner -->
 	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
 		<property name="basePackage" value="kr.co.matpam.**.service.impl"/>
+		<property name="annotationClass" value="org.egovframe.rte.psl.dataaccess.mapper.Mapper"/>
 		<!-- 여기도 sqlSessionFactoryBeanName 을 sqlSession 으로 -->
 		<property name="sqlSessionFactoryBeanName" value="sqlSession"/>
 	</bean>

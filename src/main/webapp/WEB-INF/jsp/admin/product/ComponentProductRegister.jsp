@@ -73,6 +73,8 @@
                         <input type="hidden" name="menu" value="component" />
                         <c:if test="${not empty component.componentProdId}">
                             <input type="hidden" name="componentProdId" value="${component.componentProdId}" />
+                        <%-- vatRate: 저장된 부가세율 유지 (화면에서 직접 입력 없음, JS calcVat이 vatAmount 산정) --%>
+                        <input type="hidden" name="vatRate" value="<c:out value='${empty component.vatRate ? 0 : component.vatRate}'/>" />
                         </c:if>
 
                         <div class="section-header">■ 상품일반정보</div>
@@ -86,11 +88,11 @@
                             <tbody>
                                 <!-- Row 1: 구성상품 코드 / 상품명 -->
                                 <tr>
-                                    <th>구성상품 코드 <span class="text-danger">*</span></th>
+                                    <th>구성상품 코드</th>
                                     <td>
                                         <input type="text" name="componentProdCode" class="form-control form-control-sm"
-                                            value="<c:out value='${component.componentProdCode}'/>" required
-                                            placeholder="예) CP000001" />
+                                            value="<c:out value='${component.componentProdCode}'/>" readonly
+                                            placeholder="[시스템 자동 생성]" />
                                     </td>
                                     <th>상품명 <span class="text-danger">*</span></th>
                                     <td>
@@ -162,7 +164,7 @@
                                     <th>처리구분 <span class="text-danger">*</span></th>
                                     <td>
                                         <!-- 기존 processDivCd -> processTypeCd -->
-                                        <select name="processTypeCd" class="form-select form-select-sm"
+                                        <select name="processTypeCd" id="processTypeCd" class="form-select form-select-sm"
                                             style="max-width: 200px;" required>
                                             <option value="" disabled <c:if test="${empty component.processTypeCd}">
                                                 selected
@@ -230,7 +232,7 @@
                                     <td>
                                         <div class="input-group" style="max-width: 200px;">
                                             <input type="number" name="vatAmount" id="vatAmount"
-                                                class="form-control form-control-sm"
+                                                class="form-control form-control-sm bg-light fw-bold" readonly
                                                 value="<c:out value='${not empty vatAmountInt ? vatAmountInt : (empty component.vatAmount ? 0 : component.vatAmount)}' default='0'/>" />
                                             <span class="input-group-text">원</span>
                                         </div>
@@ -243,7 +245,7 @@
                                     <td>
                                         <div class="input-group" style="max-width: 200px;">
                                             <input type="number" name="costPrice" id="costPrice"
-                                                class="form-control form-control-sm" step="1"
+                                                class="form-control form-control-sm bg-light fw-bold" step="1" readonly
                                                 value="<c:out value='${not empty costPriceInt ? costPriceInt : (empty component.costPrice ? 0 : component.costPrice)}' default='0'/>"
                                                 required min="0" />
                                             <span class="input-group-text">원</span>
@@ -265,15 +267,11 @@
                                     </td>
                                 </tr>
 
-                                <!-- Row 7: 과세여부 / 노출상태 -->
+                                <!-- Row 7: 노출상태 (과세여부 필드 숨김) -->
                                 <tr>
-                                    <th>과세여부</th>
+                                    <th></th>
                                     <td>
-                                        <select name="taxType" class="form-select form-select-sm"
-                                            style="max-width: 200px;">
-                                            <option value="TAXABLE" <c:if test="${empty component.taxType or component.taxType eq 'TAXABLE'}">selected</c:if>>과세</option>
-                                            <option value="FREE" <c:if test="${component.taxType eq 'FREE'}">selected</c:if>>면세</option>
-                                        </select>
+                                        <input type="hidden" name="taxType" id="taxType" value="<c:out value='${empty component.taxType ? "FREE" : component.taxType}'/>" />
                                     </td>
                                     <th>노출상태</th>
                                     <td>
@@ -327,7 +325,7 @@
                                 </c:choose>
                             </button>
 
-                            <button type="button" class="btn btn-secondary px-4" onclick="location.href='<c:url value="/admin/product/componentProductList.do?menu=component"/>';">취소</button>
+                            <button type="button" class="btn btn-secondary px-4" onclick="location.href='${pageContext.request.contextPath}/admin/product/componentProductList.do?menu=component';">취소</button>
 
                             <c:if test="${not empty component.componentProdId}">
                                 <button type="button" class="btn btn-danger px-4" onclick="fn_delete()">삭제</button>
@@ -359,11 +357,32 @@
                             }
                         }
 
+                        const processTypeSelect = document.getElementById('processTypeCd');
+                        const taxTypeInput = document.getElementById('taxType');
+
                         function calcVat() {
                             const listPrice = sanitizeInteger(listPriceInput.value);
-                            // vatAmount is manually entered now, but we could default it to 10% if empty
-                            if (!vatAmountInput.value || vatAmountInput.value == '0') {
-                                vatAmountInput.value = Math.round(listPrice * 0.1);
+                            
+                            // 처리구분 선택 값에서 '가공' 포함 여부 확인
+                            let isProcessed = false;
+                            if (processTypeSelect && processTypeSelect.selectedIndex >= 0) {
+                                const selectedText = processTypeSelect.options[processTypeSelect.selectedIndex].text;
+                                if (selectedText.indexOf('가공') !== -1) {
+                                    isProcessed = true;
+                                }
+                            }
+
+                            if (isProcessed) {
+                                // 가공(과세): 원가 = 판매가 / 1.1, 부가세 = 판매가 - 원가
+                                const costTemp = Math.round(listPrice / 1.1);
+                                costPriceInput.value = costTemp;
+                                vatAmountInput.value = listPrice - costTemp;
+                                if (taxTypeInput) taxTypeInput.value = 'TAXABLE';
+                            } else {
+                                // 원물(면세): 원가 = 판매가, 부가세 = 0
+                                costPriceInput.value = listPrice;
+                                vatAmountInput.value = 0;
+                                if (taxTypeInput) taxTypeInput.value = 'FREE';
                             }
                         }
 
@@ -386,6 +405,10 @@
                             syncFromSalePrice();
                             calcVat();
                         });
+
+                        if (processTypeSelect) {
+                            processTypeSelect.addEventListener('change', calcVat);
+                        }
 
                         syncFromSalePrice();
                         calcVat();

@@ -15,10 +15,10 @@ public interface SalesProductService {
     int selectSalesProductListTotCnt(SalesProductVO searchVO) throws Exception;
 
     /** 판매상품 상세 */
-    SalesProductVO selectSalesProduct(Long salesProdId) throws Exception;
+    SalesProductVO selectSalesProduct(SalesProductVO vo) throws Exception;
 
     /** 조회수 증가 */
-    void increaseViewCount(Long salesProdId) throws Exception;
+    void increaseViewCount(SalesProductVO vo) throws Exception;
 
     /** 판매상품 등록 */
     void insertSalesProduct(SalesProductVO vo) throws Exception;
@@ -27,5 +27,5 @@ public interface SalesProductService {
     void updateSalesProduct(SalesProductVO vo) throws Exception;
 
     /** 판매상품 삭제(논리삭제) */
-    void deleteSalesProduct(Long salesProdId) throws Exception;
+    void deleteSalesProduct(SalesProductVO vo) throws Exception;
 }

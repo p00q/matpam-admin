@@ -140,9 +140,10 @@
                                             <th class="text-center" style="background-color: #e9ecef;">검색어</th>
                                             <td colspan="3">
                                                 <!-- 신 Mapper where에서 searchKeyword로 NAME/CODE 검색 -->
-                                                <input type="text" name="searchKeyword" value="${param.searchKeyword}"
+                                            <input type="text" name="searchKeyword" value="${param.searchKeyword}"
                                                     class="form-control form-control-sm" style="max-width: 300px;"
                                                     placeholder="상품명 또는 코드" />
+                                                <input type="hidden" name="opType" value="${searchVO.opType}" />
                                             </td>
                                         </tr>
                                     </tbody>
@@ -189,6 +190,7 @@
                                 <tr>
                                     <th scope="col">순번</th>
                                     <th scope="col">구성상품 코드</th>
+                                    <th scope="col">운영유형</th>
                                     <th scope="col">상품명</th>
                                     <th scope="col">판매자명</th>
                                     <th scope="col">저장유형</th>
@@ -213,6 +215,14 @@
                                                 <c:param name="componentProdId" value="${item.componentProdId}" />
                                             </c:url>
                                             <a href="${viewUrl}">${item.componentProdCode}</a>
+                                        </td>
+                                        <td>
+                                            <c:choose>
+                                                <c:when test="${item.opType eq 'NATIONAL'}"><span class="badge rounded-pill bg-primary">전국</span></c:when>
+                                                <c:when test="${item.opType eq 'LOCAL'}"><span class="badge rounded-pill bg-success">로컬</span></c:when>
+                                                <c:when test="${item.opType eq 'FACTORY'}"><span class="badge rounded-pill bg-warning">공장</span></c:when>
+                                                <c:otherwise>${item.opType}</c:otherwise>
+                                            </c:choose>
                                         </td>
 
                                         <td class="text-start">${item.componentProdName}</td>
@@ -257,7 +267,7 @@
 
                                 <c:if test="${empty componentList}">
                                     <tr>
-                                        <td colspan="14" class="py-4 text-center text-muted">
+                                        <td colspan="15" class="py-4 text-center text-muted">
                                             검색된 결과가 없습니다.
                                         </td>
                                     </tr>
@@ -287,6 +297,7 @@
                         <input type="hidden" name="processTypeCd" value="${param.processTypeCd}" />
                         <input type="hidden" name="unitTypeCd" value="${param.unitTypeCd}" />
                         <input type="hidden" name="searchKeyword" value="${param.searchKeyword}" />
+                        <input type="hidden" name="opType" value="${searchVO.opType}" />
                     </form>
                 </div>
 

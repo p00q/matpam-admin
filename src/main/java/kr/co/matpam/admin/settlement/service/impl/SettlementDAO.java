@@ -15,8 +15,8 @@ public class SettlementDAO extends EgovAbstractMapper {
      * 일일 정산 데이터 집계
      */
     @SuppressWarnings("unchecked")
-    public List<SettlementVO> aggregateSettlementData(String settleDate) {
-        return selectList("matpam.settlement.SettlementMapper.aggregateSettlementData", settleDate);
+    public List<SettlementVO> aggregateSettlementData(SettlementVO vo) {
+        return selectList("matpam.settlement.SettlementMapper.aggregateSettlementData", vo);
     }
 
     /**
@@ -44,8 +44,8 @@ public class SettlementDAO extends EgovAbstractMapper {
     /**
      * 특정일 정산 삭제 (재정산용)
      */
-    public void deleteSettlementByDate(String settleDate) {
-        delete("matpam.settlement.SettlementMapper.deleteSettlementByDate", settleDate);
+    public void deleteSettlementByDate(SettlementVO vo) {
+        delete("matpam.settlement.SettlementMapper.deleteSettlementByDate", vo);
     }
 
     /**

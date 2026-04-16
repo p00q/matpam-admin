@@ -23,42 +23,42 @@ public class OrderManageDAO extends EgovAbstractMapper {
      * 주문건별 목록 조회
      */
     public List<OrderListVO> selectOrderList(OrderSearchVO searchVO) {
-        return selectList("selectOrderList", searchVO);
+        return selectList("kr.co.matpam.admin.order.service.impl.OrderManageDAO.selectOrderList", searchVO);
     }
 
     /**
      * 주문건별 목록 총 건수
      */
     public int selectOrderListTotCnt(OrderSearchVO searchVO) {
-        return selectOne("selectOrderListTotCnt", searchVO);
+        return selectOne("kr.co.matpam.admin.order.service.impl.OrderManageDAO.selectOrderListTotCnt", searchVO);
     }
 
     /**
      * KPI 합계 조회
      */
     public OrderSummaryVO selectOrderSummary(OrderSearchVO searchVO) {
-        return selectOne("selectOrderSummary", searchVO);
+        return selectOne("kr.co.matpam.admin.order.service.impl.OrderManageDAO.selectOrderSummary", searchVO);
     }
 
     /**
      * 주문상태 일괄 변경
      */
     public int updateOrderStatusBatch(Map<String, Object> paramMap) {
-        return update("updateOrderStatusBatch", paramMap);
+        return update("kr.co.matpam.admin.order.service.impl.OrderManageDAO.updateOrderStatusBatch", paramMap);
     }
 
     /**
      * 주문 상세 조회
      */
     public kr.co.matpam.admin.order.service.OrderDetailVO selectOrderDetail(OrderSearchVO searchVO) {
-        return selectOne("selectOrderDetail", searchVO);
+        return selectOne("kr.co.matpam.admin.order.service.impl.OrderManageDAO.selectOrderDetail", searchVO);
     }
 
     /**
      * 주문 아이템 목록 조회
      */
     public List<kr.co.matpam.admin.order.service.OrderItemVO> selectOrderItemList(OrderSearchVO searchVO) {
-        return selectList("selectOrderItemList", searchVO);
+        return selectList("kr.co.matpam.admin.order.service.impl.OrderManageDAO.selectOrderItemList", searchVO);
     }
 
     /*
@@ -66,12 +66,12 @@ public class OrderManageDAO extends EgovAbstractMapper {
      * 배송정보 (택배)
      * =========================================================
      */
-    public OrderDeliveryParcelVO selectDeliveryParcel(Long orderId) {
-        return selectOne("selectDeliveryParcel", orderId);
+    public OrderDeliveryParcelVO selectDeliveryParcel(OrderDeliveryParcelVO vo) {
+        return selectOne("kr.co.matpam.admin.order.service.impl.OrderManageDAO.selectDeliveryParcel", vo);
     }
 
     public int upsertDeliveryParcel(OrderDeliveryParcelVO vo) {
-        return insert("upsertDeliveryParcel", vo);
+        return insert("kr.co.matpam.admin.order.service.impl.OrderManageDAO.upsertDeliveryParcel", vo);
     }
 
     /*
@@ -79,12 +79,12 @@ public class OrderManageDAO extends EgovAbstractMapper {
      * 배송정보 (화물/직배송)
      * =========================================================
      */
-    public OrderDeliveryFreightVO selectDeliveryFreight(Long orderId) {
-        return selectOne("selectDeliveryFreight", orderId);
+    public OrderDeliveryFreightVO selectDeliveryFreight(OrderDeliveryFreightVO vo) {
+        return selectOne("kr.co.matpam.admin.order.service.impl.OrderManageDAO.selectDeliveryFreight", vo);
     }
 
     public int upsertDeliveryFreight(OrderDeliveryFreightVO vo) {
-        return insert("upsertDeliveryFreight", vo);
+        return insert("kr.co.matpam.admin.order.service.impl.OrderManageDAO.upsertDeliveryFreight", vo);
     }
 
     /*
@@ -92,11 +92,11 @@ public class OrderManageDAO extends EgovAbstractMapper {
      * 배송정보 (공장수령)
      * =========================================================
      */
-    public OrderDeliveryFactoryVO selectDeliveryFactory(Long orderId) {
-        return selectOne("selectDeliveryFactory", orderId);
+    public OrderDeliveryFactoryVO selectDeliveryFactory(OrderDeliveryFactoryVO vo) {
+        return selectOne("kr.co.matpam.admin.order.service.impl.OrderManageDAO.selectDeliveryFactory", vo);
     }
 
     public int upsertDeliveryFactory(OrderDeliveryFactoryVO vo) {
-        return insert("upsertDeliveryFactory", vo);
+        return insert("kr.co.matpam.admin.order.service.impl.OrderManageDAO.upsertDeliveryFactory", vo);
     }
 }

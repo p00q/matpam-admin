@@ -25,7 +25,7 @@ public interface OrderManageService {
     /**
      * 주문상태 일괄 변경
      */
-    int updateOrderStatusBatch(List<Long> orderIds, String orderStatusCd, String modId);
+    int updateOrderStatusBatch(List<Long> orderIds, String orderStatusCd, String modId, String opType);
 
     /**
      * 주문 상세 조회
@@ -42,7 +42,7 @@ public interface OrderManageService {
      * 배송정보 (택배)
      * =========================================================
      */
-    OrderDeliveryParcelVO selectDeliveryParcel(Long orderId);
+    OrderDeliveryParcelVO selectDeliveryParcel(OrderDeliveryParcelVO vo);
 
     int saveDeliveryParcel(OrderDeliveryParcelVO vo);
 
@@ -51,7 +51,7 @@ public interface OrderManageService {
      * 배송정보 (화물/직배송)
      * =========================================================
      */
-    OrderDeliveryFreightVO selectDeliveryFreight(Long orderId);
+    OrderDeliveryFreightVO selectDeliveryFreight(OrderDeliveryFreightVO vo);
 
     int saveDeliveryFreight(OrderDeliveryFreightVO vo);
 
@@ -60,7 +60,7 @@ public interface OrderManageService {
      * 배송정보 (공장수령)
      * =========================================================
      */
-    OrderDeliveryFactoryVO selectDeliveryFactory(Long orderId);
+    OrderDeliveryFactoryVO selectDeliveryFactory(OrderDeliveryFactoryVO vo);
 
     int saveDeliveryFactory(OrderDeliveryFactoryVO vo);
 }

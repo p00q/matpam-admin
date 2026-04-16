@@ -44,11 +44,12 @@ public class OrderManageServiceImpl extends EgovAbstractServiceImpl implements O
     }
 
     @Override
-    public int updateOrderStatusBatch(List<Long> orderIds, String orderStatusCd, String modId) {
+    public int updateOrderStatusBatch(List<Long> orderIds, String orderStatusCd, String modId, String opType) {
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put("orderIds", orderIds);
         paramMap.put("orderStatusCd", orderStatusCd);
         paramMap.put("modId", modId);
+        paramMap.put("opType", opType);
         return orderManageDAO.updateOrderStatusBatch(paramMap);
     }
 
@@ -68,8 +69,8 @@ public class OrderManageServiceImpl extends EgovAbstractServiceImpl implements O
      * =========================================================
      */
     @Override
-    public OrderDeliveryParcelVO selectDeliveryParcel(Long orderId) {
-        return orderManageDAO.selectDeliveryParcel(orderId);
+    public OrderDeliveryParcelVO selectDeliveryParcel(OrderDeliveryParcelVO vo) {
+        return orderManageDAO.selectDeliveryParcel(vo);
     }
 
     @Override
@@ -83,8 +84,8 @@ public class OrderManageServiceImpl extends EgovAbstractServiceImpl implements O
      * =========================================================
      */
     @Override
-    public OrderDeliveryFreightVO selectDeliveryFreight(Long orderId) {
-        return orderManageDAO.selectDeliveryFreight(orderId);
+    public OrderDeliveryFreightVO selectDeliveryFreight(OrderDeliveryFreightVO vo) {
+        return orderManageDAO.selectDeliveryFreight(vo);
     }
 
     @Override
@@ -98,8 +99,8 @@ public class OrderManageServiceImpl extends EgovAbstractServiceImpl implements O
      * =========================================================
      */
     @Override
-    public OrderDeliveryFactoryVO selectDeliveryFactory(Long orderId) {
-        return orderManageDAO.selectDeliveryFactory(orderId);
+    public OrderDeliveryFactoryVO selectDeliveryFactory(OrderDeliveryFactoryVO vo) {
+        return orderManageDAO.selectDeliveryFactory(vo);
     }
 
     @Override

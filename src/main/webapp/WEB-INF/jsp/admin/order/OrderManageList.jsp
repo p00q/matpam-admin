@@ -13,7 +13,7 @@
                     <li class="breadcrumb-item active">주문 목록</li>
                 </ol>
             </nav>
-            <h3 class="fw-bold mb-0" style="letter-spacing: -1px; color: var(--primary);">주문 <span class="text-accent" style="color:var(--accent)">현황 관리</span></h3>
+            <h3 class="fw-bold mb-0" style="letter-spacing: -1px; color: var(--primary);"><c:out value="${pageTitle}"/> <span class="text-accent" style="color:var(--accent)">현황 관리</span></h3>
         </div>
         <div>
             <button type="button" class="btn btn-primary btn-premium px-4 shadow-sm me-2" onclick="fn_openManualOrder()">
@@ -103,6 +103,7 @@
     <div class="premium-card mb-4">
         <form name="searchForm" id="searchForm">
             <input type="hidden" name="pageIndex" id="pageIndex" value="1" />
+            <input type="hidden" name="opType" id="opType" value="${searchVO.opType}" />
             <div class="row g-3">
                 <div class="col-md-3">
                     <label class="form-label fw-bold small">주문 상태</label>
@@ -427,6 +428,7 @@
                             const orderDt = item.orderDt ? new Date(item.orderDt).toLocaleString('ko-KR') : '-';
                             const payDisplay = '<div class="fw-bold text-accent" style="color:var(--accent)">' + formatNumber(item.payTotalAmt) + '</div>' +
                                              '<div class="mini-text text-muted">(' + formatNumber(item.vatTotalAmt) + ')</div>';
+                            const opTypeBadge = getOpTypeBadge(item.opType);
 
                             const row = '<tr>' +
                                 '<td><input type="checkbox" class="order-check form-check-input" value="' + item.orderId + '"></td>' +
@@ -446,7 +448,10 @@
                                     '<div class="mini-text text-danger">할: -' + formatNumber(item.discountTotalAmt) + '</div>' +
                                 '</td>' +
                                 '<td class="text-end">' + payDisplay + '</td>' +
-                                '<td class="text-center small">' + (item.deliveryTypeName || item.deliveryTypeCd || '-') + '</td>' +
+                                '<td class="text-center small">' + 
+                                    '<div>' + (item.deliveryTypeName || item.deliveryTypeCd || '-') + '</div>' +
+                                    '<div class="mt-1">' + opTypeBadge + '</div>' +
+                                '</td>' +
                                 '<td class="text-center"><span class="badge rounded-pill bg-soft-' + getStatusBadgeColor(item.orderStatusCd) + ' text-' + getStatusBadgeColor(item.orderStatusCd) + ' border border-' + getStatusBadgeColor(item.orderStatusCd) + '">' +
                                 (item.orderStatusName || item.orderStatusCd || '-') + '</span></td>' +
                                 '<td class="text-center">' +

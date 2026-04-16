@@ -7,36 +7,37 @@
          ResultMap
          ========================================================= -->
     <resultMap id="orderListResultMap" type="kr.co.matpam.admin.order.service.OrderListVO">
-        <id property="orderId" column="ORDER_ID"/>
-        <result property="orderNo" column="ORDER_NO"/>
-        <result property="orderDt" column="ORDER_DT"/>
-        <result property="orderStatusCd" column="ORDER_STATUS_CD"/>
-        <result property="orderStatusName" column="ORDER_STATUS_NAME"/>
-        <result property="deliveryTypeCd" column="DELIVERY_TYPE_CD"/>
-        <result property="deliveryTypeName" column="DELIVERY_TYPE_NAME"/>
-        <result property="deliveryStatusCd" column="DELIVERY_STATUS_CD"/>
-        <result property="deliveryStatusName" column="DELIVERY_STATUS_NAME"/>
-        <result property="goodsTotalAmt" column="GOODS_TOTAL_AMT"/>
-        <result property="deliveryTotalAmt" column="DELIVERY_TOTAL_AMT"/>
-        <result property="discountTotalAmt" column="DISCOUNT_TOTAL_AMT"/>
-        <result property="vatTotalAmt" column="VAT_TOTAL_AMT"/>
-        <result property="payTotalAmt" column="PAY_TOTAL_AMT"/>
-        <result property="buyerMemberId" column="BUYER_MEMBER_ID"/>
-        <result property="buyerCompanyName" column="BUYER_COMPANY_NAME"/>
-        <result property="firstSalesProdName" column="FIRST_SALES_PROD_NAME"/>
-        <result property="itemCount" column="ITEM_COUNT"/>
-        <result property="totalOrderQty" column="TOTAL_ORDER_QTY"/>
-        <result property="regionSidoCd" column="REGION_SIDO_CD"/>
-        <result property="regionSigunguCd" column="REGION_SIGUNGU_CD"/>
-        <result property="receiverName" column="RECEIVER_NAME"/>
-        <result property="receiverMobile" column="RECEIVER_MOBILE"/>
+        <id property="orderId" column="order_id"/>
+        <result property="orderNo" column="order_no"/>
+        <result property="orderDt" column="order_dt"/>
+        <result property="orderStatusCd" column="order_status_cd"/>
+        <result property="orderStatusName" column="order_status_name"/>
+        <result property="deliveryTypeCd" column="delivery_type_cd"/>
+        <result property="deliveryTypeName" column="delivery_type_name"/>
+        <result property="deliveryStatusCd" column="delivery_status_cd"/>
+        <result property="deliveryStatusName" column="delivery_status_name"/>
+        <result property="goodsTotalAmt" column="goods_total_amt"/>
+        <result property="deliveryTotalAmt" column="delivery_total_amt"/>
+        <result property="discountTotalAmt" column="discount_total_amt"/>
+        <result property="vatTotalAmt" column="vat_total_amt"/>
+        <result property="payTotalAmt" column="pay_total_amt"/>
+        <result property="buyerMemberId" column="buyer_member_id"/>
+        <result property="buyerCompanyName" column="buyer_company_name"/>
+        <result property="firstSalesProdName" column="first_sales_prod_name"/>
+        <result property="itemCount" column="item_count"/>
+        <result property="totalOrderQty" column="total_order_qty"/>
+        <result property="regionSidoCd" column="region_sido_cd"/>
+        <result property="regionSigunguCd" column="region_sigungu_cd"/>
+        <result property="receiverName" column="receiver_name"/>
+        <result property="receiverMobile" column="receiver_mobile"/>
+        <result property="opType" column="op_type"/>
     </resultMap>
 
     <resultMap id="orderSummaryResultMap" type="kr.co.matpam.admin.order.service.OrderSummaryVO">
-        <result property="sumGoodsTotalAmt" column="SUM_GOODS_TOTAL_AMT"/>
-        <result property="sumDeliveryTotalAmt" column="SUM_DELIVERY_TOTAL_AMT"/>
-        <result property="sumDiscountTotalAmt" column="SUM_DISCOUNT_TOTAL_AMT"/>
-        <result property="sumPayTotalAmt" column="SUM_PAY_TOTAL_AMT"/>
+        <result property="sumGoodsTotalAmt" column="sum_goods_total_amt"/>
+        <result property="sumDeliveryTotalAmt" column="sum_delivery_total_amt"/>
+        <result property="sumDiscountTotalAmt" column="sum_discount_total_amt"/>
+        <result property="sumPayTotalAmt" column="sum_pay_total_amt"/>
     </resultMap>
 
     <!-- =========================================================
@@ -44,27 +45,27 @@
          ========================================================= -->
     <sql id="orderSearchWhere">
         <where>
-            o.DEL_YN = 'N'
-            AND o.USE_YN = 'Y'
+            o.use_yn = 'Y'
+            AND o.del_yn = 'N'
 
-            <if test="opType != null and opType != ''">
-                AND o.OP_TYPE = #{opType}
+            <if test="opType != null and opType != '' and opType != 'NATIONAL'">
+                AND o.op_type = #{opType}
             </if>
 
             <if test="orderStatusCd != null and orderStatusCd != ''">
-                AND o.ORDER_STATUS_CD = #{orderStatusCd}
+                AND o.order_status_cd = #{orderStatusCd}
             </if>
 
             <if test="deliveryTypeCd != null and deliveryTypeCd != ''">
-                AND o.DELIVERY_TYPE_CD = #{deliveryTypeCd}
+                AND o.delivery_type_cd = #{deliveryTypeCd}
             </if>
 
             <if test="regionSidoCd != null and regionSidoCd != ''">
-                AND o.REGION_SIDO_CD = #{regionSidoCd}
+                AND o.region_sido_cd = #{regionSidoCd}
             </if>
 
             <if test="regionSigunguCd != null and regionSigunguCd != ''">
-                AND o.REGION_SIGUNGU_CD = #{regionSigunguCd}
+                AND o.region_sigungu_cd = #{regionSigunguCd}
             </if>
 
             <if test="buyerCompanyName != null and buyerCompanyName != ''">
@@ -72,11 +73,11 @@
             </if>
 
             <if test="orderDtFrom != null and orderDtFrom != ''">
-                AND o.ORDER_DT &gt;= CONCAT(#{orderDtFrom}, ' 00:00:00')
+                AND o.order_dt &gt;= CONCAT(#{orderDtFrom}, ' 00:00:00')
             </if>
 
             <if test="orderDtTo != null and orderDtTo != ''">
-                AND o.ORDER_DT &lt;= CONCAT(#{orderDtTo}, ' 23:59:59')
+                AND o.order_dt &lt;= CONCAT(#{orderDtTo}, ' 23:59:59')
             </if>
         </where>
     </sql>
@@ -88,84 +89,85 @@
             parameterType="kr.co.matpam.admin.order.service.OrderSearchVO"
             resultMap="orderListResultMap">
         SELECT
-            o.ORDER_ID,
-            o.ORDER_NO,
-            o.ORDER_DT,
+            o.order_id,
+            o.order_no,
+            o.order_dt,
 
-            o.ORDER_STATUS_CD,
-            os.DETAIL_CODE_NAME AS ORDER_STATUS_NAME,
+            o.order_status_cd,
+            os.DETAIL_CODE_NAME AS order_status_name,
 
-            o.DELIVERY_TYPE_CD,
-            dt.DETAIL_CODE_NAME AS DELIVERY_TYPE_NAME,
+            o.delivery_type_cd,
+            dt.DETAIL_CODE_NAME AS delivery_type_name,
 
-            o.DELIVERY_STATUS_CD,
-            ds.DETAIL_CODE_NAME AS DELIVERY_STATUS_NAME,
+            o.delivery_status_cd,
+            ds.DETAIL_CODE_NAME AS delivery_status_name,
 
-            o.GOODS_TOTAL_AMT,
-            o.DELIVERY_TOTAL_AMT,
-            o.DISCOUNT_TOTAL_AMT,
-            o.VAT_TOTAL_AMT,
-            o.PAY_TOTAL_AMT,
+            o.goods_total_amt,
+            o.delivery_total_amt,
+            o.discount_total_amt,
+            o.vat_total_amt,
+            o.pay_total_amt,
 
-            o.BUYER_MEMBER_ID,
-            bm.COMPANY_NAME AS BUYER_COMPANY_NAME,
+            o.buyer_member_id,
+            bm.COMPANY_NAME AS buyer_company_name,
 
-            o.REGION_SIDO_CD,
-            o.REGION_SIGUNGU_CD,
-            o.RECEIVER_NAME,
-            o.RECEIVER_MOBILE,
+            o.region_sido_cd,
+            o.region_sigungu_cd,
+            o.receiver_name,
+            o.receiver_mobile,
+            o.op_type,
 
             /* 대표 상품명 (첫 라인) */
             (
-                SELECT oi.SALES_PROD_NAME
-                FROM TB_ORDER_ITEM oi
-                WHERE oi.ORDER_ID = o.ORDER_ID
-                  AND oi.DEL_YN = 'N'
-                ORDER BY oi.LINE_NO ASC
+                SELECT oi.sales_prod_name
+                FROM tb_order_item oi
+                WHERE oi.order_id = o.order_id
+                  AND oi.del_yn = 'N'
+                ORDER BY oi.line_no ASC
                 LIMIT 1
-            ) AS FIRST_SALES_PROD_NAME,
+            ) AS first_sales_prod_name,
 
             /* 라인수 */
             (
                 SELECT COUNT(*)
-                FROM TB_ORDER_ITEM oi
-                WHERE oi.ORDER_ID = o.ORDER_ID
-                  AND oi.DEL_YN = 'N'
-            ) AS ITEM_COUNT,
+                FROM tb_order_item oi
+                WHERE oi.order_id = o.order_id
+                  AND oi.del_yn = 'N'
+            ) AS item_count,
 
             /* 총수량 */
             (
-                SELECT COALESCE(SUM(oi.ORDER_QTY), 0)
-                FROM TB_ORDER_ITEM oi
-                WHERE oi.ORDER_ID = o.ORDER_ID
-                  AND oi.DEL_YN = 'N'
-            ) AS TOTAL_ORDER_QTY
+                SELECT COALESCE(SUM(oi.order_qty), 0)
+                FROM tb_order_item oi
+                WHERE oi.order_id = o.order_id
+                  AND oi.del_yn = 'N'
+            ) AS total_order_qty
 
-        FROM TB_ORDER o
+        FROM tb_order o
         LEFT JOIN TB_MEMBER bm
-            ON bm.MEMBER_ID = o.BUYER_MEMBER_ID
+            ON bm.MEMBER_ID = o.buyer_member_id
 
         LEFT JOIN TB_DETAIL_CODE os
             ON os.CODE_GROUP_ID = 'ORDER_STATUS'
            AND os.CODE_ID       = 'ORDER_STATUS'
-           AND os.DETAIL_CODE_ID = o.ORDER_STATUS_CD
+           AND os.DETAIL_CODE_ID = o.order_status_cd
            AND os.USE_YN = 'Y' AND os.DEL_YN = 'N'
 
         LEFT JOIN TB_DETAIL_CODE dt
             ON dt.CODE_GROUP_ID = 'DELIVERY_TYPE'
            AND dt.CODE_ID       = 'DELIVERY_TYPE'
-           AND dt.DETAIL_CODE_ID = o.DELIVERY_TYPE_CD
+           AND dt.DETAIL_CODE_ID = o.delivery_type_cd
            AND dt.USE_YN = 'Y' AND dt.DEL_YN = 'N'
 
         LEFT JOIN TB_DETAIL_CODE ds
             ON ds.CODE_GROUP_ID = 'DELIVERY_STATUS'
            AND ds.CODE_ID       = 'DELIVERY_STATUS'
-           AND ds.DETAIL_CODE_ID = o.DELIVERY_STATUS_CD
+           AND ds.DETAIL_CODE_ID = o.delivery_status_cd
            AND ds.USE_YN = 'Y' AND ds.DEL_YN = 'N'
 
         <include refid="orderSearchWhere"/>
 
-        ORDER BY o.ORDER_ID DESC
+        ORDER BY o.order_id DESC
 
         <if test="recordCountPerPage != null and firstIndex != null">
             LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
@@ -179,9 +181,9 @@
             parameterType="kr.co.matpam.admin.order.service.OrderSearchVO"
             resultType="int">
         SELECT COUNT(*)
-        FROM TB_ORDER o
+        FROM tb_order o
         LEFT JOIN TB_MEMBER bm
-            ON bm.MEMBER_ID = o.BUYER_MEMBER_ID
+            ON bm.MEMBER_ID = o.buyer_member_id
         <include refid="orderSearchWhere"/>
     </select>
 
@@ -192,13 +194,13 @@
             parameterType="kr.co.matpam.admin.order.service.OrderSearchVO"
             resultMap="orderSummaryResultMap">
         SELECT
-            COALESCE(SUM(o.GOODS_TOTAL_AMT), 0)    AS SUM_GOODS_TOTAL_AMT,
-            COALESCE(SUM(o.DELIVERY_TOTAL_AMT), 0) AS SUM_DELIVERY_TOTAL_AMT,
-            COALESCE(SUM(o.DISCOUNT_TOTAL_AMT), 0) AS SUM_DISCOUNT_TOTAL_AMT,
-            COALESCE(SUM(o.PAY_TOTAL_AMT), 0)      AS SUM_PAY_TOTAL_AMT
-        FROM TB_ORDER o
+            COALESCE(SUM(o.goods_total_amt), 0)    AS sum_goods_total_amt,
+            COALESCE(SUM(o.delivery_total_amt), 0) AS sum_delivery_total_amt,
+            COALESCE(SUM(o.discount_total_amt), 0) AS sum_discount_total_amt,
+            COALESCE(SUM(o.pay_total_amt), 0)      AS sum_pay_total_amt
+        FROM tb_order o
         LEFT JOIN TB_MEMBER bm
-            ON bm.MEMBER_ID = o.BUYER_MEMBER_ID
+            ON bm.MEMBER_ID = o.buyer_member_id
         <include refid="orderSearchWhere"/>
     </select>
 
@@ -209,51 +211,51 @@
             parameterType="kr.co.matpam.admin.order.service.OrderSearchVO"
             resultType="kr.co.matpam.admin.order.service.OrderDetailVO">
         SELECT
-            o.ORDER_ID,
-            o.ORDER_NO,
-            o.ORDER_DT,
-            o.ORDER_STATUS_CD,
-            os.DETAIL_CODE_NAME AS ORDER_STATUS_NAME,
-            o.DELIVERY_TYPE_CD,
-            dt.DETAIL_CODE_NAME AS DELIVERY_TYPE_NAME,
-            o.DELIVERY_STATUS_CD,
-            ds.DETAIL_CODE_NAME AS DELIVERY_STATUS_NAME,
-            o.GOODS_TOTAL_AMT,
-            o.DELIVERY_TOTAL_AMT,
-            o.DISCOUNT_TOTAL_AMT,
-            o.VAT_TOTAL_AMT,
-            o.PAY_TOTAL_AMT,
-            o.BUYER_MEMBER_ID,
-            bm.COMPANY_NAME AS BUYER_COMPANY_NAME,
-            bm.MEMBER_NAME AS BUYER_NAME,
-            bm.MOBILE AS BUYER_MOBILE,
-            bm.EMAIL AS BUYER_EMAIL,
-            o.REGION_SIDO_CD,
-            o.REGION_SIGUNGU_CD,
-            o.RECEIVER_NAME,
-            o.RECEIVER_MOBILE,
-            o.ZIP_CODE AS RECEIVER_ZIP_CODE,
-            o.RECEIVER_ADDR1,
-            o.RECEIVER_ADDR2,
-            o.DELIVERY_MEMO
-        FROM TB_ORDER o
-        LEFT JOIN TB_MEMBER bm ON bm.MEMBER_ID = o.BUYER_MEMBER_ID
-        LEFT JOIN TB_DETAIL_code os 
+            o.order_id,
+            o.order_no,
+            o.order_dt,
+            o.order_status_cd,
+            os.DETAIL_CODE_NAME AS orderStatusName,
+            o.delivery_type_cd,
+            dt.DETAIL_CODE_NAME AS deliveryTypeName,
+            o.delivery_status_cd,
+            ds.DETAIL_CODE_NAME AS deliveryStatusName,
+            o.goods_total_amt,
+            o.delivery_total_amt,
+            o.discount_total_amt,
+            o.vat_total_amt,
+            o.pay_total_amt,
+            o.buyer_member_id,
+            bm.COMPANY_NAME AS buyerCompanyName,
+            bm.CEO_NAME AS buyerName, /* Using CEO_NAME as buyerName standpoint */
+            bm.CEO_MOBILE_NO AS buyerMobile,
+            bm.EMAIL AS buyerEmail,
+            o.region_sido_cd,
+            o.region_sigungu_cd,
+            o.receiver_name,
+            o.receiver_mobile,
+            o.zip_code AS receiverZipCode,
+            o.addr1 AS receiverAddr1,
+            o.addr2 AS receiverAddr2,
+            o.op_type
+        FROM tb_order o
+        LEFT JOIN TB_MEMBER bm ON bm.MEMBER_ID = o.buyer_member_id
+        LEFT JOIN TB_DETAIL_CODE os 
             ON os.CODE_GROUP_ID = 'ORDER_STATUS' 
             AND os.CODE_ID = 'ORDER_STATUS' 
-            AND os.DETAIL_CODE_ID = o.ORDER_STATUS_CD
+            AND os.DETAIL_CODE_ID = o.order_status_cd
             AND os.USE_YN = 'Y' AND os.DEL_YN = 'N'
-        LEFT JOIN TB_DETAIL_code dt 
+        LEFT JOIN TB_DETAIL_CODE dt 
             ON dt.CODE_GROUP_ID = 'DELIVERY_TYPE' 
             AND dt.CODE_ID = 'DELIVERY_TYPE' 
-            AND dt.DETAIL_CODE_ID = o.DELIVERY_TYPE_CD
+            AND dt.DETAIL_CODE_ID = o.delivery_type_cd
             AND dt.USE_YN = 'Y' AND dt.DEL_YN = 'N'
-        LEFT JOIN TB_DETAIL_code ds 
+        LEFT JOIN TB_DETAIL_CODE ds 
             ON ds.CODE_GROUP_ID = 'DELIVERY_STATUS' 
             AND ds.CODE_ID = 'DELIVERY_STATUS' 
-            AND ds.DETAIL_CODE_ID = o.DELIVERY_STATUS_CD
+            AND ds.DETAIL_CODE_ID = o.delivery_status_cd
             AND ds.USE_YN = 'Y' AND ds.DEL_YN = 'N'
-        WHERE o.ORDER_ID = #{orderId}
+        WHERE o.order_id = #{orderId}
     </select>
 
     <!-- =========================================================
@@ -263,61 +265,51 @@
             parameterType="kr.co.matpam.admin.order.service.OrderSearchVO"
             resultType="kr.co.matpam.admin.order.service.OrderItemVO">
         SELECT
-            oi.ORDER_ITEM_ID,
-            oi.ORDER_ID,
-            oi.SALES_PROD_ID,
-            oi.SALES_PROD_NAME,
-            sp.REP_IMG_PATH AS SALES_PROD_MAIN_IMG_PATH,
-            oi.SALES_PRICE,
-            oi.ORDER_QTY,
-            (oi.SALES_PRICE * oi.ORDER_QTY) AS SUPPLY_AMT,
-            0 AS VAT_AMT, /* VAT Logic needed? Using 0 for now or calc from price if tax-included */
-            oi.TOTAL_AMT,
-            0 AS ITEM_DISCOUNT_AMT, /* Column might not exist ? */
-            0 AS ITEM_DELIVERY_AMT
-        FROM TB_ORDER_ITEM oi
-        LEFT JOIN TB_SALES_PRODUCT sp ON sp.SALES_PROD_ID = oi.SALES_PROD_ID
-        WHERE oi.ORDER_ID = #{orderId}
-          AND oi.DEL_YN = 'N'
-        ORDER BY oi.LINE_NO ASC
+            oi.order_item_id,
+            oi.order_id,
+            oi.sales_prod_id,
+            oi.sales_prod_name,
+            oi.sale_unit_price AS salesPrice,
+            oi.order_qty,
+            (oi.sale_unit_price * oi.order_qty) AS supplyAmt,
+            oi.vat_amt,
+            oi.pay_amt AS totalAmt
+        FROM tb_order_item oi
+        JOIN tb_order o ON o.order_id = oi.order_id
+        WHERE oi.order_id = #{orderId}
+          AND oi.del_yn = 'N'
+        ORDER BY oi.line_no ASC
     </select>
 
     <!-- =========================================================
          주문상태 일괄 변경
          ========================================================= -->
     <update id="updateOrderStatusBatch">
-        UPDATE TB_ORDER
-        SET ORDER_STATUS_CD = #{orderStatusCd},
-            MOD_ID = #{modId},
-            MOD_DT = NOW()
-        WHERE ORDER_ID IN
+        UPDATE tb_order
+        SET order_status_cd = #{orderStatusCd},
+            mod_id = #{modId},
+            mod_dt = NOW()
+        WHERE order_id IN
         <foreach item="orderId" collection="orderIds" open="(" separator="," close=")">
             #{orderId}
         </foreach>
-        AND DEL_YN = 'N'
+        AND del_yn = 'N'
     </update>
 
     <!-- =========================================================
          택배 배송정보 조회
          ========================================================= -->
     <select id="selectDeliveryParcel"
-            parameterType="long"
+            parameterType="kr.co.matpam.admin.order.service.OrderDeliveryParcelVO"
             resultType="kr.co.matpam.admin.order.service.OrderDeliveryParcelVO">
         SELECT
-            ORDER_ID,
-            COURIER_CD,
-            TRACKING_NO,
-            DELIVERY_REGION_CD,
-            SHIPPED_DT,
-            DELIVERED_DT,
-            USE_YN,
-            DEL_YN,
-            REG_ID,
-            REG_DT,
-            MOD_ID,
-            MOD_DT
-        FROM TB_ORDER_DELIVERY_PARCEL
-        WHERE ORDER_ID = #{orderId}
+            d.*
+        FROM TB_ORDER_DELIVERY_PARCEL d
+        JOIN TB_ORDER o ON o.ORDER_ID = d.ORDER_ID
+        WHERE d.ORDER_ID = #{orderId}
+        <if test="opType != null and opType != ''">
+            AND d.OP_TYPE = #{opType}
+        </if>
     </select>
 
     <!-- =========================================================
@@ -325,16 +317,17 @@
          ========================================================= -->
     <insert id="upsertDeliveryParcel"
             parameterType="kr.co.matpam.admin.order.service.OrderDeliveryParcelVO">
-        INSERT INTO TB_ORDER_DELIVERY_PARCEL (
-            ORDER_ID,
-            COURIER_CD,
-            TRACKING_NO,
-            DELIVERY_REGION_CD,
-            SHIPPED_DT,
-            USE_YN,
-            DEL_YN,
-            REG_ID,
-            REG_DT
+        INSERT INTO tb_order_delivery_parcel (
+            order_id,
+            courier_cd,
+            tracking_no,
+            delivery_region_cd,
+            shipped_dt,
+            use_yn,
+            del_yn,
+            reg_id,
+            reg_dt,
+            op_type
         ) VALUES (
             #{orderId},
             #{courierCd},
@@ -344,41 +337,33 @@
             'Y',
             'N',
             #{regId},
-            NOW()
+            NOW(),
+            #{opType}
         )
         ON DUPLICATE KEY UPDATE
-            COURIER_CD = #{courierCd},
-            TRACKING_NO = #{trackingNo},
-            DELIVERY_REGION_CD = #{deliveryRegionCd},
-            SHIPPED_DT = #{shippedDt},
-            MOD_ID = #{modId},
-            MOD_DT = NOW()
+            courier_cd = #{courierCd},
+            tracking_no = #{trackingNo},
+            delivery_region_cd = #{deliveryRegionCd},
+            shipped_dt = #{shippedDt},
+            op_type = #{opType},
+            mod_id = #{modId},
+            mod_dt = NOW()
     </insert>
 
     <!-- =========================================================
          화물/직배송 정보 조회
          ========================================================= -->
     <select id="selectDeliveryFreight"
-            parameterType="long"
+            parameterType="kr.co.matpam.admin.order.service.OrderDeliveryFreightVO"
             resultType="kr.co.matpam.admin.order.service.OrderDeliveryFreightVO">
         SELECT
-            ORDER_ID,
-            SHIPPING_METHOD_CD,
-            FREIGHT_COMPANY_NAME,
-            DRIVER_NAME,
-            DRIVER_MOBILE,
-            TRUCK_NO,
-            DELIVERY_REGION_CD,
-            SHIPPED_DT,
-            ARRIVED_DT,
-            USE_YN,
-            DEL_YN,
-            REG_ID,
-            REG_DT,
-            MOD_ID,
-            MOD_DT
-        FROM TB_ORDER_DELIVERY_FREIGHT
-        WHERE ORDER_ID = #{orderId}
+            d.*
+        FROM tb_order_delivery_freight d
+        JOIN tb_order o ON o.order_id = d.order_id
+        WHERE d.order_id = #{orderId}
+        <if test="opType != null and opType != ''">
+            AND d.op_type = #{opType}
+        </if>
     </select>
 
     <!-- =========================================================
@@ -386,19 +371,20 @@
          ========================================================= -->
     <insert id="upsertDeliveryFreight"
             parameterType="kr.co.matpam.admin.order.service.OrderDeliveryFreightVO">
-        INSERT INTO TB_ORDER_DELIVERY_FREIGHT (
-            ORDER_ID,
-            SHIPPING_METHOD_CD,
-            FREIGHT_COMPANY_NAME,
-            DRIVER_NAME,
-            DRIVER_MOBILE,
-            TRUCK_NO,
-            DELIVERY_REGION_CD,
-            SHIPPED_DT,
-            USE_YN,
-            DEL_YN,
-            REG_ID,
-            REG_DT
+        INSERT INTO tb_order_delivery_freight (
+            order_id,
+            shipping_method_cd,
+            freight_company_name,
+            driver_name,
+            driver_mobile,
+            truck_no,
+            delivery_region_cd,
+            shipped_dt,
+            use_yn,
+            del_yn,
+            reg_id,
+            reg_dt,
+            op_type
         ) VALUES (
             #{orderId},
             #{shippingMethodCd},
@@ -411,40 +397,36 @@
             'Y',
             'N',
             #{regId},
-            NOW()
+            NOW(),
+            #{opType}
         )
         ON DUPLICATE KEY UPDATE
-            SHIPPING_METHOD_CD = #{shippingMethodCd},
-            FREIGHT_COMPANY_NAME = #{freightCompanyName},
-            DRIVER_NAME = #{driverName},
-            DRIVER_MOBILE = #{driverMobile},
-            TRUCK_NO = #{truckNo},
-            DELIVERY_REGION_CD = #{deliveryRegionCd},
-            SHIPPED_DT = #{shippedDt},
-            MOD_ID = #{modId},
-            MOD_DT = NOW()
+            shipping_method_cd = #{shippingMethodCd},
+            freight_company_name = #{freightCompanyName},
+            driver_name = #{driverName},
+            driver_mobile = #{driverMobile},
+            truck_no = #{truckNo},
+            delivery_region_cd = #{deliveryRegionCd},
+            shipped_dt = #{shippedDt},
+            op_type = #{opType},
+            mod_id = #{modId},
+            mod_dt = NOW()
     </insert>
 
     <!-- =========================================================
          공장수령 정보 조회
          ========================================================= -->
     <select id="selectDeliveryFactory"
-            parameterType="long"
+            parameterType="kr.co.matpam.admin.order.service.OrderDeliveryFactoryVO"
             resultType="kr.co.matpam.admin.order.service.OrderDeliveryFactoryVO">
         SELECT
-            ORDER_ID,
-            PICKUP_PLACE_CD,
-            PICKUP_DT,
-            CONTACT_NAME,
-            CONTACT_MOBILE,
-            USE_YN,
-            DEL_YN,
-            REG_ID,
-            REG_DT,
-            MOD_ID,
-            MOD_DT
-        FROM TB_ORDER_DELIVERY_FACTORY
-        WHERE ORDER_ID = #{orderId}
+            d.*
+        FROM tb_order_delivery_factory d
+        JOIN tb_order o ON o.order_id = d.order_id
+        WHERE d.order_id = #{orderId}
+        <if test="opType != null and opType != ''">
+            AND d.op_type = #{opType}
+        </if>
     </select>
 
     <!-- =========================================================
@@ -452,16 +434,17 @@
          ========================================================= -->
     <insert id="upsertDeliveryFactory"
             parameterType="kr.co.matpam.admin.order.service.OrderDeliveryFactoryVO">
-        INSERT INTO TB_ORDER_DELIVERY_FACTORY (
-            ORDER_ID,
-            PICKUP_PLACE_CD,
-            PICKUP_DT,
-            CONTACT_NAME,
-            CONTACT_MOBILE,
-            USE_YN,
-            DEL_YN,
-            REG_ID,
-            REG_DT
+        INSERT INTO tb_order_delivery_factory (
+            order_id,
+            pickup_place_cd,
+            pickup_dt,
+            contact_name,
+            contact_mobile,
+            use_yn,
+            del_yn,
+            reg_id,
+            reg_dt,
+            op_type
         ) VALUES (
             #{orderId},
             #{pickupPlaceCd},
@@ -471,15 +454,17 @@
             'Y',
             'N',
             #{regId},
-            NOW()
+            NOW(),
+            #{opType}
         )
         ON DUPLICATE KEY UPDATE
-            PICKUP_PLACE_CD = #{pickupPlaceCd},
-            PICKUP_DT = #{pickupDt},
-            CONTACT_NAME = #{contactName},
-            CONTACT_MOBILE = #{contactMobile},
-            MOD_ID = #{modId},
-            MOD_DT = NOW()
+            pickup_place_cd = #{pickupPlaceCd},
+            pickup_dt = #{pickupDt},
+            contact_name = #{contactName},
+            contact_mobile = #{contactMobile},
+            op_type = #{opType},
+            mod_id = #{modId},
+            mod_dt = NOW()
     </insert>
 
 </mapper>

@@ -5,116 +5,84 @@
     <resultMap id="orderResultMap" type="kr.co.matpam.admin.order.service.OrderVO">
         <id property="orderId" column="order_id"/>
         <result property="orderNo" column="order_no"/>
-        <result property="buyerMemberId" column="buyer_member_id"/>
-        <result property="totalOrderAmt" column="goods_total_amt"/>
-        <result property="totalVatAmt" column="vat_total_amt"/>
-        <result property="totalDiscountAmt" column="discount_total_amt"/>
-        <result property="totalPayAmt" column="pay_total_amt"/>
-        <result property="orderStatusCd" column="order_status_cd"/>
-        <result property="paymentStatusCd" column="payment_status_cd"/>
-        <result property="receiverName" column="receiver_name"/>
-        <result property="receiverHp" column="receiver_mobile"/>
-        <result property="receiverZip" column="zip_code"/>
-        <result property="receiverAddr" column="addr1"/>
-        <result property="receiverAddrDetail" column="addr2"/>
-        <result property="opType" column="op_type"/>
-        <result property="regId" column="reg_id"/>
-        <result property="regDt" column="reg_dt"/>
-    </resultMap>
-
-    <resultMap id="orderItemResultMap" type="kr.co.matpam.admin.order.service.OrderItemVO">
-        <id property="orderItemId" column="order_item_id"/>
-        <result property="orderId" column="order_id"/>
-        <result property="salesProdId" column="sales_prod_id"/>
-        <result property="unitPrice" column="sale_unit_price"/>
-        <result property="qty" column="order_qty"/>
-        <result property="itemOrderAmt" column="goods_amt"/>
-        <result property="itemVatAmt" column="vat_amt"/>
-        <result property="itemPayAmt" column="pay_amt"/>
+        <result property="orderDate" column="order_dt"/>
+        <result property="memberId" column="member_id"/>
+        <result property="memberName" column="company_name"/>
+        <result property="goodsTotalAmt" column="goods_total_amt"/>
+        <result property="deliveryTotalAmt" column="delivery_total_amt"/>
+        <result property="discountTotalAmt" column="discount_total_amt"/>
+        <result property="vatTotalAmt" column="vat_total_amt"/>
+        <result property="payTotalAmt" column="pay_total_amt"/>
+        <result property="orderStatus" column="order_status_cd"/>
+        <result property="orderStatusName" column="order_status_name"/>
+        <result property="useYn" column="use_yn"/>
         <result property="opType" column="op_type"/>
     </resultMap>
 
-    <!-- 주문 마스터 등록 -->
-    <insert id="insertOrder" parameterType="kr.co.matpam.admin.order.service.OrderVO" useGeneratedKeys="true" keyProperty="orderId">
-        INSERT INTO TB_ORDER (
-            order_no, buyer_member_id, 
-            goods_total_amt, vat_total_amt, discount_total_amt, pay_total_amt,
-            order_status_cd, payment_status_cd,
-            receiver_name, receiver_mobile, zip_code, addr1, addr2,
-            op_type, reg_id, reg_dt
-        ) VALUES (
-            #{orderNo}, #{buyerMemberId},
-            #{totalOrderAmt}, #{totalVatAmt}, #{totalDiscountAmt}, #{totalPayAmt},
-            #{orderStatusCd}, #{paymentStatusCd},
-            #{receiverName}, #{receiverHp}, #{receiverZip}, #{receiverAddr}, #{receiverAddrDetail},
-            #{opType}, #{regId}, NOW()
-        )
-    </insert>
-
-    <!-- 주문 상세 등록 -->
-    <insert id="insertOrderItem" parameterType="kr.co.matpam.admin.order.service.OrderItemVO">
-        INSERT INTO TB_ORDER_ITEM (
-            order_id, sales_prod_id, 
-            sale_unit_price, order_qty,
-            goods_amt, vat_amt, pay_amt,
-            op_type
-        ) VALUES (
-            #{orderId}, #{salesProdId},
-            #{unitPrice}, #{qty},
-            #{itemOrderAmt}, #{itemVatAmt}, #{itemPayAmt},
-            #{opType}
-        )
-    </insert>
-
-    <!-- 검색 조건 -->
-    <sql id="orderWhere">
-        <where>
-            <if test="buyerMemberId != null">
-                AND buyer_member_id = #{buyerMemberId}
-            </if>
-            <if test="orderStatusCd != null and orderStatusCd != ''">
-                AND order_status_cd = #{orderStatusCd}
-            </if>
-            <if test="opType != null and opType != ''">
-                AND op_type = #{opType}
-            </if>
-            <include refid="kr.co.matpam.common.mapper.MatpamCommonMapper.opTypeFilter"/>
-        </where>
-    </sql>
-
-    <!-- 주문 목록 조회 -->
-    <select id="selectOrderList" parameterType="kr.co.matpam.admin.order.service.OrderVO" resultMap="orderResultMap">
-        SELECT * FROM TB_ORDER
-        <include refid="orderWhere"/>
-        ORDER BY order_id DESC
+    <select id="selectOrderList" parameterType="kr.co.matpam.admin.order.service.OrderSearchVO" resultMap="orderResultMap">
+        SELECT 
+            o.order_id,
+            o.order_no,
+            o.order_dt,
+            o.member_id,
+            m.company_name,
+            o.goods_total_amt,
+            o.delivery_total_amt,
+            o.discount_total_amt,
+            o.vat_total_amt,
+            o.pay_total_amt,
+            o.order_status_cd,
+            IFNULL(dc.detail_code_nm, o.order_status_cd) AS order_status_name,
+            o.use_yn,
+            o.op_type
+        FROM tb_order o
+        LEFT JOIN tb_member m ON o.member_id = m.member_id
+        LEFT JOIN tb_detail_code dc ON o.order_status_cd = dc.detail_code_id AND dc.code_group_id = 'ORDER_STATUS'
+        WHERE o.del_yn = 'N'
+          <if test="opType != null and opType != '' and opType != 'NATIONAL'">
+              AND o.op_type = #{opType}
+          </if>
+          <include refid="orderWhere"/>
+        ORDER BY o.order_id DESC
         <include refid="kr.co.matpam.common.mapper.MatpamCommonMapper.pagingFooter"/>
     </select>
 
-    <!-- 주문 총 건수 -->
-    <select id="selectOrderListTotCnt" parameterType="kr.co.matpam.admin.order.service.OrderVO" resultType="int">
-        SELECT COUNT(1) FROM TB_ORDER
-        <include refid="orderWhere"/>
+    <select id="selectOrderListTotCnt" parameterType="kr.co.matpam.admin.order.service.OrderSearchVO" resultType="int">
+        SELECT COUNT(1) FROM tb_order o
+        WHERE o.del_yn = 'N'
+          <if test="opType != null and opType != '' and opType != 'NATIONAL'">
+              AND o.op_type = #{opType}
+          </if>
+          <include refid="orderWhere"/>
     </select>
 
-    <!-- 주문 상세 -->
-    <select id="selectOrder" parameterType="long" resultMap="orderResultMap">
-        SELECT * FROM TB_ORDER 
-        WHERE order_id = #{orderId}
-    </select>
+    <sql id="orderWhere">
+        <if test="searchKeyword != null and searchKeyword != ''">
+            <if test="searchCondition == 'orderNo'">
+                AND o.order_no LIKE CONCAT('%', #{searchKeyword}, '%')
+            </if>
+        </if>
+        <if test="orderStatusCd != null and orderStatusCd != ''">
+            AND o.order_status_cd = #{orderStatusCd}
+        </if>
+    </sql>
 
-    <!-- 주문 상품 상세 -->
-    <select id="selectOrderItemList" parameterType="long" resultMap="orderItemResultMap">
-        SELECT * FROM TB_ORDER_ITEM
-        WHERE order_id = #{orderId}
+    <!-- KPI 요약 정보 -->
+    <select id="selectOrderSummary" parameterType="kr.co.matpam.admin.order.service.OrderSearchVO" resultType="kr.co.matpam.admin.order.service.OrderSummaryVO">
+        SELECT 
+            COUNT(1) AS totalOrderCount,
+            IFNULL(SUM(o.goods_total_amt), 0) AS sumGoodsTotalAmt,
+            IFNULL(SUM(o.delivery_total_amt), 0) AS sumDeliveryTotalAmt,
+            IFNULL(SUM(o.discount_total_amt), 0) AS sumDiscountTotalAmt,
+            IFNULL(SUM(o.vat_total_amt), 0) AS sumVatTotalAmt,
+            IFNULL(SUM(o.pay_total_amt), 0) AS sumPayTotalAmt
+        FROM tb_order o
+        WHERE o.use_yn = 'Y'
+          AND o.del_yn = 'N'
+          <if test="opType != null and opType != '' and opType != 'NATIONAL'">
+              AND o.op_type = #{opType}
+          </if>
+          <include refid="orderWhere"/>
     </select>
-
-    <!-- 주문 상태 변경 -->
-    <update id="updateOrderStatus" parameterType="kr.co.matpam.admin.order.service.OrderVO">
-        UPDATE TB_ORDER
-           SET order_status_cd = #{orderStatusCd},
-               mod_id = #{modId},
-               mod_dt = NOW()
-         WHERE order_id = #{orderId}
-    </update>
 
 </mapper>

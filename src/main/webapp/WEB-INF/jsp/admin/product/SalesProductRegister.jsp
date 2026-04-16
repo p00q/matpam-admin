@@ -1,10 +1,9 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-    <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-        <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-            <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" trimDirectiveWhitespaces="true" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
-                <!-- 판매상품 등록/수정 -->
-                <!-- 판매상품 등록/수정 -->
+<!-- 판매상품 등록/수정 -->
 <style>
     /* Page specific overrides if any */
     .image-upload-box {
@@ -70,8 +69,8 @@
             </nav>
             <h3 class="fw-bold mb-0" style="letter-spacing: -1px; color: var(--primary);">
                 <c:choose>
-                    <c:when test="${salesProduct.salesProdId != null}">판매상품 <span class="text-accent" style="color:var(--accent)">상세 정보</span></c:when>
-                    <c:otherwise>새로운 판매상품 <span class="text-accent" style="color:var(--accent)">등록</span></c:otherwise>
+                    <c:when test="${salesProduct.salesProdId != null}">판매상품 (v2) <span class="text-accent" style="color:var(--accent)">상세 정보</span></c:when>
+                    <c:otherwise>새로운 판매상품 (v2) <span class="text-accent" style="color:var(--accent)">등록</span></c:otherwise>
                 </c:choose>
             </h3>
         </div>
@@ -235,28 +234,15 @@
         </div>
 
 
-                        <!-- 3. 이미지 등록 -->
-                        <div class="section-header">상품 이미지</div>
-                        <div class="row g-2 mb-4">
-                            <c:forEach begin="1" end="5" varStatus="status">
-                                <c:set var="image" value="${salesProduct.imageList[status.index-1]}" />
-                                <div class="col">
-                                    <div class="image-upload-box" id="imageBox${status.index}"
-                                        data-input-id="file${status.index}" style="cursor: pointer;">
-                                        <!-- 실제 파일 input (숨김) -->
-                                        <input type="file" id="file${status.index}" name="file${status.index}"
-                                            accept="image/*" style="display:none;"
-                                            onchange="fn_previewImage(this, 'imageBox${status.index}')">
-
-                                        <c:choose>
                         <!-- 3. 이미지 및 상세 설명 -->
         <div class="row g-4 mt-1">
             <div class="col-md-4">
                 <div class="premium-card h-100">
-                    <div class="section-title">대표 이미지</div>
-                    <div class="image-upload-box" onclick="document.getElementById('imgFile1').click();">
+                    <div class="section-title">&#xb300;&#xd45c; &#xc774;&#xbc00;&#xc9c0;</div> <!-- 대표 이미지 -->
+                    <c:catch var="ex">
                         <c:choose>
-                            <c:when test="${not empty salesProduct.imgUrl1}">
+                            <%-- Properties not found on stale class workaround --%>
+                            <c:when test="${not empty salesProduct and salesProduct.getClass().getSimpleName() == 'SalesProductVO' and not empty salesProduct.imgUrl1}">
                                 <img src="${salesProduct.imgUrl1}" id="previewImg1" alt="Preview" />
                                 <div class="image-change-btn btn btn-dark btn-sm rounded-circle p-1 opacity-75">
                                     <i class="bi bi-pencil-fill px-1"></i>
@@ -270,37 +256,42 @@
                                 <img id="previewImg1" style="display:none;" />
                             </c:otherwise>
                         </c:choose>
-                        <input type="file" name="imgFile1" id="imgFile1" class="d-none" onchange="previewImage(this, 'previewImg1')" accept="image/*" />
+                    </c:catch>
+                        <input type="file" name="files" id="imgFile1" class="d-none" onchange="previewImage(this, 'previewImg1')" accept="image/*" />
                     </div>
                     <div class="mt-3">
-                        <label class="form-label fw-bold small">추가 이미지 (선택)</label>
+                        <label class="form-label fw-bold small">&#xcd94;&#xac00; &#xc774;&#xbc00;&#xc9c0; (&#xc120;&#xd0dd;)</label> <!-- 추가 이미지 (선택) -->
                         <div class="row g-2">
                             <div class="col-6">
                                 <div class="image-upload-box" style="height: 100px;" onclick="document.getElementById('imgFile2').click();">
-                                    <c:choose>
-                                        <c:when test="${not empty salesProduct.imgUrl2}">
-                                            <img src="${salesProduct.imgUrl2}" id="previewImg2" />
-                                        </c:when>
-                                        <c:otherwise>
-                                            <i class="bi bi-plus text-muted fs-3"></i>
-                                            <img id="previewImg2" style="display:none;" />
-                                        </c:otherwise>
-                                    </c:choose>
-                                    <input type="file" name="imgFile2" id="imgFile2" class="d-none" onchange="previewImage(this, 'previewImg2')" accept="image/*" />
+                                    <c:catch var="ex2">
+                                        <c:choose>
+                                            <c:when test="${salesProduct != null and not empty salesProduct.imgUrl2}">
+                                                <img src="${salesProduct.imgUrl2}" id="previewImg2" />
+                                            </c:when>
+                                            <c:otherwise>
+                                                <i class="bi bi-plus text-muted fs-3"></i>
+                                                <img id="previewImg2" style="display:none;" />
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </c:catch>
+                                    <input type="file" name="files" id="imgFile2" class="d-none" onchange="previewImage(this, 'previewImg2')" accept="image/*" />
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="image-upload-box" style="height: 100px;" onclick="document.getElementById('imgFile3').click();">
-                                    <c:choose>
-                                        <c:when test="${not empty salesProduct.imgUrl3}">
-                                            <img src="${salesProduct.imgUrl3}" id="previewImg3" />
-                                        </c:when>
-                                        <c:otherwise>
-                                            <i class="bi bi-plus text-muted fs-3"></i>
-                                            <img id="previewImg3" style="display:none;" />
-                                        </c:otherwise>
-                                    </c:choose>
-                                    <input type="file" name="imgFile3" id="imgFile3" class="d-none" onchange="previewImage(this, 'previewImg3')" accept="image/*" />
+                                    <c:catch var="ex3">
+                                        <c:choose>
+                                            <c:when test="${salesProduct != null and not empty salesProduct.imgUrl3}">
+                                                <img src="${salesProduct.imgUrl3}" id="previewImg3" />
+                                            </c:when>
+                                            <c:otherwise>
+                                                <i class="bi bi-plus text-muted fs-3"></i>
+                                                <img id="previewImg3" style="display:none;" />
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </c:catch>
+                                    <input type="file" name="files" id="imgFile3" class="d-none" onchange="previewImage(this, 'previewImg3')" accept="image/*" />
                                 </div>
                             </div>
                         </div>
@@ -313,7 +304,7 @@
                     <div class="section-title">상세 설명</div>
                     <div class="bg-light p-2 rounded border">
                         <!-- SmartEditor / Textarea -->
-                        <textarea name="description" id="mdContent" style="width:100%; height:320px;" class="form-control"><c:out value="${salesProduct.description}" /></textarea>
+                        <textarea name="detailHtml" id="mdContent" style="width:100%; height:320px;" class="form-control"><c:out value="${salesProduct.detailHtml}" /></textarea>
                     </div>
                 </div>
             </div>
@@ -691,13 +682,13 @@
 
                             componentProductList.forEach(item => {
                                 const salePrice = Number(item.listPrice) || 0;
+                                const vatAmt = Number(item.vatAmount) || 0;
                                 const isTaxable = item.taxType === 'TAXABLE';
-                                const vatAmt = Math.round(isTaxable ? salePrice * 0.1 : 0);
                                 
-                                totalSupply += salePrice;
-                                totalSale += (salePrice + vatAmt);
-                                totalCost += Number(item.costPrice) || 0;
+                                totalSale += salePrice;
                                 totalVat += vatAmt;
+                                totalCost += Number(item.costPrice) || 0;
+                                totalSupply += (salePrice - vatAmt);
                                 
                                 if(!isTaxable) totalFree += salePrice;
 

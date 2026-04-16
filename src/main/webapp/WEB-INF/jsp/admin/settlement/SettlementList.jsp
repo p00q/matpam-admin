@@ -15,7 +15,7 @@
                     <li class="breadcrumb-item active">일간 정산 내역</li>
                 </ol>
             </nav>
-            <h3 class="fw-bold mb-0" style="letter-spacing: -1px; color: var(--primary);">정산 <span class="text-accent" style="color:var(--accent)">모니터링 대시보드</span></h3>
+            <h3 class="fw-bold mb-0" style="letter-spacing: -1px; color: var(--primary);"><c:out value="${pageTitle}"/> <span class="text-accent" style="color:var(--accent)">모니터링</span></h3>
         </div>
         <div class="gap-2 d-flex">
             <button type="button" class="btn btn-outline-primary btn-premium px-4 shadow-sm" onclick="fn_search()">
@@ -87,7 +87,7 @@
                 <c:if test="${opType eq 'NATIONAL'}">
                     <div class="col-md-3">
                         <label class="form-label text-muted small fw-bold">운영 타입 <i class="bi bi-shield-lock ms-1"></i></label>
-                        <select class="form-select border-light-subtle bg-light bg-opacity-50" name="searchOpType" id="searchOpType">
+                        <select class="form-select border-light-subtle bg-light bg-opacity-50" name="opType" id="opType">
                             <option value="">전체 권역</option>
                             <option value="NATIONAL">전국본부 (NATIONAL)</option>
                             <option value="LOCAL">전북본부 (LOCAL)</option>
@@ -195,7 +195,7 @@
             pageIndex: pageIndex,
             // (주의: MyBatis에서 settleDate가 String일 경우 Like 처리를 하거나, 여기선 기간이 아닌 특정일이면 settleDate 전달.)
             // 여기 MVP에서는 특정 settleDate 파라미터 대신 전체 조회를 수행합니다. 실제 운영에선 Between 필요.
-            searchOpType: $('#searchOpType').val() || ''
+            opType: $('#opType').val() || ''
         };
 
         // 1. KPI 요약 조회
@@ -247,10 +247,7 @@
         }
 
         list.forEach(item => {
-            let opBadge = '';
-            if (item.opType === 'NATIONAL') opBadge = '<span class="badge bg-primary px-3 shadow-sm rounded-pill">전국 본부</span>';
-            else if (item.opType === 'LOCAL') opBadge = '<span class="badge bg-success px-3 shadow-sm rounded-pill">로컬 지사</span>';
-            else opBadge = '<span class="badge bg-warning text-dark px-3 shadow-sm rounded-pill">가공 공장</span>';
+            let opBadge = getOpTypeBadge(item.opType);
 
             // 날짜 포맷 (YYYYMMDD -> YYYY-MM-DD)
             let formattedDate = item.settleDate;
@@ -263,14 +260,14 @@
 
             let html = `
                 <tr class="text-center align-middle hover-row">
-                    <td class="fw-bold text-dark">${formattedDate}</td>
-                    <td>${opBadge}</td>
-                    <td class="text-end fw-medium">${formatNumber(item.orderCount)} 건</td>
-                    <td class="text-end fw-bold text-dark">${formatNumber(item.totalGoodsAmt)} 원</td>
-                    <td class="text-end text-muted">${formatNumber(discountDeliveryAmt)} 원</td>
-                    <td class="text-end text-muted">${formatNumber(item.totalVatAmt)} 원</td>
-                    <td class="text-end pe-4 fw-bold" style="color: var(--accent); font-size: 1.05rem;">${formatNumber(item.totalPayAmt)} 원</td>
-                    <td class="text-center"><span class="small text-muted">${item.rawMaterialRatio}% / ${item.processedRatio}%</span></td>
+                    <td class="fw-bold text-dark">\${formattedDate}</td>
+                    <td>\${opBadge}</td>
+                    <td class="text-end fw-medium">\${formatNumber(item.orderCount)} 건</td>
+                    <td class="text-end fw-bold text-dark">\${formatNumber(item.totalGoodsAmt)} 원</td>
+                    <td class="text-end text-muted">\${formatNumber(discountDeliveryAmt)} 원</td>
+                    <td class="text-end text-muted">\${formatNumber(item.totalVatAmt)} 원</td>
+                    <td class="text-end pe-4 fw-bold" style="color: var(--accent); font-size: 1.05rem;">\${formatNumber(item.totalPayAmt)} 원</td>
+                    <td class="text-center"><span class="small text-muted">\${item.rawMaterialRatio}% / \${item.processedRatio}%</span></td>
                 </tr>
             `;
             $tbody.append(html);
@@ -392,4 +389,14 @@
 <style>
     .hover-row:hover { background-color: rgba(234, 179, 8, 0.02) !important; }
     .tracking-wider { letter-spacing: 0.05em; }
+
+    /**
+     * 운영타입별 배지 렌더링
+     */
+    function getOpTypeBadge(opType) {
+        if (opType === 'NATIONAL') return '<span class="badge bg-primary px-3 shadow-sm rounded-pill">전국 본부</span>';
+        if (opType === 'LOCAL') return '<span class="badge bg-success px-3 shadow-sm rounded-pill">로컬 지사</span>';
+        if (opType === 'FACTORY') return '<span class="badge bg-warning text-dark px-3 shadow-sm rounded-pill">가공 공장</span>';
+        return '<span class="badge bg-secondary px-3 shadow-sm rounded-pill">미지정</span>';
+    }
 </style>

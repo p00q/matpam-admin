@@ -29,7 +29,9 @@ public class MeatMoneyServiceImpl extends EgovAbstractServiceImpl implements Mea
 
     @Override
     public BigDecimal getBalance(Long memberId) throws Exception {
-        MemberVO vo = memberService.selectMember(memberId);
+        MemberVO searchVO = new MemberVO();
+        searchVO.setMemberPk(memberId);
+        MemberVO vo = memberService.selectMember(searchVO);
         if (vo == null) return BigDecimal.ZERO;
         return vo.getMeatMoney() != null ? new BigDecimal(vo.getMeatMoney()) : BigDecimal.ZERO;
     }
