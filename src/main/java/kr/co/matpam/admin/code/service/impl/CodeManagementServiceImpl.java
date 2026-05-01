@@ -11,11 +11,15 @@ import kr.co.matpam.admin.code.service.CodeVO;
 import kr.co.matpam.admin.code.service.DetailCodeVO;
 import kr.co.matpam.admin.code.service.GroupCodeVO;
 
+import org.egovframe.rte.fdl.cmmn.EgovAbstractServiceImpl;
+import org.springframework.transaction.annotation.Transactional;
+
 /**
  * 코드관리 서비스 구현체
  */
 @Service("codeManagementService")
-public class CodeManagementServiceImpl implements CodeManagementService {
+@Transactional
+public class CodeManagementServiceImpl extends EgovAbstractServiceImpl implements CodeManagementService {
 
     @Resource(name = "codeManagementMapper")
     private CodeManagementMapper codeManagementMapper;
@@ -38,6 +42,8 @@ public class CodeManagementServiceImpl implements CodeManagementService {
 
     @Override
     public void deleteGroupCode(String groupCode) throws Exception {
+        codeManagementMapper.deleteDetailCodesByGroup(groupCode);
+        codeManagementMapper.deleteCodesByGroup(groupCode);
         codeManagementMapper.deleteGroupCode(groupCode);
     }
 
@@ -64,6 +70,7 @@ public class CodeManagementServiceImpl implements CodeManagementService {
 
     @Override
     public void deleteCode(String groupCode, String code) throws Exception {
+        codeManagementMapper.deleteDetailCodesByCode(groupCode, code);
         codeManagementMapper.deleteCode(groupCode, code);
     }
 
@@ -92,5 +99,11 @@ public class CodeManagementServiceImpl implements CodeManagementService {
     @Override
     public void deleteDetailCode(String groupCode, String code, String detailCode) throws Exception {
         codeManagementMapper.deleteDetailCode(groupCode, code, detailCode);
+    }
+
+    @Override
+    public void reorderSortOrder() throws Exception {
+        codeManagementMapper.reorderCodeSortOrder();
+        codeManagementMapper.reorderDetailCodeSortOrder();
     }
 }

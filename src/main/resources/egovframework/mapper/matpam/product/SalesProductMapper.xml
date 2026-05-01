@@ -106,7 +106,7 @@
             sp.SALES_PROD_NAME,
 
             sp.SELLER_MEMBER_ID,
-            m.COMPANY_NAME AS SELLER_NAME,
+            m.company_name AS SELLER_NAME,
 
             sp.LIST_PRICE,
             sp.SALE_PRICE,
@@ -133,8 +133,8 @@
             sp.MOD_ID,
             sp.MOD_DT
         FROM tb_sales_product sp
-        LEFT JOIN tb_member m
-            ON sp.SELLER_MEMBER_ID = m.MEMBER_ID
+        LEFT JOIN tb_member_master m
+            ON sp.SELLER_MEMBER_ID = m.member_id
         <include refid="salesProductWhere"/>
         ORDER BY sp.SALES_PROD_ID DESC
         <include refid="kr.co.matpam.common.mapper.MatpamCommonMapper.pagingFooter"/>
@@ -163,7 +163,7 @@
             sp.SALES_PROD_NAME,
 
             sp.SELLER_MEMBER_ID,
-            m.COMPANY_NAME AS SELLER_NAME,
+            m.company_name AS SELLER_NAME,
 
             spd.DETAIL_HTML,
             spd.PAYMENT_INFO,
@@ -197,8 +197,8 @@
             sp.MOD_ID,
             sp.MOD_DT
         FROM tb_sales_product sp
-        LEFT JOIN tb_member m
-            ON sp.SELLER_MEMBER_ID = m.MEMBER_ID
+        LEFT JOIN tb_member_master m
+            ON sp.SELLER_MEMBER_ID = m.member_id
         LEFT JOIN tb_sales_product_detail spd
             ON sp.SALES_PROD_ID = spd.SALES_PROD_ID
            AND spd.DEL_YN = 'N'

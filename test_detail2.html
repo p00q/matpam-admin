@@ -1,0 +1,723 @@
+
+
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>맛팜 관리자 | Premium Admin</title>
+    
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Custom Premium Styles -->
+    <link rel="stylesheet" href="/resources/css/admin-premium.css;jsessionid=node03t5dwhscmi0h1fodzsdtzfb272.node0">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="/admin/dashboard/main.do;jsessionid=node03t5dwhscmi0h1fodzsdtzfb272.node0" style="text-decoration: none; color: inherit;">
+                <span class="logo-text">MATPAM ADMIN</span>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/admin/member/memberList.do;jsessionid=node03t5dwhscmi0h1fodzsdtzfb272.node0"
+                class="nav-item active">
+                <i class="bi bi-people-fill"></i>회원 관리
+            </a>
+            <a href="/admin/order/orderList.do;jsessionid=node03t5dwhscmi0h1fodzsdtzfb272.node0"
+                class="nav-item ">
+                <i class="bi bi-cart-fill"></i>주문 관리
+            </a>
+            <a href="/admin/product/salesProductList.do;jsessionid=node03t5dwhscmi0h1fodzsdtzfb272.node0"
+                class="nav-item ">
+                <i class="bi bi-box-seam-fill"></i>판매상품 관리
+            </a>
+            <a href="/admin/product/componentProductList.do;jsessionid=node03t5dwhscmi0h1fodzsdtzfb272.node0"
+                class="nav-item ">
+                <i class="bi bi-gear-fill"></i>구성상품 관리
+            </a>
+            <a href="/admin/settlement/settlementList.do;jsessionid=node03t5dwhscmi0h1fodzsdtzfb272.node0"
+                class="nav-item ">
+                <i class="bi bi-currency-exchange"></i>정산관리
+            </a>
+            <a href="/admin/code/codeManagement.do;jsessionid=node03t5dwhscmi0h1fodzsdtzfb272.node0"
+                class="nav-item ">
+                <i class="bi bi-file-earmark-text-fill"></i>시스템 설정
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="d-flex align-items-center">
+            <h5 class="mb-0 fw-bold" style="color: var(--primary);">
+                회원 관리
+            </h5>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="badge bg-light text-dark px-3 py-2 border shadow-sm">
+                <i class="bi bi-person-circle me-2"></i>운영자 권한: <strong>NATIONAL</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Wrapper -->
+    <main class="main-wrapper">
+        <div class="container-fluid p-4">
+            
+
+
+
+
+<style>
+    .form-container { background: #fff; padding: 20px; border-radius: 8px; }
+    .form-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    .form-table th { background: #f4f7f9; text-align: left; padding: 12px 15px; border: 1px solid #dee2e6; width: 150px; font-weight: 600; }
+    .form-table td { padding: 10px 15px; border: 1px solid #dee2e6; }
+    .section-title { font-size: 16px; font-weight: 700; margin: 30px 0 15px 0; display: flex; align-items: center; gap: 8px; }
+    .section-title::before { content: ""; display: inline-block; width: 4px; height: 16px; background: #2c5f7c; }
+    .nav-tabs .nav-link { color: #666; font-weight: 600; padding: 10px 25px; border: 1px solid transparent; border-bottom: 2px solid #dee2e6; }
+    .nav-tabs .nav-link.active { color: #2c5f7c; border-color: #dee2e6 #dee2e6 #fff; border-bottom: 2px solid #2c5f7c; background: #fff; }
+    .btn-sm-custom { padding: 2px 10px; font-size: 12px; }
+    .asset-box { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 15px; }
+    .red-label { color: #d9534f; font-weight: 600; }
+    .badge-status { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+</style>
+
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        
+            
+                <h4 class="fw-bold">회원 신규등록</h4>
+            
+            
+        
+        <div class="text-muted small">홈 > 회원관리 > 회원 신규등록</div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs mb-4" id="memberTab" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-info" type="button">회원정보</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-order" type="button">거래정보</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-money" type="button">입출금정보</button>
+        </li>
+    </ul>
+
+    <form id="memberForm" method="post" action="/admin/member/saveMember.do">
+        <input type="hidden" name="memberId" value="" />
+        <input type="hidden" name="mode" value="insert" />
+
+        <div class="tab-content">
+            <!-- 회원정보 탭 (Screenshot 2) -->
+            <div class="tab-pane fade show active" id="tab-info">
+                <div class="d-flex justify-content-end mb-2">
+                    <button type="button" class="btn btn-secondary btn-sm px-3" onclick="location.href='/admin/member/memberList.do'">목록</button>
+                </div>
+                
+                <div class="form-container border shadow-sm">
+                    <table class="form-table">
+                        <tr>
+                            <th>회원타입</th>
+                            <td>
+                                <select name="memberTypeCd" id="memberTypeCd" class="form-select form-select-sm w-50">
+                                    
+                                        
+                                            
+                                                <option value="ROLE_ADMIN" >관리자</option>
+                                            
+                                            
+                                        
+                                    
+                                        
+                                            
+                                                <option value="ROLE_SELLER" >판매자</option>
+                                            
+                                            
+                                        
+                                    
+                                        
+                                            
+                                                <option value="ROLE_BUYER" >구매자</option>
+                                            
+                                            
+                                        
+                                    
+                                </select>
+                            </td>
+                            <th>채널</th>
+                            <td>
+                                <select name="channelCd" class="form-select form-select-sm w-50">
+                                    
+                                        <option value="COURIER_SERVICE" >전국택배</option>
+                                    
+                                        <option value="DIRECT_DELIVERY" >직배송</option>
+                                    
+                                        <option value="FACTORY_PICKUP" >공장수령</option>
+                                    
+                                        <option value="ADMIN" >수퍼관리자</option>
+                                    
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>아이디</th>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="red-label"></span>
+                                    
+                                        <input type="text" name="loginId" value="" class="form-control form-control-sm w-75" />
+                                    
+                                </div>
+                            </td>
+                            <th>업체명</th>
+                            <td><span class="red-label"></span> <input type="text" name="companyName" value="" class="form-control form-control-sm w-75 d-inline-block" /></td>
+                        </tr>
+                        <tr>
+                            <th>비밀번호</th>
+                            <td>
+                                <input type="password" name="loginPwd" class="form-control form-control-sm w-75" placeholder="비밀번호 입력" />
+                            </td>
+                            <th>비밀번호 확인</th>
+                            <td>
+                                <input type="password" name="loginPwdConfirm" class="form-control form-control-sm w-75" placeholder="비밀번호 확인" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>사업자등록번호</th>
+                            <td><input type="text" name="bizRegNo" value="" class="form-control form-control-sm w-75" /></td>
+                            <th>회원등급</th>
+                            <td>
+                                <select name="memberGradeCd" class="form-select form-select-sm w-50">
+                                    
+                                        <option value="GRADE_NORMAL" >일반</option>
+                                    
+                                        <option value="GRADE_SILVER" >실버</option>
+                                    
+                                        <option value="GRADE_GOLD" >골드</option>
+                                    
+                                        <option value="GRADE_DIAMOND" >다이아몬드</option>
+                                    
+                                        <option value="GRADE_VVIP" >VVIP</option>
+                                    
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>대표자명</th>
+                            <td><span class="red-label"></span> <input type="text" name="ceoName" value="" class="form-control form-control-sm w-75 d-inline-block" /></td>
+                            <th>가입상태</th>
+                            <td>
+                                <select name="joinStatusCd" class="form-select form-select-sm w-50">
+                                    
+                                        <option value="JOIN_WAIT" >승인대기</option>
+                                    
+                                        <option value="JOIN_ACTIVE" >가입</option>
+                                    
+                                        <option value="JOIN_DORMANT" >휴면</option>
+                                    
+                                        <option value="JOIN_LEAVE" >회원탈퇴</option>
+                                    
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>휴대폰번호</th>
+                            <td><input type="text" name="ceoMobileNo" value="" class="form-control form-control-sm w-75" /></td>
+                            <th>회사 전화번호</th>
+                            <td><input type="text" name="companyTelNo" value="" class="form-control form-control-sm w-75" /></td>
+                        </tr>
+                        <tr>
+                            <th>이메일주소</th>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <input type="email" name="email" value="" class="form-control form-control-sm w-75" placeholder="이메일 주소 입력" />
+                                    
+                                </div>
+                            </td>
+                            <th>최근접속시간</th>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <th>주소</th>
+                            <td colspan="3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <input type="text" id="zipCode" name="zipCode" value="" class="form-control form-control-sm" style="width: 100px;" readonly />
+                                    <input type="text" id="addr1" name="addr1" value="" class="form-control form-control-sm w-50" readonly />
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="fn_addr_search()">주소찾기</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>상세 주소</th>
+                            <td colspan="3">
+                                <input type="text" name="addr2" value="" class="form-control form-control-sm w-50" />
+                            </td>
+                        </tr>
+                    </table>
+
+                    
+                    <div id="section_meatmoney_info" style="">
+                    <div class="section-title">■ 미트머니 정보 <button type="button" class="btn btn-dark btn-sm float-end ms-auto" style="font-size: 11px;">여신관리</button></div>
+                    <div class="row g-0 border">
+                        <div class="col-md-6 border-end">
+                            <table class="form-table mb-0 border-0">
+                                <tr>
+                                    <th class="border-0">여신 약정일</th>
+                                    <td class="border-0">2024년 10월 11일</td>
+                                </tr>
+                                <tr>
+                                    <th class="border-0 red-label">여신 제공액</th>
+                                    <td class="border-0 text-end fw-bold"> 원</td>
+                                </tr>
+                                <tr>
+                                    <th class="border-0 red-label">미트머니 잔액</th>
+                                    <td class="border-0 text-end fw-bold"> 원</td>
+                                </tr>
+                                <tr>
+                                    <th class="border-0">출금 가능 금액</th>
+                                    <td class="border-0 text-end fw-bold text-primary">
+                                        0 원
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="form-table mb-0 border-0">
+                                <tr>
+                                    <th class="border-0">월 누적 주문금액</th>
+                                    <td class="border-0 text-end"> 원</td>
+                                </tr>
+                                <tr>
+                                    <th class="border-0">연 누적 주문금액</th>
+                                    <td class="border-0 text-end"> 원</td>
+                                </tr>
+                                <tr>
+                                    <th class="border-0">총 누적 주문금액</th>
+                                    <td class="border-0 text-end fw-bold"> 원</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    </div><!-- /section_meatmoney_info -->
+
+                    
+                    <div id="section_seller_info" style="display:none;">
+                        <div class="section-title">■ 판매자 정보</div>
+                        <table class="form-table">
+                            <tr id="row_seller_type">
+                                <th>판매자 유형</th>
+                                <td>
+                                    <select name="sellerTypeCd" class="form-select form-select-sm w-50">
+                                        
+                                            <option value="SELLER_RAW" >원물판매자</option>
+                                        
+                                            <option value="SELLER_PROCESS" >가공판매자</option>
+                                        
+                                    </select>
+                                </td>
+                                <th>과세 유형</th>
+                                <td>
+                                    <select name="taxTypeCd" class="form-select form-select-sm w-50">
+                                        
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr id="row_seller_account">
+                                <th>계좌 정보</th>
+                                <td colspan="3">
+                                    <div class="d-flex gap-2">
+                                        <input type="text" name="bankCd" value="" class="form-control form-control-sm" style="width: 100px;" placeholder="은행명" />
+                                        <input type="text" name="accountNo" value="" class="form-control form-control-sm w-25" placeholder="계좌번호" />
+                                        <input type="text" name="accountName" value="" class="form-control form-control-sm w-25" placeholder="예금주" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="section-title">■ 가입 정보</div>
+                    <table class="form-table">
+                        <tr>
+                            <th>가입일자</th>
+                            <td></td>
+                            <th>수정일자</th>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <th>탈퇴일자</th>
+                            <td colspan="3">
+                                <div class="d-flex align-items-center gap-3">
+                                    <span></span>
+                                    <button type="button" class="btn btn-secondary btn-sm-custom">회원탈퇴</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    
+                    <div id="section_contact_info" style="">
+                    <div class="section-title">
+                        ■ 담당자 정보 
+                        <div class="form-check ms-3">
+                            <input class="form-check-input" type="checkbox" id="chk_same_ceo" onchange="fn_copy_ceo()">
+                            <label class="form-check-label small" for="chk_same_ceo">대표자 정보와 동일</label>
+                        </div> 
+                        <button type="button" id="btn_add_contact" class="btn btn-dark btn-sm ms-2" onclick="fn_add_contact()">생성</button>
+                    </div>
+                    
+                    <div id="contact_1" class="border p-3 mb-3 bg-light rounded">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold">담당자 1</span>
+                        </div>
+                        <table class="form-table mb-0 border-0">
+                            <tr>
+                                <th class="border-0 bg-transparent">이름</th>
+                                <td class="border-0"><input type="text" name="contacts[0].name" value="" class="form-control form-control-sm w-50" /></td>
+                                <th class="border-0 bg-transparent text-danger">이메일주소</th>
+                                <td class="border-0"><input type="email" name="contacts[0].email" value="" class="form-control form-control-sm" /></td>
+                            </tr>
+                            <tr>
+                                <th class="border-0 bg-transparent">휴대폰번호</th>
+                                <td class="border-0"><input type="text" name="contacts[0].mobileNo" value="" class="form-control form-control-sm w-75 phone-format" /></td>
+                                <th class="border-0 bg-transparent">전화번호</th>
+                                <td class="border-0"><input type="text" name="contacts[0].phoneNo" value="" class="form-control form-control-sm w-75 phone-format" /></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div id="contact_2" class="border p-3 mb-3 bg-light rounded" style="display:none;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold">담당자 2</span>
+                            <button type="button" class="btn btn-secondary btn-sm-custom" onclick="fn_del_contact(2)">삭제</button>
+                        </div>
+                        <table class="form-table mb-0 border-0">
+                            <tr>
+                                <th class="border-0 bg-transparent">이름</th>
+                                <td class="border-0"><input type="text" name="contacts[1].name" value="" class="form-control form-control-sm w-50" /></td>
+                                <th class="border-0 bg-transparent text-danger">이메일주소</th>
+                                <td class="border-0"><input type="email" name="contacts[1].email" value="" class="form-control form-control-sm" /></td>
+                            </tr>
+                            <tr>
+                                <th class="border-0 bg-transparent">휴대폰번호</th>
+                                <td class="border-0"><input type="text" name="contacts[1].mobileNo" value="" class="form-control form-control-sm w-75 phone-format" /></td>
+                                <th class="border-0 bg-transparent">전화번호</th>
+                                <td class="border-0"><input type="text" name="contacts[1].phoneNo" value="" class="form-control form-control-sm w-75 phone-format" /></td>
+                            </tr>
+                        </table>
+                    </div>
+                    </div><!-- /section_contact_info -->
+                    
+                    <div class="d-flex gap-3 mt-4 border-top pt-3">
+                        <div class="form-check form-switch"><input class="form-check-input" type="checkbox"><label class="form-check-label small">제3자 정보 제공 동의 여부</label></div>
+                        <div class="form-check form-switch"><input class="form-check-input" type="checkbox"><label class="form-check-label small">광고 수신 동의 여부</label></div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-center gap-2 mt-4">
+                    <button type="button" class="btn btn-secondary px-4" onclick="location.href='/admin/member/memberList.do'">목록</button>
+                    <button type="button" class="btn btn-dark px-4" onclick="fn_save()">확인</button>
+                    <button type="button" class="btn btn-secondary px-4" onclick="history.back()">취소</button>
+                </div>
+            </div>
+
+            <!-- 거래정보 탭 (Screenshot 3 Placeholder) -->
+            <div class="tab-pane fade" id="tab-order">
+                <div class="form-container border shadow-sm p-4">
+                    <div class="row text-center mb-4 border py-3 bg-light g-0">
+                        <div class="col border-end">총 주문금액<br><span class="fw-bold">5,000,000 원</span></div>
+                        <div class="col border-end">총 주문건수<br><span class="fw-bold">55</span></div>
+                        <div class="col border-end">총 결제금액<br><span class="fw-bold">9,000,000 원</span></div>
+                        <div class="col">미트머니 잔액<br><span class="text-danger fw-bold">4,200,000 원</span></div>
+                    </div>
+                    <div class="section-title">■ 거래정보</div>
+                    <div class="text-center py-5 text-muted border">주문 내역이 존재하지 않습니다.</div>
+                </div>
+            </div>
+
+            <!-- 입출금정보 탭 (Screenshot 4 Placeholder) -->
+            <div class="tab-pane fade" id="tab-money">
+                <div class="form-container border shadow-sm p-4">
+                    <div class="row text-center mb-4 border py-3 bg-light g-0 small">
+                        <div class="col border-end">제공여신액<br><span class="fw-bold">5,000,000 원</span></div>
+                        <div class="col border-end">총 입금액<br><span class="fw-bold">8,200,000 원</span></div>
+                        <div class="col border-end">총 사용금액<br><span class="text-danger fw-bold">1,000,000 원</span></div>
+                        <div class="col border-end">보유 미트머니<br><span class="fw-bold">1,000,000 원</span></div>
+                        <div class="col">출금 가능 금액<br><span class="fw-bold">5,000,000 원</span></div>
+                    </div>
+                    <div class="section-title">■ 거래정보</div>
+                    <div class="text-center py-5 text-muted border">거래 내역이 존재하지 않습니다.</div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script>
+    function fn_save() {
+        const form = document.getElementById('memberForm');
+        const mode = form.mode.value;
+        
+        // 필수값 체크
+        if (mode === 'insert') {
+            if (!form.loginId.value) {
+                alert('아이디를 입력해주세요.');
+                form.loginId.focus();
+                return;
+            }
+            if (!form.companyName.value) {
+                alert('업체명을 입력해주세요.');
+                form.companyName.focus();
+                return;
+            }
+            if (!form.ceoName.value) {
+                alert('대표자명을 입력해주세요.');
+                form.ceoName.focus();
+                return;
+            }
+            if (!form.loginPwd.value) {
+                alert('비밀번호를 입력해주세요.');
+                form.loginPwd.focus();
+                return;
+            }
+        }
+        
+        // 비밀번호 체크
+        if (form.loginPwd.value) {
+            if (form.loginPwd.value.length < 4) {
+                alert('비밀번호는 최소 4자 이상이어야 합니다.');
+                form.loginPwd.focus();
+                return;
+            }
+            if (form.loginPwd.value !== form.loginPwdConfirm.value) {
+                alert('비밀번호와 비밀번호 확인이 일치하지 않습니다.');
+                form.loginPwdConfirm.focus();
+                return;
+            }
+        }
+
+        if (!form.bizRegNo.value) {
+            alert('사업자등록번호를 입력해주세요.');
+            form.bizRegNo.focus();
+            return;
+        }
+        
+        // 사업자번호 형식 체크 (10자리 숫자)
+        const bizRegNo = form.bizRegNo.value.replace(/[^0-9]/g, '');
+        if (bizRegNo.length !== 10) {
+            alert('사업자등록번호를 정확히 입력해주세요 (10자리 숫자).');
+            form.bizRegNo.focus();
+            return;
+        }
+        form.bizRegNo.value = bizRegNo;
+
+        if(confirm('변경 사항을 저장하시겠습니까?')) {
+            form.submit();
+        }
+    }
+    
+    function fn_addr_search() {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                document.getElementById('zipCode').value = data.zonecode;
+                document.getElementById('addr1').value = data.address;
+                document.querySelector('input[name="addr2"]').focus();
+            }
+        }).open();
+    }
+    
+    function fn_copy_ceo() {
+        const chk = document.getElementById('chk_same_ceo');
+        if(chk.checked) {
+            const form = document.getElementById('memberForm');
+            // 등록 모드일 때는 input에서, 수정 모드일 때는 span 텍스트에서 가져옴
+            const ceoNameInput = document.querySelector('input[name="ceoName"]');
+            const ceoName = ceoNameInput ? ceoNameInput.value : (document.querySelector('td:has(input[name="ceoMobileNo"])').parentElement.previousElementSibling.previousElementSibling.querySelector('span.red-label')?.innerText || '');
+            
+            // 더 정확한 선택자 사용
+            const ceoMobile = document.querySelector('input[name="ceoMobileNo"]').value;
+            const companyTel = document.querySelector('input[name="companyTelNo"]').value;
+            const email = document.querySelector('input[name="email"]').value;
+            
+            document.querySelector('input[name="contacts[0].name"]').value = ceoName;
+            document.querySelector('input[name="contacts[0].mobileNo"]').value = ceoMobile;
+            document.querySelector('input[name="contacts[0].phoneNo"]').value = companyTel;
+            document.querySelector('input[name="contacts[0].email"]').value = email;
+        }
+    }
+
+    function fn_add_contact() {
+        const contact2 = document.getElementById('contact_2');
+        if (contact2.style.display === 'none') {
+            contact2.style.display = '';
+            document.getElementById('btn_add_contact').disabled = true;
+        }
+    }
+
+    function fn_del_contact(idx) {
+        if (confirm('담당자 ' + idx + ' 정보를 삭제하시겠습니까?')) {
+            const div = document.getElementById('contact_' + idx);
+            div.style.display = 'none';
+            // 필드 초기화
+            div.querySelectorAll('input').forEach(input => input.value = '');
+            if (idx === 2) {
+                document.getElementById('btn_add_contact').disabled = false;
+            }
+        }
+    }
+
+    function fn_toggle_member_type(val) {
+        val = (val || '').trim();
+        // 미트머니: 구매자만
+        document.getElementById('section_meatmoney_info').style.display  = (val === 'BUYER')  ? '' : 'none';
+        // 판매자 정보: 판매자만
+        document.getElementById('section_seller_info').style.display     = (val === 'SELLER') ? '' : 'none';
+        // 담당자: 관리자만 숨김
+        document.getElementById('section_contact_info').style.display    = (val === 'ADMIN')  ? 'none' : '';
+    }
+
+    // 포맷팅 함수들
+    function formatBizNo(str) {
+        str = str.replace(/[^0-9]/g, '');
+        if (str.length <= 3) return str;
+        if (str.length <= 5) return str.replace(/(\d{3})(\d{1,2})/, '$1-$2');
+        return str.replace(/(\d{3})(\d{2})(\d{1,5})/, '$1-$2-$3');
+    }
+
+    function formatPhone(str) {
+        str = str.replace(/[^0-9]/g, '');
+        if (str.length < 3) return str;
+        
+        // 서울 지역번호(02) 처리
+        if (str.startsWith('02')) {
+            if (str.length <= 2) return str;
+            if (str.length <= 5) return str.replace(/(\d{2})(\d{1,3})/, '$1-$2');
+            if (str.length <= 9) return str.replace(/(\d{2})(\d{3})(\d{1,4})/, '$1-$2-$3');
+            return str.replace(/(\d{2})(\d{4})(\d{4})/, '$1-$2-$3');
+        } else {
+            if (str.length <= 3) return str;
+            if (str.length <= 6) return str.replace(/(\d{3})(\d{1,3})/, '$1-$2');
+            if (str.length <= 10) return str.replace(/(\d{3})(\d{3})(\d{1,4})/, '$1-$2-$3');
+            return str.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+        }
+    }
+
+    // 숫자만 입력 및 포맷팅 이벤트 바인딩
+    document.addEventListener('DOMContentLoaded', function() {
+        // 초기 회원타입에 따른 섹션 표시/숨김
+        var memberTypeSelect = document.getElementById('memberTypeCd');
+        if (memberTypeSelect) {
+            fn_toggle_member_type(memberTypeSelect.value);
+            // jQuery change 이벤트 바인딩
+            $(memberTypeSelect).on('change', function() {
+                fn_toggle_member_type(this.value);
+            });
+        }
+
+        // 사업자번호 포맷팅
+        const bizInput = document.querySelector('input[name="bizRegNo"]');
+        if (bizInput) {
+            bizInput.addEventListener('input', function() {
+                this.value = formatBizNo(this.value);
+            });
+            bizInput.value = formatBizNo(bizInput.value);
+        }
+
+        // 전화번호 포맷팅
+        const phoneInputs = document.querySelectorAll('input[name="ceoMobileNo"], input[name="companyTelNo"], .phone-format');
+        phoneInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                this.value = formatPhone(this.value);
+            });
+            input.value = formatPhone(input.value);
+        });
+
+        // 담당자 2가 보이고 있으면 생성 버튼 비활성화
+        if (document.getElementById('contact_2') && document.getElementById('contact_2').style.display !== 'none') {
+            document.getElementById('btn_add_contact').disabled = true;
+        }
+    });
+</script>
+        </div>
+    </main>
+
+    <!-- Global Loading Overlay -->
+    <div id="global-loader">
+        <div class="loader-spinner mb-3"></div>
+        <div class="fw-bold text-primary animate-pulse">처리 중입니다...</div>
+    </div>
+
+    <!-- Global Toast Notifications -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-4">
+        <div id="premiumToast" class="toast premium-toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto" id="toastTitle">알림</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body d-flex align-items-center">
+                <i id="toastIcon" class="bi"></i>
+                <span id="toastMessage"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle & Core Logic -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // --- 1. Global AJAX Loader ---
+            $(document).ajaxStart(function() {
+                $('#global-loader').css('display', 'flex');
+            }).ajaxStop(function() {
+                $('#global-loader').hide();
+            });
+
+            // --- 2. Toast Utility ---
+            window.fn_toast = function(message, type = 'info') {
+                const toastEl = document.getElementById('premiumToast');
+                const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+                
+                const $toast = $('#premiumToast');
+                const $icon = $('#toastIcon');
+                
+                // Reset classes
+                $toast.removeClass('toast-success toast-danger toast-info');
+                $icon.removeClass('bi-check-circle-fill bi-exclamation-triangle-fill bi-info-circle-fill');
+                
+                if (type === 'success') {
+                    $toast.addClass('toast-success');
+                    $icon.addClass('bi-check-circle-fill text-success');
+                    $('#toastTitle').text('성공');
+                } else if (type === 'danger') {
+                    $toast.addClass('toast-danger');
+                    $icon.addClass('bi-check-circle-fill text-danger');
+                    $('#toastTitle').text('오류');
+                } else {
+                    $toast.addClass('toast-info');
+                    $icon.addClass('bi-info-circle-fill text-primary');
+                    $('#toastTitle').text('알림');
+                }
+                
+                $('#toastMessage').text(message);
+                toast.show();
+            };
+        });
+    </script>
+</body>
+
+</html>

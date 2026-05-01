@@ -420,6 +420,7 @@
   - reg_dt                    DATETIME        (size:19, null:NO)
   - mod_id                    VARCHAR         (size:20, null:YES)
   - mod_dt                    DATETIME        (size:19, null:NO)
+  - op_type                   VARCHAR         (size:20, null:YES)
 
 [TABLE: tb_sales_product]
   - sales_prod_id             BIGINT          (size:19, null:NO)

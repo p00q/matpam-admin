@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.matpam.admin.channel.service.impl.PlatformMapper">
+
+    <select id="selectPlatformList" parameterType="kr.co.matpam.admin.channel.service.PlatformVO" resultType="kr.co.matpam.admin.channel.service.PlatformVO">
+        SELECT 
+            platform_id as platformId,
+            platform_name as platformName,
+            platform_code as platformCode,
+            status
+        FROM tb_platform
+        WHERE 1=1
+        <if test="status != null and status != ''">
+            AND status = #{status}
+        </if>
+        ORDER BY platform_id ASC
+    </select>
+
+    <insert id="insertPlatform" parameterType="kr.co.matpam.admin.channel.service.PlatformVO">
+        INSERT INTO tb_platform (platform_name, platform_code, status)
+        VALUES (#{platformName}, #{platformCode}, #{status})
+    </insert>
+
+    <update id="updatePlatform" parameterType="kr.co.matpam.admin.channel.service.PlatformVO">
+        UPDATE tb_platform SET
+            platform_name = #{platformName},
+            platform_code = #{platformCode},
+            status = #{status}
+        WHERE platform_id = #{platformId}
+    </update>
+
+</mapper>

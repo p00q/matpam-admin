@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.matpam.admin.common.service.impl.AuditMapper">
+
+    <insert id="insertAuditLog">
+        INSERT INTO tb_audit_log (
+            tenant_id, entity_name, action_type, changed_data, status, user_id, created_at
+        ) VALUES (
+            #{tenantId}, #{entityName}, #{actionType}, #{changedData}, #{status}, #{userId}, NOW()
+        )
+    </insert>
+
+</mapper>

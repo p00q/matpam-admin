@@ -15,6 +15,9 @@ public class MatpamBaseVO implements Serializable {
     /** 운영 타입 (NATIONAL, LOCAL, FACTORY) - 데이터 격리용 */
     private String opType;
 
+    /** 테넌트 ID (Multi-tenancy 강제화용) */
+    private Long tenantId;
+
     /** 페이징: 현재 페이지 번호 */
     private Integer pageIndex = 1;
 
@@ -57,6 +60,14 @@ public class MatpamBaseVO implements Serializable {
 
     public void setOpType(String opType) {
         this.opType = opType;
+    }
+
+    public Long getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(Long tenantId) {
+        this.tenantId = tenantId;
     }
 
     public Integer getPageIndex() {

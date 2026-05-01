@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import kr.co.matpam.admin.order.service.OrderService;
 import kr.co.matpam.admin.order.service.OrderVO;
 import kr.co.matpam.admin.order.service.OrderItemVO;
-import kr.co.matpam.admin.member.service.MeatMoneyService;
+// import kr.co.matpam.admin.member.service.MeatMoneyService;
 
 /**
  * 주문 서비스 구현체
@@ -21,8 +21,8 @@ public class OrderServiceImpl extends EgovAbstractServiceImpl implements OrderSe
     @Resource(name = "orderDAO")
     private OrderDAO orderDAO;
 
-    @Resource(name = "meatMoneyService")
-    private MeatMoneyService meatMoneyService;
+    // @Resource(name = "meatMoneyService")
+    // private MeatMoneyService meatMoneyService;
 
     @Override
     @Transactional
@@ -45,8 +45,8 @@ public class OrderServiceImpl extends EgovAbstractServiceImpl implements OrderSe
             }
         }
 
-        // 4. 맛팜 머니 차감 (결제)
-        // 결제 금액이 있을 경우에만 실행
+        // 4. 맛팜 머니 차감 (결제) - 레거시 삭제로 인한 임시 주석 처리
+        /*
         if (orderVO.getTotalPayAmt() != null && orderVO.getTotalPayAmt().longValue() > 0) {
             meatMoneyService.deductMoney(
                 orderVO.getBuyerMemberId(), 
@@ -54,6 +54,7 @@ public class OrderServiceImpl extends EgovAbstractServiceImpl implements OrderSe
                 orderNo
             );
         }
+        */
 
         return orderNo;
     }
@@ -100,7 +101,8 @@ public class OrderServiceImpl extends EgovAbstractServiceImpl implements OrderSe
         order.setModId(orderVO.getModId()); // 수정자 설정
         orderDAO.updateOrderStatus(order);
 
-        // 머니 환불 (결제되었던 경우)
+        // 머니 환불 (결제되었던 경우) - 레거시 삭제로 인한 임시 주석 처리
+        /*
         if ("PAID".equals(order.getPaymentStatusCd())) {
             meatMoneyService.chargeMoney(
                 order.getBuyerMemberId(), 
@@ -108,5 +110,6 @@ public class OrderServiceImpl extends EgovAbstractServiceImpl implements OrderSe
                 "SYSTEM_CANCEL"
             );
         }
+        */
     }
 }

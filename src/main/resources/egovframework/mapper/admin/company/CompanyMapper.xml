@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.matpam.admin.company.service.impl.CompanyMapper">
+
+    <resultMap id="companyMap" type="kr.co.matpam.admin.company.service.CompanyVO">
+        <id property="companyId" column="company_id"/>
+        <result property="tenantId" column="tenant_id"/>
+        <result property="companyType" column="company_type"/>
+        <result property="sellerType" column="seller_type"/>
+        <result property="companyName" column="company_name"/>
+        <result property="businessNo" column="business_no"/>
+        <result property="ceoName" column="ceo_name"/>
+        <result property="postalCode" column="postal_code"/>
+        <result property="address1" column="address1"/>
+        <result property="address2" column="address2"/>
+        <result property="phone" column="phone"/>
+        <result property="email" column="email"/>
+        <result property="defaultTaxType" column="default_tax_type"/>
+        <result property="bizStatus" column="biz_status"/>
+        <result property="bizCheckedAt" column="biz_checked_at"/>
+        <result property="bizCheckedResult" column="biz_checked_result"/>
+        <result property="status" column="status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <sql id="companyWhere">
+        <where>
+            <if test="tenantId != null">
+                AND tenant_id = #{tenantId}
+            </if>
+            <if test="companyType != null and companyType != ''">
+                AND company_type = #{companyType}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="searchKeyword != null and searchKeyword != ''">
+                AND (company_name LIKE CONCAT('%', #{searchKeyword}, '%') OR business_no LIKE CONCAT('%', #{searchKeyword}, '%'))
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectCompanyList" parameterType="kr.co.matpam.admin.company.service.CompanyVO" resultMap="companyMap">
+        SELECT * FROM tb_company
+        <include refid="companyWhere"/>
+        ORDER BY created_at DESC
+        LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
+    </select>
+
+    <select id="selectCompanyListAll" parameterType="kr.co.matpam.admin.company.service.CompanyVO" resultMap="companyMap">
+        SELECT * FROM tb_company
+        <include refid="companyWhere"/>
+        ORDER BY company_name ASC
+    </select>
+
+    <select id="selectCompanyListTotCnt" parameterType="kr.co.matpam.admin.company.service.CompanyVO" resultType="int">
+        SELECT COUNT(*) FROM tb_company
+        <include refid="companyWhere"/>
+    </select>
+
+    <select id="selectCompanyDetail" parameterType="kr.co.matpam.admin.company.service.CompanyVO" resultMap="companyMap">
+        SELECT * FROM tb_company WHERE company_id = #{companyId}
+    </select>
+
+    <insert id="insertCompany" parameterType="kr.co.matpam.admin.company.service.CompanyVO" useGeneratedKeys="true" keyProperty="companyId">
+        INSERT INTO tb_company (
+            tenant_id, company_type, seller_type, company_name, business_no,
+            ceo_name, postal_code, address1, address2, phone, email,
+            default_tax_type, biz_status, status
+        ) VALUES (
+            #{tenantId}, #{companyType}, #{sellerType}, #{companyName}, #{businessNo},
+            #{ceoName}, #{postalCode}, #{address1}, #{address2}, #{phone}, #{email},
+            #{defaultTaxType}, 'ACTIVE', 'ACTIVE'
+        )
+    </insert>
+
+    <update id="updateCompany" parameterType="kr.co.matpam.admin.company.service.CompanyVO">
+        UPDATE tb_company
+        SET
+            company_name = #{companyName},
+            ceo_name = #{ceoName},
+            postal_code = #{postalCode},
+            address1 = #{address1},
+            address2 = #{address2},
+            phone = #{phone},
+            email = #{email},
+            default_tax_type = #{defaultTaxType},
+            updated_at = NOW()
+        WHERE company_id = #{companyId}
+    </update>
+
+    <update id="updateCompanyStatus" parameterType="kr.co.matpam.admin.company.service.CompanyVO">
+        UPDATE tb_company
+        SET status = #{status}, updated_at = NOW()
+        WHERE company_id = #{companyId}
+    </update>
+
+</mapper>

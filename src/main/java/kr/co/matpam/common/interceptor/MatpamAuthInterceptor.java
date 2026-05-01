@@ -9,7 +9,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
-import kr.co.matpam.admin.member.service.MemberVO;
+import kr.co.matpam.admin.common.service.LoginVO;
 
 /**
  * 맛팜 인증 및 운영 권한 인터셉터
@@ -20,7 +20,7 @@ public class MatpamAuthInterceptor implements HandlerInterceptor {
     public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) throws Exception {
         
         HttpSession session = request.getSession();
-        MemberVO loginVO = (MemberVO) session.getAttribute("loginVO");
+        LoginVO loginVO = (LoginVO) session.getAttribute("loginVO");
 
         // 1. 로그인 체크 (실운영시 주석 해제)
         /*
@@ -33,11 +33,11 @@ public class MatpamAuthInterceptor implements HandlerInterceptor {
         // 2. 운영 타입(opType) 설정
         // 임시 로직: 세션에 없으면 기본 NATIONAL로 설정 (개발 편의성)
         String opType = "NATIONAL"; 
-        if (loginVO != null && loginVO.getDeliveryTypeCd() != null) {
-            String deliveryType = loginVO.getDeliveryTypeCd();
-            if ("ADMIN_FREIGHT".equals(deliveryType)) {
+        if (loginVO != null && loginVO.getChannelCd() != null) {
+            String deliveryType = loginVO.getChannelCd();
+            if ("FREIGHT".equals(deliveryType)) {
                 opType = "LOCAL";
-            } else if ("ADMIN_PICKUP".equals(deliveryType)) {
+            } else if ("PICKUP".equals(deliveryType)) {
                 opType = "FACTORY";
             }
         }
@@ -46,6 +46,7 @@ public class MatpamAuthInterceptor implements HandlerInterceptor {
         request.setAttribute("opType", opType);
         if (loginVO != null) {
             request.setAttribute("loginId", loginVO.getLoginId());
+            request.setAttribute("tenantId", loginVO.getCompanyId()); // 임시로 companyId를 tenantId처럼 사용하거나 필드 추가 필요
         }
 
         return true;

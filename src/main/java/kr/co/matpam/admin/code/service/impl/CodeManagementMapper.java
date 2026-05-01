@@ -27,6 +27,10 @@ public interface CodeManagementMapper {
 
     void deleteGroupCode(String groupCode) throws Exception;
 
+    void deleteCodesByGroup(String groupCode) throws Exception;
+
+    void deleteDetailCodesByGroup(String groupCode) throws Exception;
+
     // ========== 코드 ==========
     List<CodeVO> selectCodeList(String groupCode) throws Exception;
 
@@ -40,6 +44,8 @@ public interface CodeManagementMapper {
 
     void deleteCode(@Param("groupCode") String groupCode, @Param("code") String code) throws Exception;
 
+    void deleteDetailCodesByCode(@Param("groupCode") String groupCode, @Param("code") String code) throws Exception;
+
     // ========== 상세코드 ==========
     List<DetailCodeVO> selectDetailCodeList(@Param("groupCode") String groupCode, @Param("code") String code) throws Exception;
 
@@ -52,4 +58,8 @@ public interface CodeManagementMapper {
     void updateDetailCode(DetailCodeVO vo) throws Exception;
 
     void deleteDetailCode(@Param("groupCode") String groupCode, @Param("code") String code, @Param("detailCode") String detailCode) throws Exception;
+
+    void reorderCodeSortOrder() throws Exception;
+
+    void reorderDetailCodeSortOrder() throws Exception;
 }

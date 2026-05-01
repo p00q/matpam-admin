@@ -17,18 +17,20 @@ public class AuthInterceptor implements HandlerInterceptor {
         HttpSession session = request.getSession();
         kr.co.matpam.admin.common.service.LoginVO loginVO = (kr.co.matpam.admin.common.service.LoginVO) session.getAttribute("loginVO");
 
-        // [개발용 자동 로그인/권한 설정] 세션에 정보가 없으면 NATIONAL(슈퍼관리자)로 기본 설정
         if (loginVO == null) {
-            loginVO = new kr.co.matpam.admin.common.service.LoginVO();
-            loginVO.setLoginId("admin");
-            loginVO.setUserNm("시스템관리자");
-            loginVO.setOpType("NATIONAL");
-            session.setAttribute("loginVO", loginVO);
+            // Spring Security가 인증을 처리하므로, 여기서는 단순히 false를 반환하거나 
+            // 필요한 경우 로그인 페이지로 리다이렉트합니다.
+            // 하지만 Security Filter가 먼저 동작하므로 보통은 여기까지 오지 않습니다.
+            return true; 
         }
 
         // 운영권한 및 로그인ID를 Request Attribute에 설정 (Controller/Mapper용)
         request.setAttribute("opType", loginVO.getOpType());
         request.setAttribute("loginId", loginVO.getLoginId());
+        request.setAttribute("adminMemberId", loginVO.getMemberPk());
+        request.setAttribute("companyId", loginVO.getCompanyId());
+        request.setAttribute("channelCd", loginVO.getChannelCd());
+        request.setAttribute("adminRoleCd", loginVO.getRoleCd());
 
         // 2. URI 분석을 통한 현재 메뉴 및 타이틀 설정
         String uri = request.getRequestURI();

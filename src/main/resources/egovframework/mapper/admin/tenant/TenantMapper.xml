@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.matpam.admin.tenant.service.impl.TenantMapper">
+
+    <resultMap id="tenantMap" type="kr.co.matpam.admin.tenant.service.TenantVO">
+        <id property="tenantId" column="tenant_id"/>
+        <result property="tenantCode" column="tenant_code"/>
+        <result property="tenantName" column="tenant_name"/>
+        <result property="sellerCompanyId" column="seller_company_id"/>
+        <result property="status" column="status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <select id="selectTenantList" parameterType="kr.co.matpam.admin.tenant.service.TenantVO" resultMap="tenantMap">
+        SELECT * FROM tb_tenant
+        <where>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="searchKeyword != null and searchKeyword != ''">
+                AND (tenant_name LIKE CONCAT('%', #{searchKeyword}, '%') OR tenant_code LIKE CONCAT('%', #{searchKeyword}, '%'))
+            </if>
+        </where>
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectTenantListTotCnt" parameterType="kr.co.matpam.admin.tenant.service.TenantVO" resultType="int">
+        SELECT COUNT(*) FROM tb_tenant
+    </select>
+
+    <select id="selectTenantDetail" parameterType="kr.co.matpam.admin.tenant.service.TenantVO" resultMap="tenantMap">
+        SELECT * FROM tb_tenant WHERE tenant_id = #{tenantId}
+    </select>
+
+    <insert id="insertTenant" parameterType="kr.co.matpam.admin.tenant.service.TenantVO" useGeneratedKeys="true" keyProperty="tenantId">
+        INSERT INTO tb_tenant (
+            tenant_code, tenant_name, status
+        ) VALUES (
+            #{tenantCode}, #{tenantName}, 'ACTIVE'
+        )
+    </insert>
+
+    <update id="updateTenant" parameterType="kr.co.matpam.admin.tenant.service.TenantVO">
+        UPDATE tb_tenant
+        SET
+            tenant_name = #{tenantName},
+            seller_company_id = #{sellerCompanyId},
+            status = #{status},
+            updated_at = NOW()
+        WHERE tenant_id = #{tenantId}
+    </update>
+
+</mapper>

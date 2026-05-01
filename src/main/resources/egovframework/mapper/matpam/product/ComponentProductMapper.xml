@@ -97,9 +97,8 @@
     <select id="selectComponentProductList"
             resultMap="componentProductResultMap"
             parameterType="kr.co.matpam.admin.product.service.ComponentProductVO">
-        SELECT
             c.COMPONENT_PROD_ID, c.COMPONENT_PROD_CODE, c.COMPONENT_PROD_NAME, c.SELLER_MEMBER_ID,
-            m.COMPANY_NAME AS SELLER_NAME,
+            m.company_name AS SELLER_NAME,
             c.SALE_TYPE_CD,       sale_type.DETAIL_CODE_NAME    AS SALE_TYPE_NAME,
             c.STORAGE_TYPE_CD,    storage_type.DETAIL_CODE_NAME AS STORAGE_TYPE_NAME,
             c.CUT_TYPE_CD,        cut_type.DETAIL_CODE_NAME     AS CUT_TYPE_NAME,
@@ -112,8 +111,8 @@
             c.USE_YN, c.DEL_YN, c.OP_TYPE, c.TAX_TYPE,
             c.REG_ID, c.REG_DT, c.MOD_ID, c.MOD_DT
         FROM tb_component_product c
-        LEFT JOIN tb_member m
-            ON c.SELLER_MEMBER_ID = m.MEMBER_ID
+        LEFT JOIN tb_member_master m
+            ON c.SELLER_MEMBER_ID = m.member_id
         LEFT JOIN tb_detail_code sale_type
             ON sale_type.CODE_GROUP_ID = 'SALE_STATUS' AND sale_type.CODE_ID = 'SALE_TYPE'
             AND sale_type.DETAIL_CODE_ID = c.SALE_TYPE_CD
@@ -153,9 +152,8 @@
     <select id="selectComponentProduct"
             resultMap="componentProductResultMap"
             parameterType="kr.co.matpam.admin.product.service.ComponentProductVO">
-        SELECT
             c.COMPONENT_PROD_ID, c.COMPONENT_PROD_CODE, c.COMPONENT_PROD_NAME, c.SELLER_MEMBER_ID,
-            m.COMPANY_NAME AS SELLER_NAME,
+            m.company_name AS SELLER_NAME,
             c.SALE_TYPE_CD,       sale_type.DETAIL_CODE_NAME    AS SALE_TYPE_NAME,
             c.STORAGE_TYPE_CD,    storage_type.DETAIL_CODE_NAME AS STORAGE_TYPE_NAME,
             c.CUT_TYPE_CD,        cut_type.DETAIL_CODE_NAME     AS CUT_TYPE_NAME,
@@ -168,8 +166,8 @@
             c.USE_YN, c.DEL_YN, c.OP_TYPE, c.TAX_TYPE,
             c.REG_ID, c.REG_DT, c.MOD_ID, c.MOD_DT
         FROM tb_component_product c
-        LEFT JOIN tb_member m
-            ON c.SELLER_MEMBER_ID = m.MEMBER_ID
+        LEFT JOIN tb_member_master m
+            ON c.SELLER_MEMBER_ID = m.member_id
         LEFT JOIN tb_detail_code sale_type
             ON sale_type.CODE_GROUP_ID = 'SALE_STATUS' AND sale_type.CODE_ID = 'SALE_TYPE'
             AND sale_type.DETAIL_CODE_ID = c.SALE_TYPE_CD

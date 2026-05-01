@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.matpam.admin.member.service.impl.MemberMapper">
+
+    <select id="selectMemberList" parameterType="kr.co.matpam.admin.member.service.MemberVO" resultType="kr.co.matpam.admin.member.service.MemberVO">
+        SELECT 
+            company_id AS companyId,
+            company_name AS companyName,
+            business_no AS businessNo,
+            ceo_name AS ceoName,
+            phone,
+            email,
+            status,
+            created_at AS createdAt
+        FROM tb_company
+        WHERE company_type = 'BUYER'
+        <if test="searchKeyword != null and searchKeyword != ''">
+            AND (company_name LIKE CONCAT('%', #{searchKeyword}, '%') OR business_no LIKE CONCAT('%', #{searchKeyword}, '%'))
+        </if>
+        ORDER BY created_at DESC
+        LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
+    </select>
+
+    <select id="selectMemberListTotCnt" parameterType="kr.co.matpam.admin.member.service.MemberVO" resultType="int">
+        SELECT COUNT(*) FROM tb_company
+        WHERE company_type = 'BUYER'
+        <if test="searchKeyword != null and searchKeyword != ''">
+            AND (company_name LIKE CONCAT('%', #{searchKeyword}, '%') OR business_no LIKE CONCAT('%', #{searchKeyword}, '%'))
+        </if>
+    </select>
+
+</mapper>

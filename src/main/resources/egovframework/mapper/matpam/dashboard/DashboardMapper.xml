@@ -25,10 +25,10 @@
              </if>
             ) AS readyShippingCount,
             
-            (SELECT COUNT(*) FROM tb_member 
-             WHERE DATE(JOIN_DT) = CURDATE()
+            (SELECT COUNT(*) FROM tb_user 
+             WHERE DATE(created_at) = CURDATE()
              <if test="opType != null and opType != 'NATIONAL'">
-                 AND OP_TYPE = #{opType}
+                 AND channel_id = #{opType}
              </if>
             ) AS todayNewMemberCount
     </select>

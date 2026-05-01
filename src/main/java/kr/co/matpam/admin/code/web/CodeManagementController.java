@@ -32,6 +32,8 @@ public class CodeManagementController {
      */
     @RequestMapping(value = "/admin/code/codeManagement.do")
     public String codeManagementView(ModelMap model) throws Exception {
+        model.addAttribute("pageTitle", "시스템 설정");
+        model.addAttribute("currentMenu", "code");
         model.addAttribute("contentPage", "/WEB-INF/jsp/admin/code/CodeManagement.jsp");
         return "layout/main";
     }
@@ -159,7 +161,7 @@ public class CodeManagementController {
             result.put("message", "삭제되었습니다.");
         } catch (Exception e) {
             result.put("success", false);
-            result.put("message", "하위 코드가 있어 삭제할 수 없습니다.");
+            result.put("message", e.getMessage());
         }
         return result;
     }
@@ -179,7 +181,7 @@ public class CodeManagementController {
             result.put("message", "삭제되었습니다.");
         } catch (Exception e) {
             result.put("success", false);
-            result.put("message", "하위 상세코드가 있어 삭제할 수 없습니다.");
+            result.put("message", e.getMessage());
         }
         return result;
     }
@@ -198,6 +200,21 @@ public class CodeManagementController {
             codeManagementService.deleteDetailCode(groupCode, code, detailCode);
             result.put("success", true);
             result.put("message", "삭제되었습니다.");
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+        return result;
+    }
+
+    @RequestMapping(value = "/admin/code/reorder.do")
+    @ResponseBody
+    public Map<String, Object> reorder() throws Exception {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            codeManagementService.reorderSortOrder(); // Service에 추가해야 함
+            result.put("success", true);
+            result.put("message", "재정렬이 완료되었습니다.");
         } catch (Exception e) {
             result.put("success", false);
             result.put("message", e.getMessage());

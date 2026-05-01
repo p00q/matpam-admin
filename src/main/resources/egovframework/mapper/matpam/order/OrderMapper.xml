@@ -36,7 +36,7 @@
             o.use_yn,
             o.op_type
         FROM tb_order o
-        LEFT JOIN tb_member m ON o.member_id = m.member_id
+        LEFT JOIN tb_member_master m ON o.member_id = m.member_id
         LEFT JOIN tb_detail_code dc ON o.order_status_cd = dc.detail_code_id AND dc.code_group_id = 'ORDER_STATUS'
         WHERE o.del_yn = 'N'
           <if test="opType != null and opType != '' and opType != 'NATIONAL'">

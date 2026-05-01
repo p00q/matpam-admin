@@ -76,6 +76,43 @@
                         width: 80px;
                         text-align: center;
                     }
+
+                    /* Premium Toast Notification */
+                    #toast-container {
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        z-index: 9999;
+                    }
+
+                    .toast-custom {
+                        min-width: 300px;
+                        padding: 15px 20px;
+                        background: #fff;
+                        color: #333;
+                        border-radius: 8px;
+                        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+                        margin-bottom: 10px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        animation: slideIn 0.3s ease-out forwards;
+                        border-left: 5px solid #ccc;
+                    }
+
+                    @keyframes slideIn {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+
+                    .toast-custom.success { border-left-color: #28a745; background-color: #f0fff0; }
+                    .toast-custom.error { border-left-color: #dc3545; background-color: #fff5f5; }
+                    .toast-custom.warning { border-left-color: #ffc107; background-color: #fffff0; }
+
+                    .toast-content { display: flex; align-items: center; gap: 12px; }
+                    .toast-icon { font-size: 1.2rem; }
+                    .toast-close { cursor: pointer; color: #999; margin-left: 15px; }
+                    .toast-close:hover { color: #333; }
                 </style>
             </head>
 
@@ -135,7 +172,7 @@
                                         <i class="bi bi-plus"></i>
                                     </button>
                                     <button type="button" class="btn btn-sm btn-danger btn-circle ms-1"
-                                        onclick="deleteGroupCodeRow()" title="삭제">
+                                        onclick="deleteGroupCodeRow(event)" title="삭제">
                                         <i class="bi bi-dash"></i>
                                     </button>
                                 </div>
@@ -170,7 +207,7 @@
                                         <i class="bi bi-plus"></i>
                                     </button>
                                     <button type="button" class="btn btn-sm btn-danger btn-circle ms-1"
-                                        onclick="deleteCodeRow()" title="삭제">
+                                        onclick="deleteCodeRow(event)" title="삭제">
                                         <i class="bi bi-dash"></i>
                                     </button>
                                 </div>
@@ -179,9 +216,9 @@
                                 <table class="table table-sm table-bordered table-fixed mb-0">
                                     <thead>
                                         <tr>
-                                            <th style="width: 20%;">코드</th>
-                                            <th style="width: 15%;">순서</th>
-                                            <th style="width: 45%;">코드명</th>
+                                            <th style="width: 30%;">코드</th>
+                                            <th style="width: 12%;">순서</th>
+                                            <th style="width: 38%;">코드명</th>
                                             <th style="width: 20%;">사용여부</th>
                                         </tr>
                                     </thead>
@@ -205,7 +242,7 @@
                                         <i class="bi bi-plus"></i>
                                     </button>
                                     <button type="button" class="btn btn-sm btn-danger btn-circle ms-1"
-                                        onclick="deleteDetailCodeRow()" title="삭제">
+                                        onclick="deleteDetailCodeRow(event)" title="삭제">
                                         <i class="bi bi-dash"></i>
                                     </button>
                                 </div>
@@ -214,9 +251,9 @@
                                 <table class="table table-sm table-bordered table-fixed mb-0">
                                     <thead>
                                         <tr>
-                                            <th style="width: 20%;">상세코드</th>
-                                            <th style="width: 15%;">순서</th>
-                                            <th style="width: 45%;">상세코드명</th>
+                                            <th style="width: 30%;">상세코드</th>
+                                            <th style="width: 12%;">순서</th>
+                                            <th style="width: 38%;">상세코드명</th>
                                             <th style="width: 20%;">사용여부</th>
                                         </tr>
                                     </thead>
@@ -233,29 +270,86 @@
                     </div>
                 </div>
 
+                <!-- 삭제 확인 모달 -->
+                <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">삭제 확인</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" id="deleteModalMessage">
+                                정말 삭제하시겠습니까?
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                                <button type="button" class="btn btn-danger" id="btnConfirmDelete">삭제</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="toast-container"></div>
+
                 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                <script>
+                    function showToast(message, type = 'success') {
+                        const container = $('#toast-container');
+                        const icon = type === 'success' ? 'bi-check-circle-fill' : (type === 'error' ? 'bi-exclamation-octagon-fill' : 'bi-info-circle-fill');
+                        const toast = $('<div class="toast-custom ' + type + '">' +
+                            '<div class="toast-content">' +
+                            '<i class="bi ' + icon + ' toast-icon"></i>' +
+                            '<span>' + message + '</span>' +
+                            '</div>' +
+                            '<i class="bi bi-x toast-close"></i>' +
+                            '</div>');
+
+                        container.append(toast);
+
+                        // Auto-remove after 3 seconds
+                        setTimeout(() => {
+                            toast.fadeOut(300, function () { $(this).remove(); });
+                        }, 3000);
+
+                        toast.find('.toast-close').click(function () {
+                            toast.remove();
+                        });
+                    }
+                </script>
                 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
                 <script>
+                    let currentGroupItem = null;
+                    let currentCodeItem = null;
+                    let currentDetailItem = null;
                     let selectedGroupCode = null;
                     let selectedCode = null;
+                    let selectedDetailCode = null;
                     let groupCodeData = [];
                     let codeData = [];
                     let detailCodeData = [];
+                    
+                    let deleteTargetInfo = null; // { type: 'group'|'code'|'detail', item: obj }
 
                     // 페이지 로드 시 그룹코드 조회
                     $(document).ready(function () {
                         loadGroupCodes();
+                        
+                        // 모달 삭제 버튼 클릭 이벤트
+                        $('#btnConfirmDelete').on('click', function() {
+                            if (deleteTargetInfo) {
+                                executeDeletion(deleteTargetInfo);
+                            }
+                            $('#deleteConfirmModal').modal('hide');
+                        });
                     });
-
-                    // ========== 전체 검색 ==========
-                    function searchAll() {
-                        loadGroupCodes();
-                    }
 
                     // ========== 그룹코드 관련 함수 ==========
                     function loadGroupCodes() {
+                        console.log('loadGroupCodes called');
                         const searchVO = {
                             groupCodeName: $('#searchGroupCodeName').val(),
+                            code: $('#searchCodeName').val(),
+                            detailCode: $('#searchDetailCodeName').val(),
                             useYn: $('#searchUseYn').val()
                         };
 
@@ -265,33 +359,69 @@
                             data: searchVO,
                             success: function (response) {
                                 if (response.success) {
-                                    groupCodeData = response.data || [];
+                                    groupCodeData = (response.data || []).map(item => {
+                                        item.isNew = false;
+                                        return item;
+                                    });
                                     renderGroupCodeTable();
                                 } else {
-                                    alert('조회 실패: ' + response.message);
+                                    showToast('조회 실패: ' + response.message, 'error');
                                 }
                             },
                             error: function () {
-                                alert('서버 오류가 발생했습니다.');
+                                showToast('그룹코드 조회 중 오류가 발생했습니다.', 'error');
                             }
                         });
                     }
 
+                    function searchAll() {
+                        loadGroupCodes();
+                    }
+
                     function renderGroupCodeTable() {
+                        console.log('renderGroupCodeTable called, data length:', groupCodeData.length);
                         const tbody = $('#groupCodeTableBody');
                         tbody.empty();
 
                         groupCodeData.forEach(function (item, index) {
                             const row = $('<tr>')
                                 .attr('data-index', index)
-                                .attr('data-group-code', item.groupCode)
-                                .click(function () {
-                                    selectGroupCode($(this));
+                                .click(function (e) {
+                                    // input 클릭 시 중복 처리 방지
+                                    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT') {
+                                        selectGroupCode($(this));
+                                    }
                                 });
 
-                            row.append($('<td>').html('<input type="text" class="form-control form-control-sm" value="' + (item.groupCode || '') + '">'));
-                            row.append($('<td>').html('<input type="text" class="form-control form-control-sm" value="' + (item.groupCodeName || '') + '">'));
-                            row.append($('<td>').html('<input type="text" class="form-control form-control-sm" value="' + (item.useYn || '사용') + '">'));
+                            if (currentGroupItem === item) {
+                                row.addClass('selected');
+                            }
+
+                            // 그룹코드 입력 필드
+                            const groupCodeInput = $('<input type="text" class="form-control form-control-sm">')
+                                .val(item.groupCode || '')
+                                .on('focus', function() { selectGroupCode(row); })
+                                .on('change', function() { item.groupCode = $(this).val().trim(); });
+                            
+                            if (item.isNew === false) {
+                                groupCodeInput.prop('readonly', true).addClass('bg-light');
+                            }
+                            row.append($('<td>').append(groupCodeInput));
+
+                            // 그룹코드명 입력 필드
+                            const groupCodeNameInput = $('<input type="text" class="form-control form-control-sm">')
+                                .val(item.groupCodeName || '')
+                                .on('focus', function() { selectGroupCode(row); })
+                                .on('change', function() { item.groupCodeName = $(this).val(); });
+                            row.append($('<td>').append(groupCodeNameInput));
+                            
+                            // 사용여부 선택 필드
+                            const useYnSelect = $('<select class="form-select form-select-sm">')
+                                .append('<option value="Y"' + (item.useYn === 'Y' ? ' selected' : '') + '>사용</option>')
+                                .append('<option value="N"' + (item.useYn === 'N' ? ' selected' : '') + '>미사용</option>')
+                                .on('focus', function() { selectGroupCode(row); })
+                                .on('change', function() { item.useYn = $(this).val(); });
+                            row.append($('<td>').append(useYnSelect));
 
                             tbody.append(row);
                         });
@@ -301,133 +431,205 @@
                         $('#groupCodeTableBody tr').removeClass('selected');
                         row.addClass('selected');
 
-                        const groupCode = row.find('td:eq(0) input').val();
-                        selectedGroupCode = groupCode;
+                        const index = parseInt(row.attr('data-index'));
+                        const item = groupCodeData[index];
+                        if (!item) return;
 
-                        if (groupCode) {
-                            loadCodes(groupCode);
+                        currentGroupItem = item;
+                        selectedGroupCode = item.groupCode;
+                        currentCodeItem = null;
+                        selectedCode = null;
+                        currentDetailItem = null;
+                        selectedDetailCode = null;
+                        console.log('selectGroupCode:', selectedGroupCode);
+
+                        if (selectedGroupCode && !item.isNew) {
+                            loadCodes(selectedGroupCode);
                         } else {
-                            $('#codeTableBody').empty();
-                            $('#detailCodeTableBody').empty();
+                            codeData = [];
+                            detailCodeData = [];
+                            renderCodeTable();
+                            renderDetailCodeTable();
                         }
                     }
 
                     function addGroupCodeRow() {
+                        console.log('addGroupCodeRow called');
                         const newRow = {
                             groupCode: '',
                             groupCodeName: '',
-                            useYn: '사용'
+                            useYn: 'Y',
+                            isNew: true
                         };
                         groupCodeData.push(newRow);
                         renderGroupCodeTable();
+                        
+                        setTimeout(() => {
+                            const lastRow = $('#groupCodeTableBody tr:last');
+                            selectGroupCode(lastRow);
+                            lastRow[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }, 50);
                     }
 
-                    function deleteGroupCodeRow() {
-                        const selected = $('#groupCodeTableBody tr.selected');
-                        if (selected.length === 0) {
-                            alert('삭제할 행을 선택하세요.');
+                    function deleteGroupCodeRow(event) {
+                        const e = event || window.event;
+                        if (e) e.stopPropagation();
+                        
+                        if (!currentGroupItem) {
+                            const selectedRow = $('#groupCodeTableBody tr.selected');
+                            if (selectedRow.length > 0) {
+                                currentGroupItem = groupCodeData[parseInt(selectedRow.attr('data-index'))];
+                            }
+                        }
+
+                        if (!currentGroupItem) {
+                            showToast('삭제할 그룹코드를 선택하세요.', 'warning');
                             return;
                         }
 
-                        const groupCode = selected.find('td:eq(0) input').val();
-                        if (groupCode && confirm('정말 삭제하시겠습니까?')) {
-                            $.ajax({
-                                url: '<c:url value="/admin/code/deleteGroupCode.do"/>',
-                                type: 'POST',
-                                data: { groupCode: groupCode },
-                                success: function (response) {
-                                    if (response.success) {
-                                        alert(response.message);
-                                        loadGroupCodes();
-                                    } else {
-                                        alert(response.message);
-                                    }
-                                }
-                            });
+                        const item = currentGroupItem;
+                        if (!item.isNew) {
+                            const hasChildren = (codeData && codeData.length > 0);
+                            const msg = hasChildren ? 
+                                '하위 코드가 존재합니다. 함께 삭제하시겠습니까? (데이터베이스에서 영구 삭제됩니다)' : 
+                                '정말 삭제하시겠습니까? (데이터베이스에서 영구 삭제됩니다)';
+                            
+                            showDeleteModal('group', item, msg);
                         } else {
-                            const index = selected.data('index');
-                            groupCodeData.splice(index, 1);
-                            renderGroupCodeTable();
+                            const index = groupCodeData.indexOf(item);
+                            if (index > -1) {
+                                groupCodeData.splice(index, 1);
+                                renderGroupCodeTable();
+                                currentGroupItem = null;
+                                selectedGroupCode = null;
+                            }
                         }
                     }
 
                     function saveGroupCodes() {
-                        const rows = $('#groupCodeTableBody tr');
+                        console.log('saveGroupCodes called');
                         let saveCount = 0;
                         let errorCount = 0;
+                        let validationError = false;
 
-                        rows.each(function () {
-                            const groupCode = $(this).find('td:eq(0) input').val().trim();
-                            const groupCodeName = $(this).find('td:eq(1) input').val().trim();
-                            const useYn = $(this).find('td:eq(2) input').val().trim();
-
-                            if (!groupCode || !groupCodeName) {
-                                return; // skip empty rows
+                        const ids = new Set();
+                        for(let i=0; i<groupCodeData.length; i++) {
+                            const item = groupCodeData[i];
+                            if (!item.groupCode?.trim() || !item.groupCodeName?.trim()) {
+                                showToast((i + 1) + '번째 행의 필수값을 입력하세요.', 'warning');
+                                validationError = true;
+                                break;
                             }
+                            if (ids.has(item.groupCode)) {
+                                showToast('중복된 그룹코드가 존재합니다: ' + item.groupCode, 'warning');
+                                validationError = true;
+                                break;
+                            }
+                            ids.add(item.groupCode);
+                        }
 
-                            const data = {
-                                groupCode: groupCode,
-                                groupCodeName: groupCodeName,
-                                useYn: useYn
-                            };
+                        if (validationError) return;
 
+                        groupCodeData.forEach(function(item) {
                             $.ajax({
                                 url: '<c:url value="/admin/code/saveGroupCode.do"/>',
                                 type: 'POST',
-                                data: data,
+                                data: item,
                                 async: false,
                                 success: function (response) {
-                                    if (response.success) {
-                                        saveCount++;
-                                    } else {
-                                        errorCount++;
-                                    }
+                                    if (response.success) saveCount++;
+                                    else errorCount++;
                                 },
-                                error: function () {
-                                    errorCount++;
-                                }
+                                error: function () { errorCount++; }
                             });
                         });
 
                         if (errorCount > 0) {
-                            alert('저장 중 오류가 발생했습니다. (성공: ' + saveCount + ', 실패: ' + errorCount + ')');
-                        } else {
-                            alert(saveCount + '건 저장되었습니다.');
+                            showToast('일부 저장 실패 (성공: ' + saveCount + ', 실패: ' + errorCount + ')', 'error');
+                        } else if (saveCount > 0) {
+                            showToast('모든 변경사항이 저장되었습니다.', 'success');
                         }
                         loadGroupCodes();
                     }
 
                     // ========== 코드 관련 함수 ==========
                     function loadCodes(groupCode) {
+                        console.log('loadCodes called for:', groupCode);
                         $.ajax({
                             url: '<c:url value="/admin/code/codeList.do"/>',
                             type: 'GET',
                             data: { groupCode: groupCode },
                             success: function (response) {
                                 if (response.success) {
-                                    codeData = response.data || [];
+                                    codeData = (response.data || []).map(item => {
+                                        item.isNew = false;
+                                        return item;
+                                    });
                                     renderCodeTable();
-                                    $('#detailCodeTableBody').empty();
+                                    detailCodeData = [];
+                                    renderDetailCodeTable();
                                 }
+                            },
+                            error: function() {
+                                showToast('코드 목록을 불러오지 못했습니다.', 'error');
+                                codeData = [];
+                                detailCodeData = [];
+                                renderCodeTable();
+                                renderDetailCodeTable();
                             }
                         });
                     }
 
                     function renderCodeTable() {
+                        console.log('renderCodeTable called, length:', codeData.length);
                         const tbody = $('#codeTableBody');
                         tbody.empty();
 
                         codeData.forEach(function (item, index) {
                             const row = $('<tr>')
                                 .attr('data-index', index)
-                                .click(function () {
-                                    selectCode($(this));
+                                .click(function (e) {
+                                    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT') {
+                                        selectCode($(this));
+                                    }
                                 });
 
-                            row.append($('<td>').html('<input type="text" class="form-control form-control-sm" value="' + (item.code || '') + '">'));
-                            row.append($('<td>').html('<input type="number" class="form-control form-control-sm" value="' + (item.sortOrder || 0) + '">'));
-                            row.append($('<td>').html('<input type="text" class="form-control form-control-sm" value="' + (item.codeName || '') + '">'));
-                            row.append($('<td>').html('<input type="text" class="form-control form-control-sm" value="' + (item.useYn || '사용') + '">'));
+                            if (currentCodeItem === item) {
+                                row.addClass('selected');
+                            }
+
+                            // 코드 입력 필드
+                            const codeInput = $('<input type="text" class="form-control form-control-sm">')
+                                .val(item.code || '')
+                                .on('focus', function() { selectCode(row); })
+                                .on('change', function() { item.code = $(this).val().trim(); });
+                            
+                            if (item.isNew === false) {
+                                codeInput.prop('readonly', true).addClass('bg-light');
+                            }
+                            row.append($('<td>').append(codeInput));
+
+                            // 순서 입력 필드
+                            const sortOrderInput = $('<input type="number" class="form-control form-control-sm">')
+                                .val(item.sortOrder || 0)
+                                .on('focus', function() { selectCode(row); })
+                                .on('change', function() { item.sortOrder = $(this).val(); });
+                            row.append($('<td>').append(sortOrderInput));
+
+                            // 코드명 입력 필드
+                            const codeNameInput = $('<input type="text" class="form-control form-control-sm">')
+                                .val(item.codeName || '')
+                                .on('focus', function() { selectCode(row); })
+                                .on('change', function() { item.codeName = $(this).val(); });
+                            row.append($('<td>').append(codeNameInput));
+                            
+                            // 사용여부 선택 필드
+                            const useYnSelect = $('<select class="form-select form-select-sm">')
+                                .append('<option value="Y"' + (item.useYn === 'Y' ? ' selected' : '') + '>사용</option>')
+                                .append('<option value="N"' + (item.useYn === 'N' ? ' selected' : '') + '>미사용</option>')
+                                .on('focus', function() { selectCode(row); })
+                                .on('change', function() { item.useYn = $(this).val(); });
+                            row.append($('<td>').append(useYnSelect));
 
                             tbody.append(row);
                         });
@@ -437,119 +639,145 @@
                         $('#codeTableBody tr').removeClass('selected');
                         row.addClass('selected');
 
-                        const code = row.find('td:eq(0) input').val();
-                        selectedCode = code;
+                        const index = parseInt(row.attr('data-index'));
+                        const item = codeData[index];
+                        if (!item) return;
 
-                        if (selectedGroupCode && code) {
-                            loadDetailCodes(selectedGroupCode, code);
+                        currentCodeItem = item;
+                        selectedCode = item.code;
+                        currentDetailItem = null;
+                        selectedDetailCode = null;
+                        console.log('selectCode:', selectedCode);
+
+                        if (selectedGroupCode && selectedCode && !item.isNew) {
+                            loadDetailCodes(selectedGroupCode, selectedCode);
                         } else {
-                            $('#detailCodeTableBody').empty();
+                            detailCodeData = [];
+                            renderDetailCodeTable();
                         }
                     }
 
                     function addCodeRow() {
+                        console.log('addCodeRow called');
                         if (!selectedGroupCode) {
-                            alert('그룹코드를 먼저 선택하세요.');
+                            showToast('그룹코드를 먼저 선택하세요.', 'warning');
                             return;
                         }
+
+                        let maxOrder = 0;
+                        codeData.forEach(c => {
+                            const order = parseInt(c.sortOrder);
+                            if (!isNaN(order) && order > maxOrder) maxOrder = order;
+                        });
 
                         const newRow = {
                             groupCode: selectedGroupCode,
                             code: '',
                             codeName: '',
-                            sortOrder: 0,
-                            useYn: '사용'
+                            sortOrder: maxOrder + 1,
+                            useYn: 'Y',
+                            isNew: true
                         };
                         codeData.push(newRow);
                         renderCodeTable();
+
+                        setTimeout(() => {
+                            const lastRow = $('#codeTableBody tr:last');
+                            selectCode(lastRow);
+                            lastRow[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }, 50);
                     }
 
-                    function deleteCodeRow() {
-                        const selected = $('#codeTableBody tr.selected');
-                        if (selected.length === 0) {
-                            alert('삭제할 행을 선택하세요.');
+                    function deleteCodeRow(event) {
+                        const e = event || window.event;
+                        if (e) e.stopPropagation();
+                        
+                        let item = currentCodeItem;
+                        if (!item) {
+                            const selectedRow = $('#codeTableBody tr.selected');
+                            if (selectedRow.length > 0) {
+                                item = codeData[parseInt(selectedRow.attr('data-index'))];
+                                currentCodeItem = item;
+                            }
+                        }
+                        
+                        if (!item) {
+                            showToast('삭제할 코드를 선택하세요.', 'warning');
                             return;
                         }
 
-                        const code = selected.find('td:eq(0) input').val();
-                        if (code && selectedGroupCode && confirm('정말 삭제하시겠습니까?')) {
-                            $.ajax({
-                                url: '<c:url value="/admin/code/deleteCode.do"/>',
-                                type: 'POST',
-                                data: {
-                                    groupCode: selectedGroupCode,
-                                    code: code
-                                },
-                                success: function (response) {
-                                    alert(response.message);
-                                    if (response.success) {
-                                        loadCodes(selectedGroupCode);
-                                    }
-                                }
-                            });
+                        if (!item.isNew) {
+                            const hasChildren = (detailCodeData && detailCodeData.length > 0);
+                            const msg = hasChildren ? 
+                                '하위 상세코드가 존재합니다. 함께 삭제하시겠습니까? (영구 삭제)' : 
+                                '정말 삭제하시겠습니까? (데이터베이스에서 영구 삭제됩니다)';
+                            
+                            showDeleteModal('code', item, msg);
                         } else {
-                            const index = selected.data('index');
-                            codeData.splice(index, 1);
-                            renderCodeTable();
+                            const index = codeData.indexOf(item);
+                            if (index > -1) {
+                                codeData.splice(index, 1);
+                                renderCodeTable();
+                                currentCodeItem = null;
+                                selectedCode = null;
+                            }
                         }
                     }
 
                     function saveCodes() {
+                        console.log('saveCodes called');
                         if (!selectedGroupCode) {
-                            alert('그룹코드를 먼저 선택하세요.');
+                            showToast('그룹코드를 먼저 선택하세요.', 'warning');
                             return;
                         }
 
-                        const rows = $('#codeTableBody tr');
                         let saveCount = 0;
                         let errorCount = 0;
+                        let validationError = false;
 
-                        rows.each(function () {
-                            const code = $(this).find('td:eq(0) input').val().trim();
-                            const sortOrder = $(this).find('td:eq(1) input').val().trim();
-                            const codeName = $(this).find('td:eq(2) input').val().trim();
-                            const useYn = $(this).find('td:eq(3) input').val().trim();
-
-                            if (!code || !codeName) {
-                                return;
+                        const ids = new Set();
+                        for(let i=0; i<codeData.length; i++) {
+                            const item = codeData[i];
+                            if (!item.code?.trim() || !item.codeName?.trim()) {
+                                showToast((i + 1) + '번째 행의 필수값을 입력하세요.', 'warning');
+                                validationError = true;
+                                break;
                             }
+                            if (ids.has(item.code)) {
+                                showToast('중복된 코드가 존재합니다: ' + item.code, 'warning');
+                                validationError = true;
+                                break;
+                            }
+                            ids.add(item.code);
+                        }
 
-                            const data = {
-                                groupCode: selectedGroupCode,
-                                code: code,
-                                codeName: codeName,
-                                sortOrder: sortOrder,
-                                useYn: useYn
-                            };
+                        if (validationError) return;
 
+                        codeData.forEach(function(item) {
                             $.ajax({
                                 url: '<c:url value="/admin/code/saveCode.do"/>',
                                 type: 'POST',
-                                data: data,
+                                data: item,
                                 async: false,
                                 success: function (response) {
-                                    if (response.success) {
-                                        saveCount++;
-                                    } else {
-                                        errorCount++;
-                                    }
+                                    if (response.success) saveCount++;
+                                    else errorCount++;
                                 },
-                                error: function () {
-                                    errorCount++;
-                                }
+                                error: function () { errorCount++; }
                             });
                         });
 
                         if (errorCount > 0) {
-                            alert('저장 중 오류가 발생했습니다. (성공: ' + saveCount + ', 실패: ' + errorCount + ')');
-                        } else {
-                            alert(saveCount + '건 저장되었습니다.');
+                            showToast('일부 저장 실패 (성공: ' + saveCount + ', 실패: ' + errorCount + ')', 'error');
+                        } else if (saveCount > 0) {
+                            showToast('모든 변경사항이 저장되었습니다.', 'success');
                         }
                         loadCodes(selectedGroupCode);
                     }
 
                     // ========== 상세코드 관련 함수 ==========
                     function loadDetailCodes(groupCode, code) {
+                        console.log('loadDetailCodes called for:', groupCode, code);
                         $.ajax({
                             url: '<c:url value="/admin/code/detailCodeList.do"/>',
                             type: 'GET',
@@ -559,162 +787,262 @@
                             },
                             success: function (response) {
                                 if (response.success) {
-                                    detailCodeData = response.data || [];
+                                    detailCodeData = (response.data || []).map(item => {
+                                        item.isNew = false;
+                                        return item;
+                                    });
                                     renderDetailCodeTable();
                                 }
+                            },
+                            error: function() {
+                                showToast('상세코드 목록을 불러오지 못했습니다.', 'error');
+                                detailCodeData = [];
+                                renderDetailCodeTable();
                             }
                         });
                     }
 
                     function renderDetailCodeTable() {
+                        console.log('renderDetailCodeTable called, length:', detailCodeData.length);
                         const tbody = $('#detailCodeTableBody');
                         tbody.empty();
 
                         detailCodeData.forEach(function (item, index) {
-                            const row = $('<tr>').attr('data-index', index);
+                            const row = $('<tr>')
+                                .attr('data-index', index)
+                                .attr('data-detail-code', item.detailCode || '')
+                                .click(function(e) {
+                                    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT') {
+                                        selectDetailCode($(this));
+                                    }
+                                });
 
-                            row.append($('<td>').html('<input type="text" class="form-control form-control-sm" value="' + (item.detailCode || '') + '">'));
-                            row.append($('<td>').html('<input type="number" class="form-control form-control-sm" value="' + (item.sortOrder || 0) + '">'));
-                            row.append($('<td>').html('<input type="text" class="form-control form-control-sm" value="' + (item.detailCodeName || '') + '">'));
-                            row.append($('<td>').html('<input type="text" class="form-control form-control-sm" value="' + (item.useYn || '사용') + '">'));
+                            if (currentDetailItem === item) {
+                                row.addClass('selected');
+                            }
+
+                            // 상세코드 입력 필드
+                            const detailCodeInput = $('<input type="text" class="form-control form-control-sm">')
+                                .val(item.detailCode || '')
+                                .on('focus', function() { selectDetailCode(row); })
+                                .on('change', function() { item.detailCode = $(this).val(); });
+                            
+                            if (item.isNew === false) {
+                                detailCodeInput.prop('readonly', true).addClass('bg-light');
+                            }
+                            row.append($('<td>').append(detailCodeInput));
+
+                            // 순서 입력 필드
+                            const sortOrderInput = $('<input type="number" class="form-control form-control-sm">')
+                                .val(item.sortOrder || 0)
+                                .on('focus', function() { selectDetailCode(row); })
+                                .on('change', function() { item.sortOrder = $(this).val(); });
+                            row.append($('<td>').append(sortOrderInput));
+
+                            // 상세코드명 입력 필드
+                            const detailCodeNameInput = $('<input type="text" class="form-control form-control-sm">')
+                                .val(item.detailCodeName || '')
+                                .on('focus', function() { selectDetailCode(row); })
+                                .on('change', function() { item.detailCodeName = $(this).val(); });
+                            row.append($('<td>').append(detailCodeNameInput));
+                            
+                            // 사용여부 선택 필드
+                            const useYnSelect = $('<select class="form-select form-select-sm">')
+                                .append('<option value="Y"' + (item.useYn === 'Y' ? ' selected' : '') + '>사용</option>')
+                                .append('<option value="N"' + (item.useYn === 'N' ? ' selected' : '') + '>미사용</option>')
+                                .on('focus', function() { selectDetailCode(row); })
+                                .on('change', function() { item.useYn = $(this).val(); });
+                            row.append($('<td>').append(useYnSelect));
 
                             tbody.append(row);
                         });
                     }
 
+                    function selectDetailCode(row) {
+                        $('#detailCodeTableBody tr').removeClass('selected');
+                        row.addClass('selected');
+                        
+                        const index = parseInt(row.attr('data-index'));
+                        const item = detailCodeData[index];
+                        if (item) {
+                            currentDetailItem = item;
+                            selectedDetailCode = item.detailCode;
+                        }
+                        console.log('selectDetailCode called:', selectedDetailCode);
+                    }
+
                     function addDetailCodeRow() {
+                        console.log('addDetailCodeRow called');
                         if (!selectedGroupCode || !selectedCode) {
-                            alert('코드를 먼저 선택하세요.');
+                            showToast('코드를 먼저 선택하세요.', 'warning');
                             return;
                         }
+
+                        let maxOrder = 0;
+                        detailCodeData.forEach(c => {
+                            const order = parseInt(c.sortOrder);
+                            if (!isNaN(order) && order > maxOrder) maxOrder = order;
+                        });
 
                         const newRow = {
                             groupCode: selectedGroupCode,
                             code: selectedCode,
                             detailCode: '',
                             detailCodeName: '',
-                            sortOrder: 0,
-                            useYn: '사용'
+                            sortOrder: maxOrder + 1,
+                            useYn: 'Y',
+                            isNew: true
                         };
                         detailCodeData.push(newRow);
                         renderDetailCodeTable();
+
+                        setTimeout(() => {
+                            const lastRow = $('#detailCodeTableBody tr:last');
+                            selectDetailCode(lastRow);
+                            lastRow[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }, 50);
                     }
 
-                    function deleteDetailCodeRow() {
-                        const selected = $('#detailCodeTableBody tr.selected');
-                        if (selected.length === 0) {
-                            // 선택된 행이 없으면 마지막 행 삭제
-                            const lastRow = $('#detailCodeTableBody tr:last');
-                            if (lastRow.length > 0) {
-                                const detailCode = lastRow.find('td:eq(0) input').val();
-                                if (detailCode && confirm('정말 삭제하시겠습니까?')) {
-                                    $.ajax({
-                                        url: '<c:url value="/admin/code/deleteDetailCode.do"/>',
-                                        type: 'POST',
-                                        data: {
-                                            groupCode: selectedGroupCode,
-                                            code: selectedCode,
-                                            detailCode: detailCode
-                                        },
-                                        success: function (response) {
-                                            alert(response.message);
-                                            if (response.success) {
-                                                loadDetailCodes(selectedGroupCode, selectedCode);
-                                            }
-                                        }
-                                    });
-                                } else {
-                                    detailCodeData.splice(detailCodeData.length - 1, 1);
-                                    renderDetailCodeTable();
-                                }
+                    function deleteDetailCodeRow(event) {
+                        const e = event || window.event;
+                        if (e) e.stopPropagation();
+                        
+                        let item = currentDetailItem;
+                        if (!item) {
+                            const selectedRow = $('#detailCodeTableBody tr.selected');
+                            if (selectedRow.length > 0) {
+                                item = detailCodeData[parseInt(selectedRow.attr('data-index'))];
+                                currentDetailItem = item;
                             }
+                        }
+
+                        if (!item) {
+                            showToast('삭제할 상세코드를 선택하세요.', 'warning');
                             return;
                         }
 
-                        const detailCode = selected.find('td:eq(0) input').val();
-                        if (detailCode && confirm('정말 삭제하시겠습니까?')) {
-                            $.ajax({
-                                url: '<c:url value="/admin/code/deleteDetailCode.do"/>',
-                                type: 'POST',
-                                data: {
-                                    groupCode: selectedGroupCode,
-                                    code: selectedCode,
-                                    detailCode: detailCode
-                                },
-                                success: function (response) {
-                                    alert(response.message);
-                                    if (response.success) {
-                                        loadDetailCodes(selectedGroupCode, selectedCode);
+                        if (!item.isNew) {
+                            showDeleteModal('detail', item, '정말 삭제하시겠습니까? (데이터베이스에서 영구 삭제됩니다)');
+                        } else {
+                            const index = detailCodeData.indexOf(item);
+                            if (index > -1) {
+                                detailCodeData.splice(index, 1);
+                                currentDetailItem = null;
+                                selectedDetailCode = null;
+                                renderDetailCodeTable();
+                            }
+                        }
+                    }
+
+                    // 모달 표시 함수
+                    function showDeleteModal(type, item, message) {
+                        deleteTargetInfo = { type: type, item: item };
+                        $('#deleteModalMessage').text(message);
+                        const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+                        modal.show();
+                    }
+
+                    // 실제 삭제 실행 함수
+                    function executeDeletion(info) {
+                        const item = info.item;
+                        let url = '';
+                        let data = {};
+
+                        if (info.type === 'group') {
+                            url = '<c:url value="/admin/code/deleteGroupCode.do"/>';
+                            data = { groupCode: item.groupCode };
+                        } else if (info.type === 'code') {
+                            url = '<c:url value="/admin/code/deleteCode.do"/>';
+                            data = { groupCode: item.groupCode, code: item.code };
+                        } else if (info.type === 'detail') {
+                            url = '<c:url value="/admin/code/deleteDetailCode.do"/>';
+                            data = { groupCode: item.groupCode, code: item.code, detailCode: item.detailCode };
+                        }
+
+                        $.ajax({
+                            url: url,
+                            type: 'POST',
+                            data: data,
+                            success: function (response) {
+                                showToast(response.message, response.success ? 'success' : 'error');
+                                if (response.success) {
+                                    if (info.type === 'group') {
+                                        currentGroupItem = null;
+                                        selectedGroupCode = null;
+                                        loadGroupCodes();
+                                        codeData = [];
+                                        detailCodeData = [];
+                                        renderCodeTable();
+                                        renderDetailCodeTable();
+                                    } else if (info.type === 'code') {
+                                        currentCodeItem = null;
+                                        selectedCode = null;
+                                        loadCodes(item.groupCode);
+                                        detailCodeData = [];
+                                        renderDetailCodeTable();
+                                    } else if (info.type === 'detail') {
+                                        currentDetailItem = null;
+                                        selectedDetailCode = null;
+                                        loadDetailCodes(item.groupCode, item.code);
                                     }
                                 }
-                            });
-                        } else {
-                            const index = selected.data('index');
-                            detailCodeData.splice(index, 1);
-                            renderDetailCodeTable();
-                        }
+                            },
+                            error: function() {
+                                showToast('삭제 중 오류가 발생했습니다.', 'error');
+                            }
+                        });
                     }
 
                     function saveDetailCodes() {
+                        console.log('saveDetailCodes called');
                         if (!selectedGroupCode || !selectedCode) {
-                            alert('코드를 먼저 선택하세요.');
+                            showToast('코드를 먼저 선택하세요.', 'warning');
                             return;
                         }
 
-                        const rows = $('#detailCodeTableBody tr');
                         let saveCount = 0;
                         let errorCount = 0;
+                        let validationError = false;
 
-                        rows.each(function () {
-                            const detailCode = $(this).find('td:eq(0) input').val().trim();
-                            const sortOrder = $(this).find('td:eq(1) input').val().trim();
-                            const detailCodeName = $(this).find('td:eq(2) input').val().trim();
-                            const useYn = $(this).find('td:eq(3) input').val().trim();
-
-                            if (!detailCode || !detailCodeName) {
-                                return;
+                        const ids = new Set();
+                        for(let i=0; i<detailCodeData.length; i++) {
+                            const item = detailCodeData[i];
+                            if (!item.detailCode?.trim() || !item.detailCodeName?.trim()) {
+                                showToast((i + 1) + '번째 행의 필수값을 입력하세요.', 'warning');
+                                validationError = true;
+                                break;
                             }
+                            if (ids.has(item.detailCode)) {
+                                showToast('중복된 상세코드가 존재합니다: ' + item.detailCode, 'warning');
+                                validationError = true;
+                                break;
+                            }
+                            ids.add(item.detailCode);
+                        }
 
-                            const data = {
-                                groupCode: selectedGroupCode,
-                                code: selectedCode,
-                                detailCode: detailCode,
-                                detailCodeName: detailCodeName,
-                                sortOrder: sortOrder,
-                                useYn: useYn
-                            };
+                        if (validationError) return;
 
+                        detailCodeData.forEach(function(item) {
                             $.ajax({
                                 url: '<c:url value="/admin/code/saveDetailCode.do"/>',
                                 type: 'POST',
-                                data: data,
+                                data: item,
                                 async: false,
                                 success: function (response) {
-                                    if (response.success) {
-                                        saveCount++;
-                                    } else {
-                                        errorCount++;
-                                    }
+                                    if (response.success) saveCount++;
+                                    else errorCount++;
                                 },
-                                error: function () {
-                                    errorCount++;
-                                }
+                                error: function () { errorCount++; }
                             });
                         });
 
                         if (errorCount > 0) {
-                            alert('저장 중 오류가 발생했습니다. (성공: ' + saveCount + ', 실패: ' + errorCount + ')');
-                        } else {
-                            alert(saveCount + '건 저장되었습니다.');
+                            showToast('일부 저장 실패 (성공: ' + saveCount + ', 실패: ' + errorCount + ')', 'error');
+                        } else if (saveCount > 0) {
+                            showToast('모든 변경사항이 저장되었습니다.', 'success');
                         }
                         loadDetailCodes(selectedGroupCode, selectedCode);
                     }
-
-                    // 상세코드 행 선택
-                    $(document).on('click', '#detailCodeTableBody tr', function () {
-                        $('#detailCodeTableBody tr').removeClass('selected');
-                        $(this).addClass('selected');
-                    });
                 </script>
             </body>
 

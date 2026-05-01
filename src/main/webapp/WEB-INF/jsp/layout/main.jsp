@@ -49,8 +49,8 @@
                 class="nav-item ${currentMenu eq 'settlement' ? 'active' : ''}">
                 <i class="bi bi-currency-exchange"></i>정산관리
             </a>
-            <a href="<c:url value='/admin/basic/codeManage.do'/>"
-                class="nav-item ${currentMenu eq 'basic' ? 'active' : ''}">
+            <a href="<c:url value='/admin/code/codeManagement.do'/>"
+                class="nav-item ${currentMenu eq 'code' ? 'active' : ''}">
                 <i class="bi bi-file-earmark-text-fill"></i>시스템 설정
             </a>
         </nav>

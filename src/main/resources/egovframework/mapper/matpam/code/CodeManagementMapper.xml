@@ -13,12 +13,31 @@
 		FROM tb_group_code
 		WHERE DEL_YN = 'N'
 		<if test="groupCode != null and groupCode != ''">
-			AND CODE_GROUP_ID LIKE CONCAT('%', #{groupCode}, '%')
+			AND TRIM(CODE_GROUP_ID) LIKE CONCAT('%', TRIM(#{groupCode}), '%')
 		</if>
 		<if test="groupCodeName != null and groupCodeName != ''">
 			AND CODE_GROUP_NAME LIKE CONCAT('%', #{groupCodeName}, '%')
 		</if>
+		<if test="code != null and code != ''">
+			AND EXISTS (SELECT 1 FROM tb_code WHERE CODE_GROUP_ID = tb_group_code.CODE_GROUP_ID AND CODE_NAME LIKE CONCAT('%', #{code}, '%'))
+		</if>
+		<if test="detailCode != null and detailCode != ''">
+			AND EXISTS (SELECT 1 FROM tb_detail_code WHERE CODE_GROUP_ID = tb_group_code.CODE_GROUP_ID AND DETAIL_CODE_NAME LIKE CONCAT('%', #{detailCode}, '%'))
+		</if>
+		<if test="useYn != null and useYn != '' and useYn != '전체'">
+			AND USE_YN = CASE WHEN #{useYn} = '사용' THEN 'Y' ELSE 'N' END
+		</if>
 		ORDER BY CODE_GROUP_ID
+	</select>
+
+	<select id="selectGroupCode" parameterType="string" resultType="kr.co.matpam.admin.code.service.GroupCodeVO">
+		SELECT
+			CODE_GROUP_ID AS groupCode,
+			CODE_GROUP_NAME AS groupCodeName,
+			USE_YN AS useYn
+		FROM tb_group_code
+		WHERE DEL_YN = 'N'
+		AND TRIM(CODE_GROUP_ID) = TRIM(#{groupCode})
 	</select>
 
 	<insert id="insertGroupCode" parameterType="kr.co.matpam.admin.code.service.GroupCodeVO">
@@ -33,13 +52,23 @@
 		UPDATE tb_group_code
 		SET CODE_GROUP_NAME = #{groupCodeName},
 			USE_YN = #{useYn},
-			MOD_ID = 'SYSTEM'
-		WHERE CODE_GROUP_ID = #{groupCode}
+			DEL_YN = 'N',
+			MOD_ID = 'SYSTEM',
+			MOD_DATE = NOW()
+		WHERE TRIM(CODE_GROUP_ID) = TRIM(#{groupCode})
 	</update>
 
-	<update id="deleteGroupCode" parameterType="string">
-		UPDATE tb_group_code SET DEL_YN = 'Y' WHERE CODE_GROUP_ID = #{groupCode}
-	</update>
+	<delete id="deleteGroupCode" parameterType="string">
+		DELETE FROM tb_group_code WHERE TRIM(CODE_GROUP_ID) = TRIM(#{groupCode})
+	</delete>
+	
+	<delete id="deleteCodesByGroup" parameterType="string">
+		DELETE FROM tb_code WHERE TRIM(CODE_GROUP_ID) = TRIM(#{groupCode})
+	</delete>
+
+	<delete id="deleteDetailCodesByGroup" parameterType="string">
+		DELETE FROM tb_detail_code WHERE TRIM(CODE_GROUP_ID) = TRIM(#{groupCode})
+	</delete>
 
 	<!-- 2. 코드 -->
 	<select id="selectCodeList" parameterType="string" resultType="kr.co.matpam.admin.code.service.CodeVO">
@@ -51,9 +80,22 @@
 			USE_YN AS useYn,
 			DATE_FORMAT(REG_DATE, '%Y-%m-%d') AS regDate
 		FROM tb_code
-		WHERE CODE_GROUP_ID = #{groupCode}
-		  AND DEL_YN = 'N'
+		WHERE DEL_YN = 'N'
+		AND TRIM(CODE_GROUP_ID) = TRIM(#{groupCode})
 		ORDER BY SORT_ORDER, CODE_ID
+	</select>
+
+	<select id="selectCode" parameterType="map" resultType="kr.co.matpam.admin.code.service.CodeVO">
+		SELECT
+			CODE_GROUP_ID AS groupCode,
+			CODE_ID AS code,
+			CODE_NAME AS codeName,
+			SORT_ORDER AS sortOrder,
+			USE_YN AS useYn
+		FROM tb_code
+		WHERE DEL_YN = 'N'
+		AND TRIM(CODE_GROUP_ID) = TRIM(#{groupCode})
+		AND TRIM(CODE_ID) = TRIM(#{code})
 	</select>
 
 	<insert id="insertCode" parameterType="kr.co.matpam.admin.code.service.CodeVO">
@@ -69,13 +111,19 @@
 		SET CODE_NAME = #{codeName},
 			SORT_ORDER = #{sortOrder},
 			USE_YN = #{useYn},
-			MOD_ID = 'SYSTEM'
-		WHERE CODE_GROUP_ID = #{groupCode} AND CODE_ID = #{code}
+			DEL_YN = 'N',
+			MOD_ID = 'SYSTEM',
+			MOD_DATE = NOW()
+		WHERE TRIM(CODE_GROUP_ID) = TRIM(#{groupCode}) AND TRIM(CODE_ID) = TRIM(#{code})
 	</update>
 
-	<update id="deleteCode" parameterType="map">
-		UPDATE tb_code SET DEL_YN = 'Y' WHERE CODE_GROUP_ID = #{groupCode} AND CODE_ID = #{code}
-	</update>
+	<delete id="deleteCode" parameterType="map">
+		DELETE FROM tb_code WHERE TRIM(CODE_GROUP_ID) = TRIM(#{groupCode}) AND TRIM(CODE_ID) = TRIM(#{code})
+	</delete>
+
+	<delete id="deleteDetailCodesByCode" parameterType="map">
+		DELETE FROM tb_detail_code WHERE TRIM(CODE_GROUP_ID) = TRIM(#{groupCode}) AND TRIM(CODE_ID) = TRIM(#{code})
+	</delete>
 
 	<!-- 3. 상세코드 -->
 	<select id="selectDetailCodeList" parameterType="map" resultType="kr.co.matpam.admin.code.service.DetailCodeVO">
@@ -88,12 +136,27 @@
 			USE_YN AS useYn,
 			DATE_FORMAT(REG_DATE, '%Y-%m-%d') AS regDate
 		FROM tb_detail_code
-		WHERE CODE_GROUP_ID = #{groupCode}
+		WHERE DEL_YN = 'N'
+		AND TRIM(CODE_GROUP_ID) = TRIM(#{groupCode})
 		<if test="code != null and code != ''">
-			AND CODE_ID = #{code}
+			AND TRIM(CODE_ID) = TRIM(#{code})
 		</if>
-		  AND DEL_YN = 'N'
 		ORDER BY SORT_ORDER, DETAIL_CODE_ID
+	</select>
+
+	<select id="selectDetailCode" parameterType="map" resultType="kr.co.matpam.admin.code.service.DetailCodeVO">
+		SELECT
+			CODE_GROUP_ID AS groupCode,
+			CODE_ID AS code,
+			DETAIL_CODE_ID AS detailCode,
+			DETAIL_CODE_NAME AS detailCodeName,
+			SORT_ORDER AS sortOrder,
+			USE_YN AS useYn
+		FROM tb_detail_code
+		WHERE DEL_YN = 'N'
+		AND TRIM(CODE_GROUP_ID) = TRIM(#{groupCode})
+		AND TRIM(CODE_ID) = TRIM(#{code})
+		AND TRIM(DETAIL_CODE_ID) = TRIM(#{detailCode})
 	</select>
 
 	<insert id="insertDetailCode" parameterType="kr.co.matpam.admin.code.service.DetailCodeVO">
@@ -109,13 +172,39 @@
 		SET DETAIL_CODE_NAME = #{detailCodeName},
 			SORT_ORDER = #{sortOrder},
 			USE_YN = #{useYn},
-			MOD_ID = 'SYSTEM'
-		WHERE CODE_GROUP_ID = #{groupCode} AND CODE_ID = #{code} AND DETAIL_CODE_ID = #{detailCode}
+			DEL_YN = 'N',
+			MOD_ID = 'SYSTEM',
+			MOD_DATE = NOW()
+		WHERE TRIM(CODE_GROUP_ID) = TRIM(#{groupCode}) AND TRIM(CODE_ID) = TRIM(#{code}) AND TRIM(DETAIL_CODE_ID) = TRIM(#{detailCode})
 	</update>
 
-	<update id="deleteDetailCode" parameterType="map">
-		UPDATE tb_detail_code SET DEL_YN = 'Y'
-		WHERE CODE_GROUP_ID = #{groupCode} AND CODE_ID = #{code} AND DETAIL_CODE_ID = #{detailCode}
+	<delete id="deleteDetailCode" parameterType="map">
+		DELETE FROM tb_detail_code
+		WHERE TRIM(CODE_GROUP_ID) = TRIM(#{groupCode}) AND TRIM(CODE_ID) = TRIM(#{code}) AND TRIM(DETAIL_CODE_ID) = TRIM(#{detailCode})
+	</delete>
+
+	<update id="reorderCodeSortOrder">
+		/* tb_code 순서 재정렬 */
+		UPDATE tb_code c
+		JOIN (
+			SELECT CODE_GROUP_ID, CODE_ID, 
+				   ROW_NUMBER() OVER(PARTITION BY CODE_GROUP_ID ORDER BY SORT_ORDER, CODE_ID) AS new_order
+			FROM tb_code
+			WHERE DEL_YN = 'N'
+		) r ON c.CODE_GROUP_ID = r.CODE_GROUP_ID AND c.CODE_ID = r.CODE_ID
+		SET c.SORT_ORDER = r.new_order
+	</update>
+
+	<update id="reorderDetailCodeSortOrder">
+		/* tb_detail_code 순서 재정렬 */
+		UPDATE tb_detail_code c
+		JOIN (
+			SELECT CODE_GROUP_ID, CODE_ID, DETAIL_CODE_ID,
+				   ROW_NUMBER() OVER(PARTITION BY CODE_GROUP_ID, CODE_ID ORDER BY SORT_ORDER, DETAIL_CODE_ID) AS new_order
+			FROM tb_detail_code
+			WHERE DEL_YN = 'N'
+		) r ON c.CODE_GROUP_ID = r.CODE_GROUP_ID AND c.CODE_ID = r.CODE_ID AND c.DETAIL_CODE_ID = r.DETAIL_CODE_ID
+		SET c.SORT_ORDER = r.new_order
 	</update>
 
 </mapper>

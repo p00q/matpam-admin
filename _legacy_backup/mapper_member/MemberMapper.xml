@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="matpam.member.MemberMapper">
+
+    <resultMap id="memberDetailMap" type="kr.co.matpam.admin.member.service.MemberVO">
+        <id property="memberId" column="member_id"/>
+        <result property="memberTypeCd" column="member_type_cd"/>
+        <result property="channelCd" column="channel_cd"/>
+        <result property="loginId" column="login_id"/>
+        <result property="companyName" column="company_name"/>
+        <result property="ceoName" column="ceo_name"/>
+        <result property="bizRegNo" column="biz_reg_no"/>
+        <result property="companyTelNo" column="company_tel_no"/>
+        <result property="ceoMobileNo" column="ceo_mobile_no"/>
+        <result property="email" column="email"/>
+        <result property="zipCode" column="zip_code"/>
+        <result property="addr1" column="addr1"/>
+        <result property="addr2" column="addr2"/>
+        <result property="lastLoginDt" column="last_login_dt"/>
+        <result property="joinStatusCd" column="join_status_cd"/>
+        <result property="joinDt" column="join_dt"/>
+        <result property="withdrawDt" column="withdraw_dt"/>
+        <result property="useYn" column="use_yn"/>
+        <result property="delYn" column="del_yn"/>
+
+        <!-- buyer_profile -->
+        <result property="memberGradeCd" column="member_grade_cd"/>
+        <result property="meatmoneyBalanceAmt" column="meatmoney_balance_amt"/>
+        <result property="creditBalanceAmt" column="credit_balance_amt"/>
+        <result property="totalAvailableAmt" column="total_available_amt"/>
+        <result property="monthOrderAmt" column="month_order_amt"/>
+        <result property="yearOrderAmt" column="year_order_amt"/>
+        <result property="totalOrderAmt" column="total_order_amt"/>
+        
+        <!-- seller_profile -->
+        <result property="sellerTypeCd" column="seller_type_cd"/>
+        <result property="taxTypeCd" column="tax_type_cd"/>
+        
+        <!-- seller_settlement_account -->
+        <result property="bankCd" column="bank_cd"/>
+        <result property="accountNo" column="account_no"/>
+        <result property="accountName" column="account_name"/>
+
+        <!-- admin_profile -->
+        <result property="adminRoleCd" column="admin_role_cd"/>
+    </resultMap>
+
+    <!-- 목록 조회 (Screenshot 1 반영) -->
+    <select id="selectMemberList" parameterType="kr.co.matpam.admin.member.service.MemberDefaultVO" resultMap="memberDetailMap">
+        SELECT 
+            m.*,
+            c.company_name, c.biz_reg_no, c.ceo_name, c.company_tel_no, c.ceo_mobile_no, c.zip_code, c.addr1, c.addr2,
+            cr.channel_cd, cr.role_cd as admin_role_cd,
+            b.member_grade_cd, b.managing_channel_cd,
+            s.seller_type_cd
+        FROM tb_member_master m
+        LEFT JOIN tb_company_master c ON m.company_id = c.company_id
+        LEFT JOIN tb_member_channel_role cr ON m.member_id = cr.member_id AND cr.use_yn = 'Y' AND cr.del_yn = 'N'
+        LEFT JOIN tb_buyer_profile b ON m.member_id = b.member_id
+        LEFT JOIN tb_seller_profile s ON m.member_id = s.member_id
+        WHERE m.del_yn = 'N'
+        <if test="memberType != null and memberType != ''">
+            AND m.member_type_cd = #{memberType}
+        </if>
+        <if test="status != null and status != ''">
+            AND m.join_status_cd = #{status}
+        </if>
+        <if test="memberGrade != null and memberGrade != ''">
+            AND b.member_grade_cd = #{memberGrade}
+        </if>
+        <if test="channelCd != null and channelCd != ''">
+            AND cr.channel_cd = #{channelCd}
+        </if>
+        <if test="searchKeyword != null and searchKeyword != ''">
+            <choose>
+                <when test="searchCondition == 1">
+                    AND c.company_name LIKE CONCAT('%', #{searchKeyword}, '%')
+                </when>
+                <when test="searchCondition == 2">
+                    AND m.login_id LIKE CONCAT('%', #{searchKeyword}, '%')
+                </when>
+                <otherwise>
+                    AND (c.company_name LIKE CONCAT('%', #{searchKeyword}, '%') OR m.login_id LIKE CONCAT('%', #{searchKeyword}, '%'))
+                </otherwise>
+            </choose>
+        </if>
+        ORDER BY m.member_id DESC
+        LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
+    </select>
+
+    <select id="selectMemberListTotCnt" parameterType="kr.co.matpam.admin.member.service.MemberDefaultVO" resultType="int">
+        SELECT COUNT(*) 
+        FROM tb_member_master m
+        LEFT JOIN tb_company_master c ON m.company_id = c.company_id
+        LEFT JOIN tb_member_channel_role cr ON m.member_id = cr.member_id AND cr.use_yn = 'Y' AND cr.del_yn = 'N'
+        LEFT JOIN tb_buyer_profile b ON m.member_id = b.member_id
+        WHERE m.del_yn = 'N'
+        <if test="memberType != null and memberType != ''">
+            AND m.member_type_cd = #{memberType}
+        </if>
+        <if test="status != null and status != ''">
+            AND m.join_status_cd = #{status}
+        </if>
+        <if test="memberGrade != null and memberGrade != ''">
+            AND b.member_grade_cd = #{memberGrade}
+        </if>
+        <if test="channelCd != null and channelCd != ''">
+            AND cr.channel_cd = #{channelCd}
+        </if>
+        <if test="searchKeyword != null and searchKeyword != ''">
+            <choose>
+                <when test="searchCondition == 1">
+                    AND c.company_name LIKE CONCAT('%', #{searchKeyword}, '%')
+                </when>
+                <when test="searchCondition == 2">
+                    AND m.login_id LIKE CONCAT('%', #{searchKeyword}, '%')
+                </when>
+                <otherwise>
+                    AND (c.company_name LIKE CONCAT('%', #{searchKeyword}, '%') OR m.login_id LIKE CONCAT('%', #{searchKeyword}, '%'))
+                </otherwise>
+            </choose>
+        </if>
+    </select>
+
+    <!-- 상세 조회 (Screenshot 2, 3, 4 반영) -->
+    <select id="selectMemberDetail" parameterType="long" resultMap="memberDetailMap">
+        SELECT 
+            m.*,
+            c.company_name, c.biz_reg_no, c.ceo_name, c.company_tel_no, c.ceo_mobile_no, c.zip_code, c.addr1, c.addr2,
+            cr.channel_cd, cr.role_cd as admin_role_cd,
+            b.member_grade_cd, b.meatmoney_balance_amt, b.credit_balance_amt, b.total_available_amt,
+            b.month_order_amt, b.year_order_amt, b.total_order_amt, b.managing_channel_cd,
+            s.seller_type_cd, s.tax_type_cd,
+            sa.bank_cd, sa.account_no, sa.account_name
+        FROM tb_member_master m
+        LEFT JOIN tb_company_master c ON m.company_id = c.company_id
+        LEFT JOIN tb_member_channel_role cr ON m.member_id = cr.member_id AND cr.use_yn = 'Y' AND cr.del_yn = 'N'
+        LEFT JOIN tb_buyer_profile b ON m.member_id = b.member_id
+        LEFT JOIN tb_seller_profile s ON m.member_id = s.member_id
+        LEFT JOIN tb_seller_settlement_account sa ON m.member_id = sa.seller_member_id
+        WHERE m.member_id = #{memberId}
+    </select>
+
+    <!-- 1. Master Insert -->
+    <insert id="insertCompanyMaster" parameterType="kr.co.matpam.admin.member.service.MemberVO" useGeneratedKeys="true" keyProperty="companyId">
+        INSERT INTO tb_company_master (
+            company_name, biz_reg_no, ceo_name, company_tel_no, ceo_mobile_no, email, zip_code, addr1, addr2, company_status_cd, use_yn, del_yn, reg_id, reg_dt, mod_id, mod_dt
+        ) VALUES (
+            #{companyName}, #{bizRegNo}, #{ceoName}, #{companyTelNo}, #{ceoMobileNo}, #{email}, #{zipCode}, #{addr1}, #{addr2}, 'COMPANY_ACTIVE', 'Y', 'N', #{regId}, NOW(), #{regId}, NOW()
+        )
+    </insert>
+
+    <insert id="insertMemberMaster" parameterType="kr.co.matpam.admin.member.service.MemberVO" useGeneratedKeys="true" keyProperty="memberId">
+        INSERT INTO tb_member_master (
+            company_id, member_type_cd, login_id, login_pwd, member_name, mobile_no, email, join_status_cd, created_by_member_id, use_yn, del_yn, reg_id, reg_dt, mod_id, mod_dt
+        ) VALUES (
+            #{companyId}, #{memberTypeCd}, #{loginId}, #{loginPwd}, #{memberName}, #{mobileNo}, #{email}, #{joinStatusCd}, #{createdByMemberId}, 'Y', 'N', #{regId}, NOW(), #{regId}, NOW()
+        )
+    </insert>
+
+    <insert id="insertMemberChannelRole" parameterType="kr.co.matpam.admin.member.service.MemberVO" useGeneratedKeys="true" keyProperty="adminRoleCd">
+        INSERT INTO tb_member_channel_role (
+            member_id, company_id, channel_cd, role_cd, scope_cd, use_yn, del_yn, reg_id, reg_dt, mod_id, mod_dt
+        ) VALUES (
+            #{memberId}, #{companyId}, #{channelCd}, #{adminRoleCd}, 'CHANNEL', 'Y', 'N', #{regId}, NOW(), #{regId}, NOW()
+        )
+    </insert>
+
+    <!-- 2. Profile Inserts -->
+    <insert id="insertBuyerProfile" parameterType="kr.co.matpam.admin.member.service.MemberVO">
+        INSERT INTO tb_buyer_profile (
+            member_id, company_id, managing_channel_cd, member_grade_cd, credit_balance_amt, meatmoney_balance_amt, total_available_amt,
+            month_order_amt, year_order_amt, total_order_amt, created_by_member_id, use_yn, reg_dt, mod_dt
+        ) VALUES (
+            #{memberId}, #{companyId}, #{managingChannelCd}, #{memberGradeCd}, 0, 0, 0, 0, 0, 0, #{createdByMemberId}, 'Y', NOW(), NOW()
+        )
+    </insert>
+
+    <insert id="insertSellerProfile" parameterType="kr.co.matpam.admin.member.service.MemberVO">
+        INSERT INTO tb_seller_profile (
+            member_id, company_id, seller_type_cd, tax_type_cd, created_by_member_id, use_yn, reg_dt, mod_dt
+        ) VALUES (
+            #{memberId}, #{companyId}, #{sellerTypeCd}, #{taxTypeCd}, #{createdByMemberId}, 'Y', NOW(), NOW()
+        )
+    </insert>
+
+    <insert id="insertSellerSettleAccount" parameterType="kr.co.matpam.admin.member.service.MemberVO">
+        INSERT INTO tb_seller_settlement_account (
+            company_id, seller_member_id, bank_cd, account_no, account_name, default_yn, use_yn, reg_dt, mod_dt
+        ) VALUES (
+            #{companyId}, #{memberId}, #{bankCd}, #{accountNo}, #{accountName}, 'Y', 'Y', NOW(), NOW()
+        )
+    </insert>
+
+    <insert id="insertAdminProfile" parameterType="kr.co.matpam.admin.member.service.MemberVO">
+        INSERT INTO tb_admin_profile (
+            member_id, admin_role_cd, use_yn, reg_dt, mod_dt
+        ) VALUES (
+            #{memberId}, #{adminRoleCd}, 'Y', NOW(), NOW()
+        )
+    </insert>
+
+    <!-- Updates -->
+    <update id="updateMemberMaster" parameterType="kr.co.matpam.admin.member.service.MemberVO">
+        UPDATE tb_member_master SET
+            channel_cd = #{channelCd},
+            company_name = #{companyName},
+            ceo_name = #{ceoName},
+            biz_reg_no = #{bizRegNo},
+            company_tel_no = #{companyTelNo},
+            ceo_mobile_no = #{ceoMobileNo},
+            email = #{email},
+            zip_code = #{zipCode},
+            addr1 = #{addr1},
+            addr2 = #{addr2},
+            join_status_cd = #{joinStatusCd},
+            mod_id = #{modId},
+            mod_dt = NOW()
+        WHERE member_id = #{memberId}
+    </update>
+
+    <update id="updateBuyerProfile" parameterType="kr.co.matpam.admin.member.service.MemberVO">
+        UPDATE tb_buyer_profile SET
+            member_grade_cd = #{memberGradeCd},
+            mod_dt = NOW()
+        WHERE member_id = #{memberId}
+    </update>
+
+    <update id="updateSellerProfile" parameterType="kr.co.matpam.admin.member.service.MemberVO">
+        UPDATE tb_seller_profile SET
+            seller_type_cd = #{sellerTypeCd},
+            tax_type_cd = #{taxTypeCd},
+            mod_dt = NOW()
+        WHERE member_id = #{memberId}
+    </update>
+
+    <update id="updateSellerSettleAccount" parameterType="kr.co.matpam.admin.member.service.MemberVO">
+        UPDATE tb_seller_settlement_account SET
+            bank_cd = #{bankCd},
+            account_no = #{accountNo},
+            account_name = #{accountName},
+            mod_dt = NOW()
+        WHERE member_id = #{memberId}
+    </update>
+
+    <!-- Contacts -->
+    <select id="selectMemberContacts" parameterType="long" resultType="kr.co.matpam.admin.member.service.MemberContactVO">
+        SELECT 
+            CONTACT_ID as contactId,
+            MEMBER_ID as memberId,
+            NAME as name,
+            MOBILE_NO as mobileNo,
+            PHONE_NO as phoneNo,
+            EMAIL as email,
+            CONTACT_TYPE_CD as contactTypeCd
+        FROM tb_member_contact 
+        WHERE MEMBER_ID = #{memberId} AND USE_YN = 'Y'
+    </select>
+
+    <insert id="insertMemberContact" parameterType="kr.co.matpam.admin.member.service.MemberContactVO">
+        INSERT INTO tb_member_contact (
+            MEMBER_ID, NAME, MOBILE_NO, PHONE_NO, EMAIL, CONTACT_TYPE_CD, USE_YN, REG_DT, MOD_DT
+        ) VALUES (
+            #{memberId}, #{name}, #{mobileNo}, #{phoneNo}, #{email}, #{contactTypeCd}, 'Y', NOW(), NOW()
+        )
+    </insert>
+
+    <delete id="deleteMemberContacts" parameterType="long">
+        DELETE FROM tb_member_contact WHERE MEMBER_ID = #{memberId}
+    </delete>
+
+    <select id="selectSellerList" resultMap="memberDetailMap">
+        SELECT
+            m.member_id,
+            m.company_name,
+            m.login_id
+        FROM tb_member_master m
+        WHERE m.member_type_cd = 'SELLER'
+          AND m.join_status_cd = 'JOIN'
+        ORDER BY m.company_name ASC
+    </select>
+    <select id="selectMemberById" parameterType="string" resultMap="memberDetailMap">
+        SELECT 
+            m.*,
+            b.member_grade_cd, b.meatmoney_balance_amt, b.credit_balance_amt, b.total_available_amt,
+            s.seller_type_cd, s.tax_type_cd,
+            ap.admin_role_cd
+        FROM tb_member_master m
+        LEFT JOIN tb_buyer_profile b ON m.member_id = b.member_id
+        LEFT JOIN tb_seller_profile s ON m.member_id = s.member_id
+        LEFT JOIN tb_admin_profile ap ON m.member_id = ap.member_id
+        WHERE m.login_id = #{loginId}
+          AND m.del_yn = 'N'
+    </select>
+</mapper>

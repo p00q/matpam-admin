@@ -25,7 +25,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.egovframe.rte.ptl.mvc.tags.ui.pagination.PaginationInfo;
 
 import kr.co.matpam.admin.code.service.CodeManagementService;
-import kr.co.matpam.admin.member.service.MemberService;
+import kr.co.matpam.admin.company.service.CompanyService;
+import kr.co.matpam.admin.company.service.CompanyVO;
 import kr.co.matpam.admin.product.service.ComponentProductService;
 import kr.co.matpam.admin.product.service.ComponentProductVO;
 
@@ -42,8 +43,8 @@ public class ComponentProductController {
     @Resource(name = "codeManagementService")
     private CodeManagementService codeManagementService;
 
-    @Resource(name = "memberService")
-    private MemberService memberService;
+    @Resource(name = "companyService")
+    private CompanyService companyService;
 
     @Resource(name = "componentProductService")
     private ComponentProductService componentProductService;
@@ -247,8 +248,10 @@ public class ComponentProductController {
         model.addAttribute("processTypes", codeManagementService.selectDetailCodeList("PRODUCT_TYPE", "PROCESS_TYPE"));
         model.addAttribute("unitTypes", codeManagementService.selectDetailCodeList("PRODUCT_TYPE", "UNIT_TYPE"));
 
-        // 판매자 목록
-        model.addAttribute("sellers", memberService.selectSellerList());
+        // 판매자 목록 (tb_company 중 company_type = 'SELLER' 인 업체)
+        CompanyVO sellerSearchVO = new CompanyVO();
+        sellerSearchVO.setCompanyType("SELLER");
+        model.addAttribute("sellers", companyService.selectCompanyListAll(sellerSearchVO));
     }
 
     /**

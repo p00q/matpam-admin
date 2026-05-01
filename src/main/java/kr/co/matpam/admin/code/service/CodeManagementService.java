@@ -64,4 +64,6 @@ public interface CodeManagementService {
      * 상세코드 삭제
      */
     void deleteDetailCode(String groupCode, String code, String detailCode) throws Exception;
+
+    void reorderSortOrder() throws Exception;
 }

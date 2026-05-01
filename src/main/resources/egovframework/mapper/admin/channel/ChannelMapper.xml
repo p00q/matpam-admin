@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.matpam.admin.channel.service.impl.ChannelMapper">
+
+    <resultMap id="channelMap" type="kr.co.matpam.admin.channel.service.ChannelVO">
+        <id property="channelId" column="channel_id"/>
+        <result property="tenantId" column="tenant_id"/>
+        <result property="companyId" column="company_id"/>
+        <result property="platformId" column="platform_id"/>
+        <result property="channelName" column="channel_name"/>
+        <result property="apiKey" column="api_key"/>
+        <result property="apiSecret" column="api_secret"/>
+        <result property="shopId" column="shop_id"/>
+        <result property="status" column="status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="platformName" column="platform_name"/>
+        <result property="companyName" column="company_name"/>
+    </resultMap>
+
+    <select id="selectChannelList" parameterType="kr.co.matpam.admin.channel.service.ChannelVO" resultMap="channelMap">
+        SELECT 
+            A.*,
+            B.platform_name,
+            C.company_name
+        FROM tb_buyer_channel A
+        LEFT JOIN tb_platform B ON A.platform_id = B.platform_id
+        LEFT JOIN tb_company C ON A.company_id = C.company_id
+        WHERE A.tenant_id = #{tenantId}
+        <if test="searchKeyword != null and searchKeyword != ''">
+            AND A.channel_name LIKE CONCAT('%', #{searchKeyword}, '%')
+        </if>
+        ORDER BY A.channel_id DESC
+        LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
+    </select>
+
+    <select id="selectChannelListTotCnt" parameterType="kr.co.matpam.admin.channel.service.ChannelVO" resultType="int">
+        SELECT COUNT(*)
+        FROM tb_buyer_channel
+        WHERE tenant_id = #{tenantId}
+        <if test="searchKeyword != null and searchKeyword != ''">
+            AND channel_name LIKE CONCAT('%', #{searchKeyword}, '%')
+        </if>
+    </select>
+
+    <select id="selectChannelDetail" parameterType="kr.co.matpam.admin.channel.service.ChannelVO" resultMap="channelMap">
+        SELECT * FROM tb_buyer_channel
+        WHERE channel_id = #{channelId} AND tenant_id = #{tenantId}
+    </select>
+
+    <insert id="insertChannel" parameterType="kr.co.matpam.admin.channel.service.ChannelVO">
+        INSERT INTO tb_buyer_channel (
+            tenant_id, company_id, platform_id, channel_name, 
+            api_key, api_secret, shop_id, status, created_at
+        ) VALUES (
+            #{tenantId}, #{companyId}, #{platformId}, #{channelName}, 
+            #{apiKey}, #{apiSecret}, #{shopId}, #{status}, NOW()
+        )
+    </insert>
+
+    <update id="updateChannel" parameterType="kr.co.matpam.admin.channel.service.ChannelVO">
+        UPDATE tb_buyer_channel SET
+            company_id = #{companyId},
+            platform_id = #{platformId},
+            channel_name = #{channelName},
+            api_key = #{apiKey},
+            api_secret = #{apiSecret},
+            shop_id = #{shopId},
+            status = #{status},
+            updated_at = NOW()
+        WHERE channel_id = #{channelId} AND tenant_id = #{tenantId}
+    </update>
+
+    <delete id="deleteChannel" parameterType="kr.co.matpam.admin.channel.service.ChannelVO">
+        DELETE FROM tb_buyer_channel
+        WHERE channel_id = #{channelId} AND tenant_id = #{tenantId}
+    </delete>
+
+</mapper>

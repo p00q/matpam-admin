@@ -11,7 +11,12 @@ public class LoginVO implements Serializable {
     private Long memberPk;
     private String loginId;
     private String memberName;
-    private String memberType; // NATIONAL, LOCAL, FACTORY (디자인 문서 상의 opType)
+    private String memberType; // SUPER_ADMIN, COMPANY_ADMIN, BUYER, RAW_SELLER, PROCESS_SELLER
+    
+    // 추가 계층 구조 권한 필드
+    private Long companyId;
+    private String channelCd;
+    private String roleCd;
     
     public LoginVO() {}
     
@@ -30,6 +35,15 @@ public class LoginVO implements Serializable {
     public void setMemberName(String memberName) { this.memberName = memberName; }
     public String getMemberType() { return memberType; }
     public void setMemberType(String memberType) { this.memberType = memberType; }
+    
+    public Long getCompanyId() { return companyId; }
+    public void setCompanyId(Long companyId) { this.companyId = companyId; }
+    
+    public String getChannelCd() { return channelCd; }
+    public void setChannelCd(String channelCd) { this.channelCd = channelCd; }
+    
+    public String getRoleCd() { return roleCd; }
+    public void setRoleCd(String roleCd) { this.roleCd = roleCd; }
 
     /**
      * opType 별칭 (디자인 문서 호환성)

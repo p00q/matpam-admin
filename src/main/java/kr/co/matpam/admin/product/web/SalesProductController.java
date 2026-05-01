@@ -25,7 +25,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import kr.co.matpam.admin.code.service.CodeManagementService;
-import kr.co.matpam.admin.member.service.MemberService;
+import kr.co.matpam.admin.company.service.CompanyService;
+import kr.co.matpam.admin.company.service.CompanyVO;
 import kr.co.matpam.admin.product.service.SalesProductCompositionVO;
 import kr.co.matpam.admin.product.service.SalesProductService;
 import kr.co.matpam.admin.product.service.SalesProductVO;
@@ -44,8 +45,8 @@ public class SalesProductController {
     @Resource(name = "codeManagementService")
     private CodeManagementService codeManagementService;
 
-    @Resource(name = "memberService")
-    private MemberService memberService;
+    @Resource(name = "companyService")
+    private CompanyService companyService;
 
     @Resource(name = "salesProductService")
     private SalesProductService salesProductService;
@@ -83,7 +84,11 @@ public class SalesProductController {
 
         // 구성 JSON (화면 로딩용)
         model.addAttribute("salesProduct", salesProduct);
-        model.addAttribute("sellers", memberService.selectSellerList());
+        
+        CompanyVO sellerSearchVO = new CompanyVO();
+        sellerSearchVO.setCompanyType("SELLER");
+        model.addAttribute("sellers", companyService.selectCompanyListAll(sellerSearchVO));
+        
         model.addAttribute("saleStatuses", codeManagementService.selectDetailCodeList("SALE_STATUS", "SALE_STATUS"));
         model.addAttribute("compositionJson", buildCompositionJson(salesProduct.getCompositionList()));
 
