@@ -2,28 +2,48 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.matpam.admin.company.service.impl.CompanyMapper">
 
+    <!-- ====================================================
+         업체 (tb_company)
+    ==================================================== -->
     <resultMap id="companyMap" type="kr.co.matpam.admin.company.service.CompanyVO">
-        <id property="companyId" column="company_id"/>
-        <result property="tenantId" column="tenant_id"/>
-        <result property="companyType" column="company_type"/>
-        <result property="sellerType" column="seller_type"/>
-        <result property="companyName" column="company_name"/>
-        <result property="businessNo" column="business_no"/>
-        <result property="ceoName" column="ceo_name"/>
-        <result property="postalCode" column="postal_code"/>
-        <result property="address1" column="address1"/>
-        <result property="address2" column="address2"/>
-        <result property="phone" column="phone"/>
-        <result property="email" column="email"/>
-        <result property="defaultTaxType" column="default_tax_type"/>
-        <result property="bizStatus" column="biz_status"/>
-        <result property="bizCheckedAt" column="biz_checked_at"/>
+        <id  property="companyId"        column="company_id"/>
+        <result property="tenantId"      column="tenant_id"/>
+        <result property="companyType"   column="company_type"/>
+        <result property="sellerType"    column="seller_type"/>
+        <result property="companyName"   column="company_name"/>
+        <result property="businessNo"    column="business_no"/>
+        <result property="ceoName"       column="ceo_name"/>
+        <result property="postalCode"    column="postal_code"/>
+        <result property="address1"      column="address1"/>
+        <result property="address2"      column="address2"/>
+        <result property="phone"         column="phone"/>
+        <result property="email"         column="email"/>
+        <result property="bizStatus"     column="biz_status"/>
+        <result property="bizCheckedAt"  column="biz_checked_at"/>
         <result property="bizCheckedResult" column="biz_checked_result"/>
-        <result property="status" column="status"/>
-        <result property="createdAt" column="created_at"/>
-        <result property="updatedAt" column="updated_at"/>
+        <result property="status"        column="status"/>
+        <result property="createdAt"     column="created_at"/>
+        <result property="updatedAt"     column="updated_at"/>
     </resultMap>
 
+    <!-- ====================================================
+         담당자 (tb_company_contact)
+    ==================================================== -->
+    <resultMap id="contactMap" type="kr.co.matpam.admin.company.service.CompanyContactVO">
+        <id  property="contactId"    column="contact_id"/>
+        <result property="companyId"    column="company_id"/>
+        <result property="contactName"  column="contact_name"/>
+        <result property="contactRole"  column="contact_role"/>
+        <result property="mobile"       column="mobile"/>
+        <result property="email"        column="email"/>
+        <result property="isPrimary"    column="is_primary"/>
+        <result property="linkedUserId" column="linked_user_id"/>
+        <result property="status"       column="status"/>
+        <result property="createdAt"    column="created_at"/>
+        <result property="updatedAt"    column="updated_at"/>
+    </resultMap>
+
+    <!-- 공통 검색 조건 -->
     <sql id="companyWhere">
         <where>
             <if test="tenantId != null">
@@ -36,104 +56,161 @@
                 AND status = #{status}
             </if>
             <if test="searchKeyword != null and searchKeyword != ''">
-                AND (company_name LIKE CONCAT('%', #{searchKeyword}, '%') OR business_no LIKE CONCAT('%', #{searchKeyword}, '%'))
+                AND (company_name LIKE CONCAT('%', #{searchKeyword}, '%')
+                  OR business_no  LIKE CONCAT('%', #{searchKeyword}, '%'))
             </if>
         </where>
     </sql>
 
-    <select id="selectCompanyList" parameterType="kr.co.matpam.admin.company.service.CompanyVO" resultMap="companyMap">
+    <!-- 업체 목록 (페이징) -->
+    <select id="selectCompanyList"
+            parameterType="kr.co.matpam.admin.company.service.CompanyVO"
+            resultMap="companyMap">
         SELECT * FROM tb_company
         <include refid="companyWhere"/>
         ORDER BY created_at DESC
         LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
     </select>
 
-    <select id="selectCompanyListAll" parameterType="kr.co.matpam.admin.company.service.CompanyVO" resultMap="companyMap">
+    <!-- 업체 전체 목록 -->
+    <select id="selectCompanyListAll"
+            parameterType="kr.co.matpam.admin.company.service.CompanyVO"
+            resultMap="companyMap">
         SELECT * FROM tb_company
         <include refid="companyWhere"/>
         ORDER BY company_name ASC
     </select>
 
-    <select id="selectCompanyListTotCnt" parameterType="kr.co.matpam.admin.company.service.CompanyVO" resultType="int">
+    <!-- 업체 건수 -->
+    <select id="selectCompanyListTotCnt"
+            parameterType="kr.co.matpam.admin.company.service.CompanyVO"
+            resultType="int">
         SELECT COUNT(*) FROM tb_company
         <include refid="companyWhere"/>
     </select>
 
-    <select id="selectCompanyDetail" parameterType="kr.co.matpam.admin.company.service.CompanyVO" resultMap="companyMap">
+    <!-- 업체 상세 -->
+    <select id="selectCompanyDetail"
+            parameterType="kr.co.matpam.admin.company.service.CompanyVO"
+            resultMap="companyMap">
         SELECT * FROM tb_company WHERE company_id = #{companyId}
     </select>
 
-    <insert id="insertCompany" parameterType="kr.co.matpam.admin.company.service.CompanyVO" useGeneratedKeys="true" keyProperty="companyId">
+    <!-- 업체 등록 (default_tax_type 제거 — 세금은 SKU 단위로 결정) -->
+    <insert id="insertCompany"
+            parameterType="kr.co.matpam.admin.company.service.CompanyVO"
+            useGeneratedKeys="true" keyProperty="companyId">
         INSERT INTO tb_company (
-            tenant_id, company_type, seller_type, company_name, business_no,
-            ceo_name, postal_code, address1, address2, phone, email,
-            default_tax_type, biz_status, status
+            tenant_id, company_type, seller_type,
+            company_name, business_no, ceo_name,
+            postal_code, address1, address2,
+            phone, email, biz_status, status
         ) VALUES (
-            #{tenantId}, #{companyType}, #{sellerType}, #{companyName}, #{businessNo},
-            #{ceoName}, #{postalCode}, #{address1}, #{address2}, #{phone}, #{email},
-            #{defaultTaxType}, 'ACTIVE', 'ACTIVE'
+            #{tenantId}, #{companyType}, #{sellerType},
+            #{companyName}, #{businessNo}, #{ceoName},
+            #{postalCode}, #{address1}, #{address2},
+            #{phone}, #{email}, 'ACTIVE', 'ACTIVE'
         )
     </insert>
 
-    <update id="updateCompany" parameterType="kr.co.matpam.admin.company.service.CompanyVO">
+    <!-- 업체 수정 (default_tax_type 제거) -->
+    <update id="updateCompany"
+            parameterType="kr.co.matpam.admin.company.service.CompanyVO">
         UPDATE tb_company
         SET
             company_name = #{companyName},
-            ceo_name = #{ceoName},
-            postal_code = #{postalCode},
-            address1 = #{address1},
-            address2 = #{address2},
-            phone = #{phone},
-            email = #{email},
-            default_tax_type = #{defaultTaxType},
-            seller_type = #{sellerType},
-            updated_at = NOW()
+            ceo_name     = #{ceoName},
+            seller_type  = #{sellerType},
+            postal_code  = #{postalCode},
+            address1     = #{address1},
+            address2     = #{address2},
+            phone        = #{phone},
+            email        = #{email},
+            updated_at   = NOW()
         WHERE company_id = #{companyId}
     </update>
 
-    <update id="updateCompanyStatus" parameterType="kr.co.matpam.admin.company.service.CompanyVO">
+    <!-- 업체 상태 변경 -->
+    <update id="updateCompanyStatus"
+            parameterType="kr.co.matpam.admin.company.service.CompanyVO">
         UPDATE tb_company
         SET status = #{status}, updated_at = NOW()
         WHERE company_id = #{companyId}
     </update>
 
-    <select id="selectCompanyContactList" parameterType="kr.co.matpam.admin.company.service.CompanyVO" resultType="kr.co.matpam.admin.company.service.CompanyContactVO">
-        SELECT 
-            contact_id AS contactId,
-            company_id AS companyId,
-            contact_name AS contactName,
-            contact_role AS contactRole,
-            mobile,
-            email,
-            is_primary AS isPrimary,
-            linked_user_id AS linkedUserId,
-            status,
-            created_at AS createdAt,
-            updated_at AS updatedAt
-        FROM tb_company_contact
+    <!-- ====================================================
+         담당자 CRUD
+    ==================================================== -->
+
+    <!-- 담당자 목록 (업체별) -->
+    <select id="selectCompanyContactList"
+            parameterType="kr.co.matpam.admin.company.service.CompanyVO"
+            resultMap="contactMap">
+        SELECT * FROM tb_company_contact
         WHERE company_id = #{companyId}
+          AND status = 'ACTIVE'
         ORDER BY is_primary DESC, created_at ASC
     </select>
 
-    <insert id="insertCompanyContact" parameterType="kr.co.matpam.admin.company.service.CompanyContactVO">
+    <!-- 담당자 단건 조회 -->
+    <select id="selectCompanyContact"
+            parameterType="kr.co.matpam.admin.company.service.CompanyContactVO"
+            resultMap="contactMap">
+        SELECT * FROM tb_company_contact
+        WHERE contact_id = #{contactId}
+    </select>
+
+    <!-- 담당자 등록 -->
+    <insert id="insertCompanyContact"
+            parameterType="kr.co.matpam.admin.company.service.CompanyContactVO"
+            useGeneratedKeys="true" keyProperty="contactId">
         INSERT INTO tb_company_contact (
-            company_id, contact_name, contact_role, mobile, email, 
-            is_primary, linked_user_id, status, created_at
+            company_id, contact_name, contact_role,
+            mobile, email, is_primary, status, created_at
         ) VALUES (
-            #{companyId}, #{contactName}, #{contactRole}, #{mobile}, #{email}, 
-            #{isPrimary}, #{linkedUserId}, 'ACTIVE', NOW()
+            #{companyId}, #{contactName}, #{contactRole},
+            #{mobile}, #{email},
+            <choose>
+                <when test="isPrimary != null">#{isPrimary}</when>
+                <otherwise>'N'</otherwise>
+            </choose>,
+            'ACTIVE', NOW()
         )
-        ON DUPLICATE KEY UPDATE
-            contact_name = #{contactName},
-            contact_role = #{contactRole},
-            mobile = #{mobile},
-            email = #{email},
-            is_primary = #{isPrimary},
-            updated_at = NOW()
     </insert>
 
-    <delete id="deleteCompanyContact" parameterType="long">
-        DELETE FROM tb_company_contact WHERE contact_id = #{contactId}
-    </delete>
+    <!-- 담당자 수정 -->
+    <update id="updateCompanyContact"
+            parameterType="kr.co.matpam.admin.company.service.CompanyContactVO">
+        UPDATE tb_company_contact
+        SET
+            contact_name = #{contactName},
+            contact_role = #{contactRole},
+            mobile       = #{mobile},
+            email        = #{email},
+            is_primary   = <choose>
+                               <when test="isPrimary != null">#{isPrimary}</when>
+                               <otherwise>'N'</otherwise>
+                           </choose>,
+            updated_at   = NOW()
+        WHERE contact_id = #{contactId}
+    </update>
+
+    <!-- 담당자 삭제 (논리 삭제) -->
+    <update id="deleteCompanyContact"
+            parameterType="kr.co.matpam.admin.company.service.CompanyContactVO">
+        UPDATE tb_company_contact
+        SET status = 'INACTIVE', updated_at = NOW()
+        WHERE contact_id = #{contactId}
+    </update>
+
+    <!-- 기존 대표 담당자 해제 (대표 변경 전 호출) -->
+    <update id="clearPrimaryContact"
+            parameterType="kr.co.matpam.admin.company.service.CompanyContactVO">
+        UPDATE tb_company_contact
+        SET is_primary = 'N', updated_at = NOW()
+        WHERE company_id = #{companyId}
+          AND is_primary = 'Y'
+          AND status = 'ACTIVE'
+    </update>
 
 </mapper>

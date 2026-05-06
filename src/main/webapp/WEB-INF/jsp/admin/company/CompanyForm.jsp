@@ -58,18 +58,8 @@
                             <form:option value="PROCESSED" label="가공 (Processed)" />
                             <form:option value="FINISHED" label="완제품 (Finished)" />
                         </form:select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">과세 구분 <span class="text-danger">*</span></label>
-                        <div class="pt-2">
-                            <div class="form-check form-check-inline">
-                                <form:radiobutton path="defaultTaxType" value="TAXABLE" id="taxable" class="form-check-input" />
-                                <label class="form-check-label" for="taxable">과세</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <form:radiobutton path="defaultTaxType" value="TAX_FREE" id="taxFree" class="form-check-input" />
-                                <label class="form-check-label" for="taxFree">면세</label>
-                            </div>
+                        <div class="form-text text-muted">
+                            <i class="bi bi-info-circle me-1"></i>세금 구분(면세/과세)은 개별 상품(SKU) 단위로 설정합니다.
                         </div>
                     </div>
                 </div>
@@ -123,39 +113,63 @@
                                     <th class="text-center" style="width: 100px;">관리</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <c:forEach var="contact" items="${company.contactList}">
-                                    <tr>
-                                        <td class="ps-3 fw-bold">${contact.contactName}</td>
-                                        <td>
-                                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2">
-                                                ${contact.contactRole}
-                                            </span>
-                                        </td>
-                                        <td>${contact.mobile}</td>
-                                        <td>${contact.email}</td>
-                                        <td class="text-center">
-                                            <c:if test="${contact.isPrimary == 'Y'}">
-                                                <i class="bi bi-check-circle-fill text-primary"></i>
-                                            </c:if>
-                                        </td>
-                                        <td class="text-center">
-                                            <span class="badge ${contact.status == 'ACTIVE' ? 'bg-success' : 'bg-danger'} rounded-pill">
-                                                ${contact.status == 'ACTIVE' ? '정상' : '중지'}
-                                            </span>
-                                        </td>
-                                        <td class="text-center">
-                                            <button type="button" class="btn btn-sm btn-link text-danger p-0" onclick="fn_deleteContact(${contact.contactId})">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </c:forEach>
-                                <c:if test="${empty company.contactList}">
-                                    <tr>
-                                        <td colspan="7" class="text-center py-4 text-muted">등록된 담당자가 없습니다.</td>
-                                    </tr>
-                                </c:if>
+                            <tbody id="contactTableBody">
+                                <c:choose>
+                                    <c:when test="${not empty contactList}">
+                                        <c:forEach var="contact" items="${contactList}" varStatus="loop">
+                                        <tr id="contact-row-${contact.contactId}">
+                                            <td class="ps-3 fw-bold">${contact.contactName}</td>
+                                            <td>
+                                                <span class="badge
+                                                    ${contact.contactRole == 'ADMIN'      ? 'bg-dark'    :
+                                                      contact.contactRole == 'SALES'      ? 'bg-primary' :
+                                                      contact.contactRole == 'TAX'        ? 'bg-warning text-dark' :
+                                                      contact.contactRole == 'SETTLEMENT' ? 'bg-success' :
+                                                      contact.contactRole == 'SHIPPING'   ? 'bg-info text-dark' :
+                                                      'bg-secondary'}">
+                                                    ${contact.contactRole}
+                                                </span>
+                                            </td>
+                                            <td>${contact.mobile}</td>
+                                            <td>${contact.email}</td>
+                                            <td class="text-center">
+                                                <c:choose>
+                                                    <c:when test="${contact.isPrimary == 'Y'}">
+                                                        <i class="bi bi-star-fill text-warning" title="대표 담당자"></i>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <i class="bi bi-star text-muted"></i>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge ${contact.status == 'ACTIVE' ? 'bg-success' : 'bg-danger'} rounded-pill">
+                                                    ${contact.status == 'ACTIVE' ? '정상' : '중지'}
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group btn-group-sm">
+                                                    <button type="button" class="btn btn-sm btn-outline-primary"
+                                                            onclick="fn_editContact(${contact.contactId}, '${contact.contactName}', '${contact.contactRole}', '${contact.mobile}', '${contact.email}', '${contact.isPrimary}')"
+                                                            title="수정">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                                            onclick="fn_deleteContact(${contact.contactId})"
+                                                            title="삭제">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        </c:forEach>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <tr id="noContactRow">
+                                            <td colspan="7" class="text-center py-4 text-muted">등록된 담당자가 없습니다.</td>
+                                        </tr>
+                                    </c:otherwise>
+                                </c:choose>
                             </tbody>
                         </table>
                     </div>
@@ -286,30 +300,33 @@
     <div class="modal-dialog">
         <div class="modal-content border-0 shadow">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title fw-bold">담당자 등록</h5>
+                <h5 class="modal-title fw-bold" id="contactModalTitle">담당자 등록</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">
                 <form id="contactForm">
                     <input type="hidden" name="companyId" value="${company.companyId}">
-                    <input type="hidden" name="contactId" id="modal_contactId">
-                    
+                    <input type="hidden" name="contactId" id="modal_contactId" value="">
+
                     <div class="mb-3">
                         <label class="form-label fw-bold">성명 <span class="text-danger">*</span></label>
-                        <input type="text" name="contactName" id="modal_contactName" class="form-control" required>
+                        <input type="text" name="contactName" id="modal_contactName" class="form-control" placeholder="홍길동" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">역할 <span class="text-danger">*</span></label>
                         <select name="contactRole" id="modal_contactRole" class="form-select" required>
-                            <option value="ADMIN">관리 (Admin)</option>
-                            <option value="SALES">영업 (Sales)</option>
-                            <option value="TAX">세무/정산 (Tax)</option>
-                            <option value="SHIPPING">물류/배송 (Logistics)</option>
+                            <option value="">-- 역할 선택 --</option>
+                            <option value="ADMIN">ADMIN (총괄관리)</option>
+                            <option value="SALES">SALES (영업)</option>
+                            <option value="TAX">TAX (세무)</option>
+                            <option value="SETTLEMENT">SETTLEMENT (정산)</option>
+                            <option value="SHIPPING">SHIPPING (배송)</option>
+                            <option value="PURCHASE">PURCHASE (구매)</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">휴대폰 번호 <span class="text-danger">*</span></label>
-                        <input type="text" name="mobile" id="modal_mobile" class="form-control" placeholder="010-0000-0000" required>
+                        <label class="form-label fw-bold">휴대폰 번호</label>
+                        <input type="text" name="mobile" id="modal_mobile" class="form-control" placeholder="010-0000-0000">
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">이메일</label>
@@ -317,7 +334,10 @@
                     </div>
                     <div class="mb-3 form-check">
                         <input type="checkbox" name="isPrimary" value="Y" id="modal_isPrimary" class="form-check-input">
-                        <label class="form-check-label" for="modal_isPrimary">대표 담당자로 설정</label>
+                        <label class="form-check-label" for="modal_isPrimary">
+                            <i class="bi bi-star-fill text-warning me-1"></i>대표 담당자로 설정
+                            <small class="text-muted">(기존 대표는 자동 해제)</small>
+                        </label>
                     </div>
                 </form>
             </div>
@@ -380,12 +400,30 @@ window.fn_addContact = function() {
     const companyId = "${company.companyId}";
     if (!companyId || companyId === "0") {
         if (confirm("담당자를 등록하려면 업체 정보를 먼저 저장해야 합니다. 지금 저장하시겠습니까?")) {
-            fn_save(null, true); // callback mode
+            fn_save(null, true);
         }
         return;
     }
+    // 모달 초기화 (추가 모드)
+    jQuery('#contactModalTitle').text('담당자 등록');
     jQuery('#modal_contactId').val('');
-    jQuery('#contactForm')[0].reset();
+    jQuery('#modal_contactName').val('');
+    jQuery('#modal_contactRole').val('');
+    jQuery('#modal_mobile').val('');
+    jQuery('#modal_email').val('');
+    jQuery('#modal_isPrimary').prop('checked', false);
+    jQuery('#contactModal').modal('show');
+};
+
+// 담당자 수정 모달 열기 (기존 데이터 인라인 전달 방식)
+window.fn_editContact = function(contactId, contactName, contactRole, mobile, email, isPrimary) {
+    jQuery('#contactModalTitle').text('담당자 수정');
+    jQuery('#modal_contactId').val(contactId);
+    jQuery('#modal_contactName').val(contactName);
+    jQuery('#modal_contactRole').val(contactRole);
+    jQuery('#modal_mobile').val(mobile);
+    jQuery('#modal_email').val(email);
+    jQuery('#modal_isPrimary').prop('checked', isPrimary === 'Y');
     jQuery('#contactModal').modal('show');
 };
 
@@ -426,13 +464,6 @@ function fn_init_listeners() {
         $('#businessNo').on('keyup', function() { $(this).val(fn_formatBusinessNo($(this).val())); });
         $('#phone, #modal_mobile').on('keyup', function() { $(this).val(fn_formatPhone($(this).val())); });
 
-        // Auto Tax Logic
-        $('#sellerType').on('change', function() {
-            const type = $(this).val();
-            if (type === 'RAW') $('#taxFree').prop('checked', true);
-            else if (type === 'PROCESSED' || type === 'FINISHED') $('#taxable').prop('checked', true);
-        });
-
         // Form Submit
         $('#detailForm').on('submit', function(e) {
             fn_save(e);
@@ -447,16 +478,103 @@ function fn_init_listeners() {
 
 // Global Financial & Other Utils
 window.fn_saveContact = function() {
+    const contactName = jQuery('#modal_contactName').val().trim();
+    const contactRole = jQuery('#modal_contactRole').val();
+    if (!contactName) { alert('성명을 입력하세요.'); return; }
+    if (!contactRole) { alert('역할을 선택하세요.'); return; }
+
+    // isPrimary 체크박스는 체크 시에만 serialize에 포함되므로 명시적으로 처리
+    const isPrimaryVal = jQuery('#modal_isPrimary').is(':checked') ? 'Y' : 'N';
+    const rawContactId = jQuery('#modal_contactId').val();
+    const data = {
+        companyId  : jQuery('input[name="companyId"]', '#contactForm').val(),
+        contactId  : (rawContactId && rawContactId !== '0') ? rawContactId : '',  // 빈 문자열이면 신규 등록
+        contactName: contactName,
+        contactRole: contactRole,
+        mobile     : jQuery('#modal_mobile').val().trim(),
+        email      : jQuery('#modal_email').val().trim(),
+        isPrimary  : isPrimaryVal
+    };
+
     jQuery.ajax({
         url: '<c:url value="/admin/company/saveContact.ajax"/>',
         type: 'POST',
-        data: jQuery('#contactForm').serialize(),
+        data: data,
         success: function(res) {
-            if (res.success) { alert('담당자가 저장되었습니다.'); location.reload(); }
-            else alert('오류: ' + res.message);
-        }
+            if (res.success) {
+                jQuery('#contactModal').modal('hide');
+                alert('담당자가 저장되었습니다.');
+                fn_refreshContactTable();
+            } else {
+                alert('오류: ' + res.message);
+            }
+        },
+        error: function() { alert('통신 중 오류가 발생했습니다.'); }
     });
 };
+
+// 담당자 목록 새로고침 (페이지 리로드 없이 AJAX)
+window.fn_refreshContactTable = function() {
+    const companyId = '${company.companyId}';
+    jQuery.ajax({
+        url : '<c:url value="/admin/company/contactList.ajax"/>',
+        type: 'GET',
+        data: { companyId: companyId },
+        success: function(res) {
+            if (!res.success) { alert('목록 갱신 실패: ' + res.message); return; }
+            const tbody  = jQuery('#contactTableBody');
+            const list   = res.list || [];
+            const roleBadge = {
+                'ADMIN'      : 'bg-dark',
+                'SALES'      : 'bg-primary',
+                'TAX'        : 'bg-warning text-dark',
+                'SETTLEMENT' : 'bg-success',
+                'SHIPPING'   : 'bg-info text-dark',
+                'PURCHASE'   : 'bg-secondary'
+            };
+            if (list.length === 0) {
+                tbody.html('<tr id="noContactRow"><td colspan="7" class="text-center py-4 text-muted">등록된 담당자가 없습니다.</td></tr>');
+                return;
+            }
+            let html = '';
+            jQuery.each(list, function(i, c) {
+                const badge   = roleBadge[c.contactRole] || 'bg-secondary';
+                const star    = c.isPrimary === 'Y'
+                    ? '<i class="bi bi-star-fill text-warning" title="대표 담당자"></i>'
+                    : '<i class="bi bi-star text-muted"></i>';
+                const name    = escHtml(c.contactName  || '');
+                const mobile  = escHtml(c.mobile       || '');
+                const email   = escHtml(c.email        || '');
+                const role    = escHtml(c.contactRole  || '');
+                const isPri   = c.isPrimary || 'N';
+                html += '<tr id="contact-row-' + c.contactId + '">'
+                    + '<td class="ps-3 fw-bold">' + name + '</td>'
+                    + '<td><span class="badge ' + badge + '">' + role + '</span></td>'
+                    + '<td>' + mobile + '</td>'
+                    + '<td>' + email  + '</td>'
+                    + '<td class="text-center">' + star + '</td>'
+                    + '<td class="text-center"><span class="badge bg-success rounded-pill">정상</span></td>'
+                    + '<td class="text-center">'
+                    +   '<div class="btn-group btn-group-sm">'
+                    +     '<button type="button" class="btn btn-sm btn-outline-primary" title="수정"'
+                    +       ' onclick="fn_editContact(' + c.contactId + ',\''+name+'\',\''+role+'\',\''+mobile+'\',\''+email+'\',\''+isPri+'\')">' 
+                    +       '<i class="bi bi-pencil"></i></button>'
+                    +     '<button type="button" class="btn btn-sm btn-outline-danger" title="삭제"'
+                    +       ' onclick="fn_deleteContact(' + c.contactId + ')">' 
+                    +       '<i class="bi bi-trash"></i></button>'
+                    +   '</div>'
+                    + '</td>'
+                    + '</tr>';
+            });
+            tbody.html(html);
+        },
+        error: function() { alert('목록을 불러오는 중 오류가 발생했습니다.'); }
+    });
+};
+
+function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 
 window.fn_deleteContact = function(contactId) {
     if (!confirm('삭제하시겠습니까?')) return;
@@ -465,9 +583,10 @@ window.fn_deleteContact = function(contactId) {
         type: 'POST',
         data: { contactId: contactId },
         success: function(res) {
-            if (res.success) location.reload();
+            if (res.success) fn_refreshContactTable();
             else alert('오류: ' + res.message);
-        }
+        },
+        error: function() { alert('통신 중 오류가 발생했습니다.'); }
     });
 };
 
