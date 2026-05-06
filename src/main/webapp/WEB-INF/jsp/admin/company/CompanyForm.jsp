@@ -10,33 +10,43 @@
         <li class="breadcrumb-item active">업체 ${empty company.companyId ? '등록' : '수정'}</li>
     </ol>
 
+    <!-- ===================== 업체 기본 정보 카드 ===================== -->
     <div class="card mb-4 shadow-sm">
         <div class="card-header bg-white py-3">
             <i class="fas fa-edit me-1"></i> 업체 기본 정보
         </div>
         <div class="card-body">
+            <%-- form:form은 기본 정보 영역에만 사용 --%>
             <form:form modelAttribute="company" id="detailForm" name="detailForm">
                 <form:hidden path="companyId" />
-                <form:hidden path="tenantId" value="1" /> <!-- 임시 고정 -->
+                <form:hidden path="tenantId" value="1" />
 
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label fw-bold">업체명 <span class="text-danger">*</span></label>
                         <form:input path="companyName" class="form-control" placeholder="상호명을 입력하세요" />
                     </div>
-                    <c:if test="${company.companyId gt 0}">
                     <div class="col-md-6">
                         <label class="form-label fw-bold">업체 타입 <span class="text-danger">*</span></label>
-                        <form:hidden path="companyType" />
-                        <form:select path="companyType" class="form-select bg-light" disabled="true">
-                            <form:option value="SELLER" label="판매업체 (Seller)" />
-                            <form:option value="BUYER" label="구매업체 (Buyer)" />
-                        </form:select>
+                        <c:choose>
+                            <c:when test="${not empty company.companyId and company.companyId gt 0}">
+                                <%-- 수정 시: 타입 변경 불가 (hidden + 읽기전용 표시) --%>
+                                <form:hidden path="companyType" />
+                                <form:select path="companyType" class="form-select bg-light" disabled="true">
+                                    <form:option value="SELLER" label="판매업체 (Seller)" />
+                                    <form:option value="BUYER"  label="구매업체 (Buyer)" />
+                                </form:select>
+                            </c:when>
+                            <c:otherwise>
+                                <%-- 신규 등록: 선택 가능 --%>
+                                <form:select path="companyType" class="form-select" id="companyTypeSelect">
+                                    <form:option value=""       label="-- 타입 선택 --" />
+                                    <form:option value="SELLER" label="판매업체 (Seller)" />
+                                    <form:option value="BUYER"  label="구매업체 (Buyer)" />
+                                </form:select>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
-                    </c:if>
-                    <c:if test="${empty company.companyId or company.companyId eq 0}">
-                        <form:hidden path="companyType" />
-                    </c:if>
                 </div>
 
                 <div class="row mb-3">
@@ -50,26 +60,19 @@
                     </div>
                 </div>
 
-                <div class="row mb-3" id="sellerTypeArea" style="${company.companyType == 'SELLER' ? '' : 'display:none;'}">
+                <%-- 판매업체 유형 (SELLER일 때만 표시) --%>
+                <div class="row mb-3" id="sellerTypeArea"
+                     style="${company.companyType == 'SELLER' ? '' : 'display:none;'}">
                     <div class="col-md-6">
                         <label class="form-label fw-bold">판매업체 유형 <span class="text-danger">*</span></label>
                         <form:select path="sellerType" class="form-select">
-                            <form:option value="RAW" label="원물 (Raw)" />
+                            <form:option value=""          label="-- 선택 --" />
+                            <form:option value="RAW"       label="원물 (Raw)" />
                             <form:option value="PROCESSED" label="가공 (Processed)" />
-                            <form:option value="FINISHED" label="완제품 (Finished)" />
+                            <form:option value="FINISHED"  label="완제품 (Finished)" />
                         </form:select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">과세 구분 <span class="text-danger">*</span></label>
-                        <div class="pt-2">
-                            <div class="form-check form-check-inline">
-                                <form:radiobutton path="defaultTaxType" value="TAXABLE" id="taxable" class="form-check-input" />
-                                <label class="form-check-label" for="taxable">과세</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <form:radiobutton path="defaultTaxType" value="TAX_FREE" id="taxFree" class="form-check-input" />
-                                <label class="form-check-label" for="taxFree">면세</label>
-                            </div>
+                        <div class="form-text text-muted">
+                            <i class="bi bi-info-circle me-1"></i>세금 구분(면세/과세)은 개별 상품(SKU) 단위로 설정합니다.
                         </div>
                     </div>
                 </div>
@@ -99,74 +102,12 @@
                     </div>
                 </div>
 
-                <hr class="my-4">
-
-                <!-- 담당자 관리 섹션 -->
-                <div class="mb-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-people-fill me-2"></i>담당자 관리</h5>
-                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="fn_addContact()">
-                            <i class="bi bi-person-plus me-1"></i> 담당자 추가
-                        </button>
-                    </div>
-                    
-                    <div class="table-responsive border rounded shadow-sm bg-white">
-                        <table class="table table-hover align-middle mb-0" id="contactTable">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th class="ps-3">성명</th>
-                                    <th>역할</th>
-                                    <th>연락처</th>
-                                    <th>이메일</th>
-                                    <th class="text-center">대표</th>
-                                    <th class="text-center">상태</th>
-                                    <th class="text-center" style="width: 100px;">관리</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <c:forEach var="contact" items="${company.contactList}">
-                                    <tr>
-                                        <td class="ps-3 fw-bold">${contact.contactName}</td>
-                                        <td>
-                                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2">
-                                                ${contact.contactRole}
-                                            </span>
-                                        </td>
-                                        <td>${contact.mobile}</td>
-                                        <td>${contact.email}</td>
-                                        <td class="text-center">
-                                            <c:if test="${contact.isPrimary == 'Y'}">
-                                                <i class="bi bi-check-circle-fill text-primary"></i>
-                                            </c:if>
-                                        </td>
-                                        <td class="text-center">
-                                            <span class="badge ${contact.status == 'ACTIVE' ? 'bg-success' : 'bg-danger'} rounded-pill">
-                                                ${contact.status == 'ACTIVE' ? '정상' : '중지'}
-                                            </span>
-                                        </td>
-                                        <td class="text-center">
-                                            <button type="button" class="btn btn-sm btn-link text-danger p-0" onclick="fn_deleteContact(${contact.contactId})">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </c:forEach>
-                                <c:if test="${empty company.contactList}">
-                                    <tr>
-                                        <td colspan="7" class="text-center py-4 text-muted">등록된 담당자가 없습니다.</td>
-                                    </tr>
-                                </c:if>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label fw-bold">상태</label>
                         <div>
                             <div class="form-check form-check-inline">
-                                <form:radiobutton path="status" value="ACTIVE" id="statusActive" class="form-check-input" />
+                                <form:radiobutton path="status" value="ACTIVE"   id="statusActive"   class="form-check-input" />
                                 <label class="form-check-label" for="statusActive">활성</label>
                             </div>
                             <div class="form-check form-check-inline">
@@ -177,70 +118,160 @@
                     </div>
                 </div>
 
-                <!-- 미트머니(여신/선수금) 관리 섹션 (구매업체 전용) -->
-                <c:if test="${company.companyType == 'BUYER'}">
-                    <hr class="my-4">
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="fw-bold mb-0 text-success"><i class="bi bi-wallet2 me-2"></i>미트머니(Meat Money) 관리</h5>
-                        </div>
-                        <div class="row gx-3">
-                            <div class="col-md-4">
-                                <div class="card bg-light border-0 shadow-sm text-center p-3">
-                                    <div class="small text-muted mb-1">가용 여신 (Credit)</div>
-                                    <div class="h4 fw-bold mb-0" id="currentCredit">0 원</div>
-                                    <button type="button" class="btn btn-sm btn-outline-success mt-2" onclick="fn_openCreditModal()">여신 조정</button>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="card bg-light border-0 shadow-sm text-center p-3">
-                                    <div class="small text-muted mb-1">선수금 잔액 (Advance)</div>
-                                    <div class="h4 fw-bold mb-0" id="currentAdvance">0 원</div>
-                                    <button type="button" class="btn btn-sm btn-outline-info mt-2" onclick="fn_openAdvanceModal()">선수금 입금</button>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="card bg-success bg-opacity-10 border-0 shadow-sm text-center p-3">
-                                    <div class="small text-success fw-bold mb-1">총 가용 미트머니</div>
-                                    <div class="h3 fw-bold text-success mb-0" id="totalMeatMoney">0 원</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </c:if>
-
                 <div class="mt-4 pt-3 border-top d-flex justify-content-between">
-                    <a href="<c:url value='/admin/company/companyList.do'/>" class="btn btn-outline-secondary px-4">
+                    <a href="<c:url value='/admin/company/companyList.do'/>"
+                       class="btn btn-outline-secondary px-4">
                         <i class="fas fa-list me-1"></i> 목록으로
                     </a>
-                    <button type="submit" class="btn btn-primary px-5" id="btnSave">
+                    <%-- submit → button으로 변경하여 form 기본 submit 방지, fn_save 직접 호출 --%>
+                    <button type="button" class="btn btn-primary px-5" id="btnSave" onclick="fn_save(null, false)">
                         <i class="fas fa-save me-1"></i> 저장하기
                     </button>
                 </div>
             </form:form>
         </div>
     </div>
+
+    <!-- ===================== 담당자 관리 카드 ===================== -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-people-fill me-1 text-primary"></i> 담당자 관리</span>
+            <button type="button" class="btn btn-sm btn-outline-primary" onclick="fn_addContact()">
+                <i class="bi bi-person-plus me-1"></i> 담당자 추가
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="contactTable">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-3">성명</th>
+                            <th>역할</th>
+                            <th>연락처</th>
+                            <th>이메일</th>
+                            <th class="text-center">대표</th>
+                            <th class="text-center">상태</th>
+                            <th class="text-center" style="width:100px;">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody id="contactTableBody">
+                        <c:choose>
+                            <c:when test="${not empty contactList}">
+                                <c:forEach var="ct" items="${contactList}">
+                                <tr id="contact-row-${ct.contactId}">
+                                    <td class="ps-3 fw-bold">${ct.contactName}</td>
+                                    <td>
+                                        <span class="badge
+                                            ${ct.contactRole == 'ADMIN'      ? 'bg-dark' :
+                                              ct.contactRole == 'SALES'      ? 'bg-primary' :
+                                              ct.contactRole == 'TAX'        ? 'bg-warning text-dark' :
+                                              ct.contactRole == 'SETTLEMENT' ? 'bg-success' :
+                                              ct.contactRole == 'SHIPPING'   ? 'bg-info text-dark' :
+                                              'bg-secondary'}">
+                                            ${ct.contactRole}
+                                        </span>
+                                    </td>
+                                    <td>${ct.mobile}</td>
+                                    <td>${ct.email}</td>
+                                    <td class="text-center">
+                                        <c:choose>
+                                            <c:when test="${ct.isPrimary == 'Y'}">
+                                                <i class="bi bi-star-fill text-warning" title="대표 담당자"></i>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <i class="bi bi-star text-muted"></i>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge ${ct.status == 'ACTIVE' ? 'bg-success' : 'bg-danger'} rounded-pill">
+                                            ${ct.status == 'ACTIVE' ? '정상' : '중지'}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" title="수정"
+                                                onclick="fn_editContact(${ct.contactId},'${ct.contactName}','${ct.contactRole}','${ct.mobile}','${ct.email}','${ct.isPrimary}')">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" title="삭제"
+                                                onclick="fn_deleteContact(${ct.contactId})">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </c:forEach>
+                            </c:when>
+                            <c:otherwise>
+                                <tr id="noContactRow">
+                                    <td colspan="7" class="text-center py-4 text-muted">등록된 담당자가 없습니다.</td>
+                                </tr>
+                            </c:otherwise>
+                        </c:choose>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== 미트머니 관리 카드 (구매업체 전용) ===================== -->
+    <c:if test="${company.companyType == 'BUYER' and not empty company.companyId and company.companyId gt 0}">
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <i class="bi bi-wallet2 me-1 text-success"></i> 미트머니(Meat Money) 관리
+        </div>
+        <div class="card-body">
+            <div class="row gx-3">
+                <div class="col-md-4">
+                    <div class="card bg-light border-0 shadow-sm text-center p-3">
+                        <div class="small text-muted mb-1">가용 여신 (Credit)</div>
+                        <div class="h4 fw-bold mb-0" id="currentCredit">0 원</div>
+                        <button type="button" class="btn btn-sm btn-outline-success mt-2"
+                                onclick="fn_openCreditModal()">여신 조정</button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-light border-0 shadow-sm text-center p-3">
+                        <div class="small text-muted mb-1">선수금 잔액 (Advance)</div>
+                        <div class="h4 fw-bold mb-0" id="currentAdvance">0 원</div>
+                        <button type="button" class="btn btn-sm btn-outline-info mt-2"
+                                onclick="fn_openAdvanceModal()">선수금 입금</button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-success bg-opacity-10 border-0 shadow-sm text-center p-3">
+                        <div class="small text-success fw-bold mb-1">총 가용 미트머니</div>
+                        <div class="h3 fw-bold text-success mb-0" id="totalMeatMoney">0 원</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </c:if>
 </div>
 
-<!-- 여신 조정 모달 -->
+<!-- ===================== 여신 조정 모달 ===================== -->
 <div class="modal fade" id="creditModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content border-0 shadow">
             <div class="modal-header bg-success text-white">
                 <h5 class="modal-title fw-bold">여신 한도 조정</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
-                <form id="creditForm">
-                    <input type="hidden" name="companyId" value="${company.companyId}">
+                <form id="creditForm" novalidate>
+                    <input type="hidden" id="credit_companyId" name="companyId" value="${company.companyId}">
                     <div class="mb-3">
                         <label class="form-label fw-bold">조정 금액 (+/- 가능) <span class="text-danger">*</span></label>
-                        <input type="number" name="amount" id="credit_amount" class="form-control" placeholder="예: 1000000" required>
+                        <input type="number" name="amount" id="credit_amount" class="form-control"
+                               placeholder="예: 1000000" required>
                         <div class="form-text">증액은 양수(+), 감액은 음수(-)로 입력하세요.</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">사유 <span class="text-danger">*</span></label>
-                        <input type="text" name="memo" id="credit_memo" class="form-control" placeholder="조정 사유를 입력하세요" required>
+                        <input type="text" name="memo" id="credit_memo" class="form-control"
+                               placeholder="조정 사유를 입력하세요" required>
                     </div>
                 </form>
             </div>
@@ -252,24 +283,26 @@
     </div>
 </div>
 
-<!-- 선수금 입금 모달 -->
+<!-- ===================== 선수금 입금 모달 ===================== -->
 <div class="modal fade" id="advanceModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content border-0 shadow">
             <div class="modal-header bg-info text-white">
                 <h5 class="modal-title fw-bold">선수금(예치금) 입금 처리</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
-                <form id="advanceForm">
-                    <input type="hidden" name="companyId" value="${company.companyId}">
+                <form id="advanceForm" novalidate>
+                    <input type="hidden" id="advance_companyId" name="companyId" value="${company.companyId}">
                     <div class="mb-3">
                         <label class="form-label fw-bold">입금 금액 <span class="text-danger">*</span></label>
-                        <input type="number" name="amount" id="advance_amount" class="form-control" placeholder="예: 500000" required min="1">
+                        <input type="number" name="amount" id="advance_amount" class="form-control"
+                               placeholder="예: 500000" required min="1">
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">입금 사유/비고 <span class="text-danger">*</span></label>
-                        <input type="text" name="memo" id="advance_memo" class="form-control" placeholder="예: 무통장 입금 확인" required>
+                        <input type="text" name="memo" id="advance_memo" class="form-control"
+                               placeholder="예: 무통장 입금 확인" required>
                     </div>
                 </form>
             </div>
@@ -281,272 +314,456 @@
     </div>
 </div>
 
-<!-- 담당자 등록/수정 모달 -->
+<!-- ===================== 담당자 등록/수정 모달 ===================== -->
 <div class="modal fade" id="contactModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content border-0 shadow">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title fw-bold">담당자 등록</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title fw-bold" id="contactModalTitle">담당자 등록</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
-                <form id="contactForm">
-                    <input type="hidden" name="companyId" value="${company.companyId}">
-                    <input type="hidden" name="contactId" id="modal_contactId">
-                    
+                <form id="contactForm" novalidate>
+                    <%-- companyId는 JS에서 동적으로 세팅 --%>
+                    <input type="hidden" name="companyId"  id="modal_companyId"  value="${company.companyId}">
+                    <input type="hidden" name="contactId"  id="modal_contactId"  value="">
                     <div class="mb-3">
                         <label class="form-label fw-bold">성명 <span class="text-danger">*</span></label>
-                        <input type="text" name="contactName" id="modal_contactName" class="form-control" required>
+                        <input type="text" name="contactName" id="modal_contactName"
+                               class="form-control" placeholder="홍길동" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">역할 <span class="text-danger">*</span></label>
                         <select name="contactRole" id="modal_contactRole" class="form-select" required>
-                            <option value="ADMIN">관리 (Admin)</option>
-                            <option value="SALES">영업 (Sales)</option>
-                            <option value="TAX">세무/정산 (Tax)</option>
-                            <option value="SHIPPING">물류/배송 (Logistics)</option>
+                            <option value="">-- 역할 선택 --</option>
+                            <option value="ADMIN">ADMIN (총괄관리)</option>
+                            <option value="SALES">SALES (영업)</option>
+                            <option value="TAX">TAX (세무)</option>
+                            <option value="SETTLEMENT">SETTLEMENT (정산)</option>
+                            <option value="SHIPPING">SHIPPING (배송)</option>
+                            <option value="PURCHASE">PURCHASE (구매)</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">휴대폰 번호 <span class="text-danger">*</span></label>
-                        <input type="text" name="mobile" id="modal_mobile" class="form-control" placeholder="010-0000-0000" required>
+                        <label class="form-label fw-bold">휴대폰 번호</label>
+                        <input type="text" name="mobile" id="modal_mobile"
+                               class="form-control" placeholder="010-0000-0000">
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">이메일</label>
-                        <input type="email" name="email" id="modal_email" class="form-control" placeholder="example@domain.com">
+                        <input type="email" name="email" id="modal_email"
+                               class="form-control" placeholder="example@domain.com">
                     </div>
                     <div class="mb-3 form-check">
-                        <input type="checkbox" name="isPrimary" value="Y" id="modal_isPrimary" class="form-check-input">
-                        <label class="form-check-label" for="modal_isPrimary">대표 담당자로 설정</label>
+                        <input type="checkbox" id="modal_isPrimary" class="form-check-input">
+                        <label class="form-check-label" for="modal_isPrimary">
+                            <i class="bi bi-star-fill text-warning me-1"></i>대표 담당자로 설정
+                            <small class="text-muted">(기존 대표는 자동 해제)</small>
+                        </label>
                     </div>
                 </form>
             </div>
             <div class="modal-footer bg-light border-0">
                 <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">취소</button>
-                <button type="button" class="btn btn-primary px-4" onclick="fn_saveContact()">저장하기</button>
+                <button type="button" class="btn btn-primary  px-4" onclick="fn_saveContact()">저장하기</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- 다음 주소 API (필요시) -->
+<!-- 다음 주소 API -->
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script>
-// --- Global Functions ---
-window.fn_save = function(e, callback) {
-    if (e) e.preventDefault();
-    console.log("DEBUG: fn_save initiated");
-    
-    const form = document.getElementById('detailForm');
-    
-    if (!form.companyName.value) { alert("업체명을 입력하세요."); return; }
-    if (!form.businessNo.value) { alert("사업자 등록 번호를 입력하세요."); return; }
-    if (!form.ceoName.value) { alert("대표자명을 입력하세요."); return; }
+(function () {
+    /* ================================================================
+       서버에서 렌더링된 값 (JSP EL → JS 변수)
+    ================================================================ */
+    var COMPANY_ID   = "${company.companyId}";   // 비어있으면 신규 등록
+    var COMPANY_TYPE = "${company.companyType}";
 
-    if (!callback && !confirm('저장하시겠습니까?')) return;
-
-    const $form = jQuery(form);
-    const disabled = $form.find(':input:disabled').removeAttr('disabled');
-    const formData = $form.serialize();
-    disabled.attr('disabled', 'disabled');
-
-    console.log("DEBUG: Sending AJAX request...");
-    jQuery.ajax({
-        url: '<c:url value="/admin/company/saveCompany.ajax"/>',
-        type: 'POST',
-        data: formData,
-        success: function(res) {
-            console.log("DEBUG: Save success", res);
-            if (res.success) {
-                if (callback) {
-                    alert('업체 정보가 저장되었습니다. 이제 담당자를 등록할 수 있습니다.');
-                    location.href = '<c:url value="/admin/company/companyForm.do"/>?companyId=' + res.companyId;
-                } else {
-                    alert('정상적으로 저장되었습니다.');
-                    location.href = '<c:url value="/admin/company/companyList.do"/>?companyType=' + jQuery('#companyType').val();
-                }
-            } else {
-                alert('저장 실패: ' + res.message);
-            }
-        },
-        error: function(xhr) {
-            console.error("DEBUG: Save error", xhr);
-            alert('통신 중 오류가 발생했습니다.');
-        }
-    });
-};
-
-window.fn_addContact = function() {
-    const companyId = "${company.companyId}";
-    if (!companyId || companyId === "0") {
-        if (confirm("담당자를 등록하려면 업체 정보를 먼저 저장해야 합니다. 지금 저장하시겠습니까?")) {
-            fn_save(null, true); // callback mode
-        }
-        return;
+    /* ================================================================
+       유틸
+    ================================================================ */
+    function escHtml(str) {
+        return String(str || '')
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
-    jQuery('#modal_contactId').val('');
-    jQuery('#contactForm')[0].reset();
-    jQuery('#contactModal').modal('show');
-};
 
-window.fn_formatBusinessNo = function(str) {
-    if (!str) return str;
-    str = str.replace(/[^0-9]/g, '');
-    if (str.length <= 3) return str;
-    if (str.length <= 5) return str.substr(0, 3) + '-' + str.substr(3);
-    return str.substr(0, 3) + '-' + str.substr(3, 2) + '-' + str.substr(5, 5);
-};
+    function fmtBizNo(str) {
+        str = (str || '').replace(/[^0-9]/g, '');
+        if (str.length <= 3) return str;
+        if (str.length <= 5) return str.substr(0, 3) + '-' + str.substr(3);
+        return str.substr(0, 3) + '-' + str.substr(3, 2) + '-' + str.substr(5, 5);
+    }
 
-window.fn_formatPhone = function(str) {
-    if (!str) return str;
-    str = str.replace(/[^0-9]/g, '');
-    if (str.length <= 3) return str;
-    if (str.startsWith('02')) {
-        if (str.length <= 5) return str.substr(0, 2) + '-' + str.substr(2);
-        if (str.length <= 9) return str.substr(0, 2) + '-' + str.substr(2, 3) + '-' + str.substr(5);
-        return str.substr(0, 2) + '-' + str.substr(2, 4) + '-' + str.substr(6, 4);
-    } else {
+    function fmtPhone(str) {
+        str = (str || '').replace(/[^0-9]/g, '');
+        if (str.length <= 3) return str;
+        if (str.startsWith('02')) {
+            if (str.length <= 5) return str.substr(0, 2) + '-' + str.substr(2);
+            if (str.length <= 9) return str.substr(0, 2) + '-' + str.substr(2, 3) + '-' + str.substr(5);
+            return str.substr(0, 2) + '-' + str.substr(2, 4) + '-' + str.substr(6, 4);
+        }
         if (str.length <= 6) return str.substr(0, 3) + '-' + str.substr(3);
         if (str.length <= 10) return str.substr(0, 3) + '-' + str.substr(3, 3) + '-' + str.substr(6);
         return str.substr(0, 3) + '-' + str.substr(3, 4) + '-' + str.substr(7, 4);
     }
-};
 
-// --- Initialization ---
-function fn_init_listeners() {
-    if (typeof jQuery === 'undefined') {
-        setTimeout(fn_init_listeners, 100);
-        return;
+    function roleBadgeClass(role) {
+        var map = {
+            'ADMIN': 'bg-dark', 'SALES': 'bg-primary',
+            'TAX': 'bg-warning text-dark', 'SETTLEMENT': 'bg-success',
+            'SHIPPING': 'bg-info text-dark', 'PURCHASE': 'bg-secondary'
+        };
+        return map[role] || 'bg-secondary';
     }
-    
-    jQuery(document).ready(function() {
-        const $ = jQuery;
-        
-        // Auto-formatters
-        $('#businessNo').on('keyup', function() { $(this).val(fn_formatBusinessNo($(this).val())); });
-        $('#phone, #modal_mobile').on('keyup', function() { $(this).val(fn_formatPhone($(this).val())); });
 
-        // Auto Tax Logic
-        $('#sellerType').on('change', function() {
-            const type = $(this).val();
-            if (type === 'RAW') $('#taxFree').prop('checked', true);
-            else if (type === 'PROCESSED' || type === 'FINISHED') $('#taxable').prop('checked', true);
+    /* ================================================================
+       업체 기본 정보 저장
+       afterSave: false = 목록으로 이동 / true = 담당자 추가를 위해 상세페이지 이동
+    ================================================================ */
+    window.fn_save = function (e, afterSave) {
+        if (e) e.preventDefault();
+
+        var form = document.getElementById('detailForm');
+        if (!form.companyName.value) { alert('업체명을 입력하세요.'); return; }
+        if (!form.businessNo.value)  { alert('사업자 등록 번호를 입력하세요.'); return; }
+        if (!form.ceoName.value)     { alert('대표자명을 입력하세요.'); return; }
+
+        // 신규 등록 시 companyType 필수 체크
+        if ((!COMPANY_ID || COMPANY_ID === '0') && !jQuery('#companyTypeSelect').val()) {
+            alert('업체 타입을 선택하세요.'); return;
+        }
+
+        if (!afterSave && !confirm('저장하시겠습니까?')) return;
+
+        // disabled 필드(companyType select)도 serialize에 포함
+        var $form    = jQuery(form);
+        var disabled = $form.find(':disabled').removeAttr('disabled');
+        var formData = $form.serialize();
+        disabled.attr('disabled', 'disabled');
+
+        jQuery.ajax({
+            url : '<c:url value="/admin/company/saveCompany.ajax"/>',
+            type: 'POST',
+            data: formData,
+            success: function (res) {
+                if (res.success) {
+                    if (afterSave) {
+                        // 담당자 추가를 위해 저장 후 상세보기로 이동 (companyType 포함)
+                        alert('업체 정보가 저장되었습니다. 이제 담당자를 등록할 수 있습니다.');
+                        var ctype = jQuery('#companyTypeSelect').val() || COMPANY_TYPE;
+                        location.href = '<c:url value="/admin/company/companyForm.do"/>?companyId=' + res.companyId
+                                      + '&companyType=' + encodeURIComponent(ctype);
+                    } else {
+                        alert('정상적으로 저장되었습니다.');
+                        var ctype = jQuery('#companyTypeSelect').val() || COMPANY_TYPE;
+                        location.href = '<c:url value="/admin/company/companyList.do"/>?companyType=' + encodeURIComponent(ctype);
+                    }
+                } else {
+                    alert('저장 실패: ' + res.message);
+                }
+            },
+            error: function (xhr) {
+                alert('통신 중 오류가 발생했습니다. (' + xhr.status + ')');
+            }
         });
+    };
 
-        // Form Submit
-        $('#detailForm').on('submit', function(e) {
-            fn_save(e);
+    /* ================================================================
+       담당자 추가 버튼
+    ================================================================ */
+    window.fn_addContact = function () {
+        if (!COMPANY_ID || COMPANY_ID === '0') {
+            if (confirm('담당자를 등록하려면 업체 정보를 먼저 저장해야 합니다.\n지금 저장하시겠습니까?')) {
+                fn_save(null, true);  // afterSave=true → 저장 후 담당자 등록 화면으로
+            }
+            return;
+        }
+        // 모달 초기화 (추가 모드)
+        jQuery('#contactModalTitle').text('담당자 등록');
+        jQuery('#modal_contactId').val('');
+        jQuery('#modal_companyId').val(COMPANY_ID);
+        jQuery('#modal_contactName').val('');
+        jQuery('#modal_contactRole').val('');
+        jQuery('#modal_mobile').val('');
+        jQuery('#modal_email').val('');
+        jQuery('#modal_isPrimary').prop('checked', false);
+        jQuery('#contactModal').modal('show');
+    };
+
+    /* ================================================================
+       담당자 수정 버튼 (기존 데이터를 인라인 파라미터로 전달)
+    ================================================================ */
+    window.fn_editContact = function (contactId, contactName, contactRole, mobile, email, isPrimary) {
+        jQuery('#contactModalTitle').text('담당자 수정');
+        jQuery('#modal_contactId').val(contactId);
+        jQuery('#modal_companyId').val(COMPANY_ID);
+        jQuery('#modal_contactName').val(contactName);
+        jQuery('#modal_contactRole').val(contactRole);
+        jQuery('#modal_mobile').val(mobile);
+        jQuery('#modal_email').val(email);
+        jQuery('#modal_isPrimary').prop('checked', isPrimary === 'Y');
+        jQuery('#contactModal').modal('show');
+    };
+
+    /* ================================================================
+       담당자 저장 (추가 + 수정 통합)
+    ================================================================ */
+    window.fn_saveContact = function () {
+        var contactName = jQuery('#modal_contactName').val().trim();
+        var contactRole = jQuery('#modal_contactRole').val();
+        var rawId       = jQuery('#modal_contactId').val();
+        var companyId   = jQuery('#modal_companyId').val();
+
+        if (!contactName) { alert('성명을 입력하세요.'); return; }
+        if (!contactRole) { alert('역할을 선택하세요.'); return; }
+        if (!companyId || companyId === '0') {
+            alert('업체 정보를 먼저 저장해주세요.');
+            return;
+        }
+
+        var data = {
+            companyId  : companyId,
+            contactId  : (rawId && rawId !== '' && rawId !== '0') ? rawId : '',
+            contactName: contactName,
+            contactRole: contactRole,
+            mobile     : jQuery('#modal_mobile').val().trim(),
+            email      : jQuery('#modal_email').val().trim(),
+            isPrimary  : jQuery('#modal_isPrimary').is(':checked') ? 'Y' : 'N'
+        };
+
+        jQuery.ajax({
+            url : '<c:url value="/admin/company/saveContact.ajax"/>',
+            type: 'POST',
+            data: data,
+            success: function (res) {
+                if (res.success) {
+                    jQuery('#contactModal').modal('hide');
+                    alert('담당자가 저장되었습니다.');
+                    fn_refreshContactTable();
+                } else {
+                    alert('오류: ' + res.message);
+                }
+            },
+            error: function () { alert('통신 중 오류가 발생했습니다.'); }
         });
-        
-        // Load Financials
-        if ("${company.companyId gt 0 && company.companyType eq 'BUYER'}" == "true") {
-            fn_loadMeatMoney();
-        }
-    });
-}
+    };
 
-// Global Financial & Other Utils
-window.fn_saveContact = function() {
-    jQuery.ajax({
-        url: '<c:url value="/admin/company/saveContact.ajax"/>',
-        type: 'POST',
-        data: jQuery('#contactForm').serialize(),
-        success: function(res) {
-            if (res.success) { alert('담당자가 저장되었습니다.'); location.reload(); }
-            else alert('오류: ' + res.message);
-        }
-    });
-};
+    /* ================================================================
+       담당자 목록 새로고침 (AJAX)
+    ================================================================ */
+    window.fn_refreshContactTable = function () {
+        if (!COMPANY_ID || COMPANY_ID === '0') return;
 
-window.fn_deleteContact = function(contactId) {
-    if (!confirm('삭제하시겠습니까?')) return;
-    jQuery.ajax({
-        url: '<c:url value="/admin/company/deleteContact.ajax"/>',
-        type: 'POST',
-        data: { contactId: contactId },
-        success: function(res) {
-            if (res.success) location.reload();
-            else alert('오류: ' + res.message);
-        }
-    });
-};
+        jQuery.ajax({
+            url : '<c:url value="/admin/company/contactList.ajax"/>',
+            type: 'GET',
+            data: { companyId: COMPANY_ID },
+            success: function (res) {
+                if (!res.success) { alert('목록 갱신 실패: ' + res.message); return; }
+                var tbody = jQuery('#contactTableBody');
+                var list  = res.list || [];
 
-window.fn_searchAddr = function() {
-    new daum.Postcode({
-        oncomplete: function(data) {
-            document.getElementById('postalCode').value = data.zonecode;
-            document.getElementById('address1').value = data.address;
-            document.getElementById('address2').focus();
-        }
-    }).open();
-};
+                if (list.length === 0) {
+                    tbody.html('<tr id="noContactRow"><td colspan="7" class="text-center py-4 text-muted">등록된 담당자가 없습니다.</td></tr>');
+                    return;
+                }
 
-window.fn_loadMeatMoney = function() {
-    jQuery.ajax({
-        url: '<c:url value="/admin/financial/getMeatMoney.ajax"/>',
-        type: 'GET',
-        data: { companyId: "${company.companyId}" },
-        success: function(res) {
-            if (res.success) {
-                jQuery('#currentCredit').text(Number(res.credit).toLocaleString() + " 원");
-                jQuery('#currentAdvance').text(Number(res.advance).toLocaleString() + " 원");
-                jQuery('#totalMeatMoney').text(Number(res.total).toLocaleString() + " 원");
+                var html = '';
+                jQuery.each(list, function (i, c) {
+                    var name   = escHtml(c.contactName  || '');
+                    var role   = escHtml(c.contactRole  || '');
+                    var mobile = escHtml(c.mobile       || '');
+                    var email  = escHtml(c.email        || '');
+                    var isPri  = c.isPrimary || 'N';
+                    var badge  = roleBadgeClass(c.contactRole);
+                    var star   = isPri === 'Y'
+                        ? '<i class="bi bi-star-fill text-warning" title="대표 담당자"></i>'
+                        : '<i class="bi bi-star text-muted"></i>';
+
+                    html += '<tr id="contact-row-' + c.contactId + '">'
+                          + '<td class="ps-3 fw-bold">' + name + '</td>'
+                          + '<td><span class="badge ' + badge + '">' + role + '</span></td>'
+                          + '<td>' + mobile + '</td>'
+                          + '<td>' + email  + '</td>'
+                          + '<td class="text-center">' + star + '</td>'
+                          + '<td class="text-center"><span class="badge bg-success rounded-pill">정상</span></td>'
+                          + '<td class="text-center">'
+                          +   '<div class="btn-group btn-group-sm">'
+                          +     '<button type="button" class="btn btn-sm btn-outline-primary" title="수정"'
+                          +       ' onclick="fn_editContact(' + c.contactId + ',\'' + name + '\',\'' + role + '\',\'' + mobile + '\',\'' + email + '\',\'' + isPri + '\')">'
+                          +       '<i class="bi bi-pencil"></i></button>'
+                          +     '<button type="button" class="btn btn-sm btn-outline-danger" title="삭제"'
+                          +       ' onclick="fn_deleteContact(' + c.contactId + ')">'
+                          +       '<i class="bi bi-trash"></i></button>'
+                          +   '</div>'
+                          + '</td>'
+                          + '</tr>';
+                });
+                tbody.html(html);
+            },
+            error: function () { alert('목록을 불러오는 중 오류가 발생했습니다.'); }
+        });
+    };
+
+    /* ================================================================
+       담당자 삭제
+    ================================================================ */
+    window.fn_deleteContact = function (contactId) {
+        if (!confirm('삭제하시겠습니까?')) return;
+        jQuery.ajax({
+            url : '<c:url value="/admin/company/deleteContact.ajax"/>',
+            type: 'POST',
+            data: { contactId: contactId },
+            success: function (res) {
+                if (res.success) fn_refreshContactTable();
+                else alert('오류: ' + res.message);
+            },
+            error: function () { alert('통신 중 오류가 발생했습니다.'); }
+        });
+    };
+
+    /* ================================================================
+       주소 검색
+    ================================================================ */
+    window.fn_searchAddr = function () {
+        new daum.Postcode({
+            oncomplete: function (data) {
+                document.getElementById('postalCode').value = data.zonecode;
+                document.getElementById('address1').value   = data.address;
+                document.getElementById('address2').focus();
             }
-        }
-    });
-};
+        }).open();
+    };
 
-window.fn_openCreditModal = function() {
-    jQuery('#creditForm')[0].reset();
-    jQuery('#creditModal').modal('show');
-};
+    /* ================================================================
+       미트머니 조회 (구매업체 전용)
+    ================================================================ */
+    window.fn_loadMeatMoney = function () {
+        jQuery.ajax({
+            url : '<c:url value="/admin/financial/getMeatMoney.ajax"/>',
+            type: 'GET',
+            data: { companyId: COMPANY_ID },
+            success: function (res) {
+                if (res.success) {
+                    jQuery('#currentCredit') .text(Number(res.credit  || 0).toLocaleString() + ' 원');
+                    jQuery('#currentAdvance').text(Number(res.advance || 0).toLocaleString() + ' 원');
+                    jQuery('#totalMeatMoney').text(Number(res.total   || 0).toLocaleString() + ' 원');
+                }
+            },
+            error: function () { /* 조용히 무시 */ }
+        });
+    };
 
-window.fn_saveCredit = function() {
-    const form = document.getElementById('creditForm');
-    if (!form.checkValidity()) { form.reportValidity(); return; }
-    if (!confirm('여신 한도를 조정하시겠습니까?')) return;
+    /* ================================================================
+       여신 조정 모달
+    ================================================================ */
+    window.fn_openCreditModal = function () {
+        document.getElementById('creditForm').reset();
+        jQuery('#credit_companyId').val(COMPANY_ID);
+        jQuery('#creditModal').modal('show');
+    };
 
-    jQuery.ajax({
-        url: '<c:url value="/admin/financial/adjustCredit.ajax"/>',
-        type: 'POST',
-        data: jQuery(form).serialize(),
-        success: function(res) {
-            if (res.success) {
-                alert('여신이 조정되었습니다.');
-                jQuery('#creditModal').modal('hide');
+    window.fn_saveCredit = function () {
+        var amount = jQuery('#credit_amount').val().trim();
+        var memo   = jQuery('#credit_memo').val().trim();
+        if (!amount) { alert('조정 금액을 입력하세요.'); return; }
+        if (!memo)   { alert('사유를 입력하세요.'); return; }
+        if (!confirm('여신 한도를 조정하시겠습니까?')) return;
+
+        jQuery.ajax({
+            url : '<c:url value="/admin/financial/adjustCredit.ajax"/>',
+            type: 'POST',
+            data: {
+                companyId: COMPANY_ID,
+                amount   : amount,
+                memo     : memo
+            },
+            success: function (res) {
+                if (res.success) {
+                    alert('여신이 조정되었습니다.');
+                    jQuery('#creditModal').modal('hide');
+                    fn_loadMeatMoney();
+                } else {
+                    alert('오류: ' + res.message);
+                }
+            },
+            error: function (xhr) {
+                alert('통신 중 오류가 발생했습니다. (' + xhr.status + ')');
+            }
+        });
+    };
+
+    /* ================================================================
+       선수금 입금 모달
+    ================================================================ */
+    window.fn_openAdvanceModal = function () {
+        document.getElementById('advanceForm').reset();
+        jQuery('#advance_companyId').val(COMPANY_ID);
+        jQuery('#advanceModal').modal('show');
+    };
+
+    window.fn_saveAdvance = function () {
+        var amount = jQuery('#advance_amount').val().trim();
+        var memo   = jQuery('#advance_memo').val().trim();
+        if (!amount || Number(amount) <= 0) { alert('입금 금액을 1원 이상 입력하세요.'); return; }
+        if (!memo) { alert('입금 사유를 입력하세요.'); return; }
+        if (!confirm('선수금 입금을 처리하시겠습니까?')) return;
+
+        jQuery.ajax({
+            url : '<c:url value="/admin/financial/depositAdvance.ajax"/>',
+            type: 'POST',
+            data: {
+                companyId: COMPANY_ID,
+                amount   : amount,
+                memo     : memo
+            },
+            success: function (res) {
+                if (res.success) {
+                    alert('입금 처리가 완료되었습니다.');
+                    jQuery('#advanceModal').modal('hide');
+                    fn_loadMeatMoney();
+                } else {
+                    alert('오류: ' + res.message);
+                }
+            },
+            error: function (xhr) {
+                alert('통신 중 오류가 발생했습니다. (' + xhr.status + ')');
+            }
+        });
+    };
+
+    /* ================================================================
+       초기화
+    ================================================================ */
+    function init() {
+        if (typeof jQuery === 'undefined') { setTimeout(init, 100); return; }
+        jQuery(function ($) {
+            // 사업자번호 자동 포맷
+            $('#businessNo').on('keyup', function () {
+                $(this).val(fmtBizNo($(this).val()));
+            });
+            // 전화번호 자동 포맷
+            $('#phone, #modal_mobile').on('keyup', function () {
+                $(this).val(fmtPhone($(this).val()));
+            });
+            // 업체 타입 변경 시 판매업체 유형 표시/숨김 (신규 등록 전용)
+            $('#companyTypeSelect').on('change', function () {
+                if ($(this).val() === 'SELLER') {
+                    $('#sellerTypeArea').show();
+                } else {
+                    $('#sellerTypeArea').hide();
+                }
+            });
+            // 구매업체 상세보기 진입 시 미트머니 자동 조회
+            if (COMPANY_ID && COMPANY_ID !== '0' && COMPANY_TYPE === 'BUYER') {
                 fn_loadMeatMoney();
-            } else {
-                alert('오류: ' + res.message);
             }
-        }
-    });
-};
-
-window.fn_openAdvanceModal = function() {
-    jQuery('#advanceForm')[0].reset();
-    jQuery('#advanceModal').modal('show');
-};
-
-window.fn_saveAdvance = function() {
-    const form = document.getElementById('advanceForm');
-    if (!form.checkValidity()) { form.reportValidity(); return; }
-    if (!confirm('선수금 입금을 처리하시겠습니까?')) return;
-
-    jQuery.ajax({
-        url: '<c:url value="/admin/financial/depositAdvance.ajax"/>',
-        type: 'POST',
-        data: jQuery(form).serialize(),
-        success: function(res) {
-            if (res.success) {
-                alert('입금 처리가 완료되었습니다.');
-                jQuery('#advanceModal').modal('hide');
-                fn_loadMeatMoney();
-            } else {
-                alert('오류: ' + res.message);
-            }
-        }
-    });
-};
-
-fn_init_listeners();
+        });
+    }
+    init();
+})();
 </script>

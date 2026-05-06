@@ -5,9 +5,11 @@ import java.util.Date;
 
 /**
  * 사용자 (tb_user) VO
+ * USER_REG.md 기준 동적 폼 지원 필드 포함
  */
 public class UserVO extends MatpamBaseVO {
 
+    /* ── tb_user 컬럼 ── */
     private Long userId;
     private Long tenantId;
     private Long companyId;
@@ -23,13 +25,32 @@ public class UserVO extends MatpamBaseVO {
     private Date createdAt;
     private Date updatedAt;
 
-    // Getter & Setter
+    /* ── 화면/저장 보조 필드 ── */
+    /** 비밀번호 확인용 (화면 전용, DB 미저장) */
+    private String passwordConfirm;
+
+    /** 담당자 동시 생성 여부 Y/N */
+    private String createContactYn;
+
+    /** 담당자 역할 (ADMIN/SALES/TAX/SETTLEMENT/SHIPPING/PURCHASE) */
+    private String contactRole;
+
+    /** 대표 담당자 여부 Y/N */
+    private String isPrimaryContact;
+
+    /* ── 조회 조인용 ── */
+    private String companyName;
+    private String tenantName;
+    private String channelName;
+    private String channelCode;
+
+    // ── Getter / Setter ──────────────────────────────────────────────
+
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
-    
+
     public Long getTenantId() { return tenantId; }
     public void setTenantId(Long tenantId) { this.tenantId = tenantId; }
-
 
     public Long getCompanyId() { return companyId; }
     public void setCompanyId(Long companyId) { this.companyId = companyId; }
@@ -67,8 +88,27 @@ public class UserVO extends MatpamBaseVO {
     public Date getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Date updatedAt) { this.updatedAt = updatedAt; }
 
-    // Masked Getters for Security
-    public String getMaskedUserName() { return kr.co.matpam.common.util.SecurityUtil.maskName(userName); }
-    public String getMaskedMobile() { return kr.co.matpam.common.util.SecurityUtil.maskMobile(mobile); }
-    public String getMaskedEmail() { return kr.co.matpam.common.util.SecurityUtil.maskEmail(email); }
+    public String getPasswordConfirm() { return passwordConfirm; }
+    public void setPasswordConfirm(String passwordConfirm) { this.passwordConfirm = passwordConfirm; }
+
+    public String getCreateContactYn() { return createContactYn; }
+    public void setCreateContactYn(String createContactYn) { this.createContactYn = createContactYn; }
+
+    public String getContactRole() { return contactRole; }
+    public void setContactRole(String contactRole) { this.contactRole = contactRole; }
+
+    public String getIsPrimaryContact() { return isPrimaryContact; }
+    public void setIsPrimaryContact(String isPrimaryContact) { this.isPrimaryContact = isPrimaryContact; }
+
+    public String getCompanyName() { return companyName; }
+    public void setCompanyName(String companyName) { this.companyName = companyName; }
+
+    public String getTenantName() { return tenantName; }
+    public void setTenantName(String tenantName) { this.tenantName = tenantName; }
+
+    public String getChannelName() { return channelName; }
+    public void setChannelName(String channelName) { this.channelName = channelName; }
+
+    public String getChannelCode() { return channelCode; }
+    public void setChannelCode(String channelCode) { this.channelCode = channelCode; }
 }

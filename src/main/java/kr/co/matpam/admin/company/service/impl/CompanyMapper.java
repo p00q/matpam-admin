@@ -2,8 +2,8 @@ package kr.co.matpam.admin.company.service.impl;
 
 import java.util.List;
 import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
-import kr.co.matpam.admin.company.service.CompanyVO;
 import kr.co.matpam.admin.company.service.CompanyContactVO;
+import kr.co.matpam.admin.company.service.CompanyVO;
 
 /**
  * 업체 관리 Mapper
@@ -11,21 +11,20 @@ import kr.co.matpam.admin.company.service.CompanyContactVO;
 @Mapper("companyMapper")
 public interface CompanyMapper {
 
+    /* ── 업체 ── */
     List<CompanyVO> selectCompanyList(CompanyVO vo) throws Exception;
-
     List<CompanyVO> selectCompanyListAll(CompanyVO vo) throws Exception;
-
     int selectCompanyListTotCnt(CompanyVO vo) throws Exception;
-
     CompanyVO selectCompanyDetail(CompanyVO vo) throws Exception;
-
     void insertCompany(CompanyVO vo) throws Exception;
-
     void updateCompany(CompanyVO vo) throws Exception;
-
     void updateCompanyStatus(CompanyVO vo) throws Exception;
 
+    /* ── 담당자 ── */
     List<CompanyContactVO> selectCompanyContactList(CompanyVO vo) throws Exception;
+    CompanyContactVO selectCompanyContact(CompanyContactVO vo) throws Exception;
     void insertCompanyContact(CompanyContactVO vo) throws Exception;
-    void deleteCompanyContact(Long contactId) throws Exception;
+    void updateCompanyContact(CompanyContactVO vo) throws Exception;
+    void deleteCompanyContact(CompanyContactVO vo) throws Exception;
+    void clearPrimaryContact(CompanyContactVO vo) throws Exception;
 }
