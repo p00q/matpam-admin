@@ -9,9 +9,9 @@
         <result property="loginId" column="login_id"/>
         <result property="passwordHash" column="password_hash"/>
         <result property="userName" column="user_name"/>
-        <result property="mobile" column="mobile"/>
+        <result property="mobile" column="phone"/>
         <result property="email" column="email"/>
-        <result property="userRole" column="user_role"/>
+        <result property="userRole" column="role"/>
         <result property="channelId" column="channel_id"/>
         <result property="status" column="status"/>
         <result property="lastLoginAt" column="last_login_at"/>
@@ -28,7 +28,7 @@
                 AND company_id = #{companyId}
             </if>
             <if test="userRole != null and userRole != ''">
-                AND user_role = #{userRole}
+                AND role = #{userRole}
             </if>
             <if test="channelId != null">
                 AND channel_id = #{channelId}
@@ -65,7 +65,7 @@
     <insert id="insertUser" parameterType="kr.co.matpam.admin.user.service.UserVO" useGeneratedKeys="true" keyProperty="userId">
         INSERT INTO tb_user (
             tenant_id, company_id, login_id, password_hash, user_name,
-            mobile, email, user_role, channel_id, status
+            phone, email, role, channel_id, status
         ) VALUES (
             #{tenantId}, #{companyId}, #{loginId}, #{passwordHash}, #{userName},
             #{mobile}, #{email}, #{userRole}, #{channelId}, 'ACTIVE'
@@ -76,9 +76,9 @@
         UPDATE tb_user
         SET
             user_name = #{userName},
-            mobile = #{mobile},
+            phone = #{mobile},
             email = #{email},
-            user_role = #{userRole},
+            role = #{userRole},
             channel_id = #{channelId},
             updated_at = NOW()
         WHERE user_id = #{userId}

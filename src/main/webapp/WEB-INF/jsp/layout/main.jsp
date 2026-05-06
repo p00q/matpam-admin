@@ -14,6 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     
     <!-- Custom Premium Styles -->
     <link rel="stylesheet" href="<c:url value='/resources/css/admin-premium.css'/>">
@@ -29,21 +30,28 @@
             </a>
         </div>
         <nav class="sidebar-nav">
-            <a href="<c:url value='/admin/member/memberList.do'/>"
-                class="nav-item ${currentMenu eq 'member' ? 'active' : ''}">
-                <i class="bi bi-people-fill"></i>회원 관리
+            <div class="nav-label mt-4 mb-2 ms-3 text-uppercase small fw-bold text-muted" style="letter-spacing: 1px;">Member & Company</div>
+            <a href="<c:url value='/admin/company/companyList.do?companyType=SELLER'/>"
+                class="nav-item ${currentMenu eq 'seller' ? 'active' : ''}">
+                <i class="bi bi-building-fill-check"></i>판매업체 관리
             </a>
+            <a href="<c:url value='/admin/company/companyList.do?companyType=BUYER'/>"
+                class="nav-item ${currentMenu eq 'buyer' ? 'active' : ''}">
+                <i class="bi bi-shop"></i>구매업체 관리
+            </a>
+            <a href="<c:url value='/admin/user/userList.do'/>"
+                class="nav-item ${currentMenu eq 'user' ? 'active' : ''}">
+                <i class="bi bi-person-badge-fill"></i>운영 계정 관리
+            </a>
+            
+            <div class="nav-label mt-4 mb-2 ms-3 text-uppercase small fw-bold text-muted" style="letter-spacing: 1px;">Operations</div>
             <a href="<c:url value='/admin/order/orderList.do'/>"
                 class="nav-item ${currentMenu eq 'order' ? 'active' : ''}">
                 <i class="bi bi-cart-fill"></i>주문 관리
             </a>
-            <a href="<c:url value='/admin/product/salesProductList.do'/>"
+            <a href="<c:url value='/admin/product/productList.do'/>"
                 class="nav-item ${currentMenu eq 'product' ? 'active' : ''}">
-                <i class="bi bi-box-seam-fill"></i>판매상품 관리
-            </a>
-            <a href="<c:url value='/admin/product/componentProductList.do'/>"
-                class="nav-item ${currentMenu eq 'component' ? 'active' : ''}">
-                <i class="bi bi-gear-fill"></i>구성상품 관리
+                <i class="bi bi-box-seam-fill"></i>통합 상품 마스터
             </a>
             <a href="<c:url value='/admin/settlement/settlementList.do'/>"
                 class="nav-item ${currentMenu eq 'settlement' ? 'active' : ''}">

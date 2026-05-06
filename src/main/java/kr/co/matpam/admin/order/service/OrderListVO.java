@@ -20,7 +20,7 @@ public class OrderListVO extends MatpamBaseVO implements Serializable {
      */
     private Long orderId;
     private String orderNo;
-    private Date orderDt;
+    private java.util.Date orderDt;
 
     private String orderStatusCd;
     private String orderStatusName;
@@ -102,11 +102,11 @@ public class OrderListVO extends MatpamBaseVO implements Serializable {
         this.orderNo = orderNo;
     }
 
-    public Date getOrderDt() {
+    public java.util.Date getOrderDt() {
         return orderDt;
     }
 
-    public void setOrderDt(Date orderDt) {
+    public void setOrderDt(java.util.Date orderDt) {
         this.orderDt = orderDt;
     }
 

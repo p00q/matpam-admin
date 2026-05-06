@@ -29,4 +29,72 @@
         </if>
     </select>
 
+    <select id="selectMemberDetail" parameterType="kr.co.matpam.admin.member.service.MemberVO" resultType="kr.co.matpam.admin.member.service.MemberVO">
+        SELECT 
+            company_id AS companyId,
+            tenant_id AS tenantId,
+            company_type AS companyType,
+            company_name AS companyName,
+            business_no AS businessNo,
+            ceo_name AS ceoName,
+            postal_code AS postalCode,
+            address1,
+            address2,
+            phone,
+            email,
+            status,
+            created_at AS createdAt
+        FROM tb_company
+        WHERE company_id = #{companyId}
+    </select>
+
+    <select id="selectMemberUserList" parameterType="kr.co.matpam.admin.member.service.MemberVO" resultType="kr.co.matpam.admin.user.service.UserVO">
+        SELECT 
+            user_id AS userId,
+            login_id AS loginId,
+            user_name AS userName,
+            mobile,
+            email,
+            role AS userRole,
+            status,
+            last_login_at AS lastLoginAt,
+            created_at AS createdAt
+        FROM tb_user
+        WHERE company_id = #{companyId}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 회원 등록 관련 추가 -->
+    <select id="selectTenantList" resultType="java.util.HashMap">
+        SELECT tenant_id AS id, tenant_name AS name FROM tb_tenant WHERE status = 'ACTIVE'
+    </select>
+
+    <select id="selectChannelList" parameterType="long" resultType="java.util.HashMap">
+        SELECT channel_id AS id, channel_name AS name FROM tb_channel WHERE tenant_id = #{tenantId} AND status = 'ACTIVE'
+    </select>
+
+    <select id="selectBuyerCompanyList" parameterType="long" resultType="java.util.HashMap">
+        SELECT company_id AS id, company_name AS name FROM tb_company WHERE tenant_id = #{tenantId} AND company_type = 'BUYER' AND status = 'ACTIVE'
+    </select>
+
+    <insert id="insertUser" parameterType="kr.co.matpam.admin.user.service.UserVO" useGeneratedKeys="true" keyProperty="userId">
+        INSERT INTO tb_user (
+            tenant_id, company_id, channel_id, login_id, password_hash, 
+            user_name, mobile, email, role, status, created_at
+        ) VALUES (
+            #{tenantId}, #{companyId}, #{channelId}, #{loginId}, #{passwordHash}, 
+            #{userName}, #{mobile}, #{email}, #{userRole}, 'ACTIVE', NOW()
+        )
+    </insert>
+
+    <insert id="insertCompanyContact" parameterType="kr.co.matpam.admin.company.service.CompanyContactVO">
+        INSERT INTO tb_company_contact (
+            company_id, contact_name, contact_role, mobile, email, 
+            is_primary, linked_user_id, status, created_at
+        ) VALUES (
+            #{companyId}, #{contactName}, #{contactRole}, #{mobile}, #{email}, 
+            #{isPrimary}, #{linkedUserId}, 'ACTIVE', NOW()
+        )
+    </insert>
+
 </mapper>

@@ -1,0 +1,97 @@
+--- Executing: D:/antigravity/matpam-admin/USER_MANAGER_SQL_FINAL.sql ---
+Error executing SQL in D:/antigravity/matpam-admin/USER_MANAGER_SQL_FINAL.sql: CREATE TABLE IF NOT EXISTS tb_company (
+    company_id              BIGINT NOT NULL AUTO_INCREMENT C...
+Reason: Function or expression 'tenant_id' cannot be used in the GENERATED ALWAYS AS clause of `seller_tenant_guard`
+Error executing SQL in D:/antigravity/matpam-admin/USER_MANAGER_SQL_FINAL.sql: CREATE TABLE IF NOT EXISTS tb_user (
+    user_id               BIGINT NOT NULL AUTO_INCREMENT COMMEN...
+Reason: Function or expression 'tenant_id' cannot be used in the CHECK clause of `chk_tb_user_01`
+Error executing SQL in D:/antigravity/matpam-admin/USER_MANAGER_SQL_FINAL.sql: CREATE TABLE IF NOT EXISTS tb_company_contact (
+    contact_id            BIGINT NOT NULL AUTO_INCRE...
+Reason: Function or expression 'company_id' cannot be used in the GENERATED ALWAYS AS clause of `primary_company_guard`
+Error executing SQL in D:/antigravity/matpam-admin/USER_MANAGER_SQL_FINAL.sql: CREATE TABLE IF NOT EXISTS tb_company_bank_account (
+    bank_account_id         BIGINT NOT NULL AUT...
+Reason: Function or expression 'company_id' cannot be used in the GENERATED ALWAYS AS clause of `default_company_guard`
+Error executing SQL in D:/antigravity/matpam-admin/USER_MANAGER_SQL_FINAL.sql: INSERT INTO tb_user (login_id, password_hash, user_name, user_role, status)
+VALUES ('superadmin', 'a...
+Reason: Table 'matpam_new.tb_user' doesn't exist
+--- Executing: D:/antigravity/matpam-admin/admin_2.md ---
+Error executing SQL in D:/antigravity/matpam-admin/admin_2.md: CREATE TABLE IF NOT EXISTS tb_product (
+    product_id           BIGINT NOT NULL AUTO_INCREMENT,
+ ...
+Reason: Can't create table `matpam_new`.`tb_product` (errno: 150 "Foreign key constraint is incorrectly formed")
+Error executing SQL in D:/antigravity/matpam-admin/admin_2.md: CREATE TABLE IF NOT EXISTS tb_product_tax_rule (
+    tax_rule_id         BIGINT NOT NULL AUTO_INCRE...
+Reason: Can't create table `matpam_new`.`tb_product_tax_rule` (errno: 150 "Foreign key constraint is incorrectly formed")
+Error executing SQL in D:/antigravity/matpam-admin/admin_2.md: CREATE TABLE IF NOT EXISTS tb_product_relation (
+    relation_id         BIGINT NOT NULL AUTO_INCRE...
+Reason: Can't create table `matpam_new`.`tb_product_relation` (errno: 150 "Foreign key constraint is incorrectly formed")
+Error executing SQL in D:/antigravity/matpam-admin/admin_2.md: CREATE TABLE IF NOT EXISTS tb_product_price (
+    price_id            BIGINT NOT NULL AUTO_INCREMEN...
+Reason: Can't create table `matpam_new`.`tb_product_price` (errno: 150 "Foreign key constraint is incorrectly formed")
+Error executing SQL in D:/antigravity/matpam-admin/admin_2.md: CREATE TABLE IF NOT EXISTS tb_product_process_recipe (
+    recipe_id             BIGINT NOT NULL AU...
+Reason: Can't create table `matpam_new`.`tb_product_process_recipe` (errno: 150 "Foreign key constraint is incorrectly formed")
+Error executing SQL in D:/antigravity/matpam-admin/admin_2.md: CREATE TABLE IF NOT EXISTS tb_order_line (
+    order_line_id               BIGINT NOT NULL AUTO_INC...
+Reason: Can't create table `matpam_new`.`tb_order_line` (errno: 150 "Foreign key constraint is incorrectly formed")
+Error executing SQL in D:/antigravity/matpam-admin/admin_2.md: CREATE TABLE IF NOT EXISTS tb_tax_document (
+    tax_document_id   BIGINT NOT NULL AUTO_INCREMENT,...
+Reason: Can't create table `matpam_new`.`tb_tax_document` (errno: 150 "Foreign key constraint is incorrectly formed")
+Error executing SQL in D:/antigravity/matpam-admin/admin_2.md: CREATE TABLE IF NOT EXISTS tb_shipment (
+    shipment_id        BIGINT NOT NULL AUTO_INCREMENT,
+  ...
+Reason: Can't create table `matpam_new`.`tb_shipment` (errno: 150 "Foreign key constraint is incorrectly formed")
+Error executing SQL in D:/antigravity/matpam-admin/admin_2.md: CREATE TABLE IF NOT EXISTS tb_stock_lot (
+    lot_id              BIGINT NOT NULL AUTO_INCREMENT,
+...
+Reason: Can't create table `matpam_new`.`tb_stock_lot` (errno: 150 "Foreign key constraint is incorrectly formed")
+Error executing SQL in D:/antigravity/matpam-admin/admin_2.md: CREATE TABLE IF NOT EXISTS tb_shipment_line (
+    shipment_line_id    BIGINT NOT NULL AUTO_INCREMEN...
+Reason: Can't create table `matpam_new`.`tb_shipment_line` (errno: 150 "Foreign key constraint is incorrectly formed")
+Error executing SQL in D:/antigravity/matpam-admin/admin_2.md: CREATE TABLE IF NOT EXISTS tb_stock_ledger (
+    stock_txn_id      BIGINT NOT NULL AUTO_INCREMENT,...
+Reason: Can't create table `matpam_new`.`tb_stock_ledger` (errno: 150 "Foreign key constraint is incorrectly formed")
+Error executing SQL in D:/antigravity/matpam-admin/admin_2.md: CREATE TABLE IF NOT EXISTS tb_process_batch (
+    process_batch_id   BIGINT NOT NULL AUTO_INCREMENT...
+Reason: Can't create table `matpam_new`.`tb_process_batch` (errno: 150 "Foreign key constraint is incorrectly formed")
+Error executing SQL in D:/antigravity/matpam-admin/admin_2.md: CREATE TABLE IF NOT EXISTS tb_buyer_credit_policy (
+    credit_policy_id      BIGINT NOT NULL AUTO_...
+Reason: Can't create table `matpam_new`.`tb_buyer_credit_policy` (errno: 150 "Foreign key constraint is incorrectly formed")
+Error executing SQL in D:/antigravity/matpam-admin/admin_2.md: CREATE TABLE IF NOT EXISTS tb_buyer_credit_limit_history (
+    credit_limit_hist_id  BIGINT NOT NUL...
+Reason: Can't create table `matpam_new`.`tb_buyer_credit_limit_history` (errno: 150 "Foreign key constraint is incorrectly formed")
+Error executing SQL in D:/antigravity/matpam-admin/admin_2.md: CREATE TABLE IF NOT EXISTS tb_buyer_credit_ledger (
+    credit_ledger_id    BIGINT NOT NULL AUTO_IN...
+Reason: Can't create table `matpam_new`.`tb_buyer_credit_ledger` (errno: 150 "Foreign key constraint is incorrectly formed")
+Error executing SQL in D:/antigravity/matpam-admin/admin_2.md: CREATE TABLE IF NOT EXISTS tb_external_payment_txn (
+    external_payment_id     BIGINT NOT NULL AU...
+Reason: Can't create table `matpam_new`.`tb_external_payment_txn` (errno: 150 "Foreign key constraint is incorrectly formed")
+Error executing SQL in D:/antigravity/matpam-admin/admin_2.md: CREATE TABLE IF NOT EXISTS tb_buyer_advance_ledger (
+    advance_ledger_id     BIGINT NOT NULL AUTO...
+Reason: Can't create table `matpam_new`.`tb_buyer_advance_ledger` (errno: 150 "Foreign key constraint is incorrectly formed")
+Error executing SQL in D:/antigravity/matpam-admin/admin_2.md: CREATE TABLE IF NOT EXISTS tb_payment_allocation (
+    allocation_id      BIGINT NOT NULL AUTO_INCR...
+Reason: Can't create table `matpam_new`.`tb_payment_allocation` (errno: 150 "Foreign key constraint is incorrectly formed")
+Error executing SQL in D:/antigravity/matpam-admin/admin_2.md: CREATE TABLE IF NOT EXISTS tb_settlement (
+    settlement_id        BIGINT NOT NULL AUTO_INCREMENT,...
+Reason: Can't create table `matpam_new`.`tb_settlement` (errno: 150 "Foreign key constraint is incorrectly formed")
+Error executing SQL in D:/antigravity/matpam-admin/admin_2.md: CREATE TABLE IF NOT EXISTS tb_settlement_line (
+    settlement_line_id   BIGINT NOT NULL AUTO_INCRE...
+Reason: Can't create table `matpam_new`.`tb_settlement_line` (errno: 150 "Foreign key constraint is incorrectly formed")
+Error executing SQL in D:/antigravity/matpam-admin/admin_2.md: ??? ??????? ????? 5??
+1. ???? 9?? ??????? ????? ??? ?????? ????????.
+2. tb_buyer_financial?? ???? ...
+Reason: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '??? ??????? ????? 5??
+1. ???? 9??...' at line 1
+--- Re-inserting admin account ---
+SLF4J: Class path contains multiple SLF4J bindings.
+SLF4J: Found binding in [jar:file:/D:/antigravity/matpam-admin/target/matpam-admin/WEB-INF/lib/log4j-slf4j-impl-2.20.0.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: Found binding in [jar:file:/D:/antigravity/matpam-admin/target/matpam-admin/WEB-INF/lib/slf4j-reload4j-1.7.36.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
+SLF4J: Actual binding is of type [org.apache.logging.slf4j.Log4jLoggerFactory]
+java.sql.SQLSyntaxErrorException: Table 'matpam_new.tb_user' doesn't exist
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:121)
+	at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:122)
+	at com.mysql.cj.jdbc.StatementImpl.executeInternal(StatementImpl.java:763)
+	at com.mysql.cj.jdbc.StatementImpl.execute(StatementImpl.java:648)
+	at kr.co.matpam.admin.DbCheckData.main(DbCheckData.java:34)

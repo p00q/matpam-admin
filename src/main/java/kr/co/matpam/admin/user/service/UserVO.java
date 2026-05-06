@@ -66,4 +66,9 @@ public class UserVO extends MatpamBaseVO {
 
     public Date getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Date updatedAt) { this.updatedAt = updatedAt; }
+
+    // Masked Getters for Security
+    public String getMaskedUserName() { return kr.co.matpam.common.util.SecurityUtil.maskName(userName); }
+    public String getMaskedMobile() { return kr.co.matpam.common.util.SecurityUtil.maskMobile(mobile); }
+    public String getMaskedEmail() { return kr.co.matpam.common.util.SecurityUtil.maskEmail(email); }
 }

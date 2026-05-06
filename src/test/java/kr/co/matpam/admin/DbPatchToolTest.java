@@ -6,7 +6,7 @@ import org.junit.Test;
 public class DbPatchToolTest {
     @Test
     public void runPatch() throws Exception {
-        String url = "jdbc:mysql://localhost:3306/matpam?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Seoul";
+        String url = "jdbc:mysql://localhost:3306/matpam_new?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Seoul";
         String user = "root";
         String pass = "root";
         
@@ -43,7 +43,15 @@ public class DbPatchToolTest {
             // 6. 기존 데이터 op_type 보정 (null 방지)
             "UPDATE tb_order SET op_type = 'NATIONAL' WHERE op_type IS NULL OR op_type = '' OR op_type = 'MATPAM'",
             "UPDATE tb_member SET OP_TYPE = 'NATIONAL' WHERE OP_TYPE IS NULL OR OP_TYPE = '' OR OP_TYPE = 'MATPAM'",
-            "UPDATE tb_order_item SET op_type = 'NATIONAL' WHERE op_type IS NULL OR op_type = '' OR op_type = 'MATPAM'"
+            "UPDATE tb_order_item SET op_type = 'NATIONAL' WHERE op_type IS NULL OR op_type = '' OR op_type = 'MATPAM'",
+            
+            // 7. tb_product 누락 컬럼 추가
+            "ALTER TABLE tb_product ADD COLUMN IF NOT EXISTS seller_company_id BIGINT NULL AFTER tenant_id",
+            "ALTER TABLE tb_product ADD COLUMN IF NOT EXISTS tax_category VARCHAR(50) NULL AFTER processing_type",
+            "ALTER TABLE tb_product ADD COLUMN IF NOT EXISTS unit_name VARCHAR(50) NULL AFTER tax_category",
+            "ALTER TABLE tb_product ADD COLUMN IF NOT EXISTS description TEXT NULL",
+            "ALTER TABLE tb_product ADD COLUMN IF NOT EXISTS image_url VARCHAR(500) NULL",
+            "ALTER TABLE tb_product ADD COLUMN IF NOT EXISTS created_by BIGINT NULL"
         };
         
         try (Connection conn = DriverManager.getConnection(url, user, pass);

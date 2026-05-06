@@ -9,8 +9,10 @@ import java.util.Date;
 public class CompanyVO extends MatpamBaseVO {
 
     private Long companyId;
+    private Long tenantId;
     private String companyType;
     private String sellerType;
+    private java.util.List<CompanyContactVO> contactList;
     private String companyName;
     private String businessNo;
     private String ceoName;
@@ -30,6 +32,12 @@ public class CompanyVO extends MatpamBaseVO {
     // Getter & Setter
     public Long getCompanyId() { return companyId; }
     public void setCompanyId(Long companyId) { this.companyId = companyId; }
+
+    public Long getTenantId() { return tenantId; }
+    public void setTenantId(Long tenantId) { this.tenantId = tenantId; }
+
+    public java.util.List<CompanyContactVO> getContactList() { return contactList; }
+    public void setContactList(java.util.List<CompanyContactVO> contactList) { this.contactList = contactList; }
 
 
     public String getCompanyType() { return companyType; }

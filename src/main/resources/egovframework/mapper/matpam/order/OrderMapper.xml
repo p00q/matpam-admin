@@ -1,88 +1,156 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="matpam.order.OrderMapper">
+<mapper namespace="kr.co.matpam.admin.order.service.impl.OrderDAO">
 
     <resultMap id="orderResultMap" type="kr.co.matpam.admin.order.service.OrderVO">
         <id property="orderId" column="order_id"/>
+        <result property="tenantId" column="tenant_id"/>
         <result property="orderNo" column="order_no"/>
-        <result property="orderDate" column="order_dt"/>
-        <result property="memberId" column="member_id"/>
-        <result property="memberName" column="company_name"/>
-        <result property="goodsTotalAmt" column="goods_total_amt"/>
-        <result property="deliveryTotalAmt" column="delivery_total_amt"/>
-        <result property="discountTotalAmt" column="discount_total_amt"/>
-        <result property="vatTotalAmt" column="vat_total_amt"/>
-        <result property="payTotalAmt" column="pay_total_amt"/>
-        <result property="orderStatus" column="order_status_cd"/>
-        <result property="orderStatusName" column="order_status_name"/>
-        <result property="useYn" column="use_yn"/>
-        <result property="opType" column="op_type"/>
+        <result property="buyerCompanyId" column="buyer_company_id"/>
+        <result property="sellerCompanyId" column="seller_company_id"/>
+        <result property="orderDate" column="order_date"/>
+        <result property="orderStatus" column="order_status"/>
+        <result property="totalSupplyAmount" column="total_supply_amount"/>
+        <result property="totalVatAmount" column="total_vat_amount"/>
+        <result property="totalOrderAmount" column="total_order_amount"/>
+        <result property="paymentStatus" column="payment_status"/>
+        <result property="shipmentStatus" column="shipment_status"/>
+        <result property="description" column="description"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="buyerCompanyName" column="buyer_company_name"/>
+        <result property="sellerCompanyName" column="seller_company_name"/>
     </resultMap>
 
-    <select id="selectOrderList" parameterType="kr.co.matpam.admin.order.service.OrderSearchVO" resultMap="orderResultMap">
+    <insert id="insertOrder" parameterType="kr.co.matpam.admin.order.service.OrderVO" useGeneratedKeys="true" keyProperty="orderId">
+        INSERT INTO tb_order (
+            tenant_id, order_no, buyer_company_id, seller_company_id, 
+            order_date, order_status, total_supply_amount, total_vat_amount, 
+            total_order_amount, payment_status, shipment_status, description, created_by
+        ) VALUES (
+            #{tenantId}, #{orderNo}, #{buyerCompanyId}, #{sellerCompanyId}, 
+            #{orderDate}, #{orderStatus}, #{totalSupplyAmount}, #{totalVatAmount}, 
+            #{totalOrderAmount}, #{paymentStatus}, #{shipmentStatus}, #{description}, #{createdBy}
+        )
+    </insert>
+
+    <insert id="insertOrderLine" parameterType="kr.co.matpam.admin.order.service.OrderLineVO">
+        INSERT INTO tb_order_line (
+            order_id, line_no, product_id, relation_group_id, 
+            product_name_snapshot, item_kind_snapshot, processing_type_snapshot, 
+            tax_category_snapshot, tax_rule_id_snapshot, unit_name_snapshot, 
+            qty, unit_price, supply_amount, vat_amount, total_amount, shipment_status
+        ) VALUES (
+            #{orderId}, #{lineNo}, #{productId}, #{relationGroupId}, 
+            #{productNameSnapshot}, #{itemKindSnapshot}, #{processingTypeSnapshot}, 
+            #{taxCategorySnapshot}, #{taxRuleIdSnapshot}, #{unitNameSnapshot}, 
+            #{qty}, #{unitPrice}, #{supplyAmount}, #{vatAmount}, #{totalAmount}, #{shipmentStatus}
+        )
+    </insert>
+
+    <!-- 스키마 보정용 (레거시 완전 제거 및 신규 생성) -->
+    <update id="fixOrderSchema">
+        SET FOREIGN_KEY_CHECKS = 0;
+        
+        DROP TABLE IF EXISTS tb_order_line;
+        DROP TABLE IF EXISTS tb_order;
+
+        CREATE TABLE tb_order (
+            order_id                   BIGINT NOT NULL AUTO_INCREMENT,
+            tenant_id                  BIGINT NOT NULL,
+            seller_company_id          BIGINT NOT NULL,
+            buyer_company_id           BIGINT NOT NULL,
+            channel_id                 BIGINT NULL,
+            order_no                   VARCHAR(50) NOT NULL,
+            order_status               ENUM('RECEIVED','CONFIRMED','COMPLETED','CANCELLED') NOT NULL DEFAULT 'RECEIVED',
+            payment_status             ENUM('UNPAID','PAID','PARTIAL_PAID') NOT NULL DEFAULT 'UNPAID',
+            shipment_status            ENUM('NOT_STARTED','PARTIAL','SHIPPED','DELIVERED') NOT NULL DEFAULT 'NOT_STARTED',
+            total_supply_amount        DECIMAL(18,2) NOT NULL DEFAULT 0,
+            total_vat_amount           DECIMAL(18,2) NOT NULL DEFAULT 0,
+            total_order_amount         DECIMAL(18,2) NOT NULL DEFAULT 0,
+            description                TEXT NULL,
+            created_by                 BIGINT NULL,
+            created_at                 DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at                 DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (order_id),
+            UNIQUE KEY uq_tb_order_01 (order_no),
+            KEY idx_tb_order_01 (tenant_id, buyer_company_id, order_status),
+            KEY idx_tb_order_02 (tenant_id, seller_company_id, payment_status)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+        CREATE TABLE tb_order_line (
+            order_line_id               BIGINT NOT NULL AUTO_INCREMENT,
+            order_id                    BIGINT NOT NULL,
+            line_no                     INT NOT NULL,
+            product_id                  BIGINT NOT NULL,
+            relation_group_id           VARCHAR(50) NULL,
+            product_name_snapshot       VARCHAR(200) NOT NULL,
+            qty                         DECIMAL(12,3) NOT NULL DEFAULT 0,
+            unit_price                  DECIMAL(18,2) NOT NULL DEFAULT 0,
+            supply_amount               DECIMAL(18,2) NOT NULL DEFAULT 0,
+            vat_amount                  DECIMAL(18,2) NOT NULL DEFAULT 0,
+            total_amount                DECIMAL(18,2) NOT NULL DEFAULT 0,
+            created_at                  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (order_line_id),
+            KEY idx_tb_order_line_01 (order_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+        SET FOREIGN_KEY_CHECKS = 1;
+    </update>
+
+    <select id="selectOrderListLegacy" parameterType="kr.co.matpam.admin.order.service.OrderVO" resultMap="orderResultMap">
         SELECT 
-            o.order_id,
-            o.order_no,
-            o.order_dt,
-            o.member_id,
-            m.company_name,
-            o.goods_total_amt,
-            o.delivery_total_amt,
-            o.discount_total_amt,
-            o.vat_total_amt,
-            o.pay_total_amt,
-            o.order_status_cd,
-            IFNULL(dc.detail_code_nm, o.order_status_cd) AS order_status_name,
-            o.use_yn,
-            o.op_type
+            o.*,
+            bc.company_name as buyer_company_name,
+            sc.company_name as seller_company_name
         FROM tb_order o
-        LEFT JOIN tb_member_master m ON o.member_id = m.member_id
-        LEFT JOIN tb_detail_code dc ON o.order_status_cd = dc.detail_code_id AND dc.code_group_id = 'ORDER_STATUS'
-        WHERE o.del_yn = 'N'
-          <if test="opType != null and opType != '' and opType != 'NATIONAL'">
-              AND o.op_type = #{opType}
-          </if>
-          <include refid="orderWhere"/>
-        ORDER BY o.order_id DESC
-        <include refid="kr.co.matpam.common.mapper.MatpamCommonMapper.pagingFooter"/>
-    </select>
-
-    <select id="selectOrderListTotCnt" parameterType="kr.co.matpam.admin.order.service.OrderSearchVO" resultType="int">
-        SELECT COUNT(1) FROM tb_order o
-        WHERE o.del_yn = 'N'
-          <if test="opType != null and opType != '' and opType != 'NATIONAL'">
-              AND o.op_type = #{opType}
-          </if>
-          <include refid="orderWhere"/>
-    </select>
-
-    <sql id="orderWhere">
+        LEFT JOIN tb_company bc ON o.buyer_company_id = bc.company_id
+        LEFT JOIN tb_company sc ON o.seller_company_id = sc.company_id
+        WHERE 1=1
         <if test="searchKeyword != null and searchKeyword != ''">
-            <if test="searchCondition == 'orderNo'">
-                AND o.order_no LIKE CONCAT('%', #{searchKeyword}, '%')
-            </if>
+            AND o.order_no LIKE CONCAT('%', #{searchKeyword}, '%')
         </if>
-        <if test="orderStatusCd != null and orderStatusCd != ''">
-            AND o.order_status_cd = #{orderStatusCd}
+        <if test="orderStatus != null and orderStatus != ''">
+            AND o.order_status = #{orderStatus}
         </if>
-    </sql>
-
-    <!-- KPI 요약 정보 -->
-    <select id="selectOrderSummary" parameterType="kr.co.matpam.admin.order.service.OrderSearchVO" resultType="kr.co.matpam.admin.order.service.OrderSummaryVO">
-        SELECT 
-            COUNT(1) AS totalOrderCount,
-            IFNULL(SUM(o.goods_total_amt), 0) AS sumGoodsTotalAmt,
-            IFNULL(SUM(o.delivery_total_amt), 0) AS sumDeliveryTotalAmt,
-            IFNULL(SUM(o.discount_total_amt), 0) AS sumDiscountTotalAmt,
-            IFNULL(SUM(o.vat_total_amt), 0) AS sumVatTotalAmt,
-            IFNULL(SUM(o.pay_total_amt), 0) AS sumPayTotalAmt
-        FROM tb_order o
-        WHERE o.use_yn = 'Y'
-          AND o.del_yn = 'N'
-          <if test="opType != null and opType != '' and opType != 'NATIONAL'">
-              AND o.op_type = #{opType}
-          </if>
-          <include refid="orderWhere"/>
+        ORDER BY o.order_id DESC
+        LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
     </select>
+
+    <select id="selectOrderListTotCntLegacy" parameterType="kr.co.matpam.admin.order.service.OrderVO" resultType="int">
+        SELECT COUNT(*)
+        FROM tb_order o
+        WHERE 1=1
+        <if test="searchKeyword != null and searchKeyword != ''">
+            AND o.order_no LIKE CONCAT('%', #{searchKeyword}, '%')
+        </if>
+        <if test="orderStatus != null and orderStatus != ''">
+            AND o.order_status = #{orderStatus}
+        </if>
+    </select>
+
+    <select id="selectOrder" parameterType="kr.co.matpam.admin.order.service.OrderVO" resultMap="orderResultMap">
+        SELECT 
+            o.*,
+            bc.company_name as buyer_company_name,
+            sc.company_name as seller_company_name
+        FROM tb_order o
+        LEFT JOIN tb_company bc ON o.buyer_company_id = bc.company_id
+        LEFT JOIN tb_company sc ON o.seller_company_id = sc.company_id
+        WHERE o.order_id = #{orderId}
+    </select>
+
+    <select id="selectOrderLineList" parameterType="long" resultType="kr.co.matpam.admin.order.service.OrderLineVO">
+        SELECT *
+        FROM tb_order_line
+        WHERE order_id = #{orderId}
+        ORDER BY line_no ASC
+    </select>
+
+    <update id="updateOrderStatus" parameterType="kr.co.matpam.admin.order.service.OrderVO">
+        UPDATE tb_order SET
+            order_status = #{orderStatus},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE order_id = #{orderId}
+    </update>
 
 </mapper>

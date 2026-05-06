@@ -123,8 +123,17 @@
                                 <td class="text-right text-muted"><fmt:formatNumber value="${order.payAmt}" pattern="#,###"/></td>
                                 <td class="text-center">
                                     <c:choose>
-                                        <c:when test="${order.orderStatus eq 'PAY_COMP'}">
-                                            <span class="badge badge-success">결제완료</span>
+                                        <c:when test="${order.orderStatus eq 'RECEIVED'}">
+                                            <span class="badge badge-warning">주문접수</span>
+                                        </c:when>
+                                        <c:when test="${order.orderStatus eq 'CONFIRMED'}">
+                                            <span class="badge badge-primary">주문확인</span>
+                                        </c:when>
+                                        <c:when test="${order.orderStatus eq 'COMPLETED'}">
+                                            <span class="badge badge-success">배송완료</span>
+                                        </c:when>
+                                        <c:when test="${order.orderStatus eq 'CANCELLED'}">
+                                            <span class="badge badge-danger">주문취소</span>
                                         </c:when>
                                         <c:otherwise>
                                             <span class="badge badge-secondary">${order.orderStatus}</span>

@@ -65,6 +65,9 @@ public class UserController {
         model.addAttribute("userList", userService.selectUserList(searchVO));
         model.addAttribute("paginationInfo", paginationInfo);
         
+        model.addAttribute("pageTitle", "운영 계정 관리");
+        model.addAttribute("currentMenu", "user");
+        
         // 검색 필터용 업체 목록
         model.addAttribute("companies", companyService.selectCompanyListAll(new CompanyVO()));
         

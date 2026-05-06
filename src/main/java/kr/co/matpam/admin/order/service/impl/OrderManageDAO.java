@@ -2,101 +2,79 @@ package kr.co.matpam.admin.order.service.impl;
 
 import java.util.List;
 import java.util.Map;
-
-import org.springframework.stereotype.Repository;
-
-import org.egovframe.rte.psl.dataaccess.EgovAbstractMapper;
+import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 import kr.co.matpam.admin.order.service.OrderDeliveryFactoryVO;
 import kr.co.matpam.admin.order.service.OrderDeliveryFreightVO;
 import kr.co.matpam.admin.order.service.OrderDeliveryParcelVO;
 import kr.co.matpam.admin.order.service.OrderListVO;
 import kr.co.matpam.admin.order.service.OrderSearchVO;
 import kr.co.matpam.admin.order.service.OrderSummaryVO;
+import kr.co.matpam.admin.order.service.OrderDetailVO;
+import kr.co.matpam.admin.order.service.OrderItemVO;
 
 /**
- * 주문관리 DAO
+ * 주문관리 Mapper 인터페이스
  */
-@Repository("orderManageDAO")
-public class OrderManageDAO extends EgovAbstractMapper {
+@Mapper("orderManageDAO")
+public interface OrderManageDAO {
 
     /**
      * 주문건별 목록 조회
      */
-    public List<OrderListVO> selectOrderList(OrderSearchVO searchVO) {
-        return selectList("kr.co.matpam.admin.order.service.impl.OrderManageDAO.selectOrderList", searchVO);
-    }
+    List<OrderListVO> selectOrderList(OrderSearchVO searchVO);
 
     /**
      * 주문건별 목록 총 건수
      */
-    public int selectOrderListTotCnt(OrderSearchVO searchVO) {
-        return selectOne("kr.co.matpam.admin.order.service.impl.OrderManageDAO.selectOrderListTotCnt", searchVO);
-    }
+    int selectOrderListTotCnt(OrderSearchVO searchVO);
 
     /**
      * KPI 합계 조회
      */
-    public OrderSummaryVO selectOrderSummary(OrderSearchVO searchVO) {
-        return selectOne("kr.co.matpam.admin.order.service.impl.OrderManageDAO.selectOrderSummary", searchVO);
-    }
+    OrderSummaryVO selectOrderSummary(OrderSearchVO searchVO);
 
     /**
      * 주문상태 일괄 변경
      */
-    public int updateOrderStatusBatch(Map<String, Object> paramMap) {
-        return update("kr.co.matpam.admin.order.service.impl.OrderManageDAO.updateOrderStatusBatch", paramMap);
-    }
+    int updateOrderStatusBatch(Map<String, Object> paramMap);
 
     /**
      * 주문 상세 조회
      */
-    public kr.co.matpam.admin.order.service.OrderDetailVO selectOrderDetail(OrderSearchVO searchVO) {
-        return selectOne("kr.co.matpam.admin.order.service.impl.OrderManageDAO.selectOrderDetail", searchVO);
-    }
+    OrderDetailVO selectOrderDetail(OrderSearchVO searchVO);
 
     /**
      * 주문 아이템 목록 조회
      */
-    public List<kr.co.matpam.admin.order.service.OrderItemVO> selectOrderItemList(OrderSearchVO searchVO) {
-        return selectList("kr.co.matpam.admin.order.service.impl.OrderManageDAO.selectOrderItemList", searchVO);
-    }
+    List<OrderItemVO> selectOrderItemList(OrderSearchVO searchVO);
 
-    /*
-     * =========================================================
-     * 배송정보 (택배)
-     * =========================================================
+    /**
+     * 택배 배송정보 조회
      */
-    public OrderDeliveryParcelVO selectDeliveryParcel(OrderDeliveryParcelVO vo) {
-        return selectOne("kr.co.matpam.admin.order.service.impl.OrderManageDAO.selectDeliveryParcel", vo);
-    }
+    OrderDeliveryParcelVO selectDeliveryParcel(OrderDeliveryParcelVO vo);
 
-    public int upsertDeliveryParcel(OrderDeliveryParcelVO vo) {
-        return insert("kr.co.matpam.admin.order.service.impl.OrderManageDAO.upsertDeliveryParcel", vo);
-    }
-
-    /*
-     * =========================================================
-     * 배송정보 (화물/직배송)
-     * =========================================================
+    /**
+     * 택배 배송정보 저장
      */
-    public OrderDeliveryFreightVO selectDeliveryFreight(OrderDeliveryFreightVO vo) {
-        return selectOne("kr.co.matpam.admin.order.service.impl.OrderManageDAO.selectDeliveryFreight", vo);
-    }
+    int upsertDeliveryParcel(OrderDeliveryParcelVO vo);
 
-    public int upsertDeliveryFreight(OrderDeliveryFreightVO vo) {
-        return insert("kr.co.matpam.admin.order.service.impl.OrderManageDAO.upsertDeliveryFreight", vo);
-    }
-
-    /*
-     * =========================================================
-     * 배송정보 (공장수령)
-     * =========================================================
+    /**
+     * 화물/직배송 정보 조회
      */
-    public OrderDeliveryFactoryVO selectDeliveryFactory(OrderDeliveryFactoryVO vo) {
-        return selectOne("kr.co.matpam.admin.order.service.impl.OrderManageDAO.selectDeliveryFactory", vo);
-    }
+    OrderDeliveryFreightVO selectDeliveryFreight(OrderDeliveryFreightVO vo);
 
-    public int upsertDeliveryFactory(OrderDeliveryFactoryVO vo) {
-        return insert("kr.co.matpam.admin.order.service.impl.OrderManageDAO.upsertDeliveryFactory", vo);
-    }
+    /**
+     * 화물/직배송 정보 저장
+     */
+    int upsertDeliveryFreight(OrderDeliveryFreightVO vo);
+
+    /**
+     * 공장수령 정보 조회
+     */
+    OrderDeliveryFactoryVO selectDeliveryFactory(OrderDeliveryFactoryVO vo);
+
+    /**
+     * 공장수령 정보 저장
+     */
+    int upsertDeliveryFactory(OrderDeliveryFactoryVO vo);
 }

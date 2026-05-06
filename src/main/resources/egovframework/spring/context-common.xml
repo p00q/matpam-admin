@@ -24,14 +24,16 @@
 	<!-- DataSource Configuration (Pivot to Local MySQL) -->
 	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
 		<property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
-		<property name="url" value="jdbc:mysql://localhost:3306/matpam_new?serverTimezone=Asia/Seoul&amp;useUniCode=true&amp;characterEncoding=utf8"/>
+		<property name="url" value="jdbc:mysql://localhost:3306/matpam_new?serverTimezone=Asia/Seoul&amp;useUniCode=true&amp;characterEncoding=utf8&amp;allowMultiQueries=true"/>
 		<property name="username" value="root"/>
 		<property name="password" value="root"/>
 	</bean>
 
-	<!-- SQL Initializer (Disabled after first run)
+	<!-- SQL Initializer (Enabled for fixing schema) -->
+	<!-- 
 	<jdbc:initialize-database data-source="dataSource" ignore-failures="ALL">
-		<jdbc:script location="classpath:sql/matpam_mody.sql" encoding="UTF-8"/>
+		<jdbc:script location="file:D:/antigravity/matpam-admin/full_b2b_init.sql" encoding="UTF-8"/>
+		<jdbc:script location="file:D:/antigravity/matpam-admin/order_schema_v2.sql" encoding="UTF-8"/>
 	</jdbc:initialize-database>
 	-->
 

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.matpam.admin.validator.service.impl.DataValidationMapper">
+
+    <!-- 불일치 데이터 목록 조회 -->
+    <select id="selectMismatchedOrderList" parameterType="kr.co.matpam.admin.validator.service.DataValidationVO" resultType="egovMap">
+        SELECT
+            rnum,
+            orderId,
+            orderDate,
+            orderAmount,
+            paymentAmount,
+            amountDiff
+        FROM (
+            SELECT
+                @rownum := @rownum + 1 AS rnum,
+                A.*
+            FROM (
+                SELECT
+                    O.order_id                                  AS orderId,
+                    DATE_FORMAT(O.order_dt, '%Y-%m-%d')         AS orderDate,
+                    O.pay_total_amt                             AS orderAmount,
+                    SUM(L.pay_amt)                              AS paymentAmount,
+                    (O.pay_total_amt - SUM(L.pay_amt))          AS amountDiff
+                FROM
+                    tb_order O
+                INNER JOIN
+                    tb_order_item L ON O.order_id = L.order_id
+                CROSS JOIN (SELECT @rownum := 0) R
+                WHERE
+                    O.del_yn = 'N'
+                    <if test="searchBgnDe != null and searchBgnDe != ''">
+                        AND O.order_dt >= STR_TO_DATE(#{searchBgnDe}, '%Y-%m-%d')
+                    </if>
+                    <if test="searchEndDe != null and searchEndDe != ''">
+                        AND O.order_dt <![CDATA[ <= ]]> STR_TO_DATE(#{searchEndDe}, '%Y-%m-%d')
+                    </if>
+                GROUP BY
+                    O.order_id, O.pay_total_amt
+                HAVING
+                    O.pay_total_amt != SUM(L.pay_amt)
+                ORDER BY
+                    O.order_dt DESC, O.order_id DESC
+            ) A
+        ) B
+        LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
+    </select>
+
+    <!-- 불일치 데이터 총 건수 조회 -->
+    <select id="selectMismatchedOrderListCnt" parameterType="kr.co.matpam.admin.validator.service.DataValidationVO" resultType="int">
+        SELECT
+            COUNT(*)
+        FROM (
+            SELECT
+                O.order_id
+            FROM
+                tb_order O
+            INNER JOIN
+                tb_order_item L ON O.order_id = L.order_id
+            WHERE
+                O.del_yn = 'N'
+                <if test="searchBgnDe != null and searchBgnDe != ''">
+                    AND O.order_dt >= STR_TO_DATE(#{searchBgnDe}, '%Y-%m-%d')
+                </if>
+                <if test="searchEndDe != null and searchEndDe != ''">
+                    AND O.order_dt <![CDATA[ <= ]]> STR_TO_DATE(#{searchEndDe}, '%Y-%m-%d')
+                </if>
+            GROUP BY
+                O.order_id, O.pay_total_amt
+            HAVING
+                O.pay_total_amt != SUM(L.pay_amt)
+        ) T
+    </select>
+
+</mapper>

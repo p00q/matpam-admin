@@ -1,5 +1,6 @@
 package kr.co.matpam.common.aspect;
 
+import javax.annotation.Resource;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
@@ -8,16 +9,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.co.matpam.admin.common.service.impl.AuditMapper;
 import kr.co.matpam.common.util.MatpamContextHolder;
 
+/**
+ * 서비스 실행 후 감사 로그를 자동으로 기록하는 Aspect
+ */
 @Aspect
 @Component
 public class AuditAspect {
 
-    private final AuditMapper auditMapper;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    @Resource(name = "auditMapper")
+    private AuditMapper auditMapper;
 
-    public AuditAspect(AuditMapper auditMapper) {
-        this.auditMapper = auditMapper;
-    }
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @AfterReturning(pointcut = "execution(* kr.co.matpam..service.*Service.*(..))", returning = "result")
     public void logAudit(JoinPoint joinPoint, Object result) {
@@ -33,12 +35,21 @@ public class AuditAspect {
         String className = joinPoint.getTarget().getClass().getSimpleName();
         
         try {
-            // 데이터 변경 관련 메서드 패턴 필터링
+            // 데이터 변경 관련 메서드 패턴 필터링 (insert, update, delete 등)
             if (methodName.matches(".*(insert|update|delete|save|create|remove).*")) {
-                String changedData = (result != null) ? objectMapper.writeValueAsString(result) : "SUCCESS";
+                String changedData;
+                if (result != null) {
+                    // 보안: 민감 정보 마스킹/제거 후 저장
+                    String rawJson = objectMapper.writeValueAsString(result);
+                    // passwordHash 필드 등 민감 정보는 제거하거나 마스킹
+                    changedData = rawJson.replaceAll("\"passwordHash\":\"[^\"]*\"", "\"passwordHash\":\"[MASKED]\"");
+                } else {
+                    changedData = "SUCCESS";
+                }
                 auditMapper.insertAuditLog(tenantId, className, methodName, changedData, "SUCCESS", userId);
             }
         } catch (Exception e) {
+            // 로깅 실패가 비즈니스 로직에 영향을 주지 않도록 예외 처리
             System.err.println("[AUDIT ERROR] Failed to record audit log: " + e.getMessage());
         }
     }

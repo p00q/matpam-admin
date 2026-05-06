@@ -4,83 +4,110 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import kr.co.matpam.common.service.MatpamBaseVO;
 
 /**
- * 주문 정보 VO
+ * 주문 원장 VO
+ * tb_order 테이블 대응
  */
-public class OrderVO implements Serializable {
+public class OrderVO extends MatpamBaseVO implements Serializable {
+
     private static final long serialVersionUID = 1L;
 
     private Long orderId;
+    private Long tenantId;
     private String orderNo;
-    
-    private Long buyerMemberId;
-    private String buyerName;
-    
-    private BigDecimal totalOrderAmt;
-    private BigDecimal totalVatAmt;
-    private BigDecimal totalDiscountAmt;
-    private BigDecimal totalPayAmt;
-    
-    private String orderStatusCd; // ORDER(주문완료), CANCEL(주문취소), DELIVERY(배송중), COMPLETE(배송완료)
-    private String paymentStatusCd; // WAIT(대기), PAID(결제완료), REFUND(환불)
-    
-    private String receiverName;
-    private String receiverHp;
-    private String receiverZip;
-    private String receiverAddr;
+    private Long buyerCompanyId;
+    private Long sellerCompanyId;
+    private Date orderDate;
+    private String orderStatus;      // RECEIVED, CONFIRMED, CANCELLED, COMPLETED
+    private BigDecimal totalSupplyAmount;
+    private BigDecimal totalVatAmount;
+    private BigDecimal totalOrderAmount;
+    private String paymentStatus;    // UNPAID, PARTIAL, PAID, OVERPAID
+    private String shipmentStatus;   // NOT_STARTED, PARTIAL, SHIPPED, DELIVERED
+    private String description;
+    private Long createdBy;
+    private Date createdAt;
+    private Date updatedAt;
+
+    // --- 레거시 호환용 필드 ---
     private String receiverAddrDetail;
-    
-    private String opType; // NATIONAL, LOCAL, FACTORY
-    
-    private String regId;
-    private Date regDt;
-    private String modId;
-    private Date modDt;
-    
-    // 주문 상품 상세 리스트
-    private List<OrderItemVO> orderItems;
+    private List<OrderItemVO> orderItems; // 기존 OrderItemVO 참조
+    private String orderStatusCd;         // 기존 상태 코드
+    private String paymentStatusCd;        // 기존 결제 상태 코드
+
+    // 조인용 필드
+    private String buyerCompanyName;
+    private String sellerCompanyName;
+    private List<OrderLineVO> orderLines;
+
+    public String getReceiverAddrDetail() { return receiverAddrDetail; }
+    public void setReceiverAddrDetail(String receiverAddrDetail) { this.receiverAddrDetail = receiverAddrDetail; }
+
+    public List<OrderItemVO> getOrderItems() { return orderItems; }
+    public void setOrderItems(List<OrderItemVO> orderItems) { this.orderItems = orderItems; }
+
+    public String getOrderStatusCd() { return orderStatusCd; }
+    public void setOrderStatusCd(String orderStatusCd) { this.orderStatusCd = orderStatusCd; }
+
+    public String getPaymentStatusCd() { return paymentStatusCd; }
+    public void setPaymentStatusCd(String paymentStatusCd) { this.paymentStatusCd = paymentStatusCd; }
 
     public Long getOrderId() { return orderId; }
     public void setOrderId(Long orderId) { this.orderId = orderId; }
+
+    public Long getTenantId() { return tenantId; }
+    public void setTenantId(Long tenantId) { this.tenantId = tenantId; }
+
     public String getOrderNo() { return orderNo; }
     public void setOrderNo(String orderNo) { this.orderNo = orderNo; }
-    public Long getBuyerMemberId() { return buyerMemberId; }
-    public void setBuyerMemberId(Long buyerMemberId) { this.buyerMemberId = buyerMemberId; }
-    public String getBuyerName() { return buyerName; }
-    public void setBuyerName(String buyerName) { this.buyerName = buyerName; }
-    public BigDecimal getTotalOrderAmt() { return totalOrderAmt; }
-    public void setTotalOrderAmt(BigDecimal totalOrderAmt) { this.totalOrderAmt = totalOrderAmt; }
-    public BigDecimal getTotalVatAmt() { return totalVatAmt; }
-    public void setTotalVatAmt(BigDecimal totalVatAmt) { this.totalVatAmt = totalVatAmt; }
-    public BigDecimal getTotalDiscountAmt() { return totalDiscountAmt; }
-    public void setTotalDiscountAmt(BigDecimal totalDiscountAmt) { this.totalDiscountAmt = totalDiscountAmt; }
-    public BigDecimal getTotalPayAmt() { return totalPayAmt; }
-    public void setTotalPayAmt(BigDecimal totalPayAmt) { this.totalPayAmt = totalPayAmt; }
-    public String getOrderStatusCd() { return orderStatusCd; }
-    public void setOrderStatusCd(String orderStatusCd) { this.orderStatusCd = orderStatusCd; }
-    public String getPaymentStatusCd() { return paymentStatusCd; }
-    public void setPaymentStatusCd(String paymentStatusCd) { this.paymentStatusCd = paymentStatusCd; }
-    public String getReceiverName() { return receiverName; }
-    public void setReceiverName(String receiverName) { this.receiverName = receiverName; }
-    public String getReceiverHp() { return receiverHp; }
-    public void setReceiverHp(String receiverHp) { this.receiverHp = receiverHp; }
-    public String getReceiverZip() { return receiverZip; }
-    public void setReceiverZip(String receiverZip) { this.receiverZip = receiverZip; }
-    public String getReceiverAddr() { return receiverAddr; }
-    public void setReceiverAddr(String receiverAddr) { this.receiverAddr = receiverAddr; }
-    public String getReceiverAddrDetail() { return receiverAddrDetail; }
-    public void setReceiverAddrDetail(String receiverAddrDetail) { this.receiverAddrDetail = receiverAddrDetail; }
-    public String getOpType() { return opType; }
-    public void setOpType(String opType) { this.opType = opType; }
-    public String getRegId() { return regId; }
-    public void setRegId(String regId) { this.regId = regId; }
-    public Date getRegDt() { return regDt; }
-    public void setRegDt(Date regDt) { this.regDt = regDt; }
-    public String getModId() { return modId; }
-    public void setModId(String modId) { this.modId = modId; }
-    public Date getModDt() { return modDt; }
-    public void setModDt(Date modDt) { this.modDt = modDt; }
-    public List<OrderItemVO> getOrderItems() { return orderItems; }
-    public void setOrderItems(List<OrderItemVO> orderItems) { this.orderItems = orderItems; }
+
+    public Long getBuyerCompanyId() { return buyerCompanyId; }
+    public void setBuyerCompanyId(Long buyerCompanyId) { this.buyerCompanyId = buyerCompanyId; }
+
+    public Long getSellerCompanyId() { return sellerCompanyId; }
+    public void setSellerCompanyId(Long sellerCompanyId) { this.sellerCompanyId = sellerCompanyId; }
+
+    public Date getOrderDate() { return orderDate; }
+    public void setOrderDate(Date orderDate) { this.orderDate = orderDate; }
+
+    public String getOrderStatus() { return orderStatus; }
+    public void setOrderStatus(String orderStatus) { this.orderStatus = orderStatus; }
+
+    public BigDecimal getTotalSupplyAmount() { return totalSupplyAmount; }
+    public void setTotalSupplyAmount(BigDecimal totalSupplyAmount) { this.totalSupplyAmount = totalSupplyAmount; }
+
+    public BigDecimal getTotalVatAmount() { return totalVatAmount; }
+    public void setTotalVatAmount(BigDecimal totalVatAmount) { this.totalVatAmount = totalVatAmount; }
+
+    public BigDecimal getTotalOrderAmount() { return totalOrderAmount; }
+    public void setTotalOrderAmount(BigDecimal totalOrderAmount) { this.totalOrderAmount = totalOrderAmount; }
+
+    public String getPaymentStatus() { return paymentStatus; }
+    public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
+
+    public String getShipmentStatus() { return shipmentStatus; }
+    public void setShipmentStatus(String shipmentStatus) { this.shipmentStatus = shipmentStatus; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public Long getCreatedBy() { return createdBy; }
+    public void setCreatedBy(Long createdBy) { this.createdBy = createdBy; }
+
+    public Date getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
+
+    public Date getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(Date updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getBuyerCompanyName() { return buyerCompanyName; }
+    public void setBuyerCompanyName(String buyerCompanyName) { this.buyerCompanyName = buyerCompanyName; }
+
+    public String getSellerCompanyName() { return sellerCompanyName; }
+    public void setSellerCompanyName(String sellerCompanyName) { this.sellerCompanyName = sellerCompanyName; }
+
+    public List<OrderLineVO> getOrderLines() { return orderLines; }
+    public void setOrderLines(List<OrderLineVO> orderLines) { this.orderLines = orderLines; }
 }

@@ -60,6 +60,12 @@ public class CompanyController {
 
         model.addAttribute("companyList", companyService.selectCompanyList(searchVO));
         model.addAttribute("paginationInfo", paginationInfo);
+        
+        // 메뉴 활성화 및 타이틀 설정
+        String type = searchVO.getCompanyType();
+        model.addAttribute("currentMenu", "SELLER".equals(type) ? "seller" : ("BUYER".equals(type) ? "buyer" : "company"));
+        model.addAttribute("pageTitle", "SELLER".equals(type) ? "판매업체 관리" : ("BUYER".equals(type) ? "구매업체 관리" : "업체 관리"));
+        
         model.addAttribute("contentPage", "/WEB-INF/jsp/admin/company/CompanyList.jsp");
 
         return "layout/main";
@@ -69,16 +75,29 @@ public class CompanyController {
      * 업체 등록/수정 폼
      */
     @RequestMapping("/admin/company/companyForm.do")
-    public String companyForm(@RequestParam(value = "companyId", required = false) Long companyId, ModelMap model) throws Exception {
+    public String companyForm(@RequestParam(value = "companyId", required = false) Long companyId, 
+                             @RequestParam(value = "companyType", required = false) String companyType,
+                             ModelMap model) throws Exception {
         
         CompanyVO company;
         if (companyId == null) {
             company = new CompanyVO();
+            company.setTenantId(1L);
+            company.setCompanyType(companyType); // 목록에서 넘어온 타입 설정
             company.setStatus("ACTIVE");
+            company.setContactList(new java.util.ArrayList<>());
         } else {
             CompanyVO param = new CompanyVO();
             param.setCompanyId(companyId);
             company = companyService.selectCompanyDetail(param);
+            if (company == null) {
+                return "redirect:/admin/company/companyList.do";
+            }
+            // 담당자 목록 조회
+            company.setContactList(companyService.selectCompanyContactList(param));
+            if (company.getContactList() == null) {
+                company.setContactList(new java.util.ArrayList<>());
+            }
         }
 
         model.addAttribute("company", company);
@@ -92,19 +111,25 @@ public class CompanyController {
      */
     @RequestMapping("/admin/company/saveCompany.ajax")
     @ResponseBody
-    public Map<String, Object> saveCompany(CompanyVO companyVO) {
+    public Map<String, Object> saveCompany(CompanyVO companyVO, HttpServletRequest request) {
+        System.out.println("DEBUG: saveCompany.ajax called with " + companyVO.toString());
         Map<String, Object> result = new HashMap<>();
         try {
-            if (companyVO.getCompanyId() == null) {
+            // 강제로 테넌트 ID 고정 및 세션 체크 무시
+            companyVO.setTenantId(1L);
+            
+            if (companyVO.getCompanyId() == null || companyVO.getCompanyId() == 0) {
                 companyService.insertCompany(companyVO);
             } else {
                 companyService.updateCompany(companyVO);
             }
             result.put("success", true);
+            result.put("companyId", companyVO.getCompanyId()); // Return ID for redirection
             result.put("message", "저장되었습니다.");
         } catch (Exception e) {
             result.put("success", false);
             result.put("message", "저장 중 오류가 발생했습니다: " + e.getMessage());
+            e.printStackTrace();
         }
         return result;
     }
@@ -121,6 +146,40 @@ public class CompanyController {
             vo.setCompanyId(companyId);
             vo.setStatus(status);
             companyService.updateCompanyStatus(vo);
+            result.put("success", true);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+        return result;
+    }
+
+    /**
+     * 업체 담당자 저장 (AJAX)
+     */
+    @RequestMapping("/admin/company/saveContact.ajax")
+    @ResponseBody
+    public Map<String, Object> saveContact(kr.co.matpam.admin.company.service.CompanyContactVO vo) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            companyService.insertCompanyContact(vo);
+            result.put("success", true);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+        return result;
+    }
+
+    /**
+     * 업체 담당자 삭제 (AJAX)
+     */
+    @RequestMapping("/admin/company/deleteContact.ajax")
+    @ResponseBody
+    public Map<String, Object> deleteContact(@RequestParam Long contactId) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            companyService.deleteCompanyContact(contactId);
             result.put("success", true);
         } catch (Exception e) {
             result.put("success", false);

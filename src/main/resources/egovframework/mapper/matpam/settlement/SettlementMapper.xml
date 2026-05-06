@@ -1,113 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="matpam.settlement.SettlementMapper">
+<mapper namespace="kr.co.matpam.admin.settlement.service.impl.SettlementMapper">
 
-    <resultMap id="settlementResultMap" type="kr.co.matpam.admin.settlement.service.SettlementVO">
-        <id property="settleId" column="settle_id"/>
-        <result property="settleDate" column="settle_date"/>
-        <result property="opType" column="op_type"/>
-        <result property="orderCount" column="order_count"/>
-        <result property="totalSalesAmt" column="total_sales_amt"/>
-        <result property="totalGoodsAmt" column="total_goods_amt"/>
-        <result property="totalDiscountAmt" column="total_discount_amt"/>
-        <result property="totalVatAmt" column="total_vat_amt"/>
-        <result property="totalPayAmt" column="total_pay_amt"/>
-        <result property="rawMaterialRatio" column="raw_material_ratio"/>
-        <result property="processedRatio" column="processed_ratio"/>
-        <result property="regDt" column="reg_dt"/>
-        <result property="modDt" column="mod_dt"/>
-    </resultMap>
-
-    <!-- 일일 정산 데이터 집계 (주문 마스터 op_type 기준) -->
-    <select id="aggregateSettlementData" parameterType="kr.co.matpam.admin.settlement.service.SettlementVO" resultMap="settlementResultMap">
-        SELECT 
-            #{settleDate} AS settle_date,
-            o.op_type,
-            COUNT(1) AS order_count,
-            SUM(o.goods_total_amt + o.delivery_total_amt) AS total_sales_amt,
-            SUM(o.goods_total_amt) AS total_goods_amt,
-            SUM(o.discount_total_amt) AS total_discount_amt,
-            SUM(o.vat_total_amt) AS total_vat_amt,
-            SUM(o.pay_total_amt) AS total_pay_amt,
-            IFNULL(ROUND(SUM(CASE WHEN o.vat_total_amt = 0 THEN o.goods_total_amt ELSE 0 END) / SUM(o.goods_total_amt) * 100, 2), 0) AS raw_material_ratio,
-            IFNULL(ROUND(SUM(CASE WHEN o.vat_total_amt > 0 THEN o.goods_total_amt ELSE 0 END) / SUM(o.goods_total_amt) * 100, 2), 0) AS processed_ratio
-        FROM tb_order o
-        WHERE DATE_FORMAT(o.reg_dt, '%Y%m%d') = #{settleDate}
-          AND o.use_yn = 'Y'
-          AND o.del_yn = 'N'
-          <if test="opType != null and opType != '' and opType != 'NATIONAL'">
-              AND o.op_type = #{opType}
-          </if>
-        GROUP BY o.op_type
-    </select>
-
-    <!-- 정산 정보 등록 -->
-    <insert id="insertSettlement" parameterType="kr.co.matpam.admin.settlement.service.SettlementVO">
-        INSERT INTO tb_settlement (
-            settle_date, op_type,
-            order_count, total_sales_amt, total_goods_amt, total_discount_amt,
-            total_vat_amt, total_pay_amt, raw_material_ratio, processed_ratio, reg_dt
-        ) VALUES (
-            #{settleDate}, #{opType},
-            #{orderCount}, #{totalSalesAmt}, #{totalGoodsAmt}, #{totalDiscountAmt},
-            #{totalVatAmt}, #{totalPayAmt}, #{rawMaterialRatio}, #{processedRatio}, NOW()
-        )
+    <insert id="insertSettlement" parameterType="kr.co.matpam.admin.settlement.service.SettlementVO" useGeneratedKeys="true" keyProperty="settlementId">
+        INSERT INTO tb_settlement (tenant_id, seller_company_id, buyer_company_id, period_from, period_to, sales_amount, vat_amount, settlement_status)
+        VALUES (#{tenantId}, #{sellerCompanyId}, #{buyerCompanyId}, #{periodFrom}, #{periodTo}, #{salesAmount}, #{vatAmount}, #{settlementStatus})
     </insert>
 
-    <!-- 정산 요약 목록 조회 -->
-    <select id="selectSettlementList" parameterType="kr.co.matpam.admin.settlement.service.SettlementVO" resultMap="settlementResultMap">
-        SELECT s.*
-        FROM tb_settlement s
-        <where>
-            <if test="settleDate != null and settleDate != ''">
-                AND s.settle_date = #{settleDate}
-            </if>
-            <if test="opType != null and opType != '' and opType != 'NATIONAL'">
-                AND s.op_type = #{opType}
-            </if>
-        </where>
-        ORDER BY s.settle_date DESC, s.op_type ASC
-        <include refid="kr.co.matpam.common.mapper.MatpamCommonMapper.pagingFooter"/>
-    </select>
+    <insert id="insertSettlementLine" parameterType="kr.co.matpam.admin.settlement.service.SettlementLineVO">
+        INSERT INTO tb_settlement_line (settlement_id, order_id, amount)
+        VALUES (#{settlementId}, #{orderId}, #{amount})
+    </insert>
 
-    <!-- 정산 총 건수 -->
-    <select id="selectSettlementListTotCnt" parameterType="kr.co.matpam.admin.settlement.service.SettlementVO" resultType="int">
-        SELECT COUNT(1) FROM tb_settlement s
-        <where>
-            <if test="settleDate != null and settleDate != ''">
-                AND s.settle_date = #{settleDate}
-            </if>
-            <if test="opType != null and opType != '' and opType != 'NATIONAL'">
-                AND s.op_type = #{opType}
-            </if>
-        </where>
-    </select>
-
-    <!-- 정산 KPI 요약 조회 -->
-    <select id="selectSettlementSummary" parameterType="kr.co.matpam.admin.settlement.service.SettlementVO" resultType="egovMap">
-        SELECT 
-            IFNULL(SUM(total_pay_amt), 0)    AS sum_pay_amt,
-            IFNULL(SUM(order_count), 0)      AS sum_order_cnt,
-            IFNULL(SUM(total_vat_amt), 0)    AS sum_vat_amt,
-            IFNULL(ROUND(AVG(raw_material_ratio), 2), 0) AS avg_raw_ratio
-        FROM tb_settlement s
-        <where>
-            <if test="settleDate != null and settleDate != ''">
-                AND s.settle_date = #{settleDate}
-            </if>
-            <if test="opType != null and opType != '' and opType != 'NATIONAL'">
-                AND s.op_type = #{opType}
-            </if>
-        </where>
-    </select>
-
-    <!-- 정산 데이터 삭제 (재정산용) -->
-    <delete id="deleteSettlementByDate" parameterType="kr.co.matpam.admin.settlement.service.SettlementVO">
-        DELETE FROM tb_settlement
-        WHERE settle_date = #{settleDate}
-          <if test="opType != null and opType != '' and opType != 'NATIONAL'">
-              AND op_type = #{opType}
-          </if>
-    </delete>
+    <update id="updateSettlementStatus" parameterType="kr.co.matpam.admin.settlement.service.SettlementVO">
+        UPDATE tb_settlement
+        SET settlement_status = #{settlementStatus}
+        WHERE settlement_id = #{settlementId}
+    </update>
 
 </mapper>

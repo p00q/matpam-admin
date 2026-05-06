@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.matpam.admin.product.service.impl.ProductMapper">
+
+    <select id="selectProductList" parameterType="kr.co.matpam.admin.product.service.ProductVO" resultType="kr.co.matpam.admin.product.service.ProductVO">
+        SELECT 
+            p.product_id,
+            p.tenant_id,
+            p.seller_company_id,
+            c.company_name as seller_company_name,
+            p.product_code,
+            p.product_name,
+            p.item_kind,
+            p.processing_type,
+            p.tax_category,
+            p.unit_name,
+            p.sale_status,
+            p.created_at
+        FROM tb_product p
+        LEFT JOIN tb_company c ON p.seller_company_id = c.company_id
+        WHERE 1=1
+        <if test="searchKeyword != null and searchKeyword != ''">
+            AND (p.product_name LIKE CONCAT('%', #{searchKeyword}, '%') OR p.product_code LIKE CONCAT('%', #{searchKeyword}, '%'))
+        </if>
+        <if test="saleStatus != null and saleStatus != ''">
+            AND p.sale_status = #{saleStatus}
+        </if>
+        ORDER BY p.created_at DESC
+        LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
+    </select>
+
+    <select id="selectProductListTotCnt" parameterType="kr.co.matpam.admin.product.service.ProductVO" resultType="int">
+        SELECT COUNT(*)
+        FROM tb_product p
+        WHERE 1=1
+        <if test="searchKeyword != null and searchKeyword != ''">
+            AND (p.product_name LIKE CONCAT('%', #{searchKeyword}, '%') OR p.product_code LIKE CONCAT('%', #{searchKeyword}, '%'))
+        </if>
+        <if test="saleStatus != null and saleStatus != ''">
+            AND p.sale_status = #{saleStatus}
+        </if>
+    </select>
+
+    <select id="selectProductDetail" parameterType="long" resultType="kr.co.matpam.admin.product.service.ProductVO">
+        SELECT 
+            p.*,
+            c.company_name as seller_company_name
+        FROM tb_product p
+        LEFT JOIN tb_company c ON p.seller_company_id = c.company_id
+        WHERE p.product_id = #{productId}
+    </select>
+
+    <insert id="insertProduct" parameterType="kr.co.matpam.admin.product.service.ProductVO" useGeneratedKeys="true" keyProperty="productId">
+        INSERT INTO tb_product (
+            tenant_id, seller_company_id, product_code, product_name, 
+            item_kind, processing_type, tax_category, unit_name, 
+            independent_sale_yn, stock_managed_yn, sale_status, 
+            description, image_url, created_by
+        ) VALUES (
+            #{tenantId}, #{sellerCompanyId}, #{productCode}, #{productName}, 
+            #{itemKind}, #{processingType}, #{taxCategory}, #{unitName}, 
+            #{independentSaleYn}, #{stockManagedYn}, #{saleStatus}, 
+            #{description}, #{imageUrl}, #{createdBy}
+        )
+    </insert>
+
+    <update id="updateProduct" parameterType="kr.co.matpam.admin.product.service.ProductVO">
+        UPDATE tb_product SET
+            product_name = #{productName},
+            item_kind = #{itemKind},
+            processing_type = #{processingType},
+            tax_category = #{taxCategory},
+            unit_name = #{unitName},
+            independent_sale_yn = #{independentSaleYn},
+            stock_managed_yn = #{stockManagedYn},
+            sale_status = #{saleStatus},
+            description = #{description},
+            image_url = #{imageUrl}
+        WHERE product_id = #{productId}
+    </update>
+
+    <select id="selectProductPriceList" parameterType="long" resultType="kr.co.matpam.admin.product.service.ProductPriceVO">
+        SELECT 
+            pp.*,
+            ch.channel_name,
+            c.company_name as buyer_company_name
+        FROM tb_product_price pp
+        LEFT JOIN tb_channel ch ON pp.channel_id = ch.channel_id
+        LEFT JOIN tb_company c ON pp.buyer_company_id = c.company_id
+        WHERE pp.product_id = #{productId}
+        ORDER BY pp.effective_from DESC
+    </select>
+
+    <insert id="insertProductPrice" parameterType="kr.co.matpam.admin.product.service.ProductPriceVO">
+        INSERT INTO tb_product_price (
+            product_id, tenant_id, channel_id, buyer_company_id, 
+            unit_price, currency_code, effective_from, effective_to, 
+            status, approved_by
+        ) VALUES (
+            #{productId}, #{tenantId}, #{channelId}, #{buyerCompanyId}, 
+            #{unitPrice}, #{currencyCode}, #{effectiveFrom}, #{effectiveTo}, 
+            #{status}, #{approvedBy}
+        )
+    </insert>
+
+</mapper>

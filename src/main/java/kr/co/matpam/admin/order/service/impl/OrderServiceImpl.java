@@ -9,11 +9,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import kr.co.matpam.admin.order.service.OrderService;
 import kr.co.matpam.admin.order.service.OrderVO;
-import kr.co.matpam.admin.order.service.OrderItemVO;
-// import kr.co.matpam.admin.member.service.MeatMoneyService;
+import kr.co.matpam.admin.order.service.OrderLineVO;
+import kr.co.matpam.admin.financial.service.B2bFinancialService;
 
 /**
- * 주문 서비스 구현체
+ * 통합 주문 관리 서비스 구현체
  */
 @Service("orderService")
 public class OrderServiceImpl extends EgovAbstractServiceImpl implements OrderService {
@@ -21,57 +21,58 @@ public class OrderServiceImpl extends EgovAbstractServiceImpl implements OrderSe
     @Resource(name = "orderDAO")
     private OrderDAO orderDAO;
 
-    // @Resource(name = "meatMoneyService")
-    // private MeatMoneyService meatMoneyService;
+    @Resource(name = "b2bFinancialService")
+    private B2bFinancialService b2bFinancialService;
 
     @Override
     @Transactional
     public String processOrder(OrderVO orderVO) throws Exception {
-        // 1. 주문번호 생성
+        // 1. 가용 미트머니 확인
+        java.math.BigDecimal totalAmount = orderVO.getTotalOrderAmount();
+        java.math.BigDecimal available = b2bFinancialService.getAvailableMeatMoney(orderVO.getTenantId(), orderVO.getSellerCompanyId(), orderVO.getBuyerCompanyId());
+        
+        if (available.compareTo(totalAmount) < 0) {
+            throw new Exception("미트머니 잔액이 부족합니다. (가용: " + available + ", 주문: " + totalAmount + ")");
+        }
+
+        // 2. 주문번호 생성
         String orderNo = generateOrderNo();
         orderVO.setOrderNo(orderNo);
-        orderVO.setOrderStatusCd("ORDER");
-        orderVO.setPaymentStatusCd("PAID");
+        orderVO.setOrderDate(new Date());
+        orderVO.setOrderStatus("RECEIVED");
+        orderVO.setPaymentStatus("PAID"); // 미트머니로 결제되므로 PAID 처리
+        orderVO.setShipmentStatus("NOT_STARTED");
 
-        // 2. 주문 마스터 저장
+        // 3. 주문 마스터 저장
         orderDAO.insertOrder(orderVO);
 
-        // 3. 주문 상세 저장
-        if (orderVO.getOrderItems() != null) {
-            for (OrderItemVO item : orderVO.getOrderItems()) {
-                item.setOrderId(orderVO.getOrderId());
-                item.setOpType(orderVO.getOpType());
-                orderDAO.insertOrderItem(item);
+        // 4. 주문 상세 저장
+        if (orderVO.getOrderLines() != null) {
+            int lineNo = 1;
+            for (OrderLineVO line : orderVO.getOrderLines()) {
+                line.setOrderId(orderVO.getOrderId());
+                line.setLineNo(lineNo++);
+                orderDAO.insertOrderLine(line);
             }
         }
 
-        // 4. 맛팜 머니 차감 (결제) - 레거시 삭제로 인한 임시 주석 처리
-        /*
-        if (orderVO.getTotalPayAmt() != null && orderVO.getTotalPayAmt().longValue() > 0) {
-            meatMoneyService.deductMoney(
-                orderVO.getBuyerMemberId(), 
-                orderVO.getTotalPayAmt(), 
-                orderNo
-            );
-        }
-        */
+        // 5. 미트머니 차감 (Ledger 기록)
+        b2bFinancialService.executeMeatMoneyPayment(orderVO.getTenantId(), orderVO.getSellerCompanyId(), orderVO.getBuyerCompanyId(), 
+                                                   orderVO.getOrderId(), totalAmount, orderVO.getCreatedBy());
 
         return orderNo;
     }
 
     private String generateOrderNo() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-        return "ORD" + sdf.format(new Date()) + (int)(Math.random() * 1000);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSSS");
+        return "ORD" + sdf.format(new Date()) + String.format("%03d", (int)(Math.random() * 1000));
     }
 
     @Override
     public OrderVO selectOrder(OrderVO orderVO) throws Exception {
         OrderVO order = orderDAO.selectOrder(orderVO);
         if (order != null) {
-            OrderItemVO itemVO = new OrderItemVO();
-            itemVO.setOrderId(order.getOrderId());
-            itemVO.setOpType(orderVO.getOpType());
-            order.setOrderItems(orderDAO.selectOrderItemList(itemVO));
+            order.setOrderLines(orderDAO.selectOrderLineList(order.getOrderId()));
         }
         return order;
     }
@@ -92,24 +93,13 @@ public class OrderServiceImpl extends EgovAbstractServiceImpl implements OrderSe
         OrderVO order = orderDAO.selectOrder(orderVO);
         if (order == null) throw new Exception("주문 정보를 찾을 수 없습니다.");
         
-        if ("CANCEL".equals(order.getOrderStatusCd())) {
+        if ("CANCELLED".equals(order.getOrderStatus())) {
              throw new Exception("이미 취소된 주문입니다.");
         }
 
         // 상태 변경
-        order.setOrderStatusCd("CANCEL");
-        order.setModId(orderVO.getModId()); // 수정자 설정
+        order.setOrderStatus("CANCELLED");
+        // order.setUpdatedBy(...) // 필요한 경우 세션 관리자 ID 설정
         orderDAO.updateOrderStatus(order);
-
-        // 머니 환불 (결제되었던 경우) - 레거시 삭제로 인한 임시 주석 처리
-        /*
-        if ("PAID".equals(order.getPaymentStatusCd())) {
-            meatMoneyService.chargeMoney(
-                order.getBuyerMemberId(), 
-                order.getTotalPayAmt(), 
-                "SYSTEM_CANCEL"
-            );
-        }
-        */
     }
 }

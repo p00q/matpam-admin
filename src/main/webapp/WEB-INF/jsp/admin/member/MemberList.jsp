@@ -7,8 +7,13 @@
 <div class="container-fluid px-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="mt-4 fw-bold text-dark">구매업체(회원) 관리</h1>
-            <p class="text-muted">B2B 구매 고객사 정보를 통합 관리합니다.</p>
+            <h1 class="mt-4 fw-bold text-dark">회원 관리</h1>
+            <p class="text-muted">사용자 계정 및 구매 고객사 정보를 통합 관리합니다.</p>
+        </div>
+        <div>
+            <a href="${pageContext.request.contextPath}/admin/member/userReg.do" class="btn btn-primary btn-lg rounded-pill shadow-sm px-4">
+                <i class="bi bi-person-plus me-2"></i>계정 등록
+            </a>
         </div>
     </div>
 
@@ -75,9 +80,9 @@
                                     </c:choose>
                                 </td>
                                 <td class="pe-4 text-center">
-                                    <button class="btn btn-sm btn-outline-primary rounded-pill">
+                                    <a href="${pageContext.request.contextPath}/admin/member/memberDetail.do?companyId=${item.companyId}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
                                         상세
-                                    </button>
+                                    </a>
                                 </td>
                             </tr>
                         </c:forEach>

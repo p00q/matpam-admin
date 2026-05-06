@@ -14,10 +14,6 @@
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
 	</context:component-scan>
 
-
-
-
-
 <!-- 파일 업로드 처리용 Multipart Resolver -->
 	<bean id="multipartResolver"
 		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
@@ -25,8 +21,6 @@
 		<property name="maxUploadSize" value="52428800"/> <!-- 50MB -->
 		<property name="maxInMemorySize" value="1048576"/> <!-- 1MB -->
 	</bean>
-
-	
 
 	<bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean"/>
 
@@ -52,6 +46,5 @@
 	</mvc:interceptors>
 
 	<mvc:annotation-driven />
-
 
 </beans>

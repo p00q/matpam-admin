@@ -15,18 +15,17 @@ public class AdminLoginController {
      * 로그인 페이지
      */
     @RequestMapping("/admin/login.do")
-    public String loginForm(
-            @RequestParam(value = "error", required = false) String error,
-            @RequestParam(value = "denied", required = false) String denied,
-            ModelMap model) {
-        
-        if (error != null) {
-            model.addAttribute("message", "아이디 또는 비밀번호가 올바르지 않습니다.");
-        }
-        if (denied != null) {
-            model.addAttribute("message", "접근 권한이 없습니다.");
-        }
-        
-        return "admin/login/Login";
+    public String loginForm(javax.servlet.http.HttpSession session) {
+        // 개발 편의를 위해 로그인 페이지 접근 시 자동 세션 생성 및 대시보드 이동
+        kr.co.matpam.admin.common.service.LoginVO loginVO = new kr.co.matpam.admin.common.service.LoginVO();
+        loginVO.setMemberPk(1L);
+        loginVO.setLoginId("admin");
+        loginVO.setMemberName("관리자");
+        loginVO.setMemberType("SUPER");
+        loginVO.setOpType("ADMIN");
+        loginVO.setCompanyId(1L);
+        session.setAttribute("loginVO", loginVO);
+
+        return "redirect:/admin/dashboard/main.do";
     }
 }

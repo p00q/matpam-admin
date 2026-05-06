@@ -86,6 +86,7 @@
             phone = #{phone},
             email = #{email},
             default_tax_type = #{defaultTaxType},
+            seller_type = #{sellerType},
             updated_at = NOW()
         WHERE company_id = #{companyId}
     </update>
@@ -95,5 +96,44 @@
         SET status = #{status}, updated_at = NOW()
         WHERE company_id = #{companyId}
     </update>
+
+    <select id="selectCompanyContactList" parameterType="kr.co.matpam.admin.company.service.CompanyVO" resultType="kr.co.matpam.admin.company.service.CompanyContactVO">
+        SELECT 
+            contact_id AS contactId,
+            company_id AS companyId,
+            contact_name AS contactName,
+            contact_role AS contactRole,
+            mobile,
+            email,
+            is_primary AS isPrimary,
+            linked_user_id AS linkedUserId,
+            status,
+            created_at AS createdAt,
+            updated_at AS updatedAt
+        FROM tb_company_contact
+        WHERE company_id = #{companyId}
+        ORDER BY is_primary DESC, created_at ASC
+    </select>
+
+    <insert id="insertCompanyContact" parameterType="kr.co.matpam.admin.company.service.CompanyContactVO">
+        INSERT INTO tb_company_contact (
+            company_id, contact_name, contact_role, mobile, email, 
+            is_primary, linked_user_id, status, created_at
+        ) VALUES (
+            #{companyId}, #{contactName}, #{contactRole}, #{mobile}, #{email}, 
+            #{isPrimary}, #{linkedUserId}, 'ACTIVE', NOW()
+        )
+        ON DUPLICATE KEY UPDATE
+            contact_name = #{contactName},
+            contact_role = #{contactRole},
+            mobile = #{mobile},
+            email = #{email},
+            is_primary = #{isPrimary},
+            updated_at = NOW()
+    </insert>
+
+    <delete id="deleteCompanyContact" parameterType="long">
+        DELETE FROM tb_company_contact WHERE contact_id = #{contactId}
+    </delete>
 
 </mapper>

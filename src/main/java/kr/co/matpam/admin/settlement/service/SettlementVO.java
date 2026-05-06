@@ -1,59 +1,68 @@
 package kr.co.matpam.admin.settlement.service;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
-import java.math.BigDecimal;
-import java.util.Date;
-import kr.co.matpam.common.service.MatpamBaseVO;
 
-/**
- * 정산 정보 VO
- */
-public class SettlementVO extends MatpamBaseVO {
+public class SettlementVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private Long settleId;
-    private String settleDate; // yyyy-MM-dd
-    
-    // opType is inherited from MatpamBaseVO
-    
-    // 집계 지표
-    private Long orderCount;                  // 총 주문 건수
-    private BigDecimal totalSalesAmt;         // 총 매출액 (상품가 + 배송비)
-    private BigDecimal totalGoodsAmt;         // 총 상품액 (할인 전 순수 상품가)
-    private BigDecimal totalDiscountAmt;      // 총 할인액
-    private BigDecimal totalVatAmt;           // 총 부가세액
-    private BigDecimal totalPayAmt;           // 총 실결제액(머니 차감액)
-    
-    // 추가 분석 지표 (면세 비율 계산 등)
-    private BigDecimal rawMaterialRatio;      // 원물 비중 (0~100)
-    private BigDecimal processedRatio;        // 가공품 비중 (0~100)
-    
-    private Date regDt;
-    private Date modDt;
+    private Long settlementId;
+    private Long tenantId;
+    private Long sellerCompanyId;
+    private Long buyerCompanyId;
+    private Date periodFrom;
+    private Date periodTo;
+    private BigDecimal salesAmount;
+    private BigDecimal vatAmount;
+    private String settlementStatus; // OPEN, CLOSED, CONFIRMED
+    private Date createdAt;
 
-    public Long getSettleId() { return settleId; }
-    public void setSettleId(Long settleId) { this.settleId = settleId; }
+    // Paging & Search
+    private int pageIndex = 1;
+    private int pageUnit = 10;
+    private int pageSize = 10;
+    private int firstIndex = 1;
+    private int lastIndex = 1;
+    private int recordCountPerPage = 10;
+    private String opType;
+    private String settleDate;
+
+    // Getters and Setters
+    public int getPageIndex() { return pageIndex; }
+    public void setPageIndex(int pageIndex) { this.pageIndex = pageIndex; }
+    public int getPageUnit() { return pageUnit; }
+    public void setPageUnit(int pageUnit) { this.pageUnit = pageUnit; }
+    public int getPageSize() { return pageSize; }
+    public void setPageSize(int pageSize) { this.pageSize = pageSize; }
+    public int getFirstIndex() { return firstIndex; }
+    public void setFirstIndex(int firstIndex) { this.firstIndex = firstIndex; }
+    public int getLastIndex() { return lastIndex; }
+    public void setLastIndex(int lastIndex) { this.lastIndex = lastIndex; }
+    public int getRecordCountPerPage() { return recordCountPerPage; }
+    public void setRecordCountPerPage(int recordCountPerPage) { this.recordCountPerPage = recordCountPerPage; }
+    public String getOpType() { return opType; }
+    public void setOpType(String opType) { this.opType = opType; }
     public String getSettleDate() { return settleDate; }
     public void setSettleDate(String settleDate) { this.settleDate = settleDate; }
-    public Long getOrderCount() { return orderCount; }
-    public void setOrderCount(Long orderCount) { this.orderCount = orderCount; }
-    public BigDecimal getTotalSalesAmt() { return totalSalesAmt; }
-    public void setTotalSalesAmt(BigDecimal totalSalesAmt) { this.totalSalesAmt = totalSalesAmt; }
-    public BigDecimal getTotalGoodsAmt() { return totalGoodsAmt; }
-    public void setTotalGoodsAmt(BigDecimal totalGoodsAmt) { this.totalGoodsAmt = totalGoodsAmt; }
-    public BigDecimal getTotalDiscountAmt() { return totalDiscountAmt; }
-    public void setTotalDiscountAmt(BigDecimal totalDiscountAmt) { this.totalDiscountAmt = totalDiscountAmt; }
-    public BigDecimal getTotalVatAmt() { return totalVatAmt; }
-    public void setTotalVatAmt(BigDecimal totalVatAmt) { this.totalVatAmt = totalVatAmt; }
-    public BigDecimal getTotalPayAmt() { return totalPayAmt; }
-    public void setTotalPayAmt(BigDecimal totalPayAmt) { this.totalPayAmt = totalPayAmt; }
-    public BigDecimal getRawMaterialRatio() { return rawMaterialRatio; }
-    public void setRawMaterialRatio(BigDecimal rawMaterialRatio) { this.rawMaterialRatio = rawMaterialRatio; }
-    public BigDecimal getProcessedRatio() { return processedRatio; }
-    public void setProcessedRatio(BigDecimal processedRatio) { this.processedRatio = processedRatio; }
-    public Date getRegDt() { return regDt; }
-    public void setRegDt(Date regDt) { this.regDt = regDt; }
-    public Date getModDt() { return modDt; }
-    public void setModDt(Date modDt) { this.modDt = modDt; }
+    public Long getSettlementId() { return settlementId; }
+    public void setSettlementId(Long settlementId) { this.settlementId = settlementId; }
+    public Long getTenantId() { return tenantId; }
+    public void setTenantId(Long tenantId) { this.tenantId = tenantId; }
+    public Long getSellerCompanyId() { return sellerCompanyId; }
+    public void setSellerCompanyId(Long sellerCompanyId) { this.sellerCompanyId = sellerCompanyId; }
+    public Long getBuyerCompanyId() { return buyerCompanyId; }
+    public void setBuyerCompanyId(Long buyerCompanyId) { this.buyerCompanyId = buyerCompanyId; }
+    public Date getPeriodFrom() { return periodFrom; }
+    public void setPeriodFrom(Date periodFrom) { this.periodFrom = periodFrom; }
+    public Date getPeriodTo() { return periodTo; }
+    public void setPeriodTo(Date periodTo) { this.periodTo = periodTo; }
+    public BigDecimal getSalesAmount() { return salesAmount; }
+    public void setSalesAmount(BigDecimal salesAmount) { this.salesAmount = salesAmount; }
+    public BigDecimal getVatAmount() { return vatAmount; }
+    public void setVatAmount(BigDecimal vatAmount) { this.vatAmount = vatAmount; }
+    public String getSettlementStatus() { return settlementStatus; }
+    public void setSettlementStatus(String settlementStatus) { this.settlementStatus = settlementStatus; }
+    public Date getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
 }

@@ -20,4 +20,7 @@ public interface CompanyService {
     void updateCompany(CompanyVO vo) throws Exception;
 
     void updateCompanyStatus(CompanyVO vo) throws Exception;
+    List<CompanyContactVO> selectCompanyContactList(CompanyVO vo) throws Exception;
+    void insertCompanyContact(CompanyContactVO vo) throws Exception;
+    void deleteCompanyContact(Long contactId) throws Exception;
 }

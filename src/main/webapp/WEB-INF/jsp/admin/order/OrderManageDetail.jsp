@@ -205,11 +205,31 @@
 
                 <script>
                     function fn_save() {
+                        const trackingNo = $('input[name="trackingNo"]').val();
+                        if (!trackingNo) {
+                            alert('운송장 번호를 입력해주세요.');
+                            return;
+                        }
+
                         if (!confirm('배송 정보와 주문 설정을 저장하시겠습니까?')) return;
-                        // 저장 로직 (AJAX)
-                        // const formData = $('#deliveryForm').serialize();
-                        // $.ajax({...})
-                        alert('저장 기능은 현재 엔드포인트 연결 중입니다.');
+                        
+                        const formData = $('#deliveryForm').serialize();
+                        $.ajax({
+                            url: '<c:url value="/admin/logistics/saveShipment.ajax"/>',
+                            type: 'POST',
+                            data: formData,
+                            success: function(res) {
+                                if (res.success) {
+                                    alert('배송 정보가 저장되었습니다.');
+                                    location.reload();
+                                } else {
+                                    alert('저장 실패: ' + res.message);
+                                }
+                            },
+                            error: function() {
+                                alert('서버 통신 중 오류가 발생했습니다.');
+                            }
+                        });
                     }
 
                     function fn_printInvoice() {

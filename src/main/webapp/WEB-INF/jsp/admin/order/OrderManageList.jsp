@@ -292,540 +292,291 @@
         </div>
     </div>
 
-                <script>
-                    const contextPath = '${pageContext.request.contextPath}';
+    <script>
+        const contextPath = '${pageContext.request.contextPath}';
 
-                    $(document).ready(function () {
-                        const today = new Date();
-                        const weekAgo = new Date();
-                        weekAgo.setDate(today.getDate() - 7);
+        $(document).ready(function () {
+            // 초기 날짜 설정
+            const today = new Date();
+            const weekAgo = new Date();
+            weekAgo.setDate(today.getDate() - 7);
 
-                        $('#orderDtFrom').val(formatDate(weekAgo));
-                        $('#orderDtTo').val(formatDate(today));
+            $('#orderDtFrom').val(formatDate(weekAgo));
+            $('#orderDtTo').val(formatDate(today));
 
+            // 최초 검색 실행
+            fn_search();
+        });
+
+        // --- Utility Functions ---
+        function formatDate(date) {
+            if (!date) return '-';
+            const d = new Date(date);
+            if (isNaN(d.getTime())) return date;
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return y + '-' + m + '-' + day;
+        }
+
+        function formatDateTime(date) {
+            if (!date) return '-';
+            const d = new Date(date);
+            if (isNaN(d.getTime())) return date;
+            return formatDate(d) + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+        }
+
+        function formatNumber(num) {
+            if (num == null) return '0';
+            return Number(num).toLocaleString();
+        }
+
+        function getVal(obj, key) {
+            if (!obj) return undefined;
+            if (obj[key] !== undefined) return obj[key];
+            // Handle EgovMap style (Underscore Upper)
+            const underscoreUpper = key.replace(/([A-Z])/g, "_$1").toUpperCase();
+            if (obj[underscoreUpper] !== undefined) return obj[underscoreUpper];
+            return undefined;
+        }
+
+        // --- Business Functions ---
+        function fn_search() {
+            $('#pageIndex').val(1);
+            fn_selectList();
+            fn_selectSummary();
+        }
+
+        function fn_page(pageNo) {
+            $('#pageIndex').val(pageNo);
+            fn_selectList();
+        }
+
+        function fn_changePageSize() {
+            $('#pageIndex').val(1);
+            fn_selectList();
+        }
+
+        function fn_selectList() {
+            const formData = $('#searchForm').serialize();
+            const pageSize = $('#pageSize').val();
+            
+            console.log('Fetching order list...');
+
+            $.ajax({
+                url: contextPath + '/admin/order/selectOrderList.do',
+                type: 'POST',
+                data: formData + '&recordCountPerPage=' + pageSize,
+                dataType: 'json',
+                success: function (result) {
+                    if (result.success) {
+                        renderOrderList(result.orderList, result.paginationInfo);
+                        $('#totalCount').text(formatNumber(result.totalCount || 0));
+                    } else {
+                        console.error('List Error:', result.message);
+                    }
+                },
+                error: function (xhr) {
+                    $('#orderListBody').html('<tr><td colspan="11" class="py-5 text-center text-danger">통신 중 오류가 발생했습니다. (Status: ' + xhr.status + ')</td></tr>');
+                }
+            });
+        }
+
+        function fn_selectSummary() {
+            const formData = $('#searchForm').serialize();
+            $.ajax({
+                url: contextPath + '/admin/order/selectOrderSummary.do',
+                type: 'POST',
+                data: formData,
+                dataType: 'json',
+                success: function (result) {
+                    if (result.success && result.summary) {
+                        const s = result.summary;
+                        $('#kpiGoodsAmt').text(formatNumber(getVal(s, 'sumGoodsTotalAmt') || 0));
+                        $('#kpiDeliveryAmt').text(formatNumber(getVal(s, 'sumDeliveryTotalAmt') || 0));
+                        $('#kpiDiscountAmt').text(formatNumber(getVal(s, 'sumDiscountTotalAmt') || 0));
+                        $('#kpiPayAmt').text(formatNumber(getVal(s, 'sumPayTotalAmt') || 0));
+                    }
+                }
+            });
+        }
+
+        function renderOrderList(list, paginationInfo) {
+            const tbody = $('#orderListBody');
+            tbody.empty();
+
+            if (!list || list.length === 0) {
+                tbody.append('<tr><td colspan="11" class="py-5 text-center text-muted"><i class="bi bi-inbox me-2"></i>조회된 내역이 없습니다.</td></tr>');
+                $('#paginationArea').empty();
+                return;
+            }
+
+            list.forEach(function (item, idx) {
+                try {
+                    const orderId = getVal(item, 'orderId');
+                    const orderNo = getVal(item, 'orderNo') || '-';
+                    const orderDt = getVal(item, 'orderDt');
+                    const prodName = getVal(item, 'firstSalesProdName') || '-';
+                    const buyerName = getVal(item, 'buyerCompanyName') || '-';
+                    const goodsAmt = getVal(item, 'goodsTotalAmt') || 0;
+                    const deliveryAmt = getVal(item, 'deliveryTotalAmt') || 0;
+                    const discountAmt = getVal(item, 'discountTotalAmt') || 0;
+                    const payAmt = getVal(item, 'payTotalAmt') || 0;
+                    const vatAmt = getVal(item, 'vatTotalAmt') || 0;
+                    const itemCount = getVal(item, 'itemCount') || 1;
+                    const totalQty = getVal(item, 'totalOrderQty') || 0;
+                    const statusName = getVal(item, 'orderStatusName') || '접수';
+                    const statusCd = getVal(item, 'orderStatusCd');
+                    const deliveryName = getVal(item, 'deliveryTypeName') || '택배';
+
+                    const row = `
+                        <tr>
+                            <td><input type="checkbox" class="order-check" value="\${orderId}"></td>
+                            <td class="text-center text-muted small">\${(paginationInfo.firstRecordIndex || 0) + idx + 1}</td>
+                            <td>
+                                <div class="mini-text text-muted">\${formatDateTime(orderDt)}</div>
+                                <div class="fw-bold text-truncate" style="max-width: 200px;">\${prodName}</div>
+                                \${itemCount > 1 ? `<span class="text-primary small">외 \${itemCount - 1}건</span>` : ''}
+                            </td>
+                            <td>
+                                <div class="mini-text text-primary fw-bold">\${orderNo}</div>
+                                <div class="small fw-semibold">\${buyerName}</div>
+                            </td>
+                            <td class="text-end fw-bold">\${formatNumber(goodsAmt)}</td>
+                            <td class="text-center">\${formatNumber(totalQty)}</td>
+                            <td class="text-end text-muted small">
+                                <div>배: \${formatNumber(deliveryAmt)}</div>
+                                <div class="text-danger">할: -\${formatNumber(discountAmt)}</div>
+                            </td>
+                            <td class="text-end">
+                                <div class="fw-bold text-success">\${formatNumber(payAmt)}</div>
+                                <div class="mini-text text-muted">(VAT \${formatNumber(vatAmt)})</div>
+                            </td>
+                            <td class="text-center"><span class="badge bg-soft-info text-info">\${deliveryName}</span></td>
+                            <td class="text-center">
+                                <span class="badge \${getStatusBadgeClass(statusCd)}">\${statusName}</span>
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-sm btn-outline-primary px-2" onclick="fn_openDetail('\${orderId}')">상세</button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.append(row);
+                } catch (e) {
+                    console.error('Render Row Error:', e, item);
+                }
+            });
+
+            renderPagination(paginationInfo);
+        }
+
+        function getStatusBadgeClass(status) {
+            switch (status) {
+                case 'RECEIVED': return 'bg-soft-primary text-primary';
+                case 'CONFIRMED': return 'bg-soft-info text-info';
+                case 'SHIPPED': return 'bg-soft-warning text-warning';
+                case 'COMPLETED': return 'bg-soft-success text-success';
+                case 'CANCELLED': return 'bg-soft-danger text-danger';
+                default: return 'bg-soft-secondary text-secondary';
+            }
+        }
+
+        function renderPagination(info) {
+            const area = $('#paginationArea');
+            area.empty();
+            if (!info || info.totalRecordCount === 0) return;
+
+            const totalPages = Math.ceil(info.totalRecordCount / info.recordCountPerPage);
+            const currentPage = info.currentPageNo;
+            const pageSize = 10;
+            const startPage = Math.floor((currentPage - 1) / pageSize) * pageSize + 1;
+            const endPage = Math.min(startPage + pageSize - 1, totalPages);
+
+            let html = '<ul class="pagination pagination-sm mb-0">';
+            if (startPage > 1) {
+                html += `<li class="page-item"><a class="page-link" href="javascript:fn_page(\${startPage - 1})">‹</a></li>`;
+            }
+            for (let i = startPage; i <= endPage; i++) {
+                html += `<li class="page-item \${i === currentPage ? 'active' : ''}"><a class="page-link" href="javascript:fn_page(\${i})">\${i}</a></li>`;
+            }
+            if (endPage < totalPages) {
+                html += `<li class="page-item"><a class="page-link" href="javascript:fn_page(\${endPage + 1})">›</a></li>`;
+            }
+            html += '</ul>';
+            area.html(html);
+        }
+
+        // --- Other Interactions ---
+        function fn_checkAll(cb) {
+            $('.order-check').prop('checked', cb.checked);
+        }
+
+        function fn_openDetail(orderId) {
+            alert('상세 정보(ID: ' + orderId + ') 기능은 준비 중입니다.');
+        }
+
+        // --- Manual Order ---
+        function fn_openManualOrder() {
+            $('#manualOrderModal').modal('show');
+        }
+
+        function fn_searchManualMember() {
+            const keyword = $('#manualSearchKeyword').val();
+            if (!keyword) return alert('검색어를 입력하세요.');
+            $.ajax({
+                url: contextPath + '/admin/member/selectMemberList.do',
+                type: 'POST',
+                data: { searchKeyword: keyword, pageIndex: 1, recordCountPerPage: 10 },
+                success: function (res) {
+                    if (res.success) {
+                        let html = '<div class="list-group list-group-flush border rounded">';
+                        res.memberList.forEach(m => {
+                            html += `<button type="button" class="list-group-item list-group-item-action py-2" onclick="fn_selectManualMember('\${m.memberId}', '\${m.memberName}', \${m.moneyBalance || 0})">
+                                        <div class="d-flex justify-content-between">
+                                            <strong>\${m.memberName}</strong>
+                                            <span class="badge bg-soft-accent text-accent">\${formatNumber(m.moneyBalance)}원</span>
+                                        </div>
+                                     </button>`;
+                        });
+                        html += '</div>';
+                        $('#manualMemberResult').html(html);
+                    }
+                }
+            });
+        }
+
+        function fn_selectManualMember(id, name, bal) {
+            $('#manualSelectedMemberId').val(id);
+            $('#manualSelectedMemberName').val(name);
+            $('#manualCurrentMoney').val(bal);
+            $('#manualCurrentMoneyDisplay').text(formatNumber(bal));
+            $('#manualMemberResult').empty();
+            fn_checkManualMoney();
+        }
+
+        function fn_checkManualMoney() {
+            const bal = Number($('#manualCurrentMoney').val());
+            const pay = Number($('#manualPayAmt').val());
+            const canSave = bal >= pay && pay > 0;
+            $('#btnSaveManualOrder').prop('disabled', !canSave);
+            $('#manualMoneyWarning').toggleClass('d-none', bal >= pay);
+        }
+
+        function fn_saveManualOrder() {
+            const id = $('#manualSelectedMemberId').val();
+            const pay = $('#manualPayAmt').val();
+            if (!confirm('주문을 등록하시겠습니까?')) return;
+            $.ajax({
+                url: contextPath + '/admin/order/insertManualOrder.ajax',
+                type: 'POST',
+                data: { buyerMemberId: id, payTotalAmt: pay },
+                success: function (res) {
+                    alert(res.message);
+                    if (res.success) {
+                        $('#manualOrderModal').modal('hide');
                         fn_search();
-                    });
-
-                    function formatDate(date) {
-                        const y = date.getFullYear();
-                        const m = String(date.getMonth() + 1).padStart(2, '0');
-                        const d = String(date.getDate()).padStart(2, '0');
-                        return y + '-' + m + '-' + d;
                     }
-
-                    function formatNumber(num) {
-                        if (num == null) return '0';
-                        return Number(num).toLocaleString();
-                    }
-
-                    function fn_toggleTodayOnly() {
-                        const checked = $('#todayOnlyYn').is(':checked');
-                        if (checked) {
-                            const today = formatDate(new Date());
-                            $('#orderDtFrom').val(today).prop('disabled', true);
-                            $('#orderDtTo').val(today).prop('disabled', true);
-                        } else {
-                            $('#orderDtFrom').prop('disabled', false);
-                            $('#orderDtTo').prop('disabled', false);
-                        }
-                    }
-
-                    function fn_search() {
-                        $('#pageIndex').val(1);
-                        fn_selectList();
-                        fn_selectSummary();
-                    }
-
-                    function fn_reset() {
-                        $('#searchForm')[0].reset();
-                        $('#todayOnlyYn').prop('checked', false);
-                        $('#orderDtFrom').prop('disabled', false);
-                        $('#orderDtTo').prop('disabled', false);
-
-                        const today = new Date();
-                        const weekAgo = new Date();
-                        weekAgo.setDate(today.getDate() - 7);
-                        $('#orderDtFrom').val(formatDate(weekAgo));
-                        $('#orderDtTo').val(formatDate(today));
-
-                        fn_search();
-                    }
-
-                    function fn_page(pageNo) {
-                        $('#pageIndex').val(pageNo);
-                        fn_selectList();
-                    }
-
-                    function fn_changePageSize() {
-                        $('#pageIndex').val(1);
-                        fn_selectList();
-                    }
-
-                    function fn_selectList() {
-                        const formData = $('#searchForm').serialize();
-                        const pageSize = $('#pageSize').val();
-
-                        $.ajax({
-                            url: contextPath + '/admin/order/selectOrderList.ajax',
-                            type: 'POST',
-                            data: formData + '&recordCountPerPage=' + pageSize,
-                            dataType: 'json',
-                            success: function (result) {
-                                if (result.success) {
-                                    renderOrderList(result.orderList, result.paginationInfo);
-                                    $('#totalCount').text(formatNumber(result.totalCount));
-                                } else {
-                                    alert('조회 오류: ' + result.message);
-                                }
-                            },
-                            error: function (xhr, status, error) {
-                                console.error('AJAX Error:', error);
-                                alert('서버 통신 오류가 발생했습니다.');
-                            }
-                        });
-                    }
-
-                    function fn_selectSummary() {
-                        const formData = $('#searchForm').serialize();
-
-                        $.ajax({
-                            url: contextPath + '/admin/order/selectOrderSummary.ajax',
-                            type: 'POST',
-                            data: formData,
-                            dataType: 'json',
-                            success: function (result) {
-                                if (result.success && result.summary) {
-                                    $('#kpiGoodsAmt').text(formatNumber(result.summary.sumGoodsTotalAmt));
-                                    $('#kpiDeliveryAmt').text(formatNumber(result.summary.sumDeliveryTotalAmt));
-                                    $('#kpiDiscountAmt').text(formatNumber(result.summary.sumDiscountTotalAmt));
-                                    $('#kpiPayAmt').text(formatNumber(result.summary.sumPayTotalAmt));
-                                }
-                            },
-                            error: function (xhr, status, error) {
-                                console.error('KPI Error:', error);
-                            }
-                        });
-                    }
-
-                    function renderOrderList(list, paginationInfo) {
-                        const tbody = $('#orderListBody');
-                        tbody.empty();
-
-                        if (!list || list.length === 0) {
-                            tbody.append('<tr><td colspan="11" class="py-5 text-center text-muted"><i class="bi bi-inbox fs-2 d-block mb-3 opacity-25"></i>검색된 주문 내역이 없습니다.</td></tr>');
-                            $('#paginationArea').empty();
-                            return;
-                        }
-
-                        const firstIndex = paginationInfo.firstRecordIndex || 0;
-
-                        list.forEach(function (item, idx) {
-                            const prodName = item.firstSalesProdName || '-';
-                            const itemCountDisplay = (item.itemCount > 1)
-                                ? '<div class="text-dark fw-semibold mt-1">' + prodName + ' <span class="text-primary small">외 ' + (item.itemCount - 1) + '건</span></div>'
-                                : '<div class="text-dark fw-semibold mt-1">' + prodName + '</div>';
-
-                            const orderDt = item.orderDt ? new Date(item.orderDt).toLocaleString('ko-KR') : '-';
-                            const payDisplay = '<div class="fw-bold text-accent" style="color:var(--accent)">' + formatNumber(item.payTotalAmt) + '</div>' +
-                                             '<div class="mini-text text-muted">(' + formatNumber(item.vatTotalAmt) + ')</div>';
-                            const opTypeBadge = getOpTypeBadge(item.opType);
-
-                            const row = '<tr>' +
-                                '<td><input type="checkbox" class="order-check form-check-input" value="' + item.orderId + '"></td>' +
-                                '<td>' + (firstIndex + idx + 1) + '</td>' +
-                                '<td>' +
-                                    '<div class="mini-text text-muted">' + orderDt + '</div>' +
-                                    itemCountDisplay +
-                                '</td>' +
-                                '<td>' +
-                                    '<div class="mini-text text-primary fw-bold">' + (item.orderNo || '-') + '</div>' +
-                                    '<div class="text-dark small fw-semibold mt-1">' + (item.buyerCompanyName || '-') + '</div>' +
-                                '</td>' +
-                                '<td class="text-end fw-bold">' + formatNumber(item.goodsTotalAmt) + '</td>' +
-                                '<td class="text-center">' + formatNumber(item.totalOrderQty) + '</td>' +
-                                '<td class="text-end">' +
-                                    '<div class="mini-text text-info">배: ' + formatNumber(item.deliveryTotalAmt) + '</div>' +
-                                    '<div class="mini-text text-danger">할: -' + formatNumber(item.discountTotalAmt) + '</div>' +
-                                '</td>' +
-                                '<td class="text-end">' + payDisplay + '</td>' +
-                                '<td class="text-center small">' + 
-                                    '<div>' + (item.deliveryTypeName || item.deliveryTypeCd || '-') + '</div>' +
-                                    '<div class="mt-1">' + opTypeBadge + '</div>' +
-                                '</td>' +
-                                '<td class="text-center"><span class="badge rounded-pill bg-soft-' + getStatusBadgeColor(item.orderStatusCd) + ' text-' + getStatusBadgeColor(item.orderStatusCd) + ' border border-' + getStatusBadgeColor(item.orderStatusCd) + '">' +
-                                (item.orderStatusName || item.orderStatusCd || '-') + '</span></td>' +
-                                '<td class="text-center">' +
-                                    '<button type="button" class="btn btn-outline-primary btn-sm p-1 px-2" ' +
-                                    'onclick="fn_openTracking(' + item.orderId + ', \'' + (item.deliveryTypeCd || '') + '\');">' +
-                                    '<i class="bi bi-truck"></i></button>' +
-                                '</td>' +
-                                '</tr>';
-
-                            tbody.append(row);
-                        });
-
-                        renderPagination(paginationInfo);
-                    }
-
-                    function getStatusBadgeColor(statusCd) {
-                        switch (statusCd) {
-                            case 'COMPLETE': return 'success';
-                            case 'CANCEL': return 'danger';
-                            case 'SHIPPING': return 'info';
-                            case 'CONFIRM': return 'primary';
-                            default: return 'secondary';
-                        }
-                    }
-
-                    function renderPagination(paginationInfo) {
-                        const area = $('#paginationArea');
-                        area.empty();
-
-                        if (!paginationInfo || paginationInfo.totalRecordCount === 0) return;
-
-                        const currentPage = paginationInfo.currentPageNo;
-                        const totalPages = Math.ceil(paginationInfo.totalRecordCount / paginationInfo.recordCountPerPage);
-                        const pageSize = paginationInfo.pageSize || 10;
-
-                        const startPage = Math.floor((currentPage - 1) / pageSize) * pageSize + 1;
-                        const endPage = Math.min(startPage + pageSize - 1, totalPages);
-
-                        let html = '<nav><ul class="pagination pagination-sm mb-0">';
-
-                        if (startPage > 1) {
-                            html += '<li class="page-item"><a class="page-link" href="javascript:fn_page(1);">«</a></li>';
-                            html += '<li class="page-item"><a class="page-link" href="javascript:fn_page(' + (startPage - 1) + ');">‹</a></li>';
-                        }
-
-                        for (let i = startPage; i <= endPage; i++) {
-                            if (i === currentPage) {
-                                html += '<li class="page-item active"><span class="page-link">' + i + '</span></li>';
-                            } else {
-                                html += '<li class="page-item"><a class="page-link" href="javascript:fn_page(' + i + ');">' + i + '</a></li>';
-                            }
-                        }
-
-                        if (endPage < totalPages) {
-                            html += '<li class="page-item"><a class="page-link" href="javascript:fn_page(' + (endPage + 1) + ');">›</a></li>';
-                            html += '<li class="page-item"><a class="page-link" href="javascript:fn_page(' + totalPages + ');">»</a></li>';
-                        }
-
-                        html += '</ul></nav>';
-                        area.html(html);
-                    }
-
-                    function fn_checkAll(checkbox) {
-                        $('.order-check').prop('checked', checkbox.checked);
-                    }
-
-                    function fn_getSelectedOrderIds() {
-                        const ids = [];
-                        $('.order-check:checked').each(function () {
-                            ids.push($(this).val());
-                        });
-                        return ids;
-                    }
-
-                    function fn_updateStatusBatch() {
-                        const orderIds = fn_getSelectedOrderIds();
-                        const statusCd = $('#batchStatusCd').val();
-
-                        if (orderIds.length === 0) {
-                            alert('주문을 선택해주세요.');
-                            return;
-                        }
-                        if (!statusCd) {
-                            alert('변경할 상태를 선택해주세요.');
-                            return;
-                        }
-
-                        if (!confirm(orderIds.length + '건의 주문 상태를 변경하시겠습니까?')) {
-                            return;
-                        }
-
-                        $.ajax({
-                            url: contextPath + '/admin/order/updateOrderStatusBatch.ajax',
-                            type: 'POST',
-                            data: {
-                                orderIds: orderIds.join(','),
-                                orderStatusCd: statusCd
-                            },
-                            dataType: 'json',
-                            success: function (result) {
-                                alert(result.message);
-                                if (result.success) {
-                                    fn_selectList();
-                                }
-                            },
-                            error: function (xhr, status, error) {
-                                alert('상태 변경 오류: ' + error);
-                            }
-                        });
-                    }
-
-                    function fn_openTracking(orderId, deliveryTypeCd) {
-                        $('#trackingOrderId').val(orderId);
-                        $('#trackingDeliveryType').val(deliveryTypeCd);
-
-                        let formHtml = '';
-                        if (deliveryTypeCd === 'PARCEL' || !deliveryTypeCd) {
-                            formHtml = `
-                <div class="mb-3">
-                    <label class="form-label">택배사</label>
-                    <input type="text" id="trackingCourierCd" class="form-control form-control-sm" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">운송장번호</label>
-                    <input type="text" id="trackingTrackingNo" class="form-control form-control-sm" />
-                </div>
-            `;
-                        } else if (deliveryTypeCd === 'FREIGHT') {
-                            formHtml = `
-                <div class="mb-3">
-                    <label class="form-label">운송업체명</label>
-                    <input type="text" id="trackingFreightCompany" class="form-control form-control-sm" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">기사명</label>
-                    <input type="text" id="trackingDriverName" class="form-control form-control-sm" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">기사 연락처</label>
-                    <input type="text" id="trackingDriverMobile" class="form-control form-control-sm" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">차량번호</label>
-                    <input type="text" id="trackingTruckNo" class="form-control form-control-sm" />
-                </div>
-            `;
-                        } else if (deliveryTypeCd === 'FACTORY') {
-                            formHtml = `
-                <div class="mb-3">
-                    <label class="form-label">수령장소</label>
-                    <input type="text" id="trackingPickupPlace" class="form-control form-control-sm" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">담당자명</label>
-                    <input type="text" id="trackingContactName" class="form-control form-control-sm" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">담당자 연락처</label>
-                    <input type="text" id="trackingContactMobile" class="form-control form-control-sm" />
-                </div>
-            `;
-                        }
-
-                        $('#trackingFormArea').html(formHtml);
-                        $('#trackingModal').modal('show');
-
-                        fn_loadTrackingData(orderId, deliveryTypeCd);
-                    }
-
-                    function fn_loadTrackingData(orderId, deliveryTypeCd) {
-                        let url = '';
-                        if (deliveryTypeCd === 'PARCEL' || !deliveryTypeCd) {
-                            url = contextPath + '/admin/order/selectDeliveryParcel.ajax';
-                        } else if (deliveryTypeCd === 'FREIGHT') {
-                            url = contextPath + '/admin/order/selectDeliveryFreight.ajax';
-                        } else if (deliveryTypeCd === 'FACTORY') {
-                            url = contextPath + '/admin/order/selectDeliveryFactory.ajax';
-                        }
-
-                        if (!url) return;
-
-                        $.ajax({
-                            url: url,
-                            type: 'POST',
-                            data: { orderId: orderId },
-                            dataType: 'json',
-                            success: function (result) {
-                                if (result.success) {
-                                    if (result.parcel) {
-                                        $('#trackingCourierCd').val(result.parcel.courierCd);
-                                        $('#trackingTrackingNo').val(result.parcel.trackingNo);
-                                    } else if (result.freight) {
-                                        $('#trackingFreightCompany').val(result.freight.freightCompanyName);
-                                        $('#trackingDriverName').val(result.freight.driverName);
-                                        $('#trackingDriverMobile').val(result.freight.driverMobile);
-                                        $('#trackingTruckNo').val(result.freight.truckNo);
-                                    } else if (result.factory) {
-                                        $('#trackingPickupPlace').val(result.factory.pickupPlaceCd);
-                                        $('#trackingContactName').val(result.factory.contactName);
-                                        $('#trackingContactMobile').val(result.factory.contactMobile);
-                                    }
-                                }
-                            }
-                        });
-                    }
-
-                    function fn_saveTracking() {
-                        const orderId = $('#trackingOrderId').val();
-                        const deliveryTypeCd = $('#trackingDeliveryType').val();
-
-                        let url = '';
-                        let data = { orderId: orderId };
-
-                        if (deliveryTypeCd === 'PARCEL' || !deliveryTypeCd) {
-                            url = contextPath + '/admin/order/saveDeliveryParcel.ajax';
-                            data.courierCd = $('#trackingCourierCd').val();
-                            data.trackingNo = $('#trackingTrackingNo').val();
-                        } else if (deliveryTypeCd === 'FREIGHT') {
-                            url = contextPath + '/admin/order/saveDeliveryFreight.ajax';
-                            data.freightCompanyName = $('#trackingFreightCompany').val();
-                            data.driverName = $('#trackingDriverName').val();
-                            data.driverMobile = $('#trackingDriverMobile').val();
-                            data.truckNo = $('#trackingTruckNo').val();
-                        } else if (deliveryTypeCd === 'FACTORY') {
-                            url = contextPath + '/admin/order/saveDeliveryFactory.ajax';
-                            data.pickupPlaceCd = $('#trackingPickupPlace').val();
-                            data.contactName = $('#trackingContactName').val();
-                            data.contactMobile = $('#trackingContactMobile').val();
-                        }
-
-                        $.ajax({
-                            url: url,
-                            type: 'POST',
-                            data: data,
-                            dataType: 'json',
-                            success: function (result) {
-                                alert(result.message);
-                                if (result.success) {
-                                    $('#trackingModal').modal('hide');
-                                }
-                            },
-                            error: function (xhr, status, error) {
-                                alert('저장 오류: ' + error);
-                            }
-                        });
-                    }
-
-                    function fn_printInvoice() {
-                        const orderIds = fn_getSelectedOrderIds();
-                        if (orderIds.length === 0) {
-                            alert('거래명세서를 출력할 주문을 선택해주세요.');
-                            return;
-                        }
-                        alert('거래명세서 출력 기능은 추가 개발이 필요합니다.');
-                    }
-
-                    function fn_downloadExcel() {
-                        const from = $('#orderDtFrom').val();
-                        const to = $('#orderDtTo').val();
-
-                        if (!from || !to) {
-                            alert('엑셀 다운로드를 위해 주문기간을 입력해주세요.');
-                            return;
-                        }
-                        alert('엑셀 다운로드 기능은 추가 개발이 필요합니다.');
-                    }
-                    
-                    // --- Manual Order Javascript ---
-                    function fn_openManualOrder() {
-                        $('#manualSearchKeyword').val('');
-                        $('#manualMemberResult').empty();
-                        $('#manualSelectedMemberId').val('');
-                        $('#manualSelectedMemberName').val('');
-                        $('#manualCurrentMoney').val('0');
-                        $('#manualCurrentMoneyDisplay').text('0');
-                        $('#manualPayAmt').val('');
-                        $('#btnSaveManualOrder').prop('disabled', true);
-                        $('#manualMoneyWarning').addClass('d-none');
-                        $('#manualOrderModal').modal('show');
-                    }
-
-                    function fn_searchManualMember() {
-                        const keyword = $('#manualSearchKeyword').val();
-                        if (!keyword) {
-                            alert("검색어를 입력하세요.");
-                            return;
-                        }
-                        
-                        $.ajax({
-                            url: contextPath + '/admin/member/selectMemberList.ajax',
-                            type: 'POST',
-                            data: {
-                                pageIndex: 1,
-                                recordCountPerPage: 10,
-                                searchKeyword: keyword
-                            },
-                            dataType: 'json',
-                            success: function(res) {
-                                if (res.success) {
-                                    let html = '<ul class="list-group list-group-flush border rounded">';
-                                    if (res.memberList && res.memberList.length > 0) {
-                                        res.memberList.forEach(function(m) {
-                                            const bal = m.moneyBalance || 0;
-                                            html += '<li class="list-group-item list-group-item-action py-2" style="cursor:pointer;" ' +
-                                                    'onclick="fn_selectManualMember(\'' + m.memberId + '\', \'' + m.memberName + '\', ' + bal + ')">' +
-                                                    '<div class="d-flex justify-content-between align-items-center">' +
-                                                    '<div><strong>' + m.memberName + '</strong> <span class="text-muted small">(' + m.mobile + ')</span></div>' +
-                                                    '<span class="badge bg-soft-accent text-accent">잔액: ' + formatNumber(bal) + '원</span>' +
-                                                    '</div></li>';
-                                        });
-                                    } else {
-                                        html += '<li class="list-group-item text-center text-muted py-3">검색 결과가 없습니다.</li>';
-                                    }
-                                    html += '</ul>';
-                                    $('#manualMemberResult').html(html);
-                                }
-                            }
-                        });
-                    }
-
-                    function fn_selectManualMember(id, name, balance) {
-                        $('#manualSelectedMemberId').val(id);
-                        $('#manualSelectedMemberName').val(name);
-                        $('#manualCurrentMoney').val(balance);
-                        $('#manualCurrentMoneyDisplay').text(formatNumber(balance));
-                        $('#manualMemberResult').empty();
-                        fn_checkManualMoney();
-                    }
-
-                    function fn_checkManualMoney() {
-                        const selectedId = $('#manualSelectedMemberId').val();
-                        const balance = Number($('#manualCurrentMoney').val()) || 0;
-                        const reqAmt = Number($('#manualPayAmt').val()) || 0;
-                        
-                        if (selectedId && reqAmt > 0) {
-                            if (balance >= reqAmt) {
-                                $('#manualMoneyWarning').addClass('d-none');
-                                $('#btnSaveManualOrder').prop('disabled', false);
-                            } else {
-                                $('#manualMoneyWarning').removeClass('d-none');
-                                $('#btnSaveManualOrder').prop('disabled', true);
-                            }
-                        } else {
-                            $('#btnSaveManualOrder').prop('disabled', true);
-                        }
-                    }
-
-                    function fn_saveManualOrder() {
-                        const buyerMemberId = $('#manualSelectedMemberId').val();
-                        const payTotalAmt = $('#manualPayAmt').val();
-                        
-                        if (!buyerMemberId) return alert("회원을 선택하세요.");
-                        if (!payTotalAmt || payTotalAmt <= 0) return alert("결제 금액을 올바르게 입력하세요.");
-                        
-                        if (!confirm(formatNumber(payTotalAmt) + "원의 머니를 차감하고 주문을 등록하시겠습니까?")) return;
-                        
-                        $.ajax({
-                            url: contextPath + '/admin/order/insertManualOrder.ajax',
-                            type: 'POST',
-                            data: {
-                                buyerMemberId: buyerMemberId,
-                                payTotalAmt: payTotalAmt
-                            },
-                            dataType: 'json',
-                            success: function(res) {
-                                alert(res.message);
-                                if (res.success) {
-                                    $('#manualOrderModal').modal('hide');
-                                    fn_search();
-                                }
-                            },
-                            error: function(xhr, status, error) {
-                                alert("서버 처리 중 오류가 발생했습니다.");
-                            }
-                        });
-                    }
-                </script>
+                }
+            });
+        }
+    </script>

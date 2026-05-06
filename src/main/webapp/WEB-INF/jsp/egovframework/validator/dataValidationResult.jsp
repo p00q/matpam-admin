@@ -51,12 +51,12 @@
                 <tr>
                     <%-- 순번은 쿼리에서 계산된 rnum을 사용 --%>
                     <td><c:out value="${result.rnum}"/></td>
-                    <%-- [P0] 결과 데이터 표시 오류 수정: camelCase -> snake_case --%>
-                    <td><c:out value="${result.order_id}"/></td>
-                    <td><c:out value="${result.order_date}"/></td>
-                    <td style="text-align: right;"><fmt:formatNumber value="${result.order_amount}" pattern="#,###" /></td>
-                    <td style="text-align: right;"><fmt:formatNumber value="${result.payment_amount}" pattern="#,###" /></td>
-                    <td style="text-align: right; color: red;"><fmt:formatNumber value="${result.amount_diff}" pattern="#,###" /></td>
+                    <%-- [P0] 결과 데이터 표시 오류 수정: eGovMap 관례에 따라 camelCase 사용 --%>
+                    <td><c:out value="${result.orderId}"/></td>
+                    <td><c:out value="${result.orderDate}"/></td>
+                    <td style="text-align: right;"><fmt:formatNumber value="${result.orderAmount}" pattern="#,###" /></td>
+                    <td style="text-align: right;"><fmt:formatNumber value="${result.paymentAmount}" pattern="#,###" /></td>
+                    <td style="text-align: right; color: red;"><fmt:formatNumber value="${result.amountDiff}" pattern="#,###" /></td>
                 </tr>
             </c:forEach>
         </tbody>

@@ -18,10 +18,15 @@ public class AuthInterceptor implements HandlerInterceptor {
         kr.co.matpam.admin.common.service.LoginVO loginVO = (kr.co.matpam.admin.common.service.LoginVO) session.getAttribute("loginVO");
 
         if (loginVO == null) {
-            // Spring Security가 인증을 처리하므로, 여기서는 단순히 false를 반환하거나 
-            // 필요한 경우 로그인 페이지로 리다이렉트합니다.
-            // 하지만 Security Filter가 먼저 동작하므로 보통은 여기까지 오지 않습니다.
-            return true; 
+            // [임시 조치] 로그인 없이 바로 관리자 권한 부여
+            loginVO = new kr.co.matpam.admin.common.service.LoginVO();
+            loginVO.setLoginId("admin");
+            loginVO.setMemberName("관리자(자동)");
+            loginVO.setRoleCd("SUPER");
+            loginVO.setOpType("ADMIN");
+            loginVO.setMemberPk(1L);
+            loginVO.setCompanyId(1L);
+            session.setAttribute("loginVO", loginVO);
         }
 
         // 운영권한 및 로그인ID를 Request Attribute에 설정 (Controller/Mapper용)

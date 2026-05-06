@@ -6,30 +6,18 @@
         SELECT
             (SELECT IFNULL(SUM(pay_total_amt), 0) FROM tb_order 
              WHERE DATE(order_dt) = CURDATE()
-             <if test="opType != null and opType != 'NATIONAL'">
-                 AND op_type = #{opType}
-             </if>
             ) AS todaySales,
             
             (SELECT COUNT(*) FROM tb_order 
              WHERE DATE(order_dt) = CURDATE()
-             <if test="opType != null and opType != 'NATIONAL'">
-                 AND op_type = #{opType}
-             </if>
             ) AS todayOrderCount,
             
             (SELECT COUNT(*) FROM tb_order 
-             WHERE order_status_cd = 'PAY_COMP'
-             <if test="opType != null and opType != 'NATIONAL'">
-                 AND op_type = #{opType}
-             </if>
+             WHERE order_status_cd = 'RECEIVED'
             ) AS readyShippingCount,
             
             (SELECT COUNT(*) FROM tb_user 
              WHERE DATE(created_at) = CURDATE()
-             <if test="opType != null and opType != 'NATIONAL'">
-                 AND channel_id = #{opType}
-             </if>
             ) AS todayNewMemberCount
     </select>
 
@@ -39,9 +27,6 @@
             IFNULL(SUM(pay_total_amt), 0) AS dailySales
         FROM tb_order
         WHERE order_dt &gt;= CURDATE() - INTERVAL 6 DAY
-        <if test="opType != null and opType != 'NATIONAL'">
-            AND op_type = #{opType}
-        </if>
         GROUP BY DATE_FORMAT(order_dt, '%m-%d')
         ORDER BY saleDate ASC
     </select>
@@ -54,13 +39,9 @@
             pay_total_amt AS payAmt,
             order_status_cd AS orderStatus,
             DATE_FORMAT(order_dt, '%Y-%m-%d %H:%i') AS regDt,
-            buyer_member_id AS memberId,
-            receiver_name AS ordererName
+            buyer_company_id AS memberId,
+            order_no AS ordererName
         FROM tb_order
-        WHERE del_yn = 'N'
-        <if test="opType != null and opType != 'NATIONAL'">
-            AND op_type = #{opType}
-        </if>
         ORDER BY order_dt DESC
         LIMIT 5
     </select>

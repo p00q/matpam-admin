@@ -17,7 +17,7 @@
             <i class="fas fa-search me-1"></i> 검색 조건
         </div>
         <div class="card-body">
-            <form:form modelAttribute="searchVO" id="searchForm" name="searchForm" method="get" action="/admin/company/companyList.do" class="row g-3">
+            <form:form modelAttribute="searchVO" id="searchForm" name="searchForm" method="get" action="${pageContext.request.contextPath}/admin/company/companyList.do" class="row g-3">
                 <form:hidden path="pageIndex" id="pageIndex" />
                 
                 <div class="col-md-3">
@@ -55,7 +55,7 @@
             <div>
                 <i class="fas fa-table me-1"></i> 업체 목록
             </div>
-            <a href="/admin/company/companyForm.do" class="btn btn-success btn-sm">
+            <a href="<c:url value='/admin/company/companyForm.do?companyType=${searchVO.companyType}'/>" class="btn btn-success btn-sm">
                 <i class="fas fa-plus"></i> 신규 업체 등록
             </a>
         </div>
@@ -69,6 +69,7 @@
                             <th>사업자번호</th>
                             <th>대표자</th>
                             <th class="text-center">타입</th>
+                            <th class="text-center">과세/유형</th>
                             <th class="text-center">상태</th>
                             <th class="text-center">등록일</th>
                             <th class="text-center" style="width: 150px;">관리</th>
@@ -87,6 +88,15 @@
                                     </span>
                                 </td>
                                 <td class="text-center">
+                                    <c:if test="${item.companyType == 'SELLER'}">
+                                        <span class="badge ${item.defaultTaxType == 'TAXABLE' ? 'bg-warning text-dark' : 'bg-success'} mb-1">
+                                            ${item.defaultTaxType == 'TAXABLE' ? '과세' : '면세'}
+                                        </span>
+                                        <br/>
+                                        <small class="text-muted">${item.sellerType}</small>
+                                    </c:if>
+                                </td>
+                                <td class="text-center">
                                     <c:choose>
                                         <c:when test="${item.status == 'ACTIVE'}">
                                             <span class="badge bg-success">활성</span>
@@ -101,10 +111,10 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm">
-                                        <a href="/admin/company/companyForm.do?companyId=${item.companyId}" class="btn btn-outline-primary" title="수정">
+                                        <a href="<c:url value='/admin/company/companyForm.do?companyId=${item.companyId}'/>" class="btn btn-outline-primary" title="수정">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <button type="button" class="btn btn-outline-danger" onclick="toggleStatus(${item.companyId}, '${item.status}')" title="상태변경">
+                                        <button type="button" class="btn btn-outline-danger btn-toggle-status" data-id="${item.companyId}" data-status="${item.status}" title="상태변경">
                                             <i class="fas ${item.status == 'ACTIVE' ? 'fa-user-slash' : 'fa-user-check'}"></i>
                                         </button>
                                     </div>
@@ -113,7 +123,7 @@
                         </c:forEach>
                         <c:if test="${empty companyList}">
                             <tr>
-                                <td colspan="8" class="text-center py-5 text-muted">
+                                <td colspan="9" class="text-center py-5 text-muted">
                                     등록된 업체 정보가 없습니다.
                                 </td>
                             </tr>
@@ -134,17 +144,28 @@
 <script>
 function fn_egov_link_page(pageNo) {
     document.searchForm.pageIndex.value = pageNo;
+    document.searchForm.action = "${pageContext.request.contextPath}/admin/company/companyList.do";
     document.searchForm.submit();
 }
 
+$(document).ready(function() {
+    $('.btn-toggle-status').on('click', function() {
+        const companyId = $(this).data('id');
+        const currentStatus = $(this).data('status');
+        toggleStatus(companyId, currentStatus);
+    });
+});
+
 function toggleStatus(companyId, currentStatus) {
-    const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-    if (!confirm(`업체 상태를 ${newStatus === 'ACTIVE' ? '활성' : '비활성'}으로 변경하시겠습니까?`)) return;
+    const newStat = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    const statusMsg = newStat === 'ACTIVE' ? '활성' : '비활성';
+    
+    if (!confirm('업체 상태를 ' + statusMsg + '으로 변경하시겠습니까?')) return;
 
     $.ajax({
-        url: '/admin/company/updateStatus.ajax',
+        url: '<c:url value="/admin/company/updateStatus.ajax"/>',
         type: 'POST',
-        data: { companyId: companyId, status: newStatus },
+        data: { companyId: companyId, status: newStat },
         success: function(res) {
             if (res.success) {
                 location.reload();

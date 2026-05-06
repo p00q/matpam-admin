@@ -1,63 +1,53 @@
 package kr.co.matpam.admin.order.service.impl;
 
 import java.util.List;
-import org.egovframe.rte.psl.dataaccess.EgovAbstractMapper;
-import org.springframework.stereotype.Repository;
 import kr.co.matpam.admin.order.service.OrderVO;
-import kr.co.matpam.admin.order.service.OrderItemVO;
+import kr.co.matpam.admin.order.service.OrderLineVO;
+import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
 /**
- * 주문 정보 DAO (MyBatis Mapper 연동)
+ * 주문 관리 Mapper 인터페이스 (tb_order, tb_order_line)
  */
-@Repository("orderDAO")
-public class OrderDAO extends EgovAbstractMapper {
+@Mapper("orderDAO")
+public interface OrderDAO {
 
     /**
      * 주문 마스터 등록
      */
-    public int insertOrder(OrderVO orderVO) {
-        return insert("matpam.order.OrderMapper.insertOrder", orderVO);
-    }
+    void insertOrder(OrderVO vo);
 
     /**
-     * 주문 상품 상세 등록
+     * 주문 상세 품목 등록
      */
-    public void insertOrderItem(OrderItemVO itemVO) {
-        insert("matpam.order.OrderMapper.insertOrderItem", itemVO);
-    }
+    void insertOrderLine(OrderLineVO vo);
 
     /**
      * 주문 목록 조회
      */
-    public List<OrderVO> selectOrderList(OrderVO orderVO) {
-        return selectList("matpam.order.OrderMapper.selectOrderList", orderVO);
-    }
+    List<OrderVO> selectOrderList(OrderVO vo);
 
     /**
      * 주문 목록 총 건수
      */
-    public int selectOrderListTotCnt(OrderVO orderVO) {
-        return (Integer) selectOne("matpam.order.OrderMapper.selectOrderListTotCnt", orderVO);
-    }
+    int selectOrderListTotCnt(OrderVO vo);
 
     /**
-     * 주문 상세 조회
+     * 주문 상세 정보 조회
      */
-    public OrderVO selectOrder(OrderVO orderVO) {
-        return (OrderVO) selectOne("matpam.order.OrderMapper.selectOrder", orderVO);
-    }
+    OrderVO selectOrder(OrderVO vo);
 
     /**
-     * 주문 상품 상세 조회
+     * 주문 품목 목록 조회
      */
-    public List<OrderItemVO> selectOrderItemList(OrderItemVO itemVO) {
-        return selectList("matpam.order.OrderMapper.selectOrderItemList", itemVO);
-    }
+    List<OrderLineVO> selectOrderLineList(Long orderId);
 
     /**
      * 주문 상태 업데이트
      */
-    public int updateOrderStatus(OrderVO orderVO) {
-        return update("matpam.order.OrderMapper.updateOrderStatus", orderVO);
-    }
+    void updateOrderStatus(OrderVO vo);
+
+    /**
+     * 스키마 보정 실행
+     */
+    void fixOrderSchema();
 }
