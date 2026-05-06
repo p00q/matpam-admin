@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib prefix="c"    uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="fn"   uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ taglib prefix="c"  uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 
 <div class="container-fluid px-4">
     <h1 class="mt-4">업체 ${empty company.companyId ? '등록' : '수정'}</h1>
@@ -23,7 +23,7 @@
                 일반 <form> + fn:escapeXml 로 교체
             --%>
             <form id="detailForm" name="detailForm">
-                <input type="hidden" name="companyId"   value="${company.companyId}">
+                <input type="hidden" name="companyId"   id="hiddenCompanyId"   value="${company.companyId}">
                 <input type="hidden" name="tenantId"    value="1">
                 <input type="hidden" name="companyType" id="hiddenCompanyType" value="${company.companyType}">
 
@@ -38,12 +38,14 @@
                         <label class="form-label fw-bold">업체 타입 <span class="text-danger">*</span></label>
                         <c:choose>
                             <c:when test="${not empty company.companyId and company.companyId gt 0}">
+                                <%-- 수정 시: 타입 변경 불가 (hidden + 읽기전용 표시) --%>
                                 <select class="form-select bg-light" disabled>
                                     <option value="SELLER" ${company.companyType == 'SELLER' ? 'selected' : ''}>판매업체 (Seller)</option>
                                     <option value="BUYER"  ${company.companyType == 'BUYER'  ? 'selected' : ''}>구매업체 (Buyer)</option>
                                 </select>
                             </c:when>
                             <c:otherwise>
+                                <%-- 신규 등록: 선택 가능 --%>
                                 <select name="companyType" id="companyTypeSelect" class="form-select"
                                         onchange="document.getElementById('hiddenCompanyType').value=this.value; fn_onTypeChange(this.value);">
                                     <option value="">-- 타입 선택 --</option>
@@ -70,6 +72,7 @@
                     </div>
                 </div>
 
+                <%-- 판매업체 유형 (SELLER일 때만 표시) --%>
                 <div class="row mb-3" id="sellerTypeArea"
                      style="${company.companyType == 'SELLER' ? '' : 'display:none;'}">
                     <div class="col-md-6">
@@ -106,7 +109,7 @@
                 <div class="row mb-3">
                     <div class="col-12">
                         <label class="form-label fw-bold">주소</label>
-                        <div class="input-group mb-2" style="width:300px;">
+                        <div class="input-group mb-2" style="width: 300px;">
                             <input type="text" name="postalCode" id="postalCode"
                                    class="form-control" placeholder="우편번호" readonly
                                    value="${fn:escapeXml(company.postalCode)}">
@@ -146,6 +149,7 @@
                        class="btn btn-outline-secondary px-4">
                         <i class="fas fa-list me-1"></i> 목록으로
                     </a>
+                    <%-- type=button 으로 form 기본 submit 방지, fn_save 직접 호출 --%>
                     <button type="button" class="btn btn-primary px-5" onclick="fn_save(false)">
                         <i class="fas fa-save me-1"></i> 저장하기
                     </button>
@@ -164,7 +168,7 @@
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table table-hover align-middle mb-0" id="contactTable">
                     <thead class="bg-light">
                         <tr>
                             <th class="ps-3">성명</th>
@@ -173,7 +177,7 @@
                             <th>이메일</th>
                             <th class="text-center">대표</th>
                             <th class="text-center">상태</th>
-                            <th class="text-center" style="width:100px;">관리</th>
+                            <th class="text-center" style="width: 100px;">관리</th>
                         </tr>
                     </thead>
                     <tbody id="contactTableBody">
@@ -184,7 +188,7 @@
                                     <td class="ps-3 fw-bold">${fn:escapeXml(ct.contactName)}</td>
                                     <td>
                                         <span class="badge
-                                            ${ct.contactRole == 'ADMIN'      ? 'bg-dark' :
+                                            ${ct.contactRole == 'ADMIN'      ? 'bg-dark'    :
                                               ct.contactRole == 'SALES'      ? 'bg-primary' :
                                               ct.contactRole == 'TAX'        ? 'bg-warning text-dark' :
                                               ct.contactRole == 'SETTLEMENT' ? 'bg-success' :
@@ -198,7 +202,7 @@
                                     <td class="text-center">
                                         <c:choose>
                                             <c:when test="${ct.isPrimary == 'Y'}">
-                                                <i class="bi bi-star-fill text-warning"></i>
+                                                <i class="bi bi-star-fill text-warning" title="대표 담당자"></i>
                                             </c:when>
                                             <c:otherwise>
                                                 <i class="bi bi-star text-muted"></i>
@@ -213,9 +217,9 @@
                                     <td class="text-center">
                                         <div class="btn-group btn-group-sm">
                                             <%--
-                                                onclick 인라인 제거 이유:
-                                                JSP EL 값에 따옴표/특수문자 포함 시 HTML 파싱 오류로 버튼 미동작
-                                                data-* 속성 + jQuery 이벤트 위임 방식으로 변경
+                                                onclick 인라인 제거:
+                                                JSP EL 값에 따옴표/특수문자 포함 시 HTML 파싱 오류 → 버튼 미동작
+                                                data-* 속성 + jQuery 이벤트 위임으로 변경
                                             --%>
                                             <button type="button"
                                                     class="btn btn-sm btn-outline-primary btn-edit-contact"
@@ -298,9 +302,9 @@
             </div>
             <div class="modal-body p-4">
                 <div class="mb-3">
-                    <label class="form-label fw-bold">조정 금액 (+/-) <span class="text-danger">*</span></label>
+                    <label class="form-label fw-bold">조정 금액 (+/- 가능) <span class="text-danger">*</span></label>
                     <input type="number" id="credit_amount" class="form-control" placeholder="예: 1000000">
-                    <div class="form-text">증액 양수(+), 감액 음수(-)</div>
+                    <div class="form-text">증액은 양수(+), 감액은 음수(-)로 입력하세요.</div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-bold">사유 <span class="text-danger">*</span></label>
@@ -347,7 +351,7 @@
         <div class="modal-content border-0 shadow">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title fw-bold" id="contactModalTitle">담당자 등록</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">
                 <input type="hidden" id="modal_contactId" value="">
@@ -399,81 +403,98 @@
     var COMPANY_ID   = '${company.companyId}';
     var COMPANY_TYPE = '${company.companyType}';
 
+    /* ================================================================
+       유틸 함수
+    ================================================================ */
     function escHtml(s) {
-        return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
-                            .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                              .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
     function fmtBizNo(s) {
-        s=(s||'').replace(/[^0-9]/g,'');
-        if(s.length<=3)return s;
-        if(s.length<=5)return s.substr(0,3)+'-'+s.substr(3);
-        return s.substr(0,3)+'-'+s.substr(3,2)+'-'+s.substr(5,5);
+        s = (s || '').replace(/[^0-9]/g, '');
+        if (s.length <= 3) return s;
+        if (s.length <= 5) return s.substr(0,3) + '-' + s.substr(3);
+        return s.substr(0,3) + '-' + s.substr(3,2) + '-' + s.substr(5,5);
     }
     function fmtPhone(s) {
-        s=(s||'').replace(/[^0-9]/g,'');
-        if(s.length<=3)return s;
-        if(s.startsWith('02')){
-            if(s.length<=5)return s.substr(0,2)+'-'+s.substr(2);
-            if(s.length<=9)return s.substr(0,2)+'-'+s.substr(2,3)+'-'+s.substr(5);
-            return s.substr(0,2)+'-'+s.substr(2,4)+'-'+s.substr(6,4);
+        s = (s || '').replace(/[^0-9]/g, '');
+        if (s.length <= 3) return s;
+        if (s.startsWith('02')) {
+            if (s.length <= 5) return s.substr(0,2) + '-' + s.substr(2);
+            if (s.length <= 9) return s.substr(0,2) + '-' + s.substr(2,3) + '-' + s.substr(5);
+            return s.substr(0,2) + '-' + s.substr(2,4) + '-' + s.substr(6,4);
         }
-        if(s.length<=6)return s.substr(0,3)+'-'+s.substr(3);
-        if(s.length<=10)return s.substr(0,3)+'-'+s.substr(3,3)+'-'+s.substr(6);
-        return s.substr(0,3)+'-'+s.substr(3,4)+'-'+s.substr(7,4);
+        if (s.length <= 6)  return s.substr(0,3) + '-' + s.substr(3);
+        if (s.length <= 10) return s.substr(0,3) + '-' + s.substr(3,3) + '-' + s.substr(6);
+        return s.substr(0,3) + '-' + s.substr(3,4) + '-' + s.substr(7,4);
     }
-    function roleBadge(r) {
-        var m={ADMIN:'bg-dark',SALES:'bg-primary',TAX:'bg-warning text-dark',
-               SETTLEMENT:'bg-success',SHIPPING:'bg-info text-dark',PURCHASE:'bg-secondary'};
-        return m[r]||'bg-secondary';
+    function roleBadgeClass(r) {
+        var m = {
+            'ADMIN'     : 'bg-dark',
+            'SALES'     : 'bg-primary',
+            'TAX'       : 'bg-warning text-dark',
+            'SETTLEMENT': 'bg-success',
+            'SHIPPING'  : 'bg-info text-dark',
+            'PURCHASE'  : 'bg-secondary'
+        };
+        return m[r] || 'bg-secondary';
     }
 
-    /* 업체 타입 변경 (신규 등록) */
+    /* ================================================================
+       업체 타입 변경 (신규 등록)
+    ================================================================ */
     window.fn_onTypeChange = function(val) {
-        document.getElementById('sellerTypeArea').style.display=(val==='SELLER')?'':'none';
+        document.getElementById('sellerTypeArea').style.display = (val === 'SELLER') ? '' : 'none';
     };
 
-    /* 업체 저장 */
+    /* ================================================================
+       업체 저장
+    ================================================================ */
     window.fn_save = function(afterSave) {
-        var companyName=jQuery('#companyName').val();
-        var businessNo =jQuery('#businessNo').val();
-        var ceoName    =jQuery('#ceoName').val();
-        var ctype      =jQuery('#companyTypeSelect').length
-                          ? jQuery('#companyTypeSelect').val()
-                          : COMPANY_TYPE;
+        var companyName = jQuery('#companyName').val();
+        var businessNo  = jQuery('#businessNo').val();
+        var ceoName     = jQuery('#ceoName').val();
+        var ctype       = jQuery('#companyTypeSelect').length
+                            ? jQuery('#companyTypeSelect').val()
+                            : COMPANY_TYPE;
 
-        if(!companyName){alert('업체명을 입력하세요.');return;}
-        if(!businessNo) {alert('사업자 등록 번호를 입력하세요.');return;}
-        if(!ceoName)    {alert('대표자명을 입력하세요.');return;}
-        if(!COMPANY_ID&&!ctype){alert('업체 타입을 선택하세요.');return;}
-        if(!afterSave&&!confirm('저장하시겠습니까?'))return;
+        if (!companyName) { alert('업체명을 입력하세요.'); return; }
+        if (!businessNo)  { alert('사업자 등록 번호를 입력하세요.'); return; }
+        if (!ceoName)     { alert('대표자명을 입력하세요.'); return; }
+        if (!COMPANY_ID && !ctype) { alert('업체 타입을 선택하세요.'); return; }
+        if (!afterSave && !confirm('저장하시겠습니까?')) return;
 
-        jQuery('#hiddenCompanyType').val(ctype||COMPANY_TYPE);
+        jQuery('#hiddenCompanyType').val(ctype || COMPANY_TYPE);
 
         jQuery.ajax({
-            url :'<c:url value="/admin/company/saveCompany.ajax"/>',
-            type:'POST',
-            data:jQuery('#detailForm').serialize(),
-            success:function(res){
-                if(res.success){
-                    if(afterSave){
+            url : '<c:url value="/admin/company/saveCompany.ajax"/>',
+            type: 'POST',
+            data: jQuery('#detailForm').serialize(),
+            success: function(res) {
+                if (res.success) {
+                    if (afterSave) {
                         alert('업체 정보가 저장되었습니다. 이제 담당자를 등록할 수 있습니다.');
-                        location.href='<c:url value="/admin/company/companyForm.do"/>?companyId='
-                            +res.companyId+'&companyType='+encodeURIComponent(ctype||COMPANY_TYPE);
-                    }else{
+                        location.href = '<c:url value="/admin/company/companyForm.do"/>?companyId='
+                            + res.companyId + '&companyType=' + encodeURIComponent(ctype || COMPANY_TYPE);
+                    } else {
                         alert('정상적으로 저장되었습니다.');
-                        location.href='<c:url value="/admin/company/companyList.do"/>?companyType='
-                            +encodeURIComponent(ctype||COMPANY_TYPE);
+                        location.href = '<c:url value="/admin/company/companyList.do"/>?companyType='
+                            + encodeURIComponent(ctype || COMPANY_TYPE);
                     }
-                }else{alert('저장 실패: '+res.message);}
+                } else {
+                    alert('저장 실패: ' + res.message);
+                }
             },
-            error:function(xhr){alert('통신 중 오류가 발생했습니다. ('+xhr.status+')');}
+            error: function(xhr) { alert('통신 중 오류가 발생했습니다. (' + xhr.status + ')'); }
         });
     };
 
-    /* 담당자 추가 버튼 */
+    /* ================================================================
+       담당자 추가 버튼
+    ================================================================ */
     window.fn_addContact = function() {
-        if(!COMPANY_ID||COMPANY_ID==='0'){
-            if(confirm('담당자를 등록하려면 업체 정보를 먼저 저장해야 합니다.\n지금 저장하시겠습니까?')){
+        if (!COMPANY_ID || COMPANY_ID === '0') {
+            if (confirm('담당자를 등록하려면 업체 정보를 먼저 저장해야 합니다.\n지금 저장하시겠습니까?')) {
                 fn_save(true);
             }
             return;
@@ -485,202 +506,240 @@
         jQuery('#modal_contactRole').val('');
         jQuery('#modal_mobile').val('');
         jQuery('#modal_email').val('');
-        jQuery('#modal_isPrimary').prop('checked',false);
+        jQuery('#modal_isPrimary').prop('checked', false);
         jQuery('#contactModal').modal('show');
     };
 
-    /* 담당자 수정 모달 열기 */
-    window.fn_editContact = function(contactId,contactName,contactRole,mobile,email,isPrimary){
+    /* ================================================================
+       담당자 수정 모달 열기
+    ================================================================ */
+    window.fn_editContact = function(contactId, contactName, contactRole, mobile, email, isPrimary) {
         jQuery('#contactModalTitle').text('담당자 수정');
-        jQuery('#modal_contactId').val(contactId||'');
+        jQuery('#modal_contactId').val(contactId || '');
         jQuery('#modal_companyId').val(COMPANY_ID);
-        jQuery('#modal_contactName').val(contactName||'');
-        jQuery('#modal_contactRole').val(contactRole||'');
-        jQuery('#modal_mobile').val(mobile||'');
-        jQuery('#modal_email').val(email||'');
-        jQuery('#modal_isPrimary').prop('checked',isPrimary==='Y'||isPrimary===true);
+        jQuery('#modal_contactName').val(contactName || '');
+        jQuery('#modal_contactRole').val(contactRole || '');
+        jQuery('#modal_mobile').val(mobile || '');
+        jQuery('#modal_email').val(email || '');
+        jQuery('#modal_isPrimary').prop('checked', isPrimary === 'Y' || isPrimary === true);
         jQuery('#contactModal').modal('show');
     };
 
-    /* 담당자 저장 (추가+수정 통합) */
+    /* ================================================================
+       담당자 저장 (추가 + 수정 통합)
+    ================================================================ */
     window.fn_saveContact = function() {
-        var contactName=jQuery('#modal_contactName').val().trim();
-        var contactRole=jQuery('#modal_contactRole').val();
-        var rawId      =jQuery('#modal_contactId').val();
-        var companyId  =jQuery('#modal_companyId').val();
+        var contactName = jQuery('#modal_contactName').val().trim();
+        var contactRole = jQuery('#modal_contactRole').val();
+        var rawId       = jQuery('#modal_contactId').val();
+        var companyId   = jQuery('#modal_companyId').val();
 
-        if(!contactName){alert('성명을 입력하세요.');return;}
-        if(!contactRole){alert('역할을 선택하세요.');return;}
-        if(!companyId||companyId==='0'){alert('업체 정보를 먼저 저장해주세요.');return;}
+        if (!contactName) { alert('성명을 입력하세요.'); return; }
+        if (!contactRole) { alert('역할을 선택하세요.'); return; }
+        if (!companyId || companyId === '0') { alert('업체 정보를 먼저 저장해주세요.'); return; }
 
         jQuery.ajax({
-            url :'<c:url value="/admin/company/saveContact.ajax"/>',
-            type:'POST',
-            data:{
-                companyId  :companyId,
-                contactId  :(rawId&&rawId!=='0')?rawId:'',
-                contactName:contactName,
-                contactRole:contactRole,
-                mobile     :jQuery('#modal_mobile').val().trim(),
-                email      :jQuery('#modal_email').val().trim(),
-                isPrimary  :jQuery('#modal_isPrimary').is(':checked')?'Y':'N'
+            url : '<c:url value="/admin/company/saveContact.ajax"/>',
+            type: 'POST',
+            data: {
+                companyId  : companyId,
+                contactId  : (rawId && rawId !== '0') ? rawId : '',
+                contactName: contactName,
+                contactRole: contactRole,
+                mobile     : jQuery('#modal_mobile').val().trim(),
+                email      : jQuery('#modal_email').val().trim(),
+                isPrimary  : jQuery('#modal_isPrimary').is(':checked') ? 'Y' : 'N'
             },
-            success:function(res){
-                if(res.success){jQuery('#contactModal').modal('hide');alert('담당자가 저장되었습니다.');fn_refreshContactTable();}
-                else{alert('오류: '+res.message);}
+            success: function(res) {
+                if (res.success) {
+                    jQuery('#contactModal').modal('hide');
+                    alert('담당자가 저장되었습니다.');
+                    fn_refreshContactTable();
+                } else {
+                    alert('오류: ' + res.message);
+                }
             },
-            error:function(){alert('통신 중 오류가 발생했습니다.');}
+            error: function() { alert('통신 중 오류가 발생했습니다.'); }
         });
     };
 
-    /* 담당자 목록 새로고침 */
+    /* ================================================================
+       담당자 목록 새로고침 (AJAX)
+    ================================================================ */
     window.fn_refreshContactTable = function() {
-        if(!COMPANY_ID||COMPANY_ID==='0')return;
+        if (!COMPANY_ID || COMPANY_ID === '0') return;
         jQuery.ajax({
-            url :'<c:url value="/admin/company/contactList.ajax"/>',
-            type:'GET',
-            data:{companyId:COMPANY_ID},
-            success:function(res){
-                if(!res.success){alert('목록 갱신 실패: '+res.message);return;}
-                var list=res.list||[];
-                var tbody=jQuery('#contactTableBody');
-                if(list.length===0){
+            url : '<c:url value="/admin/company/contactList.ajax"/>',
+            type: 'GET',
+            data: { companyId: COMPANY_ID },
+            success: function(res) {
+                if (!res.success) { alert('목록 갱신 실패: ' + res.message); return; }
+                var list  = res.list || [];
+                var tbody = jQuery('#contactTableBody');
+                if (list.length === 0) {
                     tbody.html('<tr id="noContactRow"><td colspan="7" class="text-center py-4 text-muted">등록된 담당자가 없습니다.</td></tr>');
                     return;
                 }
-                var html='';
-                jQuery.each(list,function(i,c){
-                    var name  =escHtml(c.contactName||'');
-                    var role  =escHtml(c.contactRole||'');
-                    var mobile=escHtml(c.mobile||'');
-                    var email =escHtml(c.email||'');
-                    var isPri =c.isPrimary||'N';
-                    var star  =isPri==='Y'
-                        ?'<i class="bi bi-star-fill text-warning"></i>'
-                        :'<i class="bi bi-star text-muted"></i>';
-                    html+='<tr id="contact-row-'+c.contactId+'">'
-                         +'<td class="ps-3 fw-bold">'+name+'</td>'
-                         +'<td><span class="badge '+roleBadge(c.contactRole)+'">'+role+'</span></td>'
-                         +'<td>'+mobile+'</td>'
-                         +'<td>'+email+'</td>'
-                         +'<td class="text-center">'+star+'</td>'
-                         +'<td class="text-center"><span class="badge bg-success rounded-pill">정상</span></td>'
-                         +'<td class="text-center"><div class="btn-group btn-group-sm">'
-                         +'<button type="button" class="btn btn-sm btn-outline-primary btn-edit-contact" title="수정"'
-                         +' data-contact-id="'+c.contactId+'"'
-                         +' data-contact-name="'+name+'"'
-                         +' data-contact-role="'+role+'"'
-                         +' data-mobile="'+mobile+'"'
-                         +' data-email="'+email+'"'
-                         +' data-is-primary="'+isPri+'"><i class="bi bi-pencil"></i></button>'
-                         +'<button type="button" class="btn btn-sm btn-outline-danger btn-del-contact" title="삭제"'
-                         +' data-contact-id="'+c.contactId+'"><i class="bi bi-trash"></i></button>'
-                         +'</div></td></tr>';
+                var html = '';
+                jQuery.each(list, function(i, c) {
+                    var name  = escHtml(c.contactName || '');
+                    var role  = escHtml(c.contactRole || '');
+                    var mobile= escHtml(c.mobile      || '');
+                    var email = escHtml(c.email       || '');
+                    var isPri = c.isPrimary || 'N';
+                    var star  = isPri === 'Y'
+                        ? '<i class="bi bi-star-fill text-warning" title="대표 담당자"></i>'
+                        : '<i class="bi bi-star text-muted"></i>';
+                    html += '<tr id="contact-row-' + c.contactId + '">'
+                          + '<td class="ps-3 fw-bold">' + name + '</td>'
+                          + '<td><span class="badge ' + roleBadgeClass(c.contactRole) + '">' + role + '</span></td>'
+                          + '<td>' + mobile + '</td>'
+                          + '<td>' + email + '</td>'
+                          + '<td class="text-center">' + star + '</td>'
+                          + '<td class="text-center"><span class="badge bg-success rounded-pill">정상</span></td>'
+                          + '<td class="text-center"><div class="btn-group btn-group-sm">'
+                          + '<button type="button" class="btn btn-sm btn-outline-primary btn-edit-contact" title="수정"'
+                          + ' data-contact-id="' + c.contactId + '"'
+                          + ' data-contact-name="' + name + '"'
+                          + ' data-contact-role="' + role + '"'
+                          + ' data-mobile="' + mobile + '"'
+                          + ' data-email="' + email + '"'
+                          + ' data-is-primary="' + isPri + '"><i class="bi bi-pencil"></i></button>'
+                          + '<button type="button" class="btn btn-sm btn-outline-danger btn-del-contact" title="삭제"'
+                          + ' data-contact-id="' + c.contactId + '"><i class="bi bi-trash"></i></button>'
+                          + '</div></td></tr>';
                 });
                 tbody.html(html);
             },
-            error:function(){alert('목록을 불러오는 중 오류가 발생했습니다.');}
+            error: function() { alert('목록을 불러오는 중 오류가 발생했습니다.'); }
         });
     };
 
-    /* 담당자 삭제 */
+    /* ================================================================
+       담당자 삭제
+    ================================================================ */
     window.fn_deleteContact = function(contactId) {
-        if(!confirm('삭제하시겠습니까?'))return;
+        if (!confirm('삭제하시겠습니까?')) return;
         jQuery.ajax({
-            url :'<c:url value="/admin/company/deleteContact.ajax"/>',
-            type:'POST',
-            data:{contactId:contactId},
-            success:function(res){
-                if(res.success)fn_refreshContactTable();
-                else alert('오류: '+res.message);
+            url : '<c:url value="/admin/company/deleteContact.ajax"/>',
+            type: 'POST',
+            data: { contactId: contactId },
+            success: function(res) {
+                if (res.success) fn_refreshContactTable();
+                else alert('오류: ' + res.message);
             },
-            error:function(){alert('통신 중 오류가 발생했습니다.');}
+            error: function() { alert('통신 중 오류가 발생했습니다.'); }
         });
     };
 
-    /* 주소 검색 */
+    /* ================================================================
+       주소 검색
+    ================================================================ */
     window.fn_searchAddr = function() {
         new daum.Postcode({
-            oncomplete:function(data){
-                document.getElementById('postalCode').value=data.zonecode;
-                document.getElementById('address1').value=data.address;
+            oncomplete: function(data) {
+                document.getElementById('postalCode').value = data.zonecode;
+                document.getElementById('address1').value   = data.address;
                 document.getElementById('address2').focus();
             }
         }).open();
     };
 
-    /* 미트머니 조회 */
+    /* ================================================================
+       미트머니 조회 (구매업체 전용)
+    ================================================================ */
     window.fn_loadMeatMoney = function() {
         jQuery.ajax({
-            url :'<c:url value="/admin/financial/getMeatMoney.ajax"/>',
-            type:'GET',
-            data:{companyId:COMPANY_ID},
-            success:function(res){
-                if(res.success){
-                    jQuery('#currentCredit') .text(Number(res.credit ||0).toLocaleString()+' 원');
-                    jQuery('#currentAdvance').text(Number(res.advance||0).toLocaleString()+' 원');
-                    jQuery('#totalMeatMoney').text(Number(res.total  ||0).toLocaleString()+' 원');
+            url : '<c:url value="/admin/financial/getMeatMoney.ajax"/>',
+            type: 'GET',
+            data: { companyId: COMPANY_ID },
+            success: function(res) {
+                if (res.success) {
+                    jQuery('#currentCredit') .text(Number(res.credit  || 0).toLocaleString() + ' 원');
+                    jQuery('#currentAdvance').text(Number(res.advance || 0).toLocaleString() + ' 원');
+                    jQuery('#totalMeatMoney').text(Number(res.total   || 0).toLocaleString() + ' 원');
                 }
-            }
+            },
+            error: function() { /* 조용히 무시 */ }
         });
     };
 
-    /* 여신 조정 */
+    /* ================================================================
+       여신 조정 모달
+    ================================================================ */
     window.fn_openCreditModal = function() {
-        jQuery('#credit_amount').val('');jQuery('#credit_memo').val('');
+        jQuery('#credit_amount').val('');
+        jQuery('#credit_memo').val('');
         jQuery('#creditModal').modal('show');
     };
     window.fn_saveCredit = function() {
-        var amount=jQuery('#credit_amount').val().trim();
-        var memo  =jQuery('#credit_memo').val().trim();
-        if(!amount){alert('조정 금액을 입력하세요.');return;}
-        if(!memo)  {alert('사유를 입력하세요.');return;}
-        if(!confirm('여신 한도를 조정하시겠습니까?'))return;
+        var amount = jQuery('#credit_amount').val().trim();
+        var memo   = jQuery('#credit_memo').val().trim();
+        if (!amount) { alert('조정 금액을 입력하세요.'); return; }
+        if (!memo)   { alert('사유를 입력하세요.'); return; }
+        if (!confirm('여신 한도를 조정하시겠습니까?')) return;
         jQuery.ajax({
-            url :'<c:url value="/admin/financial/adjustCredit.ajax"/>',
-            type:'POST',
-            data:{companyId:COMPANY_ID,amount:amount,memo:memo},
-            success:function(res){
-                if(res.success){alert('여신이 조정되었습니다.');jQuery('#creditModal').modal('hide');fn_loadMeatMoney();}
-                else alert('오류: '+res.message);
+            url : '<c:url value="/admin/financial/adjustCredit.ajax"/>',
+            type: 'POST',
+            data: { companyId: COMPANY_ID, amount: amount, memo: memo },
+            success: function(res) {
+                if (res.success) {
+                    alert('여신이 조정되었습니다.');
+                    jQuery('#creditModal').modal('hide');
+                    fn_loadMeatMoney();
+                } else {
+                    alert('오류: ' + res.message);
+                }
             },
-            error:function(xhr){alert('통신 오류 ('+xhr.status+')');}
+            error: function(xhr) { alert('통신 중 오류가 발생했습니다. (' + xhr.status + ')'); }
         });
     };
 
-    /* 선수금 입금 */
+    /* ================================================================
+       선수금 입금 모달
+    ================================================================ */
     window.fn_openAdvanceModal = function() {
-        jQuery('#advance_amount').val('');jQuery('#advance_memo').val('');
+        jQuery('#advance_amount').val('');
+        jQuery('#advance_memo').val('');
         jQuery('#advanceModal').modal('show');
     };
     window.fn_saveAdvance = function() {
-        var amount=jQuery('#advance_amount').val().trim();
-        var memo  =jQuery('#advance_memo').val().trim();
-        if(!amount||Number(amount)<=0){alert('입금 금액을 1원 이상 입력하세요.');return;}
-        if(!memo){alert('입금 사유를 입력하세요.');return;}
-        if(!confirm('선수금 입금을 처리하시겠습니까?'))return;
+        var amount = jQuery('#advance_amount').val().trim();
+        var memo   = jQuery('#advance_memo').val().trim();
+        if (!amount || Number(amount) <= 0) { alert('입금 금액을 1원 이상 입력하세요.'); return; }
+        if (!memo) { alert('입금 사유를 입력하세요.'); return; }
+        if (!confirm('선수금 입금을 처리하시겠습니까?')) return;
         jQuery.ajax({
-            url :'<c:url value="/admin/financial/depositAdvance.ajax"/>',
-            type:'POST',
-            data:{companyId:COMPANY_ID,amount:amount,memo:memo},
-            success:function(res){
-                if(res.success){alert('입금 처리가 완료되었습니다.');jQuery('#advanceModal').modal('hide');fn_loadMeatMoney();}
-                else alert('오류: '+res.message);
+            url : '<c:url value="/admin/financial/depositAdvance.ajax"/>',
+            type: 'POST',
+            data: { companyId: COMPANY_ID, amount: amount, memo: memo },
+            success: function(res) {
+                if (res.success) {
+                    alert('입금 처리가 완료되었습니다.');
+                    jQuery('#advanceModal').modal('hide');
+                    fn_loadMeatMoney();
+                } else {
+                    alert('오류: ' + res.message);
+                }
             },
-            error:function(xhr){alert('통신 오류 ('+xhr.status+')');}
+            error: function(xhr) { alert('통신 중 오류가 발생했습니다. (' + xhr.status + ')'); }
         });
     };
 
-    /* 초기화 */
+    /* ================================================================
+       초기화
+    ================================================================ */
     function init() {
-        if(typeof jQuery==='undefined'){setTimeout(init,100);return;}
-        jQuery(function($){
-            $('#businessNo').on('keyup',function(){$(this).val(fmtBizNo($(this).val()));});
-            $('#phone,#modal_mobile').on('keyup',function(){$(this).val(fmtPhone($(this).val()));});
+        if (typeof jQuery === 'undefined') { setTimeout(init, 100); return; }
+        jQuery(function($) {
+            /* 사업자번호 자동 포맷 */
+            $('#businessNo').on('keyup', function() { $(this).val(fmtBizNo($(this).val())); });
+            /* 전화번호 자동 포맷 */
+            $('#phone, #modal_mobile').on('keyup', function() { $(this).val(fmtPhone($(this).val())); });
 
-            /* 수정 버튼 이벤트 위임 - data-* 속성에서 값 읽기 */
-            $(document).on('click','.btn-edit-contact',function(){
-                var $b=$(this);
+            /* 수정 버튼 이벤트 위임 - data-* 속성에서 값 읽기 (초기 렌더링 + AJAX 갱신 후 모두 동작) */
+            $(document).on('click', '.btn-edit-contact', function() {
+                var $b = $(this);
                 fn_editContact(
                     $b.data('contact-id'),
                     $b.data('contact-name'),
@@ -691,12 +750,12 @@
                 );
             });
             /* 삭제 버튼 이벤트 위임 */
-            $(document).on('click','.btn-del-contact',function(){
+            $(document).on('click', '.btn-del-contact', function() {
                 fn_deleteContact($(this).data('contact-id'));
             });
 
-            /* 구매업체 미트머니 자동 조회 */
-            if(COMPANY_ID&&COMPANY_ID!=='0'&&COMPANY_TYPE==='BUYER'){
+            /* 구매업체 상세보기 진입 시 미트머니 자동 조회 */
+            if (COMPANY_ID && COMPANY_ID !== '0' && COMPANY_TYPE === 'BUYER') {
                 fn_loadMeatMoney();
             }
         });
