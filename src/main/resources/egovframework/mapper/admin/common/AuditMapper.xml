@@ -2,11 +2,33 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.matpam.admin.common.service.impl.AuditMapper">
 
-    <insert id="insertAuditLog">
+    <insert id="insertAuditLog" parameterType="kr.co.matpam.admin.common.service.AuditVO">
         INSERT INTO tb_audit_log (
-            tenant_id, entity_name, action_type, changed_data, status, user_id, created_at
+            tenant_id,
+            entity_name,
+            entity_id,
+            action_type,
+            before_json,
+            after_json,
+            actor_user_id,
+            acted_at,
+            ip_address,
+            reason_code,
+            approval_request_id,
+            trace_id
         ) VALUES (
-            #{tenantId}, #{entityName}, #{actionType}, #{changedData}, #{status}, #{userId}, NOW()
+            #{tenantId},
+            #{entityName},
+            #{entityId},
+            #{actionType},
+            #{beforeJson},
+            #{afterJson},
+            #{actorUserId},
+            NOW(),
+            #{ipAddress},
+            #{reasonCode},
+            #{approvalRequestId},
+            #{traceId}
         )
     </insert>
 

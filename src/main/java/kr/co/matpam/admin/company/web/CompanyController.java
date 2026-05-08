@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import kr.co.matpam.admin.common.service.LoginVO;
 import kr.co.matpam.admin.company.service.CompanyContactVO;
 import kr.co.matpam.admin.company.service.CompanyService;
 import kr.co.matpam.admin.company.service.CompanyVO;
@@ -65,7 +66,7 @@ public class CompanyController {
         String type = searchVO.getCompanyType();
         model.addAttribute("companyList",    companyService.selectCompanyList(searchVO));
         model.addAttribute("paginationInfo", paginationInfo);
-        model.addAttribute("currentMenu",    "SELLER".equals(type) ? "seller" : ("BUYER".equals(type) ? "buyer" : "company"));
+        model.addAttribute("currentMenu", "SELLER".equals(type) ? "comp_seller" : ("BUYER".equals(type) ? "comp_buyer" : "comp_company"));
         model.addAttribute("pageTitle",      "SELLER".equals(type) ? "판매업체 관리" : ("BUYER".equals(type) ? "구매업체 관리" : "업체 관리"));
         model.addAttribute("contentPage",    "/WEB-INF/jsp/admin/company/CompanyList.jsp");
 
@@ -98,12 +99,16 @@ public class CompanyController {
             if (company == null) {
                 return "redirect:/admin/company/companyList.do";
             }
-            // 담당자 목록 조회 → 별도 model attribute로 전달
+            // 담당자 목록 조회
             contactList = companyService.selectCompanyContactList(param);
+            
+            // 소속 채널 목록 조회 (단일 참여 원칙이지만 구조적 대응)
+            List<Map<String, Object>> channelList = companyService.selectCompanyChannelList(companyId);
+            model.addAttribute("channelList", channelList);
         }
 
         model.addAttribute("company",     company);
-        model.addAttribute("contactList", contactList);   // JSP에서 ${contactList} 사용
+        model.addAttribute("contactList", contactList);
         model.addAttribute("contentPage", "/WEB-INF/jsp/admin/company/CompanyForm.jsp");
 
         return "layout/main";
@@ -148,6 +153,30 @@ public class CompanyController {
             vo.setStatus(status);
             companyService.updateCompanyStatus(vo);
             result.put("success", true);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+        return result;
+    }
+
+    /* ════════════════════════════════════════════
+       업체 검색 (AJAX – 회원 등록 시 사용)
+    ════════════════════════════════════════════ */
+    @RequestMapping("/admin/company/search.ajax")
+    @ResponseBody
+    public Map<String, Object> searchCompanies(
+            @RequestParam(required = false) String searchKeyword,
+            @RequestParam(required = false) String companyType) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            CompanyVO searchVO = new CompanyVO();
+            searchVO.setSearchKeyword(searchKeyword);
+            searchVO.setCompanyType(companyType);
+            
+            List<CompanyVO> list = companyService.selectCompanySearch(searchVO);
+            result.put("success", true);
+            result.put("list",    list);
         } catch (Exception e) {
             result.put("success", false);
             result.put("message", e.getMessage());
@@ -234,6 +263,64 @@ public class CompanyController {
             companyService.deleteCompanyContact(vo);
             result.put("success", true);
             result.put("message", "담당자가 삭제되었습니다.");
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+        return result;
+    }
+
+    /* ════════════════════════════════════════════
+       사업자번호 중복 체크 (AJAX)
+    ════════════════════════════════════════════ */
+    @RequestMapping("/admin/company/checkBusinessNo.ajax")
+    @ResponseBody
+    public Map<String, Object> checkBusinessNo(
+            @RequestParam String businessNo,
+            @RequestParam(required = false) Long companyId,
+            HttpServletRequest request) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
+            Long tenantId = (loginVO != null) ? loginVO.getCompanyId() : 1L;
+            
+            boolean isDuplicate = companyService.checkBusinessNoDuplicate(tenantId, businessNo, companyId);
+            result.put("success", true);
+            result.put("isDuplicate", isDuplicate);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+        return result;
+    }
+
+    /* ════════════════════════════════════════════
+       업체 소속 채널 저장 (AJAX)
+    ════════════════════════════════════════════ */
+    @RequestMapping("/admin/company/saveChannels.ajax")
+    @ResponseBody
+    public Map<String, Object> saveChannels(
+            @RequestParam Long companyId,
+            @RequestParam(value = "channelIds[]", required = false) List<Long> channelIds,
+            @RequestParam(value = "roles[]",      required = false) List<String> roles,
+            HttpServletRequest request) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
+            Long tenantId = (loginVO != null) ? loginVO.getCompanyId() : 1L;
+
+            java.util.List<java.util.Map<String, Object>> channels = new java.util.ArrayList<>();
+            if (channelIds != null && roles != null) {
+                for (int i = 0; i < channelIds.size(); i++) {
+                    java.util.Map<String, Object> m = new java.util.HashMap<>();
+                    m.put("channelId",     channelIds.get(i));
+                    m.put("companyRoleCd", roles.get(i));
+                    channels.add(m);
+                }
+            }
+            
+            companyService.saveCompanyChannelMappings(tenantId, companyId, channels);
+            result.put("success", true);
         } catch (Exception e) {
             result.put("success", false);
             result.put("message", e.getMessage());

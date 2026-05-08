@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.matpam.admin.transport.service.impl.TransportMapper">
+
+    <!-- ── 운송기사 ── -->
+    <select id="selectDriverList" parameterType="kr.co.matpam.admin.transport.service.DriverVO" resultType="kr.co.matpam.admin.transport.service.DriverVO">
+        SELECT * FROM tb_driver
+        WHERE tenant_id = #{tenantId}
+          AND channel_id = #{channelId}
+        <if test="searchKeyword != null and searchKeyword != ''">
+            AND (driver_name LIKE CONCAT('%', #{searchKeyword}, '%') OR license_no LIKE CONCAT('%', #{searchKeyword}, '%'))
+        </if>
+        ORDER BY created_at DESC
+        LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
+    </select>
+
+    <select id="selectDriverListTotCnt" parameterType="kr.co.matpam.admin.transport.service.DriverVO" resultType="int">
+        SELECT COUNT(*) FROM tb_driver
+        WHERE tenant_id = #{tenantId}
+          AND channel_id = #{channelId}
+        <if test="searchKeyword != null and searchKeyword != ''">
+            AND (driver_name LIKE CONCAT('%', #{searchKeyword}, '%') OR license_no LIKE CONCAT('%', #{searchKeyword}, '%'))
+        </if>
+    </select>
+
+    <select id="selectDriverDetail" parameterType="kr.co.matpam.admin.transport.service.DriverVO" resultType="kr.co.matpam.admin.transport.service.DriverVO">
+        SELECT * FROM tb_driver WHERE driver_id = #{driverId}
+    </select>
+
+    <insert id="insertDriver" parameterType="kr.co.matpam.admin.transport.service.DriverVO">
+        INSERT INTO tb_driver (tenant_id, channel_id, driver_name, license_no, mobile, status)
+        VALUES (#{tenantId}, #{channelId}, #{driverName}, #{licenseNo}, #{mobile}, 'ACTIVE')
+    </insert>
+
+    <update id="updateDriver" parameterType="kr.co.matpam.admin.transport.service.DriverVO">
+        UPDATE tb_driver SET driver_name = #{driverName}, license_no = #{licenseNo}, mobile = #{mobile}, updated_at = NOW()
+        WHERE driver_id = #{driverId}
+    </update>
+
+    <update id="updateDriverStatus" parameterType="kr.co.matpam.admin.transport.service.DriverVO">
+        UPDATE tb_driver SET status = #{status}, updated_at = NOW() WHERE driver_id = #{driverId}
+    </update>
+
+    <!-- ── 차량 ── -->
+    <select id="selectVehicleList" parameterType="kr.co.matpam.admin.transport.service.VehicleVO" resultType="kr.co.matpam.admin.transport.service.VehicleVO">
+        SELECT * FROM tb_vehicle
+        WHERE tenant_id = #{tenantId}
+          AND channel_id = #{channelId}
+        <if test="searchKeyword != null and searchKeyword != ''">
+            AND plate_no LIKE CONCAT('%', #{searchKeyword}, '%')
+        </if>
+        ORDER BY created_at DESC
+        LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
+    </select>
+
+    <select id="selectVehicleListTotCnt" parameterType="kr.co.matpam.admin.transport.service.VehicleVO" resultType="int">
+        SELECT COUNT(*) FROM tb_vehicle
+        WHERE tenant_id = #{tenantId}
+          AND channel_id = #{channelId}
+        <if test="searchKeyword != null and searchKeyword != ''">
+            AND plate_no LIKE CONCAT('%', #{searchKeyword}, '%')
+        </if>
+    </select>
+
+    <select id="selectVehicleDetail" parameterType="kr.co.matpam.admin.transport.service.VehicleVO" resultType="kr.co.matpam.admin.transport.service.VehicleVO">
+        SELECT * FROM tb_vehicle WHERE vehicle_id = #{vehicleId}
+    </select>
+
+    <insert id="insertVehicle" parameterType="kr.co.matpam.admin.transport.service.VehicleVO">
+        INSERT INTO tb_vehicle (tenant_id, channel_id, plate_no, vehicle_type, status)
+        VALUES (#{tenantId}, #{channelId}, #{plateNo}, #{vehicleType}, 'ACTIVE')
+    </insert>
+
+    <update id="updateVehicle" parameterType="kr.co.matpam.admin.transport.service.VehicleVO">
+        UPDATE tb_vehicle SET plate_no = #{plateNo}, vehicle_type = #{vehicleType}, updated_at = NOW()
+        WHERE vehicle_id = #{vehicleId}
+    </update>
+
+    <update id="updateVehicleStatus" parameterType="kr.co.matpam.admin.transport.service.VehicleVO">
+        UPDATE tb_vehicle SET status = #{status}, updated_at = NOW() WHERE vehicle_id = #{vehicleId}
+    </update>
+
+    <!-- ── 배정 ── -->
+    <select id="selectDriverVehicleHistory" parameterType="kr.co.matpam.admin.transport.service.DriverVehicleVO" resultType="kr.co.matpam.admin.transport.service.DriverVehicleVO">
+        SELECT 
+            m.*, d.driver_name, v.plate_no, v.vehicle_type
+        FROM tb_driver_vehicle m
+        JOIN tb_driver d ON m.driver_id = d.driver_id
+        JOIN tb_vehicle v ON m.vehicle_id = v.vehicle_id
+        WHERE m.driver_id = #{driverId} OR m.vehicle_id = #{vehicleId}
+        ORDER BY m.assigned_at DESC
+    </select>
+
+    <insert id="insertDriverVehicle" parameterType="kr.co.matpam.admin.transport.service.DriverVehicleVO">
+        INSERT INTO tb_driver_vehicle (driver_id, vehicle_id, assigned_at, is_current, status)
+        VALUES (#{driverId}, #{vehicleId}, NOW(), 'Y', 'ACTIVE')
+    </insert>
+
+    <update id="endDriverVehicleMapping" parameterType="kr.co.matpam.admin.transport.service.DriverVehicleVO">
+        UPDATE tb_driver_vehicle SET unassigned_at = NOW(), is_current = 'N', status = 'INACTIVE'
+        WHERE (driver_id = #{driverId} OR vehicle_id = #{vehicleId}) AND is_current = 'Y'
+    </update>
+
+</mapper>

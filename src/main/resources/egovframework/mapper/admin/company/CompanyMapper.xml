@@ -24,6 +24,16 @@
         <result property="status"        column="status"/>
         <result property="createdAt"     column="created_at"/>
         <result property="updatedAt"     column="updated_at"/>
+        
+        <result property="channelName"   column="channel_name"/>
+        <result property="bankName"      column="bank_name"/>
+        <result property="accountNo"     column="account_no"/>
+        <result property="accountHolder" column="account_holder"/>
+        <result property="memberGrade"   column="member_grade"/>
+        <result property="creditAgreementDt" column="credit_agreement_dt"/>
+        <result property="creditLimitAmount" column="credit_limit_amount"/>
+        <result property="advanceBalance"    column="advance_balance"/>
+        <result property="meatMoneyBalance"  column="meat_money_balance"/>
     </resultMap>
 
     <!-- ====================================================
@@ -66,9 +76,28 @@
     <select id="selectCompanyList"
             parameterType="kr.co.matpam.admin.company.service.CompanyVO"
             resultMap="companyMap">
-        SELECT * FROM tb_company
-        <include refid="companyWhere"/>
-        ORDER BY created_at DESC
+        SELECT 
+            c.*,
+            ch.channel_name as channel_name
+        FROM tb_company c
+        LEFT JOIN tb_company_channel_map m ON c.company_id = m.company_id AND m.status = 'ACTIVE'
+        LEFT JOIN tb_channel ch ON m.channel_id = ch.channel_id
+        <where>
+            <if test="tenantId != null">
+                AND c.tenant_id = #{tenantId}
+            </if>
+            <if test="companyType != null and companyType != ''">
+                AND c.company_type = #{companyType}
+            </if>
+            <if test="status != null and status != ''">
+                AND c.status = #{status}
+            </if>
+            <if test="searchKeyword != null and searchKeyword != ''">
+                AND (c.company_name LIKE CONCAT('%', #{searchKeyword}, '%')
+                  OR c.business_no  LIKE CONCAT('%', #{searchKeyword}, '%'))
+            </if>
+        </where>
+        ORDER BY c.created_at DESC
         LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
     </select>
 
@@ -79,6 +108,28 @@
         SELECT * FROM tb_company
         <include refid="companyWhere"/>
         ORDER BY company_name ASC
+    </select>
+
+    <!-- 업체 검색 (테넌트명 포함) -->
+    <select id="selectCompanySearch"
+            parameterType="kr.co.matpam.admin.company.service.CompanyVO"
+            resultType="kr.co.matpam.admin.company.service.CompanyVO">
+        SELECT 
+            c.*,
+            t.tenant_name as tenantName
+        FROM tb_company c
+        LEFT JOIN tb_tenant t ON c.tenant_id = t.tenant_id
+        <where>
+            <if test="companyType != null and companyType != ''">
+                AND c.company_type = #{companyType}
+            </if>
+            <if test="searchKeyword != null and searchKeyword != ''">
+                AND (c.company_name LIKE CONCAT('%', #{searchKeyword}, '%')
+                  OR c.business_no  LIKE CONCAT('%', #{searchKeyword}, '%'))
+            </if>
+            AND c.status = 'ACTIVE'
+        </where>
+        ORDER BY c.company_name ASC
     </select>
 
     <!-- 업체 건수 -->
@@ -104,12 +155,19 @@
             tenant_id, company_type, seller_type,
             company_name, business_no, ceo_name,
             postal_code, address1, address2,
-            phone, email, biz_status, status
+            phone, email, biz_status, status,
+            default_tax_type, bank_name, account_no, account_holder,
+            member_grade, credit_agreement_dt, credit_limit_amount,
+            advance_balance, meat_money_balance
         ) VALUES (
             #{tenantId}, #{companyType}, #{sellerType},
             #{companyName}, #{businessNo}, #{ceoName},
             #{postalCode}, #{address1}, #{address2},
-            #{phone}, #{email}, 'ACTIVE', 'ACTIVE'
+            #{phone}, #{email}, 'ACTIVE', 'ACTIVE',
+            COALESCE(#{defaultTaxType}, 'TAXABLE'),
+            #{bankName}, #{accountNo}, #{accountHolder},
+            #{memberGrade}, #{creditAgreementDt}, #{creditLimitAmount},
+            #{advanceBalance}, #{meatMoneyBalance}
         )
     </insert>
 
@@ -126,6 +184,15 @@
             address2     = #{address2},
             phone        = #{phone},
             email        = #{email},
+            default_tax_type = #{defaultTaxType},
+            bank_name    = #{bankName},
+            account_no   = #{accountNo},
+            account_holder = #{accountHolder},
+            member_grade = #{memberGrade},
+            credit_agreement_dt = #{creditAgreementDt},
+            credit_limit_amount = #{creditLimitAmount},
+            advance_balance = #{advanceBalance},
+            meat_money_balance = #{meatMoneyBalance},
             updated_at   = NOW()
         WHERE company_id = #{companyId}
     </update>
@@ -211,6 +278,88 @@
         WHERE company_id = #{companyId}
           AND is_primary = 'Y'
           AND status = 'ACTIVE'
+    </update>
+
+    <!-- ====================================================
+         중복 체크 및 채널 매핑
+    ==================================================== -->
+
+    <!-- 사업자번호 중복 체크 (테넌트 내) -->
+    <select id="selectBusinessNoCount"
+            parameterType="kr.co.matpam.admin.company.service.CompanyVO"
+            resultType="int">
+        SELECT COUNT(*) FROM tb_company
+        WHERE tenant_id = #{tenantId}
+          AND business_no = #{businessNo}
+          <if test="companyId != null">
+              AND company_id != #{companyId}
+          </if>
+    </select>
+
+    <!-- 업체 채널 매핑 등록 -->
+    <insert id="insertCompanyChannelMap" parameterType="map">
+        INSERT INTO tb_company_channel_map (
+            tenant_id, company_id, channel_id, company_role_cd, status
+        ) VALUES (
+            #{tenantId}, #{companyId}, #{channelId}, #{companyRoleCd}, 'ACTIVE'
+        )
+    </insert>
+
+    <!-- 업체 채널 매핑 삭제 (전체 삭제 후 재등록 방식) -->
+    <delete id="deleteCompanyChannelMap" parameterType="long">
+        DELETE FROM tb_company_channel_map WHERE company_id = #{companyId}
+    </delete>
+
+    <!-- 업체 소속 채널 목록 조회 -->
+    <select id="selectCompanyChannelList" parameterType="long" resultType="map">
+        SELECT 
+            m.mapping_id, m.channel_id, m.company_role_cd,
+            c.channel_name
+        FROM tb_company_channel_map m
+        JOIN tb_channel c ON m.channel_id = c.channel_id
+        WHERE m.company_id = #{companyId}
+          AND m.status = 'ACTIVE'
+    </select>
+
+    <!-- ====================================================
+         계좌 관리 (tb_company_bank_account)
+    ==================================================== -->
+
+    <select id="selectCompanyBankAccountList" parameterType="long" resultType="kr.co.matpam.admin.company.service.CompanyBankAccountVO">
+        SELECT * FROM tb_company_bank_account
+        WHERE company_id = #{companyId}
+          AND status = 'ACTIVE'
+        ORDER BY is_default DESC, created_at ASC
+    </select>
+
+    <insert id="insertCompanyBankAccount" parameterType="kr.co.matpam.admin.company.service.CompanyBankAccountVO">
+        INSERT INTO tb_company_bank_account (
+            company_id, bank_name, account_no_enc, account_holder,
+            is_default, status, account_no_last4, account_no_hash, enc_key_version
+        ) VALUES (
+            #{companyId}, #{bankName}, #{accountNoEnc}, #{accountHolder},
+            #{isDefault}, 'ACTIVE', #{accountNoLast4}, #{accountNoHash}, #{encKeyVersion}
+        )
+    </insert>
+
+    <update id="updateCompanyBankAccount" parameterType="kr.co.matpam.admin.company.service.CompanyBankAccountVO">
+        UPDATE tb_company_bank_account
+        SET
+            bank_name = #{bankName},
+            account_no_enc = #{accountNoEnc},
+            account_holder = #{accountHolder},
+            is_default = #{isDefault},
+            account_no_last4 = #{accountNoLast4},
+            account_no_hash = #{accountNoHash},
+            enc_key_version = #{encKeyVersion},
+            updated_at = NOW()
+        WHERE bank_account_id = #{bankAccountId}
+    </update>
+
+    <update id="deleteCompanyBankAccount" parameterType="long">
+        UPDATE tb_company_bank_account
+        SET status = 'INACTIVE', updated_at = NOW()
+        WHERE bank_account_id = #{bankAccountId}
     </update>
 
 </mapper>

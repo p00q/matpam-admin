@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.matpam.admin.tenant.service.impl.SysChannelMapper">
+
+    <select id="selectChannelList" resultType="kr.co.matpam.admin.tenant.service.ChannelVO">
+        SELECT 
+            c.channel_id as channelId,
+            c.company_id as companyId,
+            cp.company_name as companyName,
+            c.channel_type as channelType,
+            c.channel_name as channelName,
+            c.manager_id as managerId,
+            u.user_name as managerName,
+            c.status as status,
+            c.sort_order as sortOrder,
+            c.created_at as createdAt,
+            c.updated_at as updatedAt
+        FROM tb_channel c
+        LEFT JOIN tb_company cp ON c.company_id = cp.company_id
+        LEFT JOIN tb_user u ON c.manager_id = u.user_id
+        WHERE 1=1
+        <if test="companyId != null">
+            AND c.company_id = #{companyId}
+        </if>
+        <if test="searchKeyword != null and searchKeyword != ''">
+            AND c.channel_name LIKE CONCAT('%', #{searchKeyword}, '%')
+        </if>
+        <if test="channelType != null and channelType != ''">
+            AND c.channel_type = #{channelType}
+        </if>
+        <if test="status != null and status != ''">
+            AND c.status = #{status}
+        </if>
+        <if test="status == null or status == ''">
+            AND c.status != 'INACTIVE'
+        </if>
+        ORDER BY c.sort_order ASC, c.channel_id DESC
+        LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
+    </select>
+
+    <select id="selectChannelListTotCnt" resultType="int">
+        SELECT COUNT(*)
+        FROM tb_channel c
+        WHERE 1=1
+        <if test="companyId != null">
+            AND c.company_id = #{companyId}
+        </if>
+        <if test="searchKeyword != null and searchKeyword != ''">
+            AND c.channel_name LIKE CONCAT('%', #{searchKeyword}, '%')
+        </if>
+        <if test="channelType != null and channelType != ''">
+            AND c.channel_type = #{channelType}
+        </if>
+        <if test="status != null and status != ''">
+            AND c.status = #{status}
+        </if>
+        <if test="status == null or status == ''">
+            AND c.status != 'INACTIVE'
+        </if>
+    </select>
+
+    <select id="selectChannelDetail" resultType="kr.co.matpam.admin.tenant.service.ChannelVO">
+        SELECT 
+            c.channel_id as channelId,
+            c.company_id as companyId,
+            c.channel_type as channelType,
+            c.channel_name as channelName,
+            c.manager_id as managerId,
+            u.user_name as managerName,
+            c.status as status,
+            c.sort_order as sortOrder,
+            c.created_at as createdAt,
+            c.updated_at as updatedAt
+        FROM tb_channel c
+        LEFT JOIN tb_user u ON c.manager_id = u.user_id
+        WHERE c.channel_id = #{channelId}
+    </select>
+
+    <insert id="insertChannel" useGeneratedKeys="true" keyProperty="channelId">
+        INSERT INTO tb_channel (
+            company_id,
+            channel_type,
+            channel_name,
+            manager_id,
+            status,
+            sort_order,
+            created_at,
+            updated_at
+        ) VALUES (
+            #{companyId},
+            #{channelType},
+            #{channelName},
+            #{managerId},
+            COALESCE(#{status}, 'ACTIVE'),
+            COALESCE(#{sortOrder}, 0),
+            NOW(),
+            NOW()
+        )
+    </insert>
+
+    <update id="updateChannel">
+        UPDATE tb_channel
+        SET 
+            channel_type = #{channelType},
+            channel_name = #{channelName},
+            manager_id = #{managerId},
+            status = COALESCE(#{status}, status),
+            sort_order = COALESCE(#{sortOrder}, sort_order),
+            updated_at = NOW()
+        WHERE channel_id = #{channelId}
+    </update>
+
+    <update id="deleteChannel">
+        UPDATE tb_channel
+        SET status = 'INACTIVE', updated_at = NOW()
+        WHERE channel_id = #{channelId}
+    </update>
+
+</mapper>

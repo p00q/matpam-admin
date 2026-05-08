@@ -42,7 +42,7 @@ public class UserVO extends MatpamBaseVO {
     private String companyName;
     private String tenantName;
     private String channelName;
-    private String channelCode;
+    private String channelType;
 
     // ── Getter / Setter ──────────────────────────────────────────────
 
@@ -109,6 +109,6 @@ public class UserVO extends MatpamBaseVO {
     public String getChannelName() { return channelName; }
     public void setChannelName(String channelName) { this.channelName = channelName; }
 
-    public String getChannelCode() { return channelCode; }
-    public void setChannelCode(String channelCode) { this.channelCode = channelCode; }
+    public String getChannelType() { return channelType; }
+    public void setChannelType(String channelType) { this.channelType = channelType; }
 }

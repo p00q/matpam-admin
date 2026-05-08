@@ -9,6 +9,11 @@ public interface B2bFinancialService {
      * 가용 미트머니(여신 한도 + 선수금 잔액) 조회
      */
     BigDecimal getAvailableMeatMoney(Long tenantId, Long sellerCompanyId, Long buyerCompanyId) throws Exception;
+    
+    /**
+     * 업체별 금융 정보 요약 조회 (여신, 선수금, 합계)
+     */
+    Map<String, BigDecimal> getFinancialSummary(Long tenantId, Long sellerCompanyId, Long buyerCompanyId) throws Exception;
 
     /**
      * 여신 한도 조정 (GRANT, REVOKE 등)

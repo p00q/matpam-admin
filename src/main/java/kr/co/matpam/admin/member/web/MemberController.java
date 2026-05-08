@@ -40,7 +40,7 @@ public class MemberController {
         model.addAttribute("paginationInfo", paginationInfo);
         
         model.addAttribute("pageTitle", "회원 관리");
-        model.addAttribute("currentMenu", "member");
+        model.addAttribute("currentMenu", "op_admin");
         model.addAttribute("contentPage", "/WEB-INF/jsp/admin/member/MemberList.jsp");
 
         return "layout/main";

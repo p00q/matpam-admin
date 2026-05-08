@@ -121,81 +121,56 @@
 </style>
 
 <div class="container-fluid px-4">
-    <h1 class="mt-4">사용자 ${empty user.userId ? '등록' : '수정'}</h1>
+    <h1 class="mt-4">회원 ${empty user.userId ? '등록' : '수정'}</h1>
     <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="/admin/dashboard/main.do">대시보드</a></li>
-        <li class="breadcrumb-item"><a href="/admin/user/userList.do">사용자 관리</a></li>
-        <li class="breadcrumb-item active">사용자 ${empty user.userId ? '등록' : '수정'}</li>
+        <li class="breadcrumb-item"><a href="<c:url value='/admin/dashboard/main.do'/>">대시보드</a></li>
+        <li class="breadcrumb-item"><a href="<c:url value='/admin/user/userList.do'/>">회원 관리</a></li>
+        <li class="breadcrumb-item active">회원 ${empty user.userId ? '등록' : '수정'}</li>
     </ol>
 
     <div class="row justify-content-center">
         <div class="col-xl-9 col-lg-10">
 
-            <form:form modelAttribute="user" id="detailForm" name="detailForm">
+            <form:form modelAttribute="user" id="detailForm" name="detailForm" action="${pageContext.request.contextPath}/admin/user/userSave.do">
                 <form:hidden path="userId"/>
 
                 <!-- ══════════════════════════════════════════════════
-                     STEP 1 : 회원 유형 선택
+                     STEP 1 : 소속 유형 선택
                 ══════════════════════════════════════════════════ -->
                 <div class="form-section">
                     <div class="section-head">
                         <div class="section-title">
-                            <span class="section-badge">1</span> 회원 유형
+                            <span class="section-badge">1</span> 소속 유형
                         </div>
                     </div>
                     <div class="section-body">
-                        <div class="role-card-group" id="roleCardGroup">
-
-                            <label class="role-card ${user.userRole == 'SUPER_ADMIN' ? 'active' : ''}" id="card-SUPER_ADMIN">
-                                <input type="radio" name="userRole" id="role_SUPER_ADMIN" value="SUPER_ADMIN"
-                                       ${user.userRole == 'SUPER_ADMIN' ? 'checked' : ''}/>
-                                <span class="role-icon">🛡️</span>
-                                <div class="role-label">수퍼관리자</div>
-                                <div class="role-desc">플랫폼 전체 관리</div>
-                            </label>
-
-                            <label class="role-card ${user.userRole == 'SELLER_ADMIN' || empty user.userRole ? 'active' : ''}" id="card-SELLER_ADMIN">
-                                <input type="radio" name="userRole" id="role_SELLER_ADMIN" value="SELLER_ADMIN"
-                                       ${user.userRole == 'SELLER_ADMIN' || empty user.userRole ? 'checked' : ''}/>
+                        <div class="role-card-group" id="affiliationTypeGroup">
+                            <label class="role-card ${user.userRole == 'SELLER_ADMIN' || user.userRole == 'CHANNEL_ADMIN' || empty user.userRole ? 'active' : ''}" id="card-SELLER">
+                                <input type="radio" name="affiliationType" id="type_SELLER" value="SELLER"
+                                       ${user.userRole == 'SELLER_ADMIN' || user.userRole == 'CHANNEL_ADMIN' || empty user.userRole ? 'checked' : ''}
+                                       onclick="fn_onAffiliationChange('SELLER')"/>
                                 <span class="role-icon">🏭</span>
-                                <div class="role-label">판매처 관리자</div>
-                                <div class="role-desc">자기 테넌트 전체 관리</div>
+                                <div class="role-label">판매업체</div>
+                                <div class="role-desc">제조사/공급사 소속</div>
                             </label>
 
-                            <label class="role-card ${user.userRole == 'CHANNEL_ADMIN' ? 'active' : ''}" id="card-CHANNEL_ADMIN">
-                                <input type="radio" name="userRole" id="role_CHANNEL_ADMIN" value="CHANNEL_ADMIN"
-                                       ${user.userRole == 'CHANNEL_ADMIN' ? 'checked' : ''}/>
-                                <span class="role-icon">📦</span>
-                                <div class="role-label">채널 관리자</div>
-                                <div class="role-desc">1개 채널 담당</div>
-                            </label>
-
-                            <label class="role-card ${user.userRole == 'BUYER_ADMIN' ? 'active' : ''}" id="card-BUYER_ADMIN">
-                                <input type="radio" name="userRole" id="role_BUYER_ADMIN" value="BUYER_ADMIN"
-                                       ${user.userRole == 'BUYER_ADMIN' ? 'checked' : ''}/>
+                            <label class="role-card ${user.userRole == 'BUYER_ADMIN' ? 'active' : ''}" id="card-BUYER">
+                                <input type="radio" name="affiliationType" id="type_BUYER" value="BUYER"
+                                       ${user.userRole == 'BUYER_ADMIN' ? 'checked' : ''}
+                                       onclick="fn_onAffiliationChange('BUYER')"/>
                                 <span class="role-icon">🛒</span>
-                                <div class="role-label">구매처 관리자</div>
-                                <div class="role-desc">자기 업체 조회·수정</div>
+                                <div class="role-label">구매업체</div>
+                                <div class="role-desc">구매사/식당 소속</div>
                             </label>
 
-                        </div>
-
-                        <!-- 역할별 안내 메시지 -->
-                        <div id="hint-SUPER_ADMIN" class="role-hint mt-3">
-                            <i class="fas fa-info-circle me-1"></i>
-                            <strong>수퍼관리자</strong>는 특정 테넌트·업체·채널에 소속되지 않습니다. 소속 정보는 자동으로 비워집니다.
-                        </div>
-                        <div id="hint-SELLER_ADMIN" class="role-hint mt-3">
-                            <i class="fas fa-info-circle me-1"></i>
-                            <strong>판매처 관리자</strong>는 선택한 테넌트의 <em>대표 판매업체</em>에 자동 소속됩니다.
-                        </div>
-                        <div id="hint-CHANNEL_ADMIN" class="role-hint mt-3">
-                            <i class="fas fa-info-circle me-1"></i>
-                            <strong>채널 관리자</strong>는 판매업체 소속이며, 반드시 <em>1개 채널</em>만 담당합니다.
-                        </div>
-                        <div id="hint-BUYER_ADMIN" class="role-hint mt-3">
-                            <i class="fas fa-info-circle me-1"></i>
-                            <strong>구매처 관리자</strong>는 <em>구매업체</em>에만 소속될 수 있습니다. 직접 구매업체를 선택해 주세요.
+                            <label class="role-card ${user.userRole == 'SUPER_ADMIN' ? 'active' : ''}" id="card-SUPER">
+                                <input type="radio" name="affiliationType" id="type_SUPER" value="SUPER"
+                                       ${user.userRole == 'SUPER_ADMIN' ? 'checked' : ''}
+                                       onclick="fn_onAffiliationChange('SUPER')"/>
+                                <span class="role-icon">🛡️</span>
+                                <div class="role-label">시스템 관리</div>
+                                <div class="role-desc">플랫폼 운영자 전용</div>
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -318,6 +293,9 @@
                 <!-- ══════════════════════════════════════════════════
                      STEP 3 : 소속 정보 (역할별 동적 노출)
                 ══════════════════════════════════════════════════ -->
+                <!-- ══════════════════════════════════════════════════
+                     STEP 3 : 소속 정보
+                ══════════════════════════════════════════════════ -->
                 <div class="form-section" id="affiliationSection">
                     <div class="section-head">
                         <div class="section-title">
@@ -325,64 +303,56 @@
                         </div>
                     </div>
                     <div class="section-body">
-
                         <div class="row g-3">
-
-                            <!-- 테넌트 (SUPER_ADMIN 제외 필수) -->
-                            <div class="col-md-6" id="tenantField">
-                                <label for="tenantSelect" class="form-label required fw-semibold">테넌트</label>
-                                <select id="tenantSelect" name="tenantId" class="form-select">
-                                    <option value="">-- 테넌트 선택 --</option>
-                                    <c:forEach var="t" items="${tenants}">
-                                        <option value="${t.tenantId}"
-                                            ${user.tenantId == t.tenantId ? 'selected' : ''}>
-                                            ${t.tenantName}
-                                        </option>
-                                    </c:forEach>
-                                </select>
-                                <div class="form-text text-muted">플랫폼(판매업체 운영 단위)을 선택합니다.</div>
+                            <!-- 업체 검색 및 선택 -->
+                            <div class="col-md-6" id="companySearchField">
+                                <label class="form-label required fw-semibold">대상 업체 선택</label>
+                                <div class="input-group">
+                                    <input type="text" id="companyNameDisplay" class="form-control bg-light"
+                                           placeholder="업체를 검색하여 선택하세요" readonly
+                                           value="${not empty user.companyName ? user.companyName : ''}"/>
+                                    <button class="btn btn-primary" type="button" onclick="fn_openCompanySearch()">
+                                        <i class="fas fa-search me-1"></i> 업체 검색
+                                    </button>
+                                </div>
+                                <form:hidden path="companyId" id="companyIdHidden"/>
+                                <form:hidden path="tenantId" id="tenantIdHidden"/>
+                                <div class="form-text text-muted" id="companyInfoHint">
+                                    ${not empty user.companyName ? '현재 선택됨: '.concat(user.companyName) : '먼저 소속될 업체를 찾아주세요.'}
+                                </div>
                             </div>
 
-                            <!-- 소속 업체 (SELLER_ADMIN, CHANNEL_ADMIN → 자동세팅 / BUYER_ADMIN → 직접선택) -->
-                            <div class="col-md-6" id="companyField">
-
-                                <!-- 자동세팅 표시 (SELLER_ADMIN, CHANNEL_ADMIN) -->
-                                <div id="companyAutoArea">
-                                    <label class="form-label fw-semibold">소속 업체</label>
-                                    <div class="auto-set-info">
-                                        <i class="fas fa-magic"></i>
-                                        <span id="companyAutoText">테넌트 선택 시 대표 판매업체가 자동 세팅됩니다.</span>
+                            <!-- 판매업체 전용 역할 선택 (판매업체일 때만) -->
+                            <div class="col-md-6" id="sellerRoleField" style="display:none;">
+                                <label class="form-label required fw-semibold">회원 역할 부여</label>
+                                <div class="mt-1">
+                                    <div class="form-check form-check-inline">
+                                        <input type="radio" name="sellerUserRole" id="role_SELLER_ADMIN" value="SELLER_ADMIN"
+                                               class="form-check-input" ${user.userRole == 'SELLER_ADMIN' ? 'checked' : ''}
+                                               onchange="fn_onSellerRoleChange(this.value)"/>
+                                        <label class="form-check-label" for="role_SELLER_ADMIN">일반 담당자</label>
                                     </div>
-                                    <input type="hidden" id="companyIdHidden" name="companyId"
-                                           value="${user.companyId}"/>
+                                    <div class="form-check form-check-inline">
+                                        <input type="radio" name="sellerUserRole" id="role_CHANNEL_ADMIN" value="CHANNEL_ADMIN"
+                                               class="form-check-input" ${user.userRole == 'CHANNEL_ADMIN' ? 'checked' : ''}
+                                               onchange="fn_onSellerRoleChange(this.value)"/>
+                                        <label class="form-check-label" for="role_CHANNEL_ADMIN">채널 담당자</label>
+                                    </div>
                                 </div>
-
-                                <!-- 직접 선택 (BUYER_ADMIN) -->
-                                <div id="companySelectArea" style="display:none;">
-                                    <label for="buyerCompanySelect" class="form-label required fw-semibold">
-                                        구매업체 선택
-                                    </label>
-                                    <select id="buyerCompanySelect" class="form-select">
-                                        <option value="">-- 구매업체 선택 --</option>
-                                    </select>
-                                    <div class="form-text text-muted">구매업체(company_type=BUYER)만 표시됩니다.</div>
-                                </div>
-
+                                <input type="hidden" name="userRole" id="userRoleHidden" value="${user.userRole}"/>
                             </div>
 
-                            <!-- 담당 채널 (CHANNEL_ADMIN 전용) -->
+                            <!-- 담당 채널 (채널 담당자 전용) -->
                             <div class="col-md-6" id="channelField" style="display:none;">
                                 <label for="channelSelect" class="form-label required fw-semibold">담당 채널</label>
                                 <select id="channelSelect" name="channelId" class="form-select">
                                     <option value="">-- 채널 선택 --</option>
                                 </select>
-                                <div class="form-text text-muted">채널관리자는 1개 채널만 담당합니다.</div>
+                                <div class="form-text text-muted">채널담당자는 담당할 특정 채널을 지정해야 합니다.</div>
                             </div>
-
-                        </div><!-- /row -->
-
-                    </div><!-- /section-body -->
-                </div><!-- /form-section -->
+                        </div>
+                    </div>
+                </div>
 
                 <!-- ══════════════════════════════════════════════════
                      STEP 4 : 담당자 동시 생성 옵션
@@ -441,7 +411,7 @@
                      액션 버튼
                 ══════════════════════════════════════════════════ -->
                 <div class="action-bar">
-                    <a href="/admin/user/userList.do" class="btn btn-outline-secondary px-4">
+                    <a href="<c:url value='/admin/user/userList.do'/>" class="btn btn-outline-secondary px-4">
                         <i class="fas fa-list me-1"></i> 목록으로
                     </a>
                     <button type="button" class="btn btn-primary px-5 shadow-sm" onclick="fn_save()">
@@ -472,173 +442,131 @@ const INIT_CHANNEL= '${user.channelId != null ? user.channelId : ""}';
 const INIT_COMPANY= '${user.companyId != null ? user.companyId : ""}';
 
 /* ────────────────────────────────────────────────────
-   역할 카드 선택
+   회원 유형 / 소속 유형 변경 핸들러
 ──────────────────────────────────────────────────── */
-function fn_selectRole(role) {
-    // 카드 active 갱신
-    document.querySelectorAll('.role-card').forEach(c => c.classList.remove('active'));
-    const card = document.getElementById('card-' + role);
-    if (card) card.classList.add('active');
+function fn_onAffiliationChange(type) {
+    // 카드 활성화 표시
+    $('.role-card').removeClass('active');
+    $('#card-' + type).addClass('active');
 
-    // radio 체크
-    const radio = document.getElementById('role_' + role);
-    if (radio) radio.checked = true;
+    // 기본 가시성 리셋
+    $('#affiliationSection').show();
+    $('#companySearchField').show();
+    $('#sellerRoleField').hide();
+    $('#channelField').hide();
+    $('#contactSection').show();
 
-    // 힌트 표시
-    document.querySelectorAll('.role-hint').forEach(h => h.classList.remove('show'));
-    const hint = document.getElementById('hint-' + role);
-    if (hint) hint.classList.add('show');
-
-    // 소속 섹션 / 담당자 섹션 재구성
-    fn_applyRoleLayout(role);
-}
-
-/* ────────────────────────────────────────────────────
-   역할별 레이아웃 적용 (핵심 동적 폼 로직)
-──────────────────────────────────────────────────── */
-function fn_applyRoleLayout(role) {
-    const tenantField      = document.getElementById('tenantField');
-    const companyAutoArea  = document.getElementById('companyAutoArea');
-    const companySelectArea= document.getElementById('companySelectArea');
-    const channelField     = document.getElementById('channelField');
-    const contactSection   = document.getElementById('contactSection');
-    const affiliationSection = document.getElementById('affiliationSection');
-
-    // 초기화
-    document.getElementById('companyIdHidden').value = '';
-    document.getElementById('companyAutoText').textContent = '테넌트 선택 시 대표 판매업체가 자동 세팅됩니다.';
-
-    switch(role) {
-
-        case 'SUPER_ADMIN':
-            affiliationSection.style.display = 'none';
-            contactSection.style.display     = 'none';
-            // 소속 hidden 값 클리어
-            document.getElementById('tenantSelect').value = '';
-            document.getElementById('channelSelect').value = '';
-            break;
-
-        case 'SELLER_ADMIN':
-            affiliationSection.style.display = '';
-            tenantField.style.display        = '';
-            companyAutoArea.style.display    = '';
-            companySelectArea.style.display  = 'none';
-            channelField.style.display       = 'none';
-            contactSection.style.display     = '';
-            // 채널 select name 제거해 전송 방지
-            document.getElementById('channelSelect').removeAttribute('name');
-            // 기본 담당자 역할
-            fn_setDefaultContactRole('SELLER_ADMIN');
-            break;
-
-        case 'CHANNEL_ADMIN':
-            affiliationSection.style.display = '';
-            tenantField.style.display        = '';
-            companyAutoArea.style.display    = '';
-            companySelectArea.style.display  = 'none';
-            channelField.style.display       = '';
-            contactSection.style.display     = '';
-            document.getElementById('channelSelect').setAttribute('name', 'channelId');
-            fn_setDefaultContactRole('CHANNEL_ADMIN');
-            break;
-
-        case 'BUYER_ADMIN':
-            affiliationSection.style.display = '';
-            tenantField.style.display        = '';
-            companyAutoArea.style.display    = 'none';
-            companySelectArea.style.display  = '';
-            channelField.style.display       = 'none';
-            contactSection.style.display     = '';
-            document.getElementById('channelSelect').removeAttribute('name');
-            // buyerCompanySelect → companyId 로 name 연결
-            document.getElementById('buyerCompanySelect').setAttribute('name', 'companyId');
-            fn_setDefaultContactRole('BUYER_ADMIN');
-
-            // 테넌트가 이미 선택돼 있으면 구매업체 목록 로드
-            const tidForBuyer = document.getElementById('tenantSelect').value;
-            if (tidForBuyer) fn_loadBuyerCompanies(tidForBuyer);
-            break;
-    }
-
-    // SELLER/CHANNEL: buyerCompanySelect는 name 없이 (서버 미전송)
-    if (role !== 'BUYER_ADMIN') {
-        document.getElementById('buyerCompanySelect').removeAttribute('name');
+    if (type === 'SUPER') {
+        $('#affiliationSection').hide();
+        $('#contactSection').hide();
+        $('#userRoleHidden').val('SUPER_ADMIN');
+    } else if (type === 'SELLER') {
+        $('#sellerRoleField').show();
+        // 판매업체 기본 역할은 SELLER_ADMIN
+        const currentRole = $('#userRoleHidden').val();
+        if (currentRole !== 'SELLER_ADMIN' && currentRole !== 'CHANNEL_ADMIN') {
+            $('#userRoleHidden').val('SELLER_ADMIN');
+            $('#role_SELLER_ADMIN').prop('checked', true);
+        }
+        fn_onSellerRoleChange($('#userRoleHidden').val());
+    } else if (type === 'BUYER') {
+        $('#userRoleHidden').val('BUYER_ADMIN');
     }
 }
 
 /* ────────────────────────────────────────────────────
-   테넌트 변경 → 채널·구매업체·판매업체ID 동적 로드
+   판매업체 내부 역할 변경 (담당자 vs 채널담당자)
 ──────────────────────────────────────────────────── */
-function fn_onTenantChange(tenantId) {
-    const role = fn_getSelectedRole();
-    fn_loadFormOptions(role, tenantId);
+function fn_onSellerRoleChange(role) {
+    $('#userRoleHidden').val(role);
+    if (role === 'CHANNEL_ADMIN') {
+        $('#channelField').show();
+        const tenantId = $('#tenantIdHidden').val();
+        if (tenantId) fn_loadChannels(tenantId);
+    } else {
+        $('#channelField').hide();
+    }
 }
 
-function fn_loadFormOptions(role, tenantId) {
-    if (!tenantId) return;
+/* ────────────────────────────────────────────────────
+   업체 검색 모달 & AJAX
+──────────────────────────────────────────────────── */
+function fn_openCompanySearch() {
+    const type = $('input[name="affiliationType"]:checked').val();
+    if (type === 'SUPER') return;
+    
+    $('#modalSearchKeyword').val('');
+    $('#companySearchResultBody').html('<tr><td colspan="4" class="text-center py-5 text-muted">검색어를 입력해 주세요.</td></tr>');
+    $('#companySearchModal').modal('show');
+}
+
+function fn_searchCompanies() {
+    const keyword = $('#modalSearchKeyword').val().trim();
+    if (!keyword) { alert('검색어를 입력하세요.'); return; }
+    
+    const type = $('input[name="affiliationType"]:checked').val(); // SELLER or BUYER
 
     $.ajax({
-        url: '/admin/user/formOptions.ajax',
+        url: "<c:url value='/admin/company/search.ajax'/>",
         type: 'GET',
-        data: { userRole: role, tenantId: tenantId },
+        data: { searchKeyword: keyword, companyType: type },
         success: function(res) {
-            if (!res.success) {
-                console.error('폼옵션 로드 실패:', res.message);
-                return;
-            }
-
-            // 채널 목록 세팅 (CHANNEL_ADMIN)
-            if (role === 'CHANNEL_ADMIN') {
-                const $ch = $('#channelSelect').empty().append('<option value="">-- 채널 선택 --</option>');
-                if (res.channels && res.channels.length > 0) {
-                    $.each(res.channels, function(i, ch) {
-                        const selected = (ch.channelId == INIT_CHANNEL && IS_EDIT) ? 'selected' : '';
-                        $ch.append('<option value="' + ch.channelId + '" ' + selected + '>'
-                            + fn_channelLabel(ch.channelCode) + ' (' + ch.channelName + ')</option>');
-                    });
-                }
-            }
-
-            // 대표 판매업체 자동세팅 (SELLER_ADMIN, CHANNEL_ADMIN)
-            if (role === 'SELLER_ADMIN' || role === 'CHANNEL_ADMIN') {
-                if (res.sellerCompanyId) {
-                    document.getElementById('companyIdHidden').value = res.sellerCompanyId;
-                    document.getElementById('companyAutoText').textContent
-                        = '✔ 대표 판매업체(ID: ' + res.sellerCompanyId + ')가 자동 세팅되었습니다.';
-                } else {
-                    document.getElementById('companyIdHidden').value = '';
-                    document.getElementById('companyAutoText').textContent
-                        = '⚠ 해당 테넌트에 대표 판매업체가 지정되지 않았습니다.';
-                }
-            }
-
-            // 구매업체 목록 세팅 (BUYER_ADMIN)
-            if (role === 'BUYER_ADMIN') {
-                const $bc = $('#buyerCompanySelect').empty().append('<option value="">-- 구매업체 선택 --</option>');
-                if (res.buyerCompanies && res.buyerCompanies.length > 0) {
-                    $.each(res.buyerCompanies, function(i, co) {
-                        const selected = (co.companyId == INIT_COMPANY && IS_EDIT) ? 'selected' : '';
-                        $bc.append('<option value="' + co.companyId + '" ' + selected + '>'
-                            + co.companyName + ' (' + co.businessNo + ')</option>');
-                    });
-                } else {
-                    $bc.append('<option value="" disabled>해당 테넌트에 구매업체가 없습니다.</option>');
-                }
+            const $body = $('#companySearchResultBody').empty();
+            if (res.success && res.list && res.list.length > 0) {
+                $.each(res.list, function(i, co) {
+                    let row = '<tr>';
+                    row += '<td><span class="fw-bold">' + co.companyName + '</span></td>';
+                    row += '<td>' + (co.businessNo || '-') + '</td>';
+                    row += '<td><span class="text-muted small">' + (co.tenantName || '미지정') + '</span></td>';
+                    row += '<td class="text-center"><button class="btn btn-sm btn-outline-primary" onclick="fn_selectCompany('
+                        + co.companyId + ', \'' + co.companyName.replace(/'/g, "\\'") + '\', ' + co.tenantId + ')">선택</button></td>';
+                    row += '</tr>';
+                    $body.append(row);
+                });
+            } else {
+                $body.append('<tr><td colspan="4" class="text-center py-5 text-muted">검색 결과가 없습니다.</td></tr>');
             }
         },
-        error: function() {
-            console.error('폼옵션 AJAX 통신 오류');
+        error: function() { alert('업체 검색 중 오류가 발생했습니다.'); }
+    });
+}
+
+function fn_selectCompany(id, name, tenantId) {
+    $('#companyIdHidden').val(id);
+    $('#tenantIdHidden').val(tenantId);
+    $('#companyNameDisplay').val(name);
+    $('#companyInfoHint').html('✔ 선택됨: <strong>' + name + '</strong> (테넌트 ID: ' + tenantId + ')');
+    
+    $('#companySearchModal').modal('hide');
+    
+    // 역할이 채널관리자라면 해당 테넌트의 채널 목록 다시 로드
+    if ($('#userRoleHidden').val() === 'CHANNEL_ADMIN') {
+        fn_loadChannels(tenantId);
+    }
+}
+
+function fn_loadChannels(tenantId) {
+    if (!tenantId) return;
+    $.ajax({
+        url: "<c:url value='/admin/user/formOptions.ajax'/>",
+        type: 'GET',
+        data: { userRole: 'CHANNEL_ADMIN', tenantId: tenantId },
+        success: function(res) {
+            if (res.success && res.channels) {
+                const $ch = $('#channelSelect').empty().append('<option value="">-- 채널 선택 --</option>');
+                $.each(res.channels, function(i, ch) {
+                    const selected = (ch.channelId == INIT_CHANNEL && IS_EDIT) ? 'selected' : '';
+                    $ch.append('<option value="' + ch.channelId + '" ' + selected + '>'
+                        + ch.channelName + '</option>');
+                });
+            }
         }
     });
 }
 
-function fn_loadBuyerCompanies(tenantId) {
-    fn_loadFormOptions('BUYER_ADMIN', tenantId);
-}
-
-function fn_channelLabel(code) {
-    const map = { PARCEL: '전국택배', FREIGHT: '화물직송', PICKUP: '공장수령' };
-    return map[code] || code;
+function fn_channelLabel(type) {
+    const map = { COURIER: '전국택배', DIRECT: '공장수령(직송)', COLLECT: '화물(수집)' };
+    return map[type] || type;
 }
 
 /* ────────────────────────────────────────────────────
@@ -674,7 +602,7 @@ function fn_checkId() {
     }
 
     $.ajax({
-        url: '/admin/user/checkLoginId.ajax',
+        url: "<c:url value='/admin/user/checkLoginId.ajax'/>",
         type: 'GET',
         data: { loginId: loginId },
         success: function(res) {
@@ -757,8 +685,8 @@ function fn_getSelectedRole() {
    저장 전 프론트 검증
 ──────────────────────────────────────────────────── */
 function fn_validate() {
-    const role = fn_getSelectedRole();
-    if (!role) { alert('회원 유형을 선택하세요.'); return false; }
+    const type = $('input[name="affiliationType"]:checked').val();
+    if (!type) { alert('소속 유형을 선택하세요.'); return false; }
 
     const loginId = $('#loginId').val();
     if (!loginId) { alert('로그인 ID를 입력하세요.'); return false; }
@@ -777,24 +705,15 @@ function fn_validate() {
     if (pwd && pwd !== conf) { alert('비밀번호가 일치하지 않습니다.'); return false; }
     if (pwd && !pwdValid) { alert('비밀번호 강도가 너무 약합니다. 영문+숫자+특수문자 8자 이상을 권장합니다.'); return false; }
 
-    // 역할별 소속 검증
-    if (role !== 'SUPER_ADMIN') {
-        const tenantId = $('#tenantSelect').val();
-        if (!tenantId) { alert('테넌트를 선택하세요.'); return false; }
-    }
-    if (role === 'CHANNEL_ADMIN') {
-        const channelId = $('#channelSelect').val();
-        if (!channelId) { alert('담당 채널을 선택하세요.'); return false; }
-    }
-    if (role === 'BUYER_ADMIN') {
-        const companyId = $('#buyerCompanySelect').val();
-        if (!companyId) { alert('구매업체를 선택하세요.'); return false; }
-    }
-    if ((role === 'SELLER_ADMIN' || role === 'CHANNEL_ADMIN')) {
-        const sellerComp = $('#companyIdHidden').val();
-        if (!sellerComp) {
-            alert('선택한 테넌트에 대표 판매업체가 지정되지 않았습니다. 먼저 테넌트를 확인하세요.');
-            return false;
+    // 소속 정보 검증
+    if (type !== 'SUPER') {
+        const companyId = $('#companyIdHidden').val();
+        if (!companyId) { alert('대상 업체를 검색하여 선택하세요.'); return false; }
+        
+        const role = $('#userRoleHidden').val();
+        if (role === 'CHANNEL_ADMIN') {
+            const channelId = $('#channelSelect').val();
+            if (!channelId) { alert('담당 채널을 선택하세요.'); return false; }
         }
     }
 
@@ -811,13 +730,13 @@ function fn_save() {
     const formData = $('#detailForm').serialize();
 
     $.ajax({
-        url: '/admin/user/saveUser.ajax',
+        url: "<c:url value='/admin/user/saveUser.ajax'/>",
         type: 'POST',
         data: formData,
         success: function(res) {
             if (res.success) {
                 alert(res.message || '정상적으로 처리되었습니다.');
-                location.href = '/admin/user/userList.do';
+                location.href = "<c:url value='/admin/user/userList.do'/>";
             } else {
                 alert('[' + (res.errorCode || 'ERR') + '] ' + res.message);
             }
@@ -832,19 +751,6 @@ function fn_save() {
    DOM 이벤트 바인딩 & 초기화
 ──────────────────────────────────────────────────── */
 $(function() {
-
-    /* 역할 카드 클릭 */
-    document.querySelectorAll('.role-card').forEach(function(card) {
-        card.addEventListener('click', function() {
-            const radio = this.querySelector('input[type=radio]');
-            if (radio) fn_selectRole(radio.value);
-        });
-    });
-
-    /* 테넌트 변경 */
-    $('#tenantSelect').on('change', function() {
-        fn_onTenantChange(this.value);
-    });
 
     /* 로그인 ID 변경 시 중복확인 초기화 */
     $('#loginId').on('input', function() {
@@ -861,12 +767,18 @@ $(function() {
     /* 비밀번호 확인 실시간 체크 */
     $('#passwordConfirm').on('input', fn_checkPwdMatch);
 
-    /* ── 초기화: 현재 역할로 레이아웃 세팅 ── */
-    fn_selectRole(INIT_ROLE);
+    /* ── 초기화 ── */
+    // 기존 데이터 기반 소속 유형 결정
+    let initType = 'SELLER';
+    if (INIT_ROLE === 'SUPER_ADMIN') initType = 'SUPER';
+    else if (INIT_ROLE === 'BUYER_ADMIN') initType = 'BUYER';
 
-    /* 수정 모드이고 테넌트가 있으면 옵션 로드 */
-    if (IS_EDIT && INIT_TENANT) {
-        fn_loadFormOptions(INIT_ROLE, INIT_TENANT);
+    $('input[name="affiliationType"][value="' + initType + '"]').prop('checked', true);
+    fn_onAffiliationChange(initType);
+
+    /* 수정 모드이고 테넌트가 있으면 채널 목록 등 로드 */
+    if (IS_EDIT && INIT_ROLE === 'CHANNEL_ADMIN' && INIT_TENANT) {
+        fn_loadChannels(INIT_TENANT);
     }
 });
 </script>

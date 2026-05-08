@@ -17,6 +17,9 @@ public class CompanyBankAccountVO extends MatpamBaseVO {
     private String status;
     private Date createdAt;
     private Date updatedAt;
+    private String accountNoLast4;
+    private String accountNoHash;
+    private Integer encKeyVersion;
     private Long defaultCompanyGuard;
 
     // Getter & Setter
@@ -46,6 +49,15 @@ public class CompanyBankAccountVO extends MatpamBaseVO {
 
     public Date getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Date updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getAccountNoLast4() { return accountNoLast4; }
+    public void setAccountNoLast4(String accountNoLast4) { this.accountNoLast4 = accountNoLast4; }
+
+    public String getAccountNoHash() { return accountNoHash; }
+    public void setAccountNoHash(String accountNoHash) { this.accountNoHash = accountNoHash; }
+
+    public Integer getEncKeyVersion() { return encKeyVersion; }
+    public void setEncKeyVersion(Integer encKeyVersion) { this.encKeyVersion = encKeyVersion; }
 
     public Long getDefaultCompanyGuard() { return defaultCompanyGuard; }
     public void setDefaultCompanyGuard(Long defaultCompanyGuard) { this.defaultCompanyGuard = defaultCompanyGuard; }

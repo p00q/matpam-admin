@@ -16,6 +16,102 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- =========================================================
 
 -- =========================================================
+-- [도메인 1 확장] 업체-채널 매핑 및 보안 강화
+-- =========================================================
+
+-- ---------------------------------------------------------
+-- A-0-1. tb_company_channel_map — 업체-채널 매핑 (신규)
+-- ---------------------------------------------------------
+DROP TABLE IF EXISTS tb_company_channel_map;
+CREATE TABLE IF NOT EXISTS tb_company_channel_map (
+    mapping_id          BIGINT NOT NULL AUTO_INCREMENT COMMENT '매핑 ID',
+    tenant_id           BIGINT NOT NULL COMMENT '테넌트 ID',
+    company_id          BIGINT NOT NULL COMMENT '업체 ID',
+    channel_id          BIGINT NOT NULL COMMENT '채널 ID',
+    company_role_cd     VARCHAR(20) NOT NULL COMMENT '업체 채널 역할 코드 (예: SELLER_RAW, BUYER_GENERAL)',
+    status              ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE' COMMENT '상태',
+    created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
+    updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
+    PRIMARY KEY (mapping_id),
+    UNIQUE KEY uk_tb_company_channel_01 (tenant_id, company_id, channel_id),
+    CONSTRAINT fk_tb_company_channel_01 FOREIGN KEY (tenant_id) REFERENCES tb_tenant (tenant_id),
+    CONSTRAINT fk_tb_company_channel_02 FOREIGN KEY (company_id) REFERENCES tb_company (company_id),
+    CONSTRAINT fk_tb_company_channel_03 FOREIGN KEY (channel_id) REFERENCES tb_channel (channel_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='업체별 채널 소속 및 역할 매핑';
+
+-- ---------------------------------------------------------
+-- A-0-2. tb_company_bank_account 보안 강화 (컬럼 추가)
+-- ---------------------------------------------------------
+ALTER TABLE tb_company_bank_account
+    ADD COLUMN IF NOT EXISTS account_no_last4  CHAR(4) NULL COMMENT '계좌번호 뒤 4자리 (검색용)',
+    ADD COLUMN IF NOT EXISTS account_no_hash   VARCHAR(255) NULL COMMENT '계좌번호 해시 (중복/검색용)',
+    ADD COLUMN IF NOT EXISTS enc_key_version   INT NOT NULL DEFAULT 1 COMMENT '암호화 키 버전';
+
+-- =========================================================
+-- [도메인 1 확장] 화물운송 채널 전용 (기사/차량)
+-- =========================================================
+
+-- ---------------------------------------------------------
+-- A-0-3. tb_driver — 운송기사 정보
+-- ---------------------------------------------------------
+DROP TABLE IF EXISTS tb_driver_vehicle;
+DROP TABLE IF EXISTS tb_driver;
+CREATE TABLE IF NOT EXISTS tb_driver (
+    driver_id           BIGINT NOT NULL AUTO_INCREMENT COMMENT '기사 ID',
+    tenant_id           BIGINT NOT NULL COMMENT '테넌트 ID',
+    channel_id          BIGINT NOT NULL COMMENT '채널 ID (반드시 FREIGHT)',
+    driver_name         VARCHAR(100) NOT NULL COMMENT '기사명',
+    license_no          VARCHAR(50) NOT NULL COMMENT '면허번호',
+    mobile              VARCHAR(30) NULL COMMENT '휴대전화',
+    status              ENUM('ACTIVE','INACTIVE','SUSPENDED') NOT NULL DEFAULT 'ACTIVE' COMMENT '상태',
+    created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
+    updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
+    PRIMARY KEY (driver_id),
+    KEY idx_tb_driver_01 (tenant_id, channel_id),
+    CONSTRAINT fk_tb_driver_01 FOREIGN KEY (tenant_id) REFERENCES tb_tenant (tenant_id),
+    CONSTRAINT fk_tb_driver_02 FOREIGN KEY (channel_id) REFERENCES tb_channel (channel_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='운송기사 마스터';
+
+-- ---------------------------------------------------------
+-- A-0-4. tb_vehicle — 차량 정보
+-- ---------------------------------------------------------
+DROP TABLE IF EXISTS tb_vehicle;
+CREATE TABLE IF NOT EXISTS tb_vehicle (
+    vehicle_id          BIGINT NOT NULL AUTO_INCREMENT COMMENT '차량 ID',
+    tenant_id           BIGINT NOT NULL COMMENT '테넌트 ID',
+    channel_id          BIGINT NOT NULL COMMENT '채널 ID (반드시 FREIGHT)',
+    plate_no            VARCHAR(20) NOT NULL COMMENT '차량번호',
+    vehicle_type        VARCHAR(50) NOT NULL COMMENT '차종 (예: 1톤 냉동탑차)',
+    status              ENUM('ACTIVE','INACTIVE','REPAIR') NOT NULL DEFAULT 'ACTIVE' COMMENT '상태',
+    created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
+    updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
+    PRIMARY KEY (vehicle_id),
+    UNIQUE KEY uk_tb_vehicle_01 (tenant_id, plate_no),
+    KEY idx_tb_vehicle_01 (tenant_id, channel_id),
+    CONSTRAINT fk_tb_vehicle_01 FOREIGN KEY (tenant_id) REFERENCES tb_tenant (tenant_id),
+    CONSTRAINT fk_tb_vehicle_02 FOREIGN KEY (channel_id) REFERENCES tb_channel (channel_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='운송차량 마스터';
+
+-- ---------------------------------------------------------
+-- A-0-5. tb_driver_vehicle — 기사-차량 배정 (이력 관리)
+-- ---------------------------------------------------------
+CREATE TABLE IF NOT EXISTS tb_driver_vehicle (
+    mapping_id          BIGINT NOT NULL AUTO_INCREMENT COMMENT '배정 ID',
+    driver_id           BIGINT NOT NULL COMMENT '기사 ID',
+    vehicle_id          BIGINT NOT NULL COMMENT '차량 ID',
+    assigned_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '배정 시작일시',
+    unassigned_at       DATETIME NULL COMMENT '배정 종료일시',
+    is_current          CHAR(1) NOT NULL DEFAULT 'Y' COMMENT '현재 배정 여부',
+    status              ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE' COMMENT '상태',
+    created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
+    PRIMARY KEY (mapping_id),
+    KEY idx_tb_driver_vehicle_01 (driver_id, is_current),
+    KEY idx_tb_driver_vehicle_02 (vehicle_id, is_current),
+    CONSTRAINT fk_tb_driver_vehicle_01 FOREIGN KEY (driver_id) REFERENCES tb_driver (driver_id),
+    CONSTRAINT fk_tb_driver_vehicle_02 FOREIGN KEY (vehicle_id) REFERENCES tb_vehicle (vehicle_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='기사-차량 배정 이력';
+
+-- =========================================================
 -- [도메인 1 확장] 권한/승인 워크플로우 테이블
 -- =========================================================
 
@@ -860,7 +956,11 @@ INSERT INTO tb_permission (permission_code, permission_name, domain) VALUES
 ('USER_PERMISSION_OVERRIDE',      'USER',          '사용자 권한 개별 오버라이드'),
 -- AUDIT 도메인
 ('AUDIT_LOG_VIEW',                'AUDIT',         '전체 감사로그 조회'),
-('AUDIT_LOG_VIEW_OWN',            'AUDIT',         '자기 테넌트 감사로그 조회');
+('AUDIT_LOG_VIEW_OWN',            'AUDIT',         '자기 테넌트 감사로그 조회'),
+-- TRANSPORT 도메인 (신규)
+('TRANSPORT_VIEW',                'SYSTEM',        '운송 정보 조회'),
+('TRANSPORT_EDIT',                'SYSTEM',        '운송 정보 수정'),
+('DRIVER_ASSIGN',                 'SYSTEM',        '기사-차량 배정 관리');
 
 -- 역할별 기본 권한 매핑
 -- SUPER_ADMIN — 전체 권한
@@ -882,7 +982,8 @@ WHERE permission_code IN (
     'REFUND_APPROVE',
     'BANK_ACCOUNT_EDIT',
     'USER_CREATE',
-    'AUDIT_LOG_VIEW_OWN'
+    'AUDIT_LOG_VIEW_OWN',
+    'TRANSPORT_VIEW','TRANSPORT_EDIT','DRIVER_ASSIGN'
 );
 
 -- CHANNEL_ADMIN 권한
@@ -891,7 +992,8 @@ SELECT 'CHANNEL_ADMIN', permission_id, 'Y'
 FROM tb_permission
 WHERE permission_code IN (
     'ORDER_VIEW','ORDER_CREATE','ORDER_CANCEL',
-    'TAX_DOCUMENT_VIEW'
+    'TAX_DOCUMENT_VIEW',
+    'TRANSPORT_VIEW'
 );
 
 -- BUYER_ADMIN 권한
@@ -900,7 +1002,8 @@ SELECT 'BUYER_ADMIN', permission_id, 'Y'
 FROM tb_permission
 WHERE permission_code IN (
     'ORDER_VIEW','ORDER_CREATE','ORDER_CANCEL',
-    'TAX_DOCUMENT_VIEW'
+    'TAX_DOCUMENT_VIEW',
+    'TRANSPORT_VIEW'
 );
 
 SET FOREIGN_KEY_CHECKS = 1;

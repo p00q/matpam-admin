@@ -269,15 +269,15 @@
     <div class="px-4 pt-3 pb-1">
         <div class="d-flex align-items-center justify-content-between mb-1">
             <div>
-                <h4 class="fw-bold mb-0" style="color:#1e293b;">사용자 관리</h4>
+                <h4 class="fw-bold mb-0" style="color:#1e293b;">회원 관리</h4>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-0" style="font-size:.78rem;">
-                        <li class="breadcrumb-item"><a href="/admin/dashboard/main.do" class="text-decoration-none text-muted">대시보드</a></li>
-                        <li class="breadcrumb-item active text-muted">사용자 관리</li>
+                        <li class="breadcrumb-item"><a href="<c:url value='/admin/dashboard/main.do'/>" class="text-decoration-none text-muted">대시보드</a></li>
+                        <li class="breadcrumb-item active text-muted">회원 관리</li>
                     </ol>
                 </nav>
             </div>
-            <a href="/admin/user/userForm.do" class="btn btn-primary px-4 shadow-sm"
+            <a href="<c:url value='/admin/user/userForm.do'/>" class="btn btn-primary px-4 shadow-sm"
                style="border-radius:10px; font-weight:600; font-size:.85rem;">
                 <i class="bi bi-person-plus-fill me-2"></i>신규 등록
             </a>
@@ -332,7 +332,7 @@
                 <i class="bi bi-funnel-fill"></i> 검색 조건
             </div>
             <form:form modelAttribute="searchVO" id="searchForm" name="searchForm"
-                       method="get" action="/admin/user/userList.do">
+                       method="get" action="${pageContext.request.contextPath}/admin/user/userList.do">
                 <form:hidden path="pageIndex" id="pageIndex"/>
 
                 <div class="row g-3 align-items-end">
@@ -387,7 +387,7 @@
                             <button type="submit" class="btn btn-primary btn-sm flex-fill fw-semibold">
                                 <i class="bi bi-search me-1"></i>검색
                             </button>
-                            <a href="/admin/user/userList.do" class="btn btn-outline-secondary btn-sm"
+                            <a href="<c:url value='/admin/user/userList.do'/>" class="btn btn-outline-secondary btn-sm"
                                title="초기화">
                                 <i class="bi bi-arrow-counterclockwise"></i>
                             </a>
@@ -407,7 +407,7 @@
             <div class="list-card-header">
                 <div class="title-block">
                     <i class="bi bi-table" style="color:#4361ee; font-size:1.1rem;"></i>
-                    <span class="title-text">사용자 목록</span>
+                    <span class="title-text">회원 목록</span>
                     <span class="count-badge">총 ${paginationInfo.totalRecordCount}명</span>
                 </div>
                 <div class="d-flex align-items-center gap-2">
@@ -584,7 +584,7 @@
                                             <div class="action-btn-group">
 
                                                 <!-- 수정 -->
-                                                <a href="/admin/user/userForm.do?userId=${item.userId}"
+                                                <a href="<c:url value='/admin/user/userForm.do?userId=${item.userId}'/>"
                                                    class="btn-action" title="수정">
                                                     <i class="bi bi-pencil-fill"></i>
                                                 </a>
@@ -760,7 +760,7 @@ function fn_changeStatus(userId, newStatus) {
     if (!confirm('[' + labelMap[newStatus] + ']으로 상태를 변경하시겠습니까?')) return;
 
     $.ajax({
-        url:  '/admin/user/updateStatus.ajax',
+        url:  "<c:url value='/admin/user/updateStatus.ajax'/>",
         type: 'POST',
         data: { userId: userId, status: newStatus },
         success: function(res) {

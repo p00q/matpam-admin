@@ -24,14 +24,12 @@
         <result property="companyName" column="company_name"/>
         <result property="tenantName"  column="tenant_name"/>
         <result property="channelName" column="channel_name"/>
-        <result property="channelCode" column="channel_code"/>
+        <result property="channelType" column="channel_type"/>
     </resultMap>
 
     <resultMap id="tenantMap" type="kr.co.matpam.admin.tenant.service.TenantVO">
         <id   property="tenantId"        column="tenant_id"/>
-        <result property="tenantCode"    column="tenant_code"/>
         <result property="tenantName"    column="tenant_name"/>
-        <result property="sellerCompanyId" column="seller_company_id"/>
         <result property="status"        column="status"/>
         <result property="createdAt"     column="created_at"/>
         <result property="updatedAt"     column="updated_at"/>
@@ -40,7 +38,7 @@
     <resultMap id="channelMap" type="kr.co.matpam.admin.tenant.service.ChannelVO">
         <id   property="channelId"   column="channel_id"/>
         <result property="tenantId"  column="tenant_id"/>
-        <result property="channelCode" column="channel_code"/>
+        <result property="channelType" column="channel_type"/>
         <result property="channelName" column="channel_name"/>
         <result property="status"    column="status"/>
         <result property="sortOrder" column="sort_order"/>
@@ -84,7 +82,7 @@
             c.company_name,
             t.tenant_name,
             ch.channel_name,
-            ch.channel_code
+            ch.channel_type
         FROM tb_user u
         LEFT JOIN tb_company  c  ON u.company_id  = c.company_id
         LEFT JOIN tb_tenant   t  ON u.tenant_id   = t.tenant_id
@@ -115,7 +113,7 @@
             c.company_name,
             t.tenant_name,
             ch.channel_name,
-            ch.channel_code
+            ch.channel_type
         FROM tb_user u
         LEFT JOIN tb_company  c  ON u.company_id  = c.company_id
         LEFT JOIN tb_tenant   t  ON u.tenant_id   = t.tenant_id
@@ -183,7 +181,7 @@
          폼 옵션: 활성 테넌트 목록
     ================================================================ -->
     <select id="selectActiveTenantList" resultMap="tenantMap">
-        SELECT tenant_id, tenant_code, tenant_name, seller_company_id, status, created_at, updated_at
+        SELECT tenant_id, tenant_name, status, created_at, updated_at
         FROM tb_tenant
         WHERE status = 'ACTIVE'
         ORDER BY tenant_name ASC
@@ -195,11 +193,11 @@
     <select id="selectChannelListByTenant"
             parameterType="long"
             resultMap="channelMap">
-        SELECT channel_id, tenant_id, channel_code, channel_name, status, sort_order
+        SELECT channel_id, tenant_id, channel_type, channel_name, status
         FROM tb_channel
         WHERE tenant_id = #{tenantId}
           AND status = 'ACTIVE'
-        ORDER BY sort_order ASC
+        ORDER BY channel_name ASC
     </select>
 
     <!-- ================================================================
@@ -225,9 +223,11 @@
     <select id="selectSellerCompanyIdByTenant"
             parameterType="long"
             resultType="long">
-        SELECT seller_company_id
-        FROM tb_tenant
+        SELECT company_id
+        FROM tb_company
         WHERE tenant_id = #{tenantId}
+          AND company_type = 'SELLER'
+        LIMIT 1
     </select>
 
     <!-- ================================================================

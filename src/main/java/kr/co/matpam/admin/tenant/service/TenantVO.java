@@ -9,9 +9,7 @@ import java.util.Date;
 public class TenantVO extends MatpamBaseVO {
 
     private Long tenantId;
-    private String tenantCode;
     private String tenantName;
-    private Long sellerCompanyId;
     private String status;
     private Date createdAt;
     private Date updatedAt;
@@ -20,14 +18,8 @@ public class TenantVO extends MatpamBaseVO {
     public Long getTenantId() { return tenantId; }
     public void setTenantId(Long tenantId) { this.tenantId = tenantId; }
 
-    public String getTenantCode() { return tenantCode; }
-    public void setTenantCode(String tenantCode) { this.tenantCode = tenantCode; }
-
     public String getTenantName() { return tenantName; }
     public void setTenantName(String tenantName) { this.tenantName = tenantName; }
-
-    public Long getSellerCompanyId() { return sellerCompanyId; }
-    public void setSellerCompanyId(Long sellerCompanyId) { this.sellerCompanyId = sellerCompanyId; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

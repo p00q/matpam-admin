@@ -46,7 +46,15 @@ public class AuditAspect {
                 } else {
                     changedData = "SUCCESS";
                 }
-                auditMapper.insertAuditLog(tenantId, className, methodName, changedData, "SUCCESS", userId);
+                
+                kr.co.matpam.admin.common.service.AuditVO auditVO = new kr.co.matpam.admin.common.service.AuditVO();
+                auditVO.setTenantId(tenantId);
+                auditVO.setEntityName(className);
+                auditVO.setActionType(methodName);
+                auditVO.setAfterJson(changedData);
+                auditVO.setActorUserId(userId);
+                
+                auditMapper.insertAuditLog(auditVO);
             }
         } catch (Exception e) {
             // 로깅 실패가 비즈니스 로직에 영향을 주지 않도록 예외 처리

@@ -14,6 +14,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        
         HttpSession session = request.getSession();
         kr.co.matpam.admin.common.service.LoginVO loginVO = (kr.co.matpam.admin.common.service.LoginVO) session.getAttribute("loginVO");
 
@@ -43,26 +44,35 @@ public class AuthInterceptor implements HandlerInterceptor {
         String pageTitle = "대시보드";
 
         if (uri.contains("/member/")) {
-            currentMenu = "member";
-            pageTitle = "회원 관리";
+            currentMenu = "op_admin";
+            pageTitle = "관리자/권한관리";
+        } else if (uri.contains("/company/")) {
+            String type = request.getParameter("companyType");
+            if ("SELLER".equals(type)) {
+                currentMenu = "comp_seller";
+                pageTitle = "판매업체 관리";
+            } else if ("BUYER".equals(type)) {
+                currentMenu = "comp_buyer";
+                pageTitle = "구매업체 관리";
+            } else {
+                currentMenu = "comp_company";
+                pageTitle = "업체 관리";
+            }
         } else if (uri.contains("/order/")) {
             currentMenu = "order";
             pageTitle = "주문 관리";
-        } else if (uri.contains("/product/sales")) {
+        } else if (uri.contains("/product/")) {
             currentMenu = "product";
-            pageTitle = "판매상품 관리";
-        } else if (uri.contains("/product/component")) {
-            currentMenu = "component";
-            pageTitle = "구성상품 관리";
+            pageTitle = "상품 관리";
         } else if (uri.contains("/settlement/")) {
-            currentMenu = "settlement";
+            currentMenu = "settle";
             pageTitle = "정산 관리";
-        } else if (uri.contains("/basic/") || uri.contains("/code/")) {
-            currentMenu = "basic";
-            pageTitle = "시스템 설정";
-        } else if (uri.contains("/dashboard/")) {
-            currentMenu = "dashboard";
-            pageTitle = "대시보드";
+        } else if (uri.contains("/transport/")) {
+            currentMenu = "transport";
+            pageTitle = "배송/운송 관리";
+        } else if (uri.contains("/code/")) {
+            currentMenu = "op_code";
+            pageTitle = "공통코드 관리";
         }
 
         request.setAttribute("currentMenu", currentMenu);

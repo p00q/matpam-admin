@@ -29,6 +29,17 @@ public class CompanyVO extends MatpamBaseVO {
     private Date createdAt;
     private Date updatedAt;
 
+    // 추가된 필드 (Join 및 상세 정보용)
+    private String channelName;
+    private String bankName;
+    private String accountNo;
+    private String accountHolder;
+    private String memberGrade;
+    private Date creditAgreementDt;
+    private java.math.BigDecimal creditLimitAmount;
+    private java.math.BigDecimal advanceBalance;
+    private java.math.BigDecimal meatMoneyBalance;
+
     // Getter & Setter
     public Long getCompanyId() { return companyId; }
     public void setCompanyId(Long companyId) { this.companyId = companyId; }
@@ -90,4 +101,31 @@ public class CompanyVO extends MatpamBaseVO {
 
     public Date getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Date updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getChannelName() { return channelName; }
+    public void setChannelName(String channelName) { this.channelName = channelName; }
+
+    public String getBankName() { return bankName; }
+    public void setBankName(String bankName) { this.bankName = bankName; }
+
+    public String getAccountNo() { return accountNo; }
+    public void setAccountNo(String accountNo) { this.accountNo = accountNo; }
+
+    public String getAccountHolder() { return accountHolder; }
+    public void setAccountHolder(String accountHolder) { this.accountHolder = accountHolder; }
+
+    public String getMemberGrade() { return memberGrade; }
+    public void setMemberGrade(String memberGrade) { this.memberGrade = memberGrade; }
+
+    public Date getCreditAgreementDt() { return creditAgreementDt; }
+    public void setCreditAgreementDt(Date creditAgreementDt) { this.creditAgreementDt = creditAgreementDt; }
+
+    public java.math.BigDecimal getCreditLimitAmount() { return creditLimitAmount; }
+    public void setCreditLimitAmount(java.math.BigDecimal creditLimitAmount) { this.creditLimitAmount = creditLimitAmount; }
+
+    public java.math.BigDecimal getAdvanceBalance() { return advanceBalance; }
+    public void setAdvanceBalance(java.math.BigDecimal advanceBalance) { this.advanceBalance = advanceBalance; }
+
+    public java.math.BigDecimal getMeatMoneyBalance() { return meatMoneyBalance; }
+    public void setMeatMoneyBalance(java.math.BigDecimal meatMoneyBalance) { this.meatMoneyBalance = meatMoneyBalance; }
 }

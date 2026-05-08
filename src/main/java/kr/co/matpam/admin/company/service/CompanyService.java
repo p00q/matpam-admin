@@ -15,6 +15,7 @@ public interface CompanyService {
     void insertCompany(CompanyVO vo) throws Exception;
     void updateCompany(CompanyVO vo) throws Exception;
     void updateCompanyStatus(CompanyVO vo) throws Exception;
+    List<CompanyVO> selectCompanySearch(CompanyVO vo) throws Exception;
 
     /* ── 담당자 ── */
     List<CompanyContactVO> selectCompanyContactList(CompanyVO vo) throws Exception;
@@ -22,4 +23,14 @@ public interface CompanyService {
     void insertCompanyContact(CompanyContactVO vo) throws Exception;
     void updateCompanyContact(CompanyContactVO vo) throws Exception;
     void deleteCompanyContact(CompanyContactVO vo) throws Exception;
+
+    /* ── 계좌 ── */
+    List<CompanyBankAccountVO> selectCompanyBankAccountList(Long companyId) throws Exception;
+    void saveCompanyBankAccount(CompanyBankAccountVO vo) throws Exception;
+    void deleteCompanyBankAccount(Long bankAccountId) throws Exception;
+
+    /* ── 중복 체크 및 채널 매핑 ── */
+    boolean checkBusinessNoDuplicate(Long tenantId, String businessNo, Long excludeCompanyId) throws Exception;
+    void saveCompanyChannelMappings(Long tenantId, Long companyId, java.util.List<java.util.Map<String, Object>> channels) throws Exception;
+    List<java.util.Map<String, Object>> selectCompanyChannelList(Long companyId) throws Exception;
 }

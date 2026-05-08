@@ -64,38 +64,62 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th class="text-center" style="width: 80px;">ID</th>
+                            <th class="text-center" style="width: 60px;">ID</th>
+                            <th>채널</th>
                             <th>업체명</th>
                             <th>사업자번호</th>
                             <th>대표자</th>
-                            <th class="text-center">타입</th>
-                            <th class="text-center">과세/유형</th>
+                            <th>연락처/이메일</th>
+                            <c:choose>
+                                <c:when test="${searchVO.companyType == 'BUYER'}">
+                                    <th>등급/여신약정</th>
+                                    <th>여신/선입금/미트머니</th>
+                                </c:when>
+                                <c:otherwise>
+                                    <th>과세유형</th>
+                                </c:otherwise>
+                            </c:choose>
                             <th class="text-center">상태</th>
-                            <th class="text-center">등록일</th>
-                            <th class="text-center" style="width: 150px;">관리</th>
+                            <th class="text-center" style="width: 100px;">관리</th>
                         </tr>
                     </thead>
                     <tbody>
                         <c:forEach var="item" items="${companyList}" varStatus="status">
                             <tr>
-                                <td class="text-center text-muted">${item.companyId}</td>
-                                <td class="fw-bold">${item.companyName}</td>
+                                <td class="text-center text-muted small">${item.companyId}</td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">${item.channelName}</span>
+                                </td>
+                                <td>
+                                    <div class="fw-bold">${item.companyName}</div>
+                                    <small class="text-muted">${item.address1} ${item.address2}</small>
+                                </td>
                                 <td>${item.businessNo}</td>
                                 <td>${item.ceoName}</td>
-                                <td class="text-center">
-                                    <span class="badge ${item.companyType == 'SELLER' ? 'bg-primary' : 'bg-info'}">
-                                        ${item.companyType}
-                                    </span>
+                                <td>
+                                    <div><i class="bi bi-telephone small me-1"></i>${item.phone}</div>
+                                    <div class="small text-muted"><i class="bi bi-envelope small me-1"></i>${item.email}</div>
                                 </td>
-                                <td class="text-center">
-                                    <c:if test="${item.companyType == 'SELLER'}">
-                                        <span class="badge ${item.defaultTaxType == 'TAXABLE' ? 'bg-warning text-dark' : 'bg-success'} mb-1">
-                                            ${item.defaultTaxType == 'TAXABLE' ? '과세' : '면세'}
-                                        </span>
-                                        <br/>
-                                        <small class="text-muted">${item.sellerType}</small>
-                                    </c:if>
-                                </td>
+                                <c:choose>
+                                    <c:when test="${item.companyType == 'BUYER'}">
+                                        <td>
+                                            <span class="badge bg-info mb-1">${item.memberGrade}</span>
+                                            <div class="small text-muted"><fmt:formatDate value="${item.creditAgreementDt}" pattern="yyyy-MM-dd" /></div>
+                                        </td>
+                                        <td>
+                                            <div class="small">여신: <fmt:formatNumber value="${item.creditLimitAmount}" type="number"/></div>
+                                            <div class="small">선입: <fmt:formatNumber value="${item.advanceBalance}" type="number"/></div>
+                                            <div class="small">미트: <fmt:formatNumber value="${item.meatMoneyBalance}" type="number"/></div>
+                                        </td>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <td>
+                                            <span class="badge ${item.defaultTaxType == 'TAXABLE' ? 'bg-warning text-dark' : 'bg-success'}">
+                                                ${item.defaultTaxType == 'TAXABLE' ? '과세' : '면세'}
+                                            </span>
+                                        </td>
+                                    </c:otherwise>
+                                </c:choose>
                                 <td class="text-center">
                                     <c:choose>
                                         <c:when test="${item.status == 'ACTIVE'}">
@@ -107,15 +131,12 @@
                                     </c:choose>
                                 </td>
                                 <td class="text-center">
-                                    <fmt:formatDate value="${item.createdAt}" pattern="yyyy-MM-dd" />
-                                </td>
-                                <td class="text-center">
-                                    <div class="btn-group btn-group-sm">
-                                        <a href="<c:url value='/admin/company/companyForm.do?companyId=${item.companyId}'/>" class="btn btn-outline-primary" title="수정">
-                                            <i class="fas fa-edit"></i>
+                                    <div class="btn-group btn-group-sm shadow-sm">
+                                        <a href="<c:url value='/admin/company/companyForm.do?companyId=${item.companyId}'/>" class="btn btn-white" title="수정">
+                                            <i class="bi bi-pencil-square text-primary"></i>
                                         </a>
-                                        <button type="button" class="btn btn-outline-danger btn-toggle-status" data-id="${item.companyId}" data-status="${item.status}" title="상태변경">
-                                            <i class="fas ${item.status == 'ACTIVE' ? 'fa-user-slash' : 'fa-user-check'}"></i>
+                                        <button type="button" class="btn btn-white btn-toggle-status" data-id="${item.companyId}" data-status="${item.status}" title="상태변경">
+                                            <i class="bi ${item.status == 'ACTIVE' ? 'bi-toggle-on text-success' : 'bi-toggle-off text-muted'}"></i>
                                         </button>
                                     </div>
                                 </td>
