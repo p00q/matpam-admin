@@ -4,284 +4,20 @@
 <%@ taglib prefix="ui"   uri="http://egovframework.gov/ctl/ui"%>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
 
-<style>
-/* ════════════════════════════════════════════
-   KPI 통계 카드
-════════════════════════════════════════════ */
-.kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
-    margin-bottom: 22px;
-}
-@media (max-width: 1100px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 600px)  { .kpi-grid { grid-template-columns: 1fr; } }
-
-.kpi-card {
-    background: #fff;
-    border: 1px solid #e9ecef;
-    border-radius: 14px;
-    padding: 18px 20px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    box-shadow: 0 1px 4px rgba(0,0,0,.05);
-    transition: box-shadow .2s, transform .2s;
-    cursor: default;
-}
-.kpi-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.10); transform: translateY(-2px); }
-
-.kpi-icon {
-    width: 48px; height: 48px;
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.4rem;
-    flex-shrink: 0;
-}
-.kpi-icon.total    { background: #eef2ff; }
-.kpi-icon.active   { background: #d1fae5; }
-.kpi-icon.locked   { background: #fef3c7; }
-.kpi-icon.role     { background: #ede9fe; }
-
-.kpi-body { flex: 1; min-width: 0; }
-.kpi-label { font-size: .75rem; color: #6c757d; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px; }
-.kpi-value { font-size: 1.65rem; font-weight: 800; color: #1e293b; line-height: 1; }
-.kpi-sub   { font-size: .72rem; color: #94a3b8; margin-top: 3px; }
-
-/* ════════════════════════════════════════════
-   검색 패널
-════════════════════════════════════════════ */
-.search-panel {
-    background: #fff;
-    border: 1px solid #e9ecef;
-    border-radius: 14px;
-    padding: 18px 22px;
-    margin-bottom: 18px;
-    box-shadow: 0 1px 4px rgba(0,0,0,.04);
-}
-.search-panel .panel-title {
-    font-size: .82rem;
-    font-weight: 700;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: .6px;
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-/* ════════════════════════════════════════════
-   목록 카드
-════════════════════════════════════════════ */
-.list-card {
-    background: #fff;
-    border: 1px solid #e9ecef;
-    border-radius: 14px;
-    overflow: hidden;
-    box-shadow: 0 1px 4px rgba(0,0,0,.05);
-}
-.list-card-header {
-    padding: 14px 20px;
-    border-bottom: 1px solid #f1f5f9;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #fff;
-}
-.list-card-header .title-block {
-    display: flex; align-items: center; gap: 10px;
-}
-.list-card-header .title-text {
-    font-weight: 700; font-size: .95rem; color: #1e293b;
-}
-.list-card-header .count-badge {
-    background: #f1f5f9;
-    color: #64748b;
-    border-radius: 20px;
-    padding: 2px 10px;
-    font-size: .75rem;
-    font-weight: 600;
-}
-
-/* ════════════════════════════════════════════
-   테이블
-════════════════════════════════════════════ */
-.user-table { width: 100%; border-collapse: collapse; }
-.user-table thead tr {
-    background: #f8fafc;
-    border-bottom: 2px solid #e9ecef;
-}
-.user-table thead th {
-    padding: 11px 14px;
-    font-size: .75rem;
-    font-weight: 700;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: .5px;
-    white-space: nowrap;
-}
-.user-table tbody tr {
-    border-bottom: 1px solid #f1f5f9;
-    transition: background .15s;
-}
-.user-table tbody tr:hover { background: #fafbff; }
-.user-table tbody tr:last-child { border-bottom: none; }
-.user-table td { padding: 13px 14px; vertical-align: middle; font-size: .88rem; }
-
-/* 사용자 아이덴티티 셀 */
-.user-identity { display: flex; align-items: center; gap: 10px; }
-.user-avatar {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: .85rem; font-weight: 700;
-    flex-shrink: 0;
-    color: #fff;
-}
-.avatar-SUPER_ADMIN   { background: linear-gradient(135deg,#1e293b,#475569); }
-.avatar-SELLER_ADMIN  { background: linear-gradient(135deg,#4361ee,#3a86ff); }
-.avatar-CHANNEL_ADMIN { background: linear-gradient(135deg,#7c3aed,#a855f7); }
-.avatar-BUYER_ADMIN   { background: linear-gradient(135deg,#059669,#34d399); }
-
-.user-id-text   { font-weight: 700; color: #1e293b; font-size: .88rem; }
-.user-name-text { font-size: .77rem; color: #64748b; }
-
-/* 역할 뱃지 */
-.role-badge {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: .73rem;
-    font-weight: 700;
-    white-space: nowrap;
-}
-.role-SUPER_ADMIN   { background: #1e293b; color: #fff; }
-.role-SELLER_ADMIN  { background: #dbeafe; color: #1d4ed8; }
-.role-CHANNEL_ADMIN { background: #ede9fe; color: #6d28d9; }
-.role-BUYER_ADMIN   { background: #d1fae5; color: #065f46; }
-
-/* 상태 뱃지 */
-.status-badge {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: .73rem;
-    font-weight: 700;
-}
-.status-ACTIVE   { background: #d1fae5; color: #065f46; }
-.status-LOCKED   { background: #fef3c7; color: #92400e; }
-.status-INACTIVE { background: #f1f5f9; color: #64748b; }
-.status-dot {
-    width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
-}
-.dot-ACTIVE   { background: #10b981; }
-.dot-LOCKED   { background: #f59e0b; }
-.dot-INACTIVE { background: #94a3b8; }
-
-/* 소속 정보 셀 */
-.affil-company { font-weight: 600; color: #1e293b; font-size: .83rem; }
-.affil-tenant  { font-size: .72rem; color: #94a3b8; margin-top: 1px; }
-.affil-channel {
-    display: inline-block;
-    margin-top: 3px;
-    padding: 1px 7px;
-    background: #f0f4ff;
-    color: #4361ee;
-    border-radius: 4px;
-    font-size: .68rem;
-    font-weight: 600;
-}
-
-/* 연락처 셀 */
-.contact-mobile { font-size: .82rem; color: #374151; }
-.contact-email  { font-size: .72rem; color: #94a3b8; }
-
-/* 날짜 셀 */
-.date-main { font-size: .82rem; color: #374151; }
-.date-sub  { font-size: .7rem;  color: #94a3b8; }
-
-/* 관리 버튼 */
-.action-btn-group { display: flex; gap: 5px; justify-content: center; flex-wrap: nowrap; }
-.btn-action {
-    width: 30px; height: 30px;
-    border-radius: 7px;
-    border: 1px solid #e2e8f0;
-    background: #fff;
-    display: flex; align-items: center; justify-content: center;
-    font-size: .78rem;
-    cursor: pointer;
-    transition: all .15s;
-    text-decoration: none;
-    color: #475569;
-}
-.btn-action:hover { background: #f0f4ff; border-color: #4361ee; color: #4361ee; }
-.btn-action.danger:hover { background: #fff1f2; border-color: #ef4444; color: #ef4444; }
-.btn-action.warn:hover   { background: #fffbeb; border-color: #f59e0b; color: #f59e0b; }
-.btn-action.success:hover{ background: #f0fdf4; border-color: #10b981; color: #10b981; }
-
-/* 빈 상태 */
-.empty-state {
-    padding: 60px 0;
-    text-align: center;
-    color: #94a3b8;
-}
-.empty-icon { font-size: 3rem; margin-bottom: 12px; }
-.empty-text { font-size: .9rem; }
-
-/* 페이지네이션 */
-.pagination-wrap {
-    padding: 14px 20px;
-    border-top: 1px solid #f1f5f9;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 10px;
-    background: #fff;
-}
-.pagination-info { font-size: .78rem; color: #94a3b8; }
-.pagination .page-link {
-    border-radius: 7px !important;
-    margin: 0 2px;
-    font-size: .82rem;
-    color: #475569;
-    border-color: #e9ecef;
-    padding: 5px 10px;
-}
-.pagination .page-item.active .page-link {
-    background: #4361ee; border-color: #4361ee; color: #fff;
-}
-.pagination .page-link:hover {
-    background: #f0f4ff; color: #4361ee; border-color: #c7d2fe;
-}
-
-/* 상태변경 드롭다운 */
-.status-dropdown .dropdown-item {
-    font-size: .82rem; padding: 7px 14px; display: flex; align-items: center; gap: 7px;
-}
-.status-dropdown .dropdown-item:active { background: #f0f4ff; color: #4361ee; }
-</style>
-
 <div class="container-fluid px-0">
 
     <!-- ── 페이지 헤더 ── -->
     <div class="px-4 pt-3 pb-1">
         <div class="d-flex align-items-center justify-content-between mb-1">
-            <div>
-                <h4 class="fw-bold mb-0" style="color:#1e293b;">회원 관리</h4>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0" style="font-size:.78rem;">
-                        <li class="breadcrumb-item"><a href="<c:url value='/admin/dashboard/main.do'/>" class="text-decoration-none text-muted">대시보드</a></li>
-                        <li class="breadcrumb-item active text-muted">회원 관리</li>
-                    </ol>
-                </nav>
-            </div>
-            <a href="<c:url value='/admin/user/userForm.do'/>" class="btn btn-primary px-4 shadow-sm"
-               style="border-radius:10px; font-weight:600; font-size:.85rem;">
-                <i class="bi bi-person-plus-fill me-2"></i>신규 등록
-            </a>
+            <h4 class="fw-bold mb-0" style="color:#1e293b;"><i class="bi bi-people-fill me-2"></i>${pageTitle}</h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0" style="font-size:.78rem;">
+                    <li class="breadcrumb-item"><a href="<c:url value='/admin/dashboard/main.do'/>" class="text-decoration-none text-muted">대시보드</a></li>
+                    <li class="breadcrumb-item active text-muted">회원 관리</li>
+                </ol>
+            </nav>
         </div>
+
     </div>
 
     <div class="px-4 py-3">
@@ -299,27 +35,19 @@
                 </div>
             </div>
             <div class="kpi-card">
-                <div class="kpi-icon active"><i class="bi bi-person-check-fill" style="color:#10b981;"></i></div>
+                <div class="kpi-icon active"><i class="bi bi-check-circle-fill" style="color:#10b981;"></i></div>
                 <div class="kpi-body">
-                    <div class="kpi-label">활성 계정</div>
+                    <div class="kpi-label">정상 계정</div>
                     <div class="kpi-value" id="kpiActive">-</div>
-                    <div class="kpi-sub" id="kpiActiveSub">로그인 가능</div>
+                    <div class="kpi-sub">로그인 가능 상태</div>
                 </div>
             </div>
             <div class="kpi-card">
                 <div class="kpi-icon locked"><i class="bi bi-lock-fill" style="color:#f59e0b;"></i></div>
                 <div class="kpi-body">
-                    <div class="kpi-label">잠금 / 비활성</div>
+                    <div class="kpi-label">잠김/중지</div>
                     <div class="kpi-value" id="kpiLocked">-</div>
-                    <div class="kpi-sub">LOCKED + INACTIVE</div>
-                </div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-icon role"><i class="bi bi-diagram-3-fill" style="color:#7c3aed;"></i></div>
-                <div class="kpi-body">
-                    <div class="kpi-label">역할 분포</div>
-                    <div class="kpi-value" id="kpiRoleSummary" style="font-size:1rem; padding-top:4px;">-</div>
-                    <div class="kpi-sub">판매처 / 채널 / 구매처</div>
+                    <div class="kpi-sub">관리자 확인 필요</div>
                 </div>
             </div>
         </div>
@@ -348,17 +76,21 @@
                         </form:select>
                     </div>
 
-                    <!-- 역할 -->
+                    <!-- 역할 (특정 역할 목록일 경우 숨김) -->
+                    <c:if test="${empty searchVO.userRole}">
                     <div class="col-xl-2 col-md-4 col-sm-6">
                         <label class="form-label fw-semibold" style="font-size:.8rem;">역할</label>
                         <form:select path="userRole" class="form-select form-select-sm">
                             <form:option value="" label="-- 전체 --"/>
                             <form:option value="SUPER_ADMIN"   label="🛡 수퍼관리자"/>
                             <form:option value="SELLER_ADMIN"  label="🏭 판매처관리자"/>
-                            <form:option value="CHANNEL_ADMIN" label="📦 채널관리자"/>
                             <form:option value="BUYER_ADMIN"   label="🛒 구매처관리자"/>
                         </form:select>
                     </div>
+                    </c:if>
+                    <c:if test="${not empty searchVO.userRole}">
+                        <form:hidden path="userRole"/>
+                    </c:if>
 
                     <!-- 상태 -->
                     <div class="col-xl-2 col-md-4 col-sm-6">
@@ -419,12 +151,17 @@
                         <option value="50"  ${searchVO.pageUnit == 50  ? 'selected' : ''}>50건</option>
                         <option value="100" ${searchVO.pageUnit == 100 ? 'selected' : ''}>100건</option>
                     </select>
+                    <button type="button" class="btn btn-primary btn-sm px-3 shadow-sm"
+                            style="border-radius:8px; font-weight:600;"
+                            onclick="fn_openUserModal(null, '${searchVO.userRole}')">
+                        <i class="bi bi-person-plus-fill me-1"></i>신규 등록
+                    </button>
                 </div>
             </div>
 
             <!-- 테이블 -->
             <div class="table-responsive">
-                <table class="user-table">
+                <table class="premium-data-table">
                     <thead>
                         <tr>
                             <th class="text-center" style="width:44px;">No</th>
@@ -442,6 +179,7 @@
                         <c:choose>
                             <c:when test="${not empty userList}">
                                 <c:forEach var="item" items="${userList}" varStatus="st">
+                                    <c:if test="${item.userRole != 'CHANNEL_ADMIN' and item.userRole != 'OPERATOR'}">
                                     <tr id="row-${item.userId}">
 
                                         <!-- No -->
@@ -451,7 +189,7 @@
 
                                         <!-- 사용자 (아바타 + ID + 이름) -->
                                         <td>
-                                            <div class="user-identity">
+                                            <div class="user-identity" style="display: flex; align-items: center; gap: 12px;">
                                                 <div class="user-avatar avatar-${item.userRole}">
                                                     ${fn:substring(item.userName, 0, 1)}
                                                 </div>
@@ -477,12 +215,17 @@
                                                 </c:when>
                                                 <c:when test="${item.userRole == 'CHANNEL_ADMIN'}">
                                                     <span class="role-badge role-CHANNEL_ADMIN">
-                                                        <i class="bi bi-box-seam"></i> 채널관리자
+                                                        <i class="bi bi-diagram-3"></i> 채널 운영자
                                                     </span>
                                                 </c:when>
                                                 <c:when test="${item.userRole == 'BUYER_ADMIN'}">
                                                     <span class="role-badge role-BUYER_ADMIN">
                                                         <i class="bi bi-cart3"></i> 구매처관리자
+                                                    </span>
+                                                </c:when>
+                                                <c:when test="${item.userRole == 'OPERATOR'}">
+                                                    <span class="role-badge" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;">
+                                                        <i class="bi bi-person-badge"></i> 운영자
                                                     </span>
                                                 </c:when>
                                                 <c:otherwise>
@@ -492,6 +235,7 @@
                                                 </c:otherwise>
                                             </c:choose>
                                         </td>
+
 
                                         <!-- 소속 정보 -->
                                         <td>
@@ -584,10 +328,10 @@
                                             <div class="action-btn-group">
 
                                                 <!-- 수정 -->
-                                                <a href="<c:url value='/admin/user/userForm.do?userId=${item.userId}'/>"
-                                                   class="btn-action" title="수정">
-                                                    <i class="bi bi-pencil-fill"></i>
-                                                </a>
+                                                 <a href="javascript:;" onclick="fn_openUserModal(${item.userId})"
+                                                    class="btn-action" title="수정">
+                                                     <i class="bi bi-pencil-fill"></i>
+                                                 </a>
 
                                                 <!-- 상태 변경 드롭다운 -->
                                                 <div class="dropdown">
@@ -636,6 +380,7 @@
                                         </td>
 
                                     </tr>
+                                    </c:if>
                                 </c:forEach>
                             </c:when>
                             <c:otherwise>
@@ -730,6 +475,8 @@
     </div><!-- /px-4 -->
 </div>
 
+</div>
+
 <!-- ════════════════════════════════════════════
      JavaScript
 ════════════════════════════════════════════ -->
@@ -813,18 +560,20 @@ function fn_updateStatusCell(userId, status) {
 /* ── KPI 통계 로드 ── */
 function fn_loadStats() {
     $.ajax({
-        url:  '/admin/user/userStats.ajax',
+        url:  "<c:url value='/admin/user/userStats.ajax'/>",
         type: 'GET',
+        data: { 
+            userRole: '${searchVO.userRole}', 
+            searchCondition: '${searchVO.searchCondition}' 
+        },
         success: function(res) {
             if (!res.success) return;
 
             $('#kpiTotal').text(res.total.toLocaleString());
             $('#kpiActive').text(res.activeCount.toLocaleString());
-            $('#kpiActiveSub').text('잠금 ' + res.lockedCount + '명 포함');
             $('#kpiLocked').text((res.lockedCount + (res.total - res.activeCount - res.lockedCount)).toLocaleString());
 
             // 역할 분포 요약
-            const roleSummary = res.sellerCount + ' / ' + res.channelCount + ' / ' + res.buyerCount;
             $('#kpiRoleSummary').html(
                 '<span style="color:#1d4ed8;">' + res.sellerCount + '</span>' +
                 ' <span style="color:#94a3b8;font-size:.75rem;font-weight:400;">판매</span> · ' +
@@ -836,6 +585,39 @@ function fn_loadStats() {
         }
     });
 }
+
+/* ── 회원 등록/수정 모달 열기 ── */
+function fn_openUserModal(userId, userRole) {
+    let url = "<c:url value='/admin/user/userForm.do'/>?isModal=Y";
+    if (userId) url += "&userId=" + userId;
+    if (userRole) url += "&userRole=" + userRole;
+    
+    const title = userId ? "회원 정보 수정" : "신규 회원 등록";
+    fn_openAdminModal(url, title);
+}
+
+/* ── 저장 성공 콜백 (main.jsp 전역 콜백 재정의) ── */
+fn_onSaveSuccess = function() {
+    const modalEl = document.getElementById('adminCommonModal');
+    const modal = bootstrap.Modal.getInstance(modalEl);
+
+    if (modal) {
+        // 모달 fade 애니메이션 완료 후 토스트 표시 (body.modal-open 간섭 방지)
+        $(modalEl).one('hidden.bs.modal', function() {
+            fn_toast('정상적으로 처리되었습니다.', 'success');
+            setTimeout(function() {
+                fn_egov_link_page(1);
+            }, 1500);
+        });
+        modal.hide();
+    } else {
+        // 모달이 없는 경우 (직접 페이지 접근 등) 즉시 표시
+        fn_toast('정상적으로 처리되었습니다.', 'success');
+        setTimeout(function() {
+            fn_egov_link_page(1);
+        }, 1500);
+    }
+};
 
 /* ── 초기화 ── */
 $(function() {

@@ -22,6 +22,9 @@ import kr.co.matpam.admin.company.service.CompanyService;
 import kr.co.matpam.admin.company.service.CompanyVO;
 import kr.co.matpam.admin.user.service.UserService;
 import kr.co.matpam.admin.user.service.UserVO;
+import kr.co.matpam.admin.tenant.service.ChannelVO;
+import kr.co.matpam.admin.tenant.service.SysChannelService;
+import kr.co.matpam.admin.common.service.LoginVO;
 
 /**
  * 사용자 관리 컨트롤러
@@ -35,6 +38,9 @@ public class UserController {
 
     @Resource(name = "companyService")
     private CompanyService companyService;
+
+    @Resource(name = "sysChannelService")
+    private SysChannelService sysChannelService;
 
     @InitBinder
     public void initBinder(WebDataBinder binder) {
@@ -50,6 +56,9 @@ public class UserController {
     @RequestMapping("/admin/user/userList.do")
     public String userList(@ModelAttribute("searchVO") UserVO searchVO,
                            ModelMap model) throws Exception {
+
+        // 일반 회원 조회 모드 설정 (운영자 제외)
+        searchVO.setSearchCondition("MEMBER");
 
         int currentPage      = searchVO.getPageIndex()    != null ? searchVO.getPageIndex()    : 1;
         int recordsPerPage   = searchVO.getPageUnit()     != null ? searchVO.getPageUnit()     : 10;
@@ -70,9 +79,69 @@ public class UserController {
         model.addAttribute("tenants",        userService.selectActiveTenantList());
         model.addAttribute("companies",      companyService.selectCompanyListAll(new CompanyVO()));
         model.addAttribute("contentPage",    "/WEB-INF/jsp/admin/user/UserList.jsp");
+        
+        // 역할별 메뉴 및 제목 처리
+        String role = searchVO.getUserRole();
+        if ("SELLER_ADMIN".equals(role)) {
+            model.addAttribute("currentMenu", "user_seller");
+            model.addAttribute("pageTitle",   "판매회원 관리");
+        } else if ("BUYER_ADMIN".equals(role)) {
+            model.addAttribute("currentMenu", "user_buyer");
+            model.addAttribute("pageTitle",   "구매회원 관리");
+        } else {
+            model.addAttribute("currentMenu", "user_list");
+            model.addAttribute("pageTitle",   "회원관리");
+        }
 
         return "layout/main";
     }
+
+    // ─────────────────────────────────────────────────────────────────
+    // 운영자 목록 (운영관리 > 운영자관리 전용)
+    // ─────────────────────────────────────────────────────────────────
+
+    @RequestMapping("/admin/user/operatorList.do")
+    public String operatorList(@ModelAttribute("searchVO") UserVO searchVO,
+                               ModelMap model) throws Exception {
+
+        // 운영자 조회 모드 설정 (OPERATOR, CHANNEL_ADMIN만 포함)
+        searchVO.setSearchCondition("OPERATOR");
+        
+        // 운영자·채널운영자만 필터
+        if (searchVO.getUserRole() == null || searchVO.getUserRole().isEmpty()) {
+            searchVO.setUserRole(null); // 전체(OPERATOR+CHANNEL_ADMIN) 표시 - WHERE 조건 없음으로
+        }
+
+        int currentPage    = searchVO.getPageIndex()  != null ? searchVO.getPageIndex()  : 1;
+        int recordsPerPage = searchVO.getPageUnit()   != null ? searchVO.getPageUnit()   : 10;
+
+        PaginationInfo paginationInfo = new PaginationInfo();
+        paginationInfo.setCurrentPageNo(currentPage);
+        paginationInfo.setRecordCountPerPage(recordsPerPage);
+        paginationInfo.setPageSize(10);
+
+        searchVO.setFirstIndex(paginationInfo.getFirstRecordIndex());
+        searchVO.setRecordCountPerPage(paginationInfo.getRecordCountPerPage());
+        // 운영자 계정만 조회 (tenantId=1 고정)
+        searchVO.setTenantId(1L);
+
+        int totalCount = userService.selectUserListTotCnt(searchVO);
+        paginationInfo.setTotalRecordCount(totalCount);
+
+        // 채널 목록 (역할 필터 드롭다운용)
+        ChannelVO chParam = new ChannelVO();
+        java.util.List<ChannelVO> channelList = sysChannelService.selectChannelList(chParam);
+
+        model.addAttribute("operatorList",   userService.selectUserList(searchVO));
+        model.addAttribute("paginationInfo", paginationInfo);
+        model.addAttribute("channelList",    channelList);
+        model.addAttribute("contentPage",    "/WEB-INF/jsp/admin/user/OperatorList.jsp");
+        model.addAttribute("currentMenu",    "op_operator");
+        model.addAttribute("pageTitle",      "운영자관리");
+
+        return "layout/main";
+    }
+
 
     // ─────────────────────────────────────────────────────────────────
     // 사용자 등록/수정 폼
@@ -80,15 +149,27 @@ public class UserController {
 
     @RequestMapping("/admin/user/userForm.do")
     public String userForm(@RequestParam(value = "userId", required = false) Long userId,
+                           HttpServletRequest request,
                            ModelMap model) throws Exception {
 
+        LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
         UserVO user;
         if (userId == null) {
             user = new UserVO();
             user.setStatus("ACTIVE");
-            user.setUserRole("SELLER_ADMIN");       // 기본 선택 역할
             user.setCreateContactYn("N");
             user.setIsPrimaryContact("N");
+            
+            // 관리자 권한 또는 파라미터에 따른 기본 역할 세팅
+            String reqRole = request.getParameter("userRole");
+            if (reqRole != null && !reqRole.isEmpty()) {
+                user.setUserRole(reqRole);
+            } else if (loginVO != null && !"SUPER_ADMIN".equals(loginVO.getMemberType())) {
+                user.setCompanyId(loginVO.getCompanyId());
+                user.setUserRole("SELLER".equals(loginVO.getMemberType()) ? "SELLER_ADMIN" : "BUYER_ADMIN");
+            } else {
+                user.setUserRole("SELLER_ADMIN"); // 운영자일 경우 기본값
+            }
         } else {
             UserVO param = new UserVO();
             param.setUserId(userId);
@@ -98,7 +179,54 @@ public class UserController {
         // 폼 공통 옵션: 테넌트 목록 (화면 로딩 시 초기 노출)
         model.addAttribute("user",         user);
         model.addAttribute("tenants",      userService.selectActiveTenantList());
-        model.addAttribute("contentPage",  "/WEB-INF/jsp/admin/user/UserForm.jsp");
+        
+        String jspView = "admin/user/UserForm";
+        if ("Y".equalsIgnoreCase(request.getParameter("isModal"))) {
+            return jspView;
+        }
+        
+        model.addAttribute("contentPage",  "/WEB-INF/jsp/" + jspView + ".jsp");
+        model.addAttribute("currentMenu",  "user_form");
+        model.addAttribute("pageTitle",    "회원등록");
+
+        return "layout/main";
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // 운영자 등록/수정 폼 (운영자관리 전용 화면)
+    // ─────────────────────────────────────────────────────────────────
+
+    @RequestMapping("/admin/user/operatorForm.do")
+    public String operatorForm(@RequestParam(value = "userId", required = false) Long userId,
+                               HttpServletRequest request,
+                               ModelMap model) throws Exception {
+
+        UserVO user;
+        if (userId == null) {
+            user = new UserVO();
+            user.setStatus("ACTIVE");
+            user.setUserRole("OPERATOR");     // 기본: 운영자
+        } else {
+            UserVO param = new UserVO();
+            param.setUserId(userId);
+            user = userService.selectUserDetail(param);
+        }
+
+        // 체널 목록 (채널운영자 선택 용)
+        ChannelVO chParam = new ChannelVO();
+        java.util.List<ChannelVO> channelList = sysChannelService.selectChannelList(chParam);
+
+        model.addAttribute("user",        user);
+        model.addAttribute("channelList", channelList);
+        
+        String jspView = "admin/user/OperatorForm";
+        if ("Y".equalsIgnoreCase(request.getParameter("isModal"))) {
+            return jspView;
+        }
+
+        model.addAttribute("contentPage", "/WEB-INF/jsp/" + jspView + ".jsp");
+        model.addAttribute("currentMenu", "op_operator");
+        model.addAttribute("pageTitle",   "운영자관리");
 
         return "layout/main";
     }
@@ -119,6 +247,26 @@ public class UserController {
             Map<String, Object> options = userService.selectFormOptions(userRole, tenantId);
             result.put("success", true);
             result.putAll(options);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+        return result;
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // 사용자 상세 조회 AJAX (모달 연동용)
+    // ─────────────────────────────────────────────────────────────────
+    @RequestMapping("/admin/user/getUser.ajax")
+    @ResponseBody
+    public Map<String, Object> getUser(@RequestParam("userId") Long userId) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            UserVO param = new UserVO();
+            param.setUserId(userId);
+            UserVO user = userService.selectUserDetail(param);
+            result.put("success", true);
+            result.put("user",    user);
         } catch (Exception e) {
             result.put("success", false);
             result.put("message", e.getMessage());
@@ -213,17 +361,26 @@ public class UserController {
 
     @RequestMapping("/admin/user/userStats.ajax")
     @ResponseBody
-    public Map<String, Object> userStats() {
+    public Map<String, Object> userStats(@RequestParam(value = "userRole", required = false) String userRole,
+                                         @RequestParam(value = "searchCondition", required = false) String searchCondition) {
         Map<String, Object> result = new HashMap<>();
         try {
-            // 전체 / 역할별 / 상태별 카운트
+            // 역할별 필터 반영
             UserVO base = new UserVO();
+            base.setUserRole(userRole);
+            base.setSearchCondition(searchCondition != null ? searchCondition : "MEMBER");
             int total = userService.selectUserListTotCnt(base);
 
-            UserVO activeVO = new UserVO(); activeVO.setStatus("ACTIVE");
+            UserVO activeVO = new UserVO(); 
+            activeVO.setStatus("ACTIVE");
+            activeVO.setUserRole(userRole);
+            activeVO.setSearchCondition(base.getSearchCondition());
             int activeCount = userService.selectUserListTotCnt(activeVO);
 
-            UserVO lockedVO = new UserVO(); lockedVO.setStatus("LOCKED");
+            UserVO lockedVO = new UserVO(); 
+            lockedVO.setStatus("LOCKED");
+            lockedVO.setUserRole(userRole);
+            lockedVO.setSearchCondition(base.getSearchCondition());
             int lockedCount = userService.selectUserListTotCnt(lockedVO);
 
             UserVO superVO = new UserVO(); superVO.setUserRole("SUPER_ADMIN");
@@ -248,6 +405,102 @@ public class UserController {
             result.put("buyerCount",   buyerCount);
         } catch (Exception e) {
             result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+        return result;
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // 채널 관리 (통합 이식)
+    // ─────────────────────────────────────────────────────────────────
+
+    @RequestMapping("/admin/sysChannel/channelForm.do")
+    public String channelForm(HttpServletRequest request, ModelMap model) throws Exception {
+        String channelIdStr = request.getParameter("channelId");
+        Long channelId = (channelIdStr != null && !channelIdStr.isEmpty() && !"null".equals(channelIdStr)) ? Long.parseLong(channelIdStr) : null;
+        
+        LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
+        Long companyId = (loginVO != null && !("SUPER_ADMIN".equals(loginVO.getMemberType()) || "SUPER".equals(loginVO.getMemberType()))) 
+                         ? loginVO.getCompanyId() : 1L;
+
+        ChannelVO channel = (channelId != null && channelId > 0) ? sysChannelService.selectChannelDetail(channelId) : new ChannelVO();
+        if (channel.getChannelId() == null) {
+            channel.setCompanyId(companyId);
+            channel.setStatus("ACTIVE");
+        }
+
+        // 기존 채널 유형 목록 조회 → 신규 등록 시 중복 유형 비활성화 처리용
+        ChannelVO searchVO = new ChannelVO();
+        searchVO.setCompanyId(companyId);
+        searchVO.setFirstIndex(0);
+        searchVO.setRecordCountPerPage(100);
+        java.util.List<?> existingChannels = sysChannelService.selectChannelList(searchVO);
+        StringBuilder existingTypes = new StringBuilder();
+        for (Object obj : existingChannels) {
+            if (obj instanceof ChannelVO) {
+                ChannelVO ch = (ChannelVO) obj;
+                // 현재 수정 중인 채널은 제외
+                if (channel.getChannelId() != null && channel.getChannelId().equals(ch.getChannelId())) continue;
+                if (existingTypes.length() > 0) existingTypes.append(",");
+                existingTypes.append(ch.getChannelType());
+            }
+        }
+        model.addAttribute("existingTypes", existingTypes.toString());
+
+        UserVO userVO = new UserVO();
+        userVO.setCompanyId(companyId);
+        userVO.setFirstIndex(0);
+        userVO.setRecordCountPerPage(500);
+        model.addAttribute("managerList", userService.selectUserList(userVO));
+        model.addAttribute("channel", channel);
+
+        if ("Y".equalsIgnoreCase(request.getParameter("isModal"))) {
+            return "admin/tenant/SysChannelForm";
+        }
+        model.addAttribute("contentPage", "/WEB-INF/jsp/admin/tenant/SysChannelForm.jsp");
+        model.addAttribute("currentMenu", "op_channel");
+        return "layout/main";
+    }
+
+    @RequestMapping("/admin/sysChannel/channelList.do")
+    public String channelList(@ModelAttribute("searchVO") ChannelVO searchVO, HttpServletRequest request, ModelMap model) throws Exception {
+        LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
+        if (loginVO != null && !"SUPER_ADMIN".equals(loginVO.getMemberType())) {
+            searchVO.setCompanyId(loginVO.getCompanyId());
+        }
+
+        PaginationInfo paginationInfo = new PaginationInfo();
+        paginationInfo.setCurrentPageNo(searchVO.getPageIndex());
+        paginationInfo.setRecordCountPerPage(10);
+        paginationInfo.setPageSize(10);
+        searchVO.setFirstIndex(paginationInfo.getFirstRecordIndex());
+        searchVO.setRecordCountPerPage(paginationInfo.getRecordCountPerPage());
+
+        model.addAttribute("resultList", sysChannelService.selectChannelList(searchVO));
+        paginationInfo.setTotalRecordCount(sysChannelService.selectChannelListTotCnt(searchVO));
+        model.addAttribute("paginationInfo", paginationInfo);
+        model.addAttribute("currentMenu", "op_channel");
+        model.addAttribute("contentPage", "/WEB-INF/jsp/admin/tenant/SysChannelList.jsp");
+        return "layout/main";
+    }
+
+    @RequestMapping("/admin/sysChannel/saveChannel.ajax")
+    @ResponseBody
+    public Map<String, Object> saveChannel(@ModelAttribute("channelVO") ChannelVO channelVO, HttpServletRequest request) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
+            if (loginVO != null && !"SUPER_ADMIN".equals(loginVO.getMemberType())) {
+                channelVO.setCompanyId(loginVO.getCompanyId());
+            }
+            if (channelVO.getChannelId() != null && channelVO.getChannelId() > 0) {
+                sysChannelService.updateChannel(channelVO);
+            } else {
+                sysChannelService.insertChannel(channelVO);
+            }
+            result.put("status", "SUCCESS");
+        } catch (Exception e) {
+            result.put("status", "FAIL");
             result.put("message", e.getMessage());
         }
         return result;

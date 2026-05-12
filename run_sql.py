@@ -1,29 +1,26 @@
 import mysql.connector
+import sys
 
-try:
-    conn = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="root",
-        database="matpam_new"
-    )
-    cursor = conn.cursor()
-    statements = [
-        "ALTER TABLE tb_channel ADD COLUMN sort_order INT DEFAULT 0;",
-        "ALTER TABLE tb_channel ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP;",
-        "ALTER TABLE tb_channel ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;"
-    ]
-    
-    for statement in statements:
-        try:
-            cursor.execute(statement)
-            print(f"Executed: {statement[:50]}...")
-        except Exception as e:
-            print(f"Error executing statement: {e}")
-    
-    conn.commit()
-    cursor.close()
-    conn.close()
-    print("Success!")
-except Exception as e:
-    print(f"Failed: {e}")
+def run_sql(sql):
+    try:
+        conn = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="root",
+            database="matpam_new"
+        )
+        cursor = conn.cursor()
+        cursor.execute(sql)
+        conn.commit()
+        print(f"Executed: {sql}")
+        cursor.close()
+        conn.close()
+        print("Success!")
+    except Exception as e:
+        print(f"Error: {e}")
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        run_sql(sys.argv[1])
+    else:
+        print("Usage: python run_sql.py \"SQL_STATEMENT\"")

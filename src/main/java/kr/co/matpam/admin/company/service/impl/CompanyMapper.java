@@ -28,6 +28,12 @@ public interface CompanyMapper {
     void updateCompanyContact(CompanyContactVO vo) throws Exception;
     void deleteCompanyContact(CompanyContactVO vo) throws Exception;
     void clearPrimaryContact(CompanyContactVO vo) throws Exception;
+    void updateContactPrimaryStatus(CompanyContactVO vo) throws Exception;
+    
+    /** 사용자 ID 기준 업체 담당자 존재 여부 확인 */
+    int selectCompanyContactCountByUserId(@org.apache.ibatis.annotations.Param("userId") Long userId) throws Exception;
+    /** 사용자 ID 기준 업체 담당자 정보 업데이트 */
+    void updateCompanyContactByUserId(CompanyContactVO vo) throws Exception;
 
     /* ── 중복 체크 및 채널 매핑 ── */
     int selectBusinessNoCount(CompanyVO vo) throws Exception;

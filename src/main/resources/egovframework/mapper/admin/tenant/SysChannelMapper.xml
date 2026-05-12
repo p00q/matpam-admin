@@ -110,6 +110,17 @@
         WHERE channel_id = #{channelId}
     </update>
 
+    <select id="checkDuplicateChannelType" resultType="int">
+        SELECT COUNT(*)
+        FROM tb_channel
+        WHERE company_id = #{companyId}
+          AND channel_type = #{channelType}
+          AND status = 'ACTIVE'
+          <if test="channelId != null and channelId > 0">
+              AND channel_id != #{channelId}
+          </if>
+    </select>
+
     <update id="deleteChannel">
         UPDATE tb_channel
         SET status = 'INACTIVE', updated_at = NOW()

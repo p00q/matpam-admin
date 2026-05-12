@@ -14,7 +14,7 @@
         <result property="userName"   column="user_name"/>
         <result property="mobile"     column="mobile"/>
         <result property="email"      column="email"/>
-        <result property="userRole"   column="user_role"/>
+        <result property="userRole"   column="role"/>
         <result property="channelId"  column="channel_id"/>
         <result property="status"     column="status"/>
         <result property="lastLoginAt" column="last_login_at"/>
@@ -49,6 +49,14 @@
     ================================================================ -->
     <sql id="userWhere">
         <where>
+            <choose>
+                <when test="searchCondition == 'OPERATOR'">
+                    AND u.role IN ('OPERATOR', 'CHANNEL_ADMIN')
+                </when>
+                <otherwise>
+                    AND u.role NOT IN ('OPERATOR', 'CHANNEL_ADMIN', 'SUPER_ADMIN')
+                </otherwise>
+            </choose>
             <if test="tenantId != null">
                 AND u.tenant_id = #{tenantId}
             </if>
@@ -56,7 +64,7 @@
                 AND u.company_id = #{companyId}
             </if>
             <if test="userRole != null and userRole != ''">
-                AND u.user_role = #{userRole}
+                AND u.role = #{userRole}
             </if>
             <if test="channelId != null">
                 AND u.channel_id = #{channelId}
@@ -138,7 +146,7 @@
             useGeneratedKeys="true" keyProperty="userId">
         INSERT INTO tb_user (
             tenant_id, company_id, login_id, password_hash, user_name,
-            mobile, email, user_role, channel_id, status,
+            mobile, email, role, channel_id, status,
             created_at, updated_at
         ) VALUES (
             #{tenantId}, #{companyId}, #{loginId}, #{passwordHash}, #{userName},
@@ -154,10 +162,12 @@
             parameterType="kr.co.matpam.admin.user.service.UserVO">
         UPDATE tb_user
         SET
+            tenant_id  = #{tenantId},
+            company_id = #{companyId},
             user_name  = #{userName},
             mobile     = #{mobile},
             email      = #{email},
-            user_role  = #{userRole},
+            role       = #{userRole},
             channel_id = #{channelId},
             status     = #{status},
             updated_at = NOW()
@@ -165,6 +175,33 @@
             , password_hash = #{passwordHash}
             </if>
         WHERE user_id = #{userId}
+    </update>
+
+    <!-- ================================================================
+         사용자 역할 및 채널 ID 업데이트 (동기화용)
+    ================================================================ -->
+    <update id="updateUserRoleAndChannel"
+            parameterType="kr.co.matpam.admin.user.service.UserVO">
+        UPDATE tb_user
+        SET
+            role = #{userRole},
+            channel_id = #{channelId},
+            updated_at = NOW()
+        WHERE user_id = #{userId}
+    </update>
+
+    <!-- ================================================================
+         특정 채널 관리자 권한 초기화
+    ================================================================ -->
+    <update id="resetChannelManagerRole"
+            parameterType="long">
+        UPDATE tb_user
+        SET
+            role = 'OPERATOR',
+            channel_id = NULL,
+            updated_at = NOW()
+        WHERE channel_id = #{channelId}
+          AND role = 'CHANNEL_ADMIN'
     </update>
 
     <!-- ================================================================
@@ -229,20 +266,5 @@
           AND company_type = 'SELLER'
         LIMIT 1
     </select>
-
-    <!-- ================================================================
-         업체 담당자 동시 생성 (tb_company_contact)
-    ================================================================ -->
-    <insert id="insertCompanyContact" parameterType="map">
-        INSERT INTO tb_company_contact (
-            company_id, contact_name, contact_role,
-            mobile, email, is_primary, linked_user_id,
-            status, created_at, updated_at
-        ) VALUES (
-            #{companyId}, #{contactName}, #{contactRole},
-            #{mobile}, #{email}, #{isPrimary}, #{linkedUserId},
-            'ACTIVE', NOW(), NOW()
-        )
-    </insert>
 
 </mapper>

@@ -119,6 +119,38 @@ public class CompanyServiceImpl extends EgovAbstractServiceImpl implements Compa
         logAudit(null, "COMPANY_CONTACT", vo.getContactId(), "DELETE", null, "Contact deleted (Inactivated)");
     }
 
+    @Override
+    @Transactional
+    public void updatePrimaryContact(Long companyId, Long contactId) throws Exception {
+        // 1. 기존 대표자 초기화
+        CompanyContactVO clearParam = new CompanyContactVO();
+        clearParam.setCompanyId(companyId);
+        companyMapper.clearPrimaryContact(clearParam);
+        
+        // 2. 신규 대표자 설정
+        CompanyContactVO setParam = new CompanyContactVO();
+        setParam.setContactId(contactId);
+        setParam.setIsPrimary("Y");
+        companyMapper.updateContactPrimaryStatus(setParam);
+        
+        logAudit(null, "COMPANY_CONTACT", contactId, "UPDATE", null, "Contact set as primary");
+    }
+
+    @Override
+    @Transactional
+    public void syncContactFromUser(CompanyContactVO vo) throws Exception {
+        if (vo == null || vo.getLinkedUserId() == null || vo.getCompanyId() == null) return;
+
+        int count = companyMapper.selectCompanyContactCountByUserId(vo.getLinkedUserId());
+        if (count > 0) {
+            companyMapper.updateCompanyContactByUserId(vo);
+        } else {
+            // 신규 등록 시 대표 담당자로 설정
+            vo.setIsPrimary("Y");
+            companyMapper.insertCompanyContact(vo);
+        }
+    }
+
     /* ── 계좌 ── */
 
     @Override

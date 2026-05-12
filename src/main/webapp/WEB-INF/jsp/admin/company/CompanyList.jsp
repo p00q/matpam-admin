@@ -1,202 +1,157 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib prefix="c"  uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="ui" uri="http://egovframework.gov/ctl/ui"%>
-<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 
-<div class="container-fluid px-4">
-    <h1 class="mt-4">업체 관리</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="/admin/dashboard/main.do">대시보드</a></li>
-        <li class="breadcrumb-item active">업체 관리</li>
-    </ol>
-
-    <!-- 검색 필터 -->
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-light">
-            <i class="fas fa-search me-1"></i> 검색 조건
-        </div>
-        <div class="card-body">
-            <form:form modelAttribute="searchVO" id="searchForm" name="searchForm" method="get" action="${pageContext.request.contextPath}/admin/company/companyList.do" class="row g-3">
-                <form:hidden path="pageIndex" id="pageIndex" />
-                
-                <div class="col-md-3">
-                    <label class="form-label">업체 타입</label>
-                    <form:select path="companyType" class="form-select">
-                        <form:option value="" label="-- 전체 --" />
-                        <form:option value="SELLER" label="판매업체" />
-                        <form:option value="BUYER" label="구매업체" />
-                    </form:select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">상태</label>
-                    <form:select path="status" class="form-select">
-                        <form:option value="" label="-- 전체 --" />
-                        <form:option value="ACTIVE" label="활성" />
-                        <form:option value="INACTIVE" label="비활성" />
-                    </form:select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">검색어 (업체명/사업자번호)</label>
-                    <form:input path="searchKeyword" class="form-control" placeholder="검색어를 입력하세요" />
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-search"></i> 검색
-                    </button>
-                </div>
-            </form:form>
+<div class="container-fluid px-0">
+    <!-- ── 페이지 헤더 ── -->
+    <div class="px-4 pt-3 pb-1">
+        <div class="d-flex align-items-center justify-content-between mb-1">
+            <h4 class="fw-bold mb-0" style="color:#1e293b;">
+                <c:choose>
+                    <c:when test="${param.companyType eq 'SELLER'}"><i class="bi bi-factory me-2"></i>판매업체 관리</c:when>
+                    <c:when test="${param.companyType eq 'BUYER'}"><i class="bi bi-shop me-2"></i>구매업체 관리</c:when>
+                    <c:otherwise><i class="bi bi-building me-2"></i>몰 정보 관리</c:otherwise>
+                </c:choose>
+            </h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0" style="font-size:.78rem;">
+                    <li class="breadcrumb-item"><a href="<c:url value='/admin/dashboard/main.do'/>" class="text-decoration-none text-muted">대시보드</a></li>
+                    <li class="breadcrumb-item text-muted">업체관리</li>
+                    <li class="breadcrumb-item active text-muted">
+                        <c:choose>
+                            <c:when test="${param.companyType eq 'SELLER'}">판매업체</c:when>
+                            <c:when test="${param.companyType eq 'BUYER'}">구매업체</c:when>
+                            <c:otherwise>몰 정보 관리</c:otherwise>
+                        </c:choose>
+                    </li>
+                </ol>
+            </nav>
         </div>
     </div>
 
-    <!-- 목록 테이블 -->
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header d-flex justify-content-between align-items-center bg-white py-3">
-            <div>
-                <i class="fas fa-table me-1"></i> 업체 목록
+    <div class="px-4 py-3">
+        <!-- Search Area -->
+        <div class="search-panel">
+            <div class="panel-title">
+                <i class="bi bi-funnel-fill"></i> 검색 조건
             </div>
-            <a href="<c:url value='/admin/company/companyForm.do?companyType=${searchVO.companyType}'/>" class="btn btn-success btn-sm">
-                <i class="fas fa-plus"></i> 신규 업체 등록
-            </a>
+            <form id="searchForm" action="companyList.do" method="get" class="row g-2 align-items-center">
+                <input type="hidden" name="companyType" value="${param.companyType}">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold small">업체명</label>
+                    <div class="input-group input-group-sm">
+                        <input type="text" name="searchKeyword" class="form-control" placeholder="업체명 검색" value="${searchVO.searchKeyword}">
+                        <button type="submit" class="btn btn-dark px-4">검색</button>
+                    </div>
+                </div>
+            </form>
         </div>
-        <div class="card-body p-0">
+
+        <!-- List Area -->
+        <div class="list-card">
+            <div class="list-card-header d-flex justify-content-between align-items-center">
+                <div class="title-block">
+                    <i class="bi bi-table" style="color:#4361ee; font-size:1.1rem;"></i>
+                    <span class="title-text">업체 목록</span>
+                    <span class="count-badge">총 ${paginationInfo.totalRecordCount}건</span>
+                </div>
+                <c:url var="newUrl" value="/admin/company/companyForm.do">
+                    <c:param name="companyType" value="${param.companyType}" />
+                </c:url>
+                <a href="${newUrl}" class="btn btn-primary btn-sm px-3 shadow-sm" style="border-radius:8px; font-weight:600;">
+                    <i class="bi bi-plus-lg me-1"></i> 신규 등록
+                </a>
+            </div>
+
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
+                <table class="premium-data-table mb-0">
+                    <thead>
                         <tr>
-                            <th class="text-center" style="width: 60px;">ID</th>
-                            <th>채널</th>
-                            <th>업체명</th>
-                            <th>사업자번호</th>
-                            <th>대표자</th>
-                            <th>연락처/이메일</th>
-                            <c:choose>
-                                <c:when test="${searchVO.companyType == 'BUYER'}">
-                                    <th>등급/여신약정</th>
-                                    <th>여신/선입금/미트머니</th>
-                                </c:when>
-                                <c:otherwise>
-                                    <th>과세유형</th>
-                                </c:otherwise>
-                            </c:choose>
+                            <th class="text-center">참여채널명</th>
+                            <th class="text-center">${param.companyType eq 'BUYER' ? '구매업체명' : '판매업체명'}</th>
+                            <th class="text-center">대표자명</th>
+                            <th class="text-center">담당자명</th>
+                            <th class="text-center">담당자연락처</th>
+                            <th class="text-center">등록일</th>
+                            <th class="text-center">수정일</th>
                             <th class="text-center">상태</th>
-                            <th class="text-center" style="width: 100px;">관리</th>
+                            <th class="text-center" width="80">관리</th>
                         </tr>
                     </thead>
                     <tbody>
                         <c:forEach var="item" items="${companyList}" varStatus="status">
                             <tr>
-                                <td class="text-center text-muted small">${item.companyId}</td>
-                                <td>
-                                    <span class="badge bg-light text-dark border">${item.channelName}</span>
-                                </td>
-                                <td>
-                                    <div class="fw-bold">${item.companyName}</div>
-                                    <small class="text-muted">${item.address1} ${item.address2}</small>
-                                </td>
-                                <td>${item.businessNo}</td>
-                                <td>${item.ceoName}</td>
-                                <td>
-                                    <div><i class="bi bi-telephone small me-1"></i>${item.phone}</div>
-                                    <div class="small text-muted"><i class="bi bi-envelope small me-1"></i>${item.email}</div>
-                                </td>
-                                <c:choose>
-                                    <c:when test="${item.companyType == 'BUYER'}">
-                                        <td>
-                                            <span class="badge bg-info mb-1">${item.memberGrade}</span>
-                                            <div class="small text-muted"><fmt:formatDate value="${item.creditAgreementDt}" pattern="yyyy-MM-dd" /></div>
-                                        </td>
-                                        <td>
-                                            <div class="small">여신: <fmt:formatNumber value="${item.creditLimitAmount}" type="number"/></div>
-                                            <div class="small">선입: <fmt:formatNumber value="${item.advanceBalance}" type="number"/></div>
-                                            <div class="small">미트: <fmt:formatNumber value="${item.meatMoneyBalance}" type="number"/></div>
-                                        </td>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <td>
-                                            <span class="badge ${item.defaultTaxType == 'TAXABLE' ? 'bg-warning text-dark' : 'bg-success'}">
-                                                ${item.defaultTaxType == 'TAXABLE' ? '과세' : '면세'}
-                                            </span>
-                                        </td>
-                                    </c:otherwise>
-                                </c:choose>
+                                <td class="text-center small text-muted">${item.channelName}</td>
+                                <td class="fw-bold text-start ps-4" style="color:#1e293b;">${item.companyName}</td>
+                                <td class="text-center">${item.ceoName}</td>
+                                <td class="text-center">${item.primaryContactName}</td>
+                                <td class="text-center small">${item.primaryContactMobile}</td>
+                                <td class="text-center x-small text-muted"><fmt:formatDate value="${item.createdAt}" pattern="yyyy-MM-dd"/></td>
+                                <td class="text-center x-small text-muted"><fmt:formatDate value="${item.updatedAt}" pattern="yyyy-MM-dd"/></td>
                                 <td class="text-center">
                                     <c:choose>
-                                        <c:when test="${item.status == 'ACTIVE'}">
-                                            <span class="badge bg-success">활성</span>
+                                        <c:when test="${item.status eq 'ACTIVE'}">
+                                            <span class="status-badge status-ACTIVE">
+                                                <span class="status-dot dot-ACTIVE"></span>정상
+                                            </span>
                                         </c:when>
                                         <c:otherwise>
-                                            <span class="badge bg-secondary">비활성</span>
+                                            <span class="status-badge status-INACTIVE">
+                                                <span class="status-dot dot-INACTIVE"></span>비활성
+                                            </span>
                                         </c:otherwise>
                                     </c:choose>
                                 </td>
                                 <td class="text-center">
-                                    <div class="btn-group btn-group-sm shadow-sm">
-                                        <a href="<c:url value='/admin/company/companyForm.do?companyId=${item.companyId}'/>" class="btn btn-white" title="수정">
-                                            <i class="bi bi-pencil-square text-primary"></i>
+                                    <div class="action-btn-group">
+                                        <c:url var="detailUrl" value="/admin/company/companyForm.do">
+                                            <c:param name="companyId" value="${item.companyId}" />
+                                            <c:param name="companyType" value="${empty item.companyType ? param.companyType : item.companyType}" />
+                                        </c:url>
+                                        <a href="${detailUrl}" class="btn-action" title="수정">
+                                            <i class="bi bi-pencil-fill"></i>
                                         </a>
-                                        <button type="button" class="btn btn-white btn-toggle-status" data-id="${item.companyId}" data-status="${item.status}" title="상태변경">
-                                            <i class="bi ${item.status == 'ACTIVE' ? 'bi-toggle-on text-success' : 'bi-toggle-off text-muted'}"></i>
-                                        </button>
                                     </div>
                                 </td>
                             </tr>
                         </c:forEach>
                         <c:if test="${empty companyList}">
                             <tr>
-                                <td colspan="9" class="text-center py-5 text-muted">
-                                    등록된 업체 정보가 없습니다.
+                                <td colspan="10">
+                                    <div class="empty-state">
+                                        <div class="empty-icon">🏢</div>
+                                        <div class="empty-text fw-semibold">등록된 업체 정보가 없습니다.</div>
+                                    </div>
                                 </td>
                             </tr>
                         </c:if>
                     </tbody>
                 </table>
             </div>
-        </div>
-        <!-- 페이징 -->
-        <div class="card-footer bg-white py-3">
-            <div class="d-flex justify-content-center">
-                <ui:pagination paginationInfo="${paginationInfo}" type="image" jsFunction="fn_egov_link_page" />
+            
+            <div class="pagination-wrap">
+                <div class="pagination-info">
+                    총 <strong class="text-primary">${paginationInfo.totalRecordCount}</strong>건의 업체가 등록되어 있습니다.
+                </div>
+                <nav>
+                    <ul class="pagination mb-0">
+                        <ui:pagination paginationInfo="${paginationInfo}" type="image" jsFunction="fn_link_page" />
+                    </ul>
+                </nav>
             </div>
         </div>
     </div>
 </div>
-
 <script>
-function fn_egov_link_page(pageNo) {
-    document.searchForm.pageIndex.value = pageNo;
-    document.searchForm.action = "${pageContext.request.contextPath}/admin/company/companyList.do";
-    document.searchForm.submit();
-}
-
-$(document).ready(function() {
-    $('.btn-toggle-status').on('click', function() {
-        const companyId = $(this).data('id');
-        const currentStatus = $(this).data('status');
-        toggleStatus(companyId, currentStatus);
-    });
-});
-
-function toggleStatus(companyId, currentStatus) {
-    const newStat = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-    const statusMsg = newStat === 'ACTIVE' ? '활성' : '비활성';
-    
-    if (!confirm('업체 상태를 ' + statusMsg + '으로 변경하시겠습니까?')) return;
-
-    $.ajax({
-        url: '<c:url value="/admin/company/updateStatus.ajax"/>',
-        type: 'POST',
-        data: { companyId: companyId, status: newStat },
-        success: function(res) {
-            if (res.success) {
-                location.reload();
-            } else {
-                alert('오류가 발생했습니다: ' + res.message);
-            }
-        },
-        error: function() {
-            alert('서버 통신 중 오류가 발생했습니다.');
-        }
-    });
+function fn_link_page(pageNo) {
+    var form = document.getElementById('searchForm');
+    var input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'pageIndex';
+    input.value = pageNo;
+    form.appendChild(input);
+    form.submit();
 }
 </script>
+

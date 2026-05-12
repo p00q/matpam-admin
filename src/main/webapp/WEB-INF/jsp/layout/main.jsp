@@ -19,10 +19,51 @@
     
     <!-- Custom Premium Styles -->
     <link rel="stylesheet" href="<c:url value='/resources/css/admin-premium-v4.css'/>">
+    <style>
+        /* 모달 활성화 시 상단 바 및 사이드바 겹침 방지 (투명화 대신 z-index 조정) */
+        body.modal-open .top-bar,
+        body.modal-open .sidebar {
+            z-index: 900 !important;
+            /* opacity: 0; // 이 부분이 사이드바 증발의 원인 */
+            /* visibility: hidden; */
+            pointer-events: none; /* 클릭만 방지 */
+            filter: blur(2px) grayscale(0.5); /* 시각적으로만 뒤로 밀기 */
+            transition: all 0.3s ease;
+        }
+        .modal-backdrop.show {
+            z-index: 1500 !important;
+        }
+        /* 공통 모달 헤더 스타일 */
+        .modal-premium-header {
+            background: #0f172a; 
+            border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+            padding: 1.25rem 1.75rem !important;
+        }
+
+        /* ── 전역 Premium Toast 스타일 ── */
+        .premium-toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 10550; min-width: 300px; padding: 12px 20px;
+            border-radius: 12px; background: #fff; box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            display: flex; align-items: center; gap: 12px;
+            opacity: 0; visibility: hidden; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .premium-toast.show { opacity: 1; visibility: visible; top: 40px; }
+        .premium-toast.success { border-left: 5px solid #22c55e; }
+        .premium-toast.error, .premium-toast.danger { border-left: 5px solid #ef4444; }
+        .premium-toast.warning { border-left: 5px solid #f59e0b; }
+        .premium-toast.info { border-left: 5px solid #3b82f6; }
+    </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 
 <body>
+    <!-- 전역 Premium Toast Container -->
+    <div id="premiumToast" class="premium-toast">
+        <div id="toastIcon" style="font-size: 1.2rem;"></div>
+        <div id="toastMsg" class="fw-semibold text-dark small"></div>
+    </div>
+
     <!-- Sidebar Navigation -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -40,18 +81,23 @@
         <nav class="sidebar-nav">
             <div class="nav-group-title">Menu</div>
             
+            <c:set var="uriLower" value="${fn:toLowerCase(pageContext.request.requestURI)}"/>
+
+            
             <!-- 운영관리 -->
             <div class="nav-group">
-                <div class="nav-parent ${fn:startsWith(currentMenu, 'op_') ? '' : 'collapsed'}" data-bs-toggle="collapse" data-bs-target="#menu_op" aria-expanded="${fn:startsWith(currentMenu, 'op_') ? 'true' : 'false'}">
+                <c:set var="isOpPage" value="${fn:startsWith(currentMenu, 'op_') or fn:contains(uriLower, 'operator') or fn:contains(uriLower, 'syschannel')}"/>
+                <div class="nav-parent ${isOpPage ? '' : 'collapsed'}" data-bs-toggle="collapse" data-bs-target="#menu_op" aria-expanded="${isOpPage ? 'true' : 'false'}">
                     <div class="parent-icon"><i class="bi bi-shield-lock"></i></div>
                     <span>운영관리</span>
                     <i class="bi bi-chevron-down toggle-arrow"></i>
                 </div>
-                <div class="collapse ${fn:startsWith(currentMenu, 'op_') ? 'show' : ''}" id="menu_op">
+                <div class="collapse ${isOpPage ? 'show' : ''}" id="menu_op" data-bs-parent=".sidebar-nav">
+
                     <ul class="nav-child-list">
                         <li><a href="<c:url value='/admin/company/companyForm.do?companyId=1'/>" class="nav-child-item ${currentMenu eq 'op_mall' ? 'active' : ''}">몰 기본정보</a></li>
                         <li><a href="<c:url value='/admin/sysChannel/channelList.do'/>" class="nav-child-item ${currentMenu eq 'op_channel' ? 'active' : ''}">채널관리</a></li>
-                        <li><a href="<c:url value='/admin/user/userList.do'/>" class="nav-child-item ${currentMenu eq 'op_admin' ? 'active' : ''}">관리자/권한관리</a></li>
+                        <li><a href="<c:url value='/admin/user/operatorList.do'/>" class="nav-child-item ${currentMenu eq 'op_operator' ? 'active' : ''}">운영자관리</a></li>
                         <li><a href="#" class="nav-child-item">약관정보</a></li>
                     </ul>
                 </div>
@@ -59,15 +105,33 @@
 
             <!-- 업체관리 -->
             <div class="nav-group">
-                <div class="nav-parent ${fn:startsWith(currentMenu, 'comp_') ? '' : 'collapsed'}" data-bs-toggle="collapse" data-bs-target="#menu_comp" aria-expanded="${fn:startsWith(currentMenu, 'comp_') ? 'true' : 'false'}">
+                <c:set var="isCompPage" value="${fn:startsWith(currentMenu, 'comp_') or fn:contains(uriLower, 'companylist')}"/>
+                <div class="nav-parent ${isCompPage ? '' : 'collapsed'}" data-bs-toggle="collapse" data-bs-target="#menu_comp" aria-expanded="${isCompPage ? 'true' : 'false'}">
                     <div class="parent-icon"><i class="bi bi-building"></i></div>
                     <span>업체관리</span>
                     <i class="bi bi-chevron-down toggle-arrow"></i>
                 </div>
-                <div class="collapse ${fn:startsWith(currentMenu, 'comp_') ? 'show' : ''}" id="menu_comp">
+                <div class="collapse ${isCompPage ? 'show' : ''}" id="menu_comp" data-bs-parent=".sidebar-nav">
                     <ul class="nav-child-list">
                         <li><a href="<c:url value='/admin/company/companyList.do?companyType=SELLER'/>" class="nav-child-item ${currentMenu eq 'comp_seller' ? 'active' : ''}">판매업체</a></li>
                         <li><a href="<c:url value='/admin/company/companyList.do?companyType=BUYER'/>" class="nav-child-item ${currentMenu eq 'comp_buyer' ? 'active' : ''}">구매업체</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 회원관리 -->
+            <div class="nav-group">
+                <c:set var="isUserPage" value="${fn:startsWith(currentMenu, 'user_') or (fn:contains(uriLower, '/user/') and not fn:contains(uriLower, 'operator'))}"/>
+                <div class="nav-parent ${isUserPage ? '' : 'collapsed'}" data-bs-toggle="collapse" data-bs-target="#menu_user" aria-expanded="${isUserPage ? 'true' : 'false'}">
+                    <div class="parent-icon"><i class="bi bi-people"></i></div>
+                    <span>회원관리</span>
+                    <i class="bi bi-chevron-down toggle-arrow"></i>
+                </div>
+                <div class="collapse ${isUserPage ? 'show' : ''}" id="menu_user" data-bs-parent=".sidebar-nav">
+
+                    <ul class="nav-child-list">
+                        <li><a href="<c:url value='/admin/user/userList.do?userRole=SELLER_ADMIN'/>" class="nav-child-item ${currentMenu eq 'user_seller' ? 'active' : ''}">판매회원</a></li>
+                        <li><a href="<c:url value='/admin/user/userList.do?userRole=BUYER_ADMIN'/>" class="nav-child-item ${currentMenu eq 'user_buyer' ? 'active' : ''}">구매회원</a></li>
                     </ul>
                 </div>
             </div>
@@ -81,7 +145,7 @@
                     <span>상품관리</span>
                     <i class="bi bi-chevron-down toggle-arrow"></i>
                 </div>
-                <div class="collapse ${fn:startsWith(currentMenu, 'product') ? 'show' : ''}" id="menu_prod">
+                <div class="collapse ${fn:startsWith(currentMenu, 'product') ? 'show' : ''}" id="menu_prod" data-bs-parent=".sidebar-nav">
                     <ul class="nav-child-list">
                         <li><a href="<c:url value='/admin/product/productList.do'/>" class="nav-child-item ${currentMenu eq 'product' ? 'active' : ''}">상품목록</a></li>
                         <li><a href="<c:url value='/admin/product/productForm.do'/>" class="nav-child-item">상품등록</a></li>
@@ -96,7 +160,7 @@
                     <span>주문관리</span>
                     <i class="bi bi-chevron-down toggle-arrow"></i>
                 </div>
-                <div class="collapse ${fn:startsWith(currentMenu, 'order') ? 'show' : ''}" id="menu_order">
+                <div class="collapse ${fn:startsWith(currentMenu, 'order') ? 'show' : ''}" id="menu_order" data-bs-parent=".sidebar-nav">
                     <ul class="nav-child-list">
                         <li><a href="<c:url value='/admin/order/orderList.do'/>" class="nav-child-item ${currentMenu eq 'order' ? 'active' : ''}">주문목록</a></li>
                         <li><a href="#" class="nav-child-item">배송관리</a></li>
@@ -113,7 +177,7 @@
                     <span>정산관리</span>
                     <i class="bi bi-chevron-down toggle-arrow"></i>
                 </div>
-                <div class="collapse ${fn:startsWith(currentMenu, 'settle') ? 'show' : ''}" id="menu_settle">
+                <div class="collapse ${fn:startsWith(currentMenu, 'settle') ? 'show' : ''}" id="menu_settle" data-bs-parent=".sidebar-nav">
                     <ul class="nav-child-list">
                         <li><a href="<c:url value='/admin/settlement/settlementList.do'/>" class="nav-child-item ${currentMenu eq 'settlement' ? 'active' : ''}">판매정산</a></li>
                         <li><a href="#" class="nav-child-item">입출금내역</a></li>
@@ -147,6 +211,9 @@
             </h5>
         </div>
         <div class="d-flex align-items-center gap-3">
+            <a href="<c:url value='/admin/login.do'/>" class="btn btn-sm btn-outline-warning py-1 px-3 shadow-sm" style="border-radius:20px; font-weight:600; font-size:0.75rem; border-color: rgba(245, 158, 11, 0.3);">
+                <i class="bi bi-arrow-clockwise me-1"></i> 재로그인
+            </a>
             <div class="badge px-3 py-2 border shadow-sm" style="background: rgba(255,255,255,0.05); color: var(--accent); border-color: var(--glass-border) !important;">
                 <i class="bi bi-shield-check me-2"></i>운영자 권한: <strong>${sessionScope.loginVO.opType}</strong>
             </div>
@@ -166,23 +233,96 @@
         <div class="fw-bold text-primary animate-pulse">시스템 처리 중...</div>
     </div>
 
-    <!-- Global Toast Notifications -->
-    <div class="toast-container position-fixed bottom-0 end-0 p-4">
-        <div id="premiumToast" class="toast premium-toast" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header">
-                <strong class="me-auto" id="toastTitle">시스템 알림</strong>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-            <div class="toast-body d-flex align-items-center">
-                <i id="toastIcon" class="bi"></i>
-                <span id="toastMessage"></span>
+
+
+    <!-- ── [공통] 통합 관리 팝업 ── -->
+    <div class="modal fade" id="adminCommonModal" tabindex="-1" aria-hidden="true" style="z-index: 2000 !important;">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 24px; overflow: hidden; background: #fff;">
+                <div class="modal-header modal-premium-header border-0">
+                    <h5 class="modal-title fw-bold text-white" id="adminCommonModalTitle" style="letter-spacing: -0.5px;">
+                        <i class="bi bi-window-stack me-2 text-warning"></i>상세 정보
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0" id="adminCommonModalBody" style="min-height: 500px; background: #f8fafc;">
+                    <!-- AJAX 로딩 영역 -->
+                    <div class="d-flex justify-content-center align-items-center" style="height:500px;">
+                        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Core Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="<c:url value='/resources/js/admin-premium.js'/>"></script>
+
+    <script>
+        /**
+         * 통합 모달 오픈 함수
+         * @param url 로드할 JSP URL
+         * @param title 모달 상단 타이틀 (옵션)
+         */
+        function fn_openAdminModal(url, title) {
+            if (title) $('#adminCommonModalTitle').html('<i class="bi bi-window-stack me-2 text-warning"></i>' + title);
+            
+            // 로딩 표시
+            $('#adminCommonModalBody').html('<div class="d-flex justify-content-center align-items-center" style="height:500px;"><div class="spinner-border text-primary" role="status"></div></div>');
+            
+            const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('adminCommonModal'));
+            modal.show();
+
+            $.ajax({
+                url: url,
+                type: 'GET',
+                success: function(html) {
+                    $('#adminCommonModalBody').html(html);
+
+                    // jQuery .html()은 <script> 블록을 자동 실행하지 않으므로 수동 재실행
+                    $('#adminCommonModalBody').find('script').each(function() {
+                        try {
+                            if (this.src) {
+                                $.getScript(this.src);
+                            } else {
+                                $.globalEval(this.text || this.textContent || this.innerHTML || '');
+                            }
+                        } catch(e) {
+                            console.warn('[Modal Script Eval Error]', e);
+                        }
+                    });
+                },
+                error: function(xhr) {
+                    $('#adminCommonModalBody').html('<div class="p-5 text-center text-danger"><i class="bi bi-exclamation-triangle fs-1"></i><br>데이터를 불러오지 못했습니다. (' + xhr.status + ')</div>');
+                }
+            });
+        }
+
+        /**
+         * 저장 성공 시 호출되는 전역 콜백 (각 List 페이지에서 재정의 가능)
+         */
+        var fn_onSaveSuccess = function() {
+            const modalEl = document.getElementById('adminCommonModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+            
+            // 강제 정리 (Bootstrap 버그 방지)
+            $('body').removeClass('modal-open').css('overflow', '');
+            $('.modal-backdrop').remove();
+
+            fn_toast('정상적으로 처리되었습니다.', 'success');
+            setTimeout(() => {
+                if (typeof fn_link_page === 'function') fn_link_page(1);
+                else location.reload();
+            }, 800);
+        };
+
+        // 모달이 닫힐 때 상태 강제 복구 (회귀 방지)
+        $(document).on('hidden.bs.modal', '#adminCommonModal', function () {
+            $('body').removeClass('modal-open').css('overflow', '');
+            $('.modal-backdrop').remove();
+        });
+    </script>
 
     <script>
         $(document).ready(function() {
@@ -193,92 +333,52 @@
                 $('#global-loader').hide();
             });
 
-            // Toast Utility
+            // Premium Toast Utility (Custom CSS Animation)
             window.fn_toast = function(message, type = 'info') {
-                const toastEl = document.getElementById('premiumToast');
-                const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
                 const $toast = $('#premiumToast');
+                if ($toast.length === 0) {
+                    alert(message);
+                    return;
+                }
+                const $msgArea = $('#toastMsg');
                 const $icon = $('#toastIcon');
+
+                let iconHtml = '';
+                if(type === 'success') iconHtml = '<i class="bi bi-check-circle-fill text-success"></i>';
+                else if(type === 'error' || type === 'danger') iconHtml = '<i class="bi bi-x-circle-fill text-danger"></i>';
+                else if(type === 'warning') iconHtml = '<i class="bi bi-exclamation-triangle-fill text-warning"></i>';
+                else iconHtml = '<i class="bi bi-info-circle-fill text-primary"></i>';
+
+                $icon.html(iconHtml);
+                $msgArea.text(message);
                 
-                $toast.removeClass('toast-success toast-danger toast-info');
-                $icon.removeClass('bi-check-circle-fill bi-exclamation-triangle-fill bi-info-circle-fill');
-                
-                if (type === 'success') { $toast.addClass('toast-success'); $icon.addClass('bi-check-circle-fill text-success'); }
-                else if (type === 'danger') { $toast.addClass('toast-danger'); $icon.addClass('bi-exclamation-triangle-fill text-danger'); }
-                else { $toast.addClass('toast-info'); $icon.addClass('bi-info-circle-fill text-primary'); }
-                
-                $('#toastMessage').text(message);
-                toast.show();
+                $toast.removeClass('success error danger warning info show')
+                      .addClass(type || 'info')
+                      .addClass('show');
+
+                if (window._toastTimeout) clearTimeout(window._toastTimeout);
+                window._toastTimeout = setTimeout(function() { 
+                    $toast.removeClass('show'); 
+                }, 3000);
             };
 
             // Absolutely Bulletproof Menu Persistence (Expansion + Active Highlight)
             const forceMenuExpand = () => {
-                const path = window.location.href;
-                let targetId = null;
-
-                // 1. Force Active Class based on URL (Exact match with query params)
-                let matchedItem = null;
-                const currentUrl = new URL(window.location.href);
+                const path = window.location.href.toLowerCase();
                 
-                document.querySelectorAll('.nav-child-item').forEach(item => {
-                    const itemHref = item.getAttribute('href');
-                    if (itemHref && itemHref !== '#') {
-                        try {
-                            const linkUrl = new URL(itemHref, window.location.origin);
-                            // Exact match including query params (e.g. ?companyType=SELLER)
-                            if (linkUrl.pathname === currentUrl.pathname && linkUrl.search === currentUrl.search) {
-                                matchedItem = item;
-                            } 
-                            // Fallback match (Path matches, but we don't overwrite an exact match)
-                            else if (linkUrl.pathname === currentUrl.pathname && !matchedItem) {
-                                matchedItem = item;
-                            }
-                        } catch(e) {}
+                // Sidebar highlight synchronization based on active items
+                $('.nav-child-item.active').each(function() {
+                    const $collapse = $(this).closest('.collapse');
+                    if ($collapse.length) {
+                        $collapse.addClass('show');
+                        $collapse.prev('.nav-parent').removeClass('collapsed').attr('aria-expanded', 'true');
                     }
                 });
-
-                if (matchedItem) {
-                    // Remove existing active classes to prevent multiple highlights
-                    document.querySelectorAll('.nav-child-item.active').forEach(i => i.classList.remove('active'));
-                    matchedItem.classList.add('active');
-                }
-
-                // 2. Detect target group from active item
-                const activeItem = document.querySelector('.nav-child-item.active');
-                if (activeItem) {
-                    const collapseEl = activeItem.closest('.collapse');
-                    if (collapseEl) targetId = collapseEl.id;
-                }
-
-                // 3. Fallback: Detect by URL patterns
-                if (!targetId) {
-                    if (path.includes('/company/')) targetId = 'menu_comp';
-                    else if (path.includes('/member/') || path.includes('/user/') || path.includes('/code/')) targetId = 'menu_op';
-                    else if (path.includes('/product/')) targetId = 'menu_prod';
-                    else if (path.includes('/order/')) targetId = 'menu_order';
-                    else if (path.includes('/settle/')) targetId = 'menu_settle';
-                }
-
-                // 4. Force Expand
-                if (targetId) {
-                    const el = document.getElementById(targetId);
-                    if (el) {
-                        el.classList.add('show');
-                        const trigger = document.querySelector(`[data-bs-target="#${targetId}"]`);
-                        if (trigger) {
-                            trigger.classList.remove('collapsed');
-                            trigger.setAttribute('aria-expanded', 'true');
-                        }
-                    }
-                }
             };
 
-            // Aggressive execution
             forceMenuExpand();
-            setTimeout(forceMenuExpand, 100);
-            setTimeout(forceMenuExpand, 500);
-            setTimeout(forceMenuExpand, 2000);
         });
+
     </script>
 </body>
 </html>

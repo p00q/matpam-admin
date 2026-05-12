@@ -23,6 +23,10 @@ public interface CompanyService {
     void insertCompanyContact(CompanyContactVO vo) throws Exception;
     void updateCompanyContact(CompanyContactVO vo) throws Exception;
     void deleteCompanyContact(CompanyContactVO vo) throws Exception;
+    void updatePrimaryContact(Long companyId, Long contactId) throws Exception;
+    
+    /** 사용자 정보를 업체 담당자로 동기화 */
+    void syncContactFromUser(CompanyContactVO vo) throws Exception;
 
     /* ── 계좌 ── */
     List<CompanyBankAccountVO> selectCompanyBankAccountList(Long companyId) throws Exception;

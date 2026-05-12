@@ -17,5 +17,7 @@ public interface SysChannelMapper {
     
     void updateChannel(ChannelVO vo) throws Exception;
     
+    int checkDuplicateChannelType(ChannelVO vo) throws Exception;
+    
     void deleteChannel(Long channelId) throws Exception;
 }

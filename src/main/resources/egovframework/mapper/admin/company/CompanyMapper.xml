@@ -17,6 +17,7 @@
         <result property="address1"      column="address1"/>
         <result property="address2"      column="address2"/>
         <result property="phone"         column="phone"/>
+        <result property="fax"           column="fax"/>
         <result property="email"         column="email"/>
         <result property="bizStatus"     column="biz_status"/>
         <result property="bizCheckedAt"  column="biz_checked_at"/>
@@ -24,7 +25,8 @@
         <result property="status"        column="status"/>
         <result property="createdAt"     column="created_at"/>
         <result property="updatedAt"     column="updated_at"/>
-        
+
+        <!-- Join 및 추가 연동 필드 -->
         <result property="channelName"   column="channel_name"/>
         <result property="bankName"      column="bank_name"/>
         <result property="accountNo"     column="account_no"/>
@@ -34,6 +36,16 @@
         <result property="creditLimitAmount" column="credit_limit_amount"/>
         <result property="advanceBalance"    column="advance_balance"/>
         <result property="meatMoneyBalance"  column="meat_money_balance"/>
+        <result property="channelId"         column="channel_id"/>
+        <result property="primaryContactName" column="primary_contact_name"/>
+        <result property="primaryContactMobile" column="primary_contact_mobile"/>
+
+        <!-- 몰 기본정보 확장 필드 -->
+        <result property="contactPhone"      column="contact_phone"/>
+        <result property="ecommerceRegNo"    column="ecommerce_reg_no"/>
+        <result property="factoryPostalCode" column="factory_postal_code"/>
+        <result property="factoryAddress1"   column="factory_address1"/>
+        <result property="factoryAddress2"   column="factory_address2"/>
     </resultMap>
 
     <!-- ====================================================
@@ -72,16 +84,24 @@
         </where>
     </sql>
 
-    <!-- 업체 목록 (페이징) -->
     <select id="selectCompanyList"
             parameterType="kr.co.matpam.admin.company.service.CompanyVO"
             resultMap="companyMap">
         SELECT 
             c.*,
-            ch.channel_name as channel_name
+            ch.channel_id as channel_id,
+            ch.channel_name as channel_name,
+            pcc.contact_name as primary_contact_name,
+            pcc.mobile as primary_contact_mobile
         FROM tb_company c
         LEFT JOIN tb_company_channel_map m ON c.company_id = m.company_id AND m.status = 'ACTIVE'
         LEFT JOIN tb_channel ch ON m.channel_id = ch.channel_id
+        LEFT JOIN tb_company_contact pcc ON pcc.contact_id = (
+            SELECT contact_id FROM tb_company_contact 
+            WHERE company_id = c.company_id AND status = 'ACTIVE'
+            ORDER BY is_primary DESC, created_at DESC
+            LIMIT 1
+        )
         <where>
             <if test="tenantId != null">
                 AND c.tenant_id = #{tenantId}
@@ -121,13 +141,15 @@
         LEFT JOIN tb_tenant t ON c.tenant_id = t.tenant_id
         <where>
             <if test="companyType != null and companyType != ''">
-                AND c.company_type = #{companyType}
+                AND (c.company_type = #{companyType} OR c.company_type = 'BOTH')
             </if>
             <if test="searchKeyword != null and searchKeyword != ''">
                 AND (c.company_name LIKE CONCAT('%', #{searchKeyword}, '%')
                   OR c.business_no  LIKE CONCAT('%', #{searchKeyword}, '%'))
             </if>
             AND c.status = 'ACTIVE'
+            AND c.company_id != 1
+            AND c.company_type != 'PLATFORM'
         </where>
         ORDER BY c.company_name ASC
     </select>
@@ -147,7 +169,7 @@
         SELECT * FROM tb_company WHERE company_id = #{companyId}
     </select>
 
-    <!-- 업체 등록 (default_tax_type 제거 — 세금은 SKU 단위로 결정) -->
+    <!-- 업체 등록 -->
     <insert id="insertCompany"
             parameterType="kr.co.matpam.admin.company.service.CompanyVO"
             useGeneratedKeys="true" keyProperty="companyId">
@@ -155,34 +177,40 @@
             tenant_id, company_type, seller_type,
             company_name, business_no, ceo_name,
             postal_code, address1, address2,
-            phone, email, biz_status, status,
+            phone, fax, email, biz_status, status,
             default_tax_type, bank_name, account_no, account_holder,
             member_grade, credit_agreement_dt, credit_limit_amount,
-            advance_balance, meat_money_balance
+            advance_balance, meat_money_balance,
+            contact_phone, ecommerce_reg_no,
+            factory_postal_code, factory_address1, factory_address2
         ) VALUES (
             #{tenantId}, #{companyType}, #{sellerType},
             #{companyName}, #{businessNo}, #{ceoName},
             #{postalCode}, #{address1}, #{address2},
-            #{phone}, #{email}, 'ACTIVE', 'ACTIVE',
+            #{phone}, #{fax}, #{email}, 'ACTIVE', 'ACTIVE',
             COALESCE(#{defaultTaxType}, 'TAXABLE'),
             #{bankName}, #{accountNo}, #{accountHolder},
             #{memberGrade}, #{creditAgreementDt}, #{creditLimitAmount},
-            #{advanceBalance}, #{meatMoneyBalance}
+            #{advanceBalance}, #{meatMoneyBalance},
+            #{contactPhone}, #{ecommerceRegNo},
+            #{factoryPostalCode}, #{factoryAddress1}, #{factoryAddress2}
         )
     </insert>
 
-    <!-- 업체 수정 (default_tax_type 제거) -->
+    <!-- 업체 수정 -->
     <update id="updateCompany"
             parameterType="kr.co.matpam.admin.company.service.CompanyVO">
         UPDATE tb_company
         SET
             company_name = #{companyName},
+            business_no  = #{businessNo},
             ceo_name     = #{ceoName},
             seller_type  = #{sellerType},
             postal_code  = #{postalCode},
             address1     = #{address1},
             address2     = #{address2},
             phone        = #{phone},
+            fax          = #{fax},
             email        = #{email},
             default_tax_type = #{defaultTaxType},
             bank_name    = #{bankName},
@@ -193,6 +221,11 @@
             credit_limit_amount = #{creditLimitAmount},
             advance_balance = #{advanceBalance},
             meat_money_balance = #{meatMoneyBalance},
+            contact_phone       = #{contactPhone},
+            ecommerce_reg_no    = #{ecommerceRegNo},
+            factory_postal_code = #{factoryPostalCode},
+            factory_address1    = #{factoryAddress1},
+            factory_address2    = #{factoryAddress2},
             updated_at   = NOW()
         WHERE company_id = #{companyId}
     </update>
@@ -208,6 +241,14 @@
     <!-- ====================================================
          담당자 CRUD
     ==================================================== -->
+
+    <!-- 담당자 대표 여부 개별 수정 -->
+    <update id="updateContactPrimaryStatus"
+            parameterType="kr.co.matpam.admin.company.service.CompanyContactVO">
+        UPDATE tb_company_contact
+        SET is_primary = #{isPrimary}, updated_at = NOW()
+        WHERE contact_id = #{contactId}
+    </update>
 
     <!-- 담당자 목록 (업체별) -->
     <select id="selectCompanyContactList"
@@ -233,7 +274,8 @@
             useGeneratedKeys="true" keyProperty="contactId">
         INSERT INTO tb_company_contact (
             company_id, contact_name, contact_role,
-            mobile, email, is_primary, status, created_at
+            mobile, email, is_primary, linked_user_id,
+            status, created_at, updated_at
         ) VALUES (
             #{companyId}, #{contactName}, #{contactRole},
             #{mobile}, #{email},
@@ -241,9 +283,30 @@
                 <when test="isPrimary != null">#{isPrimary}</when>
                 <otherwise>'N'</otherwise>
             </choose>,
-            'ACTIVE', NOW()
+            #{linkedUserId},
+            'ACTIVE', NOW(), NOW()
         )
     </insert>
+
+    <!-- 사용자 ID 기준 카운트 -->
+    <select id="selectCompanyContactCountByUserId" resultType="int">
+        SELECT COUNT(*) FROM tb_company_contact
+        WHERE linked_user_id = #{userId}
+          AND status = 'ACTIVE'
+    </select>
+
+    <!-- 사용자 ID 기준 업데이트 -->
+    <update id="updateCompanyContactByUserId" parameterType="kr.co.matpam.admin.company.service.CompanyContactVO">
+        UPDATE tb_company_contact
+        SET
+            company_id   = #{companyId},
+            contact_name = #{contactName},
+            contact_role = #{contactRole},
+            mobile       = #{mobile},
+            email        = #{email},
+            updated_at   = NOW()
+        WHERE linked_user_id = #{linkedUserId}
+    </update>
 
     <!-- 담당자 수정 -->
     <update id="updateCompanyContact"
@@ -279,6 +342,7 @@
           AND is_primary = 'Y'
           AND status = 'ACTIVE'
     </update>
+
 
     <!-- ====================================================
          중복 체크 및 채널 매핑

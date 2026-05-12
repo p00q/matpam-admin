@@ -27,6 +27,16 @@ public interface UserMapper {
 
     void updateUser(UserVO vo) throws Exception;
 
+    /**
+     * 사용자 역할 및 채널 ID 업데이트 (동기화용)
+     */
+    void updateUserRoleAndChannel(kr.co.matpam.admin.user.service.UserVO vo) throws Exception;
+
+    /**
+     * 특정 채널을 관리하던 모든 사용자의 역할을 초기화 (기존 관리자 해제용)
+     */
+    void resetChannelManagerRole(Long channelId) throws Exception;
+
     void updateUserStatus(UserVO vo) throws Exception;
 
     UserVO selectUserByLoginId(String loginId) throws Exception;
@@ -45,8 +55,7 @@ public interface UserMapper {
     /** 테넌트의 대표 판매업체 ID 조회 (seller_company_id) */
     Long selectSellerCompanyIdByTenant(Long tenantId) throws Exception;
 
-    // ── 담당자 동시 생성 ──────────────────────────────────────────────
+    // ── 담당자 동시 생성 및 동기화 ──────────────────────────────────────
 
-    /** 업체 담당자(tb_company_contact) 등록 */
-    void insertCompanyContact(Map<String, Object> param) throws Exception;
+
 }

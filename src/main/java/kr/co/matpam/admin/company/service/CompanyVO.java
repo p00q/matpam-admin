@@ -20,6 +20,7 @@ public class CompanyVO extends MatpamBaseVO {
     private String address1;
     private String address2;
     private String phone;
+    private String fax;
     private String email;
     private String defaultTaxType;
     private String bizStatus;
@@ -39,6 +40,16 @@ public class CompanyVO extends MatpamBaseVO {
     private java.math.BigDecimal creditLimitAmount;
     private java.math.BigDecimal advanceBalance;
     private java.math.BigDecimal meatMoneyBalance;
+    private Long channelId;
+    private String primaryContactName;
+    private String primaryContactMobile;
+
+    // 몰 기본정보 확장 필드
+    private String contactPhone;        // 연락처 (추가 연락수단)
+    private String ecommerceRegNo;      // 통신판매업 신고번호
+    private String factoryPostalCode;   // 공장 우편번호
+    private String factoryAddress1;     // 공장 기본주소
+    private String factoryAddress2;     // 공장 상세주소
 
     // Getter & Setter
     public Long getCompanyId() { return companyId; }
@@ -77,6 +88,9 @@ public class CompanyVO extends MatpamBaseVO {
 
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
+
+    public String getFax() { return fax; }
+    public void setFax(String fax) { this.fax = fax; }
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
@@ -128,4 +142,28 @@ public class CompanyVO extends MatpamBaseVO {
 
     public java.math.BigDecimal getMeatMoneyBalance() { return meatMoneyBalance; }
     public void setMeatMoneyBalance(java.math.BigDecimal meatMoneyBalance) { this.meatMoneyBalance = meatMoneyBalance; }
+
+    public String getContactPhone() { return contactPhone; }
+    public void setContactPhone(String contactPhone) { this.contactPhone = contactPhone; }
+
+    public String getEcommerceRegNo() { return ecommerceRegNo; }
+    public void setEcommerceRegNo(String ecommerceRegNo) { this.ecommerceRegNo = ecommerceRegNo; }
+
+    public String getFactoryPostalCode() { return factoryPostalCode; }
+    public void setFactoryPostalCode(String factoryPostalCode) { this.factoryPostalCode = factoryPostalCode; }
+
+    public String getFactoryAddress1() { return factoryAddress1; }
+    public void setFactoryAddress1(String factoryAddress1) { this.factoryAddress1 = factoryAddress1; }
+
+    public String getFactoryAddress2() { return factoryAddress2; }
+    public void setFactoryAddress2(String factoryAddress2) { this.factoryAddress2 = factoryAddress2; }
+
+    public Long getChannelId() { return channelId; }
+    public void setChannelId(Long channelId) { this.channelId = channelId; }
+
+    public String getPrimaryContactName() { return primaryContactName; }
+    public void setPrimaryContactName(String primaryContactName) { this.primaryContactName = primaryContactName; }
+
+    public String getPrimaryContactMobile() { return primaryContactMobile; }
+    public void setPrimaryContactMobile(String primaryContactMobile) { this.primaryContactMobile = primaryContactMobile; }
 }
