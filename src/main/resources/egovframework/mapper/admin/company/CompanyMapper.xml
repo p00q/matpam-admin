@@ -250,14 +250,22 @@
         WHERE contact_id = #{contactId}
     </update>
 
-    <!-- 담당자 목록 (업체별) -->
+    <!-- 담당자 목록 (업체별 + 연동 회원 역할 기반 필터) -->
     <select id="selectCompanyContactList"
             parameterType="kr.co.matpam.admin.company.service.CompanyVO"
             resultMap="contactMap">
-        SELECT * FROM tb_company_contact
-        WHERE company_id = #{companyId}
-          AND status = 'ACTIVE'
-        ORDER BY is_primary DESC, created_at ASC
+        SELECT cc.*
+        FROM tb_company_contact cc
+        INNER JOIN tb_user u ON cc.linked_user_id = u.user_id
+        WHERE cc.company_id = #{companyId}
+          AND cc.status = 'ACTIVE'
+          <if test="companyType != null and companyType == 'SELLER'">
+          AND u.role = 'SELLER_ADMIN'
+          </if>
+          <if test="companyType != null and companyType == 'BUYER'">
+          AND u.role = 'BUYER_ADMIN'
+          </if>
+        ORDER BY cc.is_primary DESC, cc.created_at ASC
     </select>
 
     <!-- 담당자 단건 조회 -->

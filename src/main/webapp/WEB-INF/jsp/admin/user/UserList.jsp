@@ -165,13 +165,13 @@
                     <thead>
                         <tr>
                             <th class="text-center" style="width:44px;">No</th>
-                            <th style="min-width:160px;">사용자</th>
-                            <th class="text-center" style="min-width:120px;">역할</th>
-                            <th style="min-width:160px;">소속 정보</th>
-                            <th style="min-width:130px;">연락처</th>
-                            <th class="text-center" style="min-width:100px;">상태</th>
+                            <th style="min-width:130px;">사용자ID</th>
+                            <th style="min-width:100px;">이름</th>
+                            <th style="min-width:130px;">소속 업체</th>
+                            <th style="min-width:120px;">연락처</th>
+                            <th class="text-center" style="min-width:90px;">상태</th>
                             <th class="text-center" style="min-width:110px;">최근 로그인</th>
-                            <th class="text-center" style="min-width:80px;">등록일</th>
+                            <th class="text-center" style="min-width:100px;">등록일</th>
                             <th class="text-center" style="width:100px;">관리</th>
                         </tr>
                     </thead>
@@ -187,101 +187,36 @@
                                             ${paginationInfo.totalRecordCount - paginationInfo.firstRecordIndex - st.index}
                                         </td>
 
-                                        <!-- 사용자 (아바타 + ID + 이름) -->
-                                        <td>
-                                            <div class="user-identity" style="display: flex; align-items: center; gap: 12px;">
-                                                <div class="user-avatar avatar-${item.userRole}">
-                                                    ${fn:substring(item.userName, 0, 1)}
-                                                </div>
-                                                <div>
-                                                    <div class="user-id-text">${item.loginId}</div>
-                                                    <div class="user-name-text">${item.userName}</div>
-                                                </div>
-                                            </div>
-                                        </td>
+                                        <!-- 사용자ID -->
+                                        <td style="font-size:.82rem; color:#334155;">${item.loginId}</td>
 
-                                        <!-- 역할 -->
-                                        <td class="text-center">
-                                            <c:choose>
-                                                <c:when test="${item.userRole == 'SUPER_ADMIN'}">
-                                                    <span class="role-badge role-SUPER_ADMIN">
-                                                        <i class="bi bi-shield-fill-check"></i> 수퍼관리자
-                                                    </span>
-                                                </c:when>
-                                                <c:when test="${item.userRole == 'SELLER_ADMIN'}">
-                                                    <span class="role-badge role-SELLER_ADMIN">
-                                                        <i class="bi bi-building"></i> 판매처관리자
-                                                    </span>
-                                                </c:when>
-                                                <c:when test="${item.userRole == 'CHANNEL_ADMIN'}">
-                                                    <span class="role-badge role-CHANNEL_ADMIN">
-                                                        <i class="bi bi-diagram-3"></i> 채널 운영자
-                                                    </span>
-                                                </c:when>
-                                                <c:when test="${item.userRole == 'BUYER_ADMIN'}">
-                                                    <span class="role-badge role-BUYER_ADMIN">
-                                                        <i class="bi bi-cart3"></i> 구매처관리자
-                                                    </span>
-                                                </c:when>
-                                                <c:when test="${item.userRole == 'OPERATOR'}">
-                                                    <span class="role-badge" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;">
-                                                        <i class="bi bi-person-badge"></i> 운영자
-                                                    </span>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <span class="role-badge" style="background:#f1f5f9;color:#64748b;">
-                                                        ${item.userRole}
-                                                    </span>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </td>
+                                        <!-- 이름 -->
+                                        <td style="font-weight:600; color:#1e293b;">${item.userName}</td>
 
 
-                                        <!-- 소속 정보 -->
+
+
+                                        <!-- 소속 업체 -->
                                         <td>
                                             <c:choose>
                                                 <c:when test="${item.userRole == 'SUPER_ADMIN'}">
                                                     <span style="font-size:.75rem; color:#94a3b8; font-style:italic;">전체 플랫폼</span>
                                                 </c:when>
                                                 <c:otherwise>
-                                                    <div class="affil-company">
-                                                        <c:choose>
-                                                            <c:when test="${not empty item.companyName}">${item.companyName}</c:when>
-                                                            <c:otherwise><span style="color:#94a3b8;">-</span></c:otherwise>
-                                                        </c:choose>
-                                                    </div>
-                                                    <div class="affil-tenant">
-                                                        <c:choose>
-                                                            <c:when test="${not empty item.tenantName}">${item.tenantName}</c:when>
-                                                            <c:otherwise>-</c:otherwise>
-                                                        </c:choose>
-                                                    </div>
-                                                    <c:if test="${item.userRole == 'CHANNEL_ADMIN' and not empty item.channelName}">
-                                                        <span class="affil-channel">
-                                                            <i class="bi bi-box-seam"></i> ${item.channelName}
-                                                        </span>
-                                                    </c:if>
+                                                    <c:choose>
+                                                        <c:when test="${not empty item.companyName}">${item.companyName}</c:when>
+                                                        <c:otherwise><span style="color:#94a3b8;">-</span></c:otherwise>
+                                                    </c:choose>
                                                 </c:otherwise>
                                             </c:choose>
                                         </td>
 
                                         <!-- 연락처 -->
-                                        <td>
-                                            <div class="contact-mobile">
-                                                <c:choose>
-                                                    <c:when test="${not empty item.mobile}">
-                                                        <i class="bi bi-phone" style="font-size:.7rem; color:#94a3b8;"></i>
-                                                        ${item.mobile}
-                                                    </c:when>
-                                                    <c:otherwise><span style="color:#cbd5e1;">-</span></c:otherwise>
-                                                </c:choose>
-                                            </div>
-                                            <div class="contact-email">
-                                                <c:if test="${not empty item.email}">
-                                                    <i class="bi bi-envelope" style="font-size:.68rem;"></i>
-                                                    ${item.email}
-                                                </c:if>
-                                            </div>
+                                        <td style="font-size:.82rem;">
+                                            <c:choose>
+                                                <c:when test="${not empty item.mobile}">${item.mobile}</c:when>
+                                                <c:otherwise><span style="color:#cbd5e1;">-</span></c:otherwise>
+                                            </c:choose>
                                         </td>
 
                                         <!-- 상태 -->
@@ -296,31 +231,19 @@
                                             </span>
                                         </td>
 
-                                        <!-- 최근 로그인 -->
-                                        <td class="text-center">
+                                        <!-- 유저최신로그인 -->
+                                        <td class="text-center" style="font-size:.82rem; color:#64748b;">
                                             <c:choose>
                                                 <c:when test="${not empty item.lastLoginAt}">
-                                                    <div class="date-main">
-                                                        <fmt:formatDate value="${item.lastLoginAt}" pattern="MM-dd HH:mm"/>
-                                                    </div>
-                                                    <div class="date-sub">
-                                                        <fmt:formatDate value="${item.lastLoginAt}" pattern="yyyy"/>
-                                                    </div>
+                                                    <fmt:formatDate value="${item.lastLoginAt}" pattern="yyyy-MM-dd"/>
                                                 </c:when>
-                                                <c:otherwise>
-                                                    <span style="color:#cbd5e1; font-size:.75rem;">미로그인</span>
-                                                </c:otherwise>
+                                                <c:otherwise><span style="color:#cbd5e1;">미로그인</span></c:otherwise>
                                             </c:choose>
                                         </td>
 
                                         <!-- 등록일 -->
-                                        <td class="text-center">
-                                            <div class="date-main">
-                                                <fmt:formatDate value="${item.createdAt}" pattern="MM-dd"/>
-                                            </div>
-                                            <div class="date-sub">
-                                                <fmt:formatDate value="${item.createdAt}" pattern="yyyy"/>
-                                            </div>
+                                        <td class="text-center" style="font-size:.82rem; color:#64748b;">
+                                            <fmt:formatDate value="${item.createdAt}" pattern="yyyy-MM-dd"/>
                                         </td>
 
                                         <!-- 관리 -->

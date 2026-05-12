@@ -286,16 +286,9 @@
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h5 class="fw-bold mb-0">담당자 관리</h5>
-                <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-light text-muted border small fw-normal">
-                        <i class="bi bi-info-circle me-1"></i> 회원 등록 후 자동 연동됩니다
-                    </span>
-                    <c:if test="${not empty company.companyId and company.companyId gt 0}">
-                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="fn_addContact()">
-                        <i class="bi bi-person-plus me-1"></i> 담당자 추가
-                    </button>
-                    </c:if>
-                </div>
+                <span class="badge bg-light text-muted border small fw-normal">
+                    <i class="bi bi-info-circle me-1"></i> 회원 등록 후 자동 연동됩니다
+                </span>
             </div>
             
             <div class="table-responsive">
@@ -306,7 +299,6 @@
                             <th>역할</th>
                             <th>연락처</th>
                             <th>이메일</th>
-                            <th class="text-center">대표</th>
                             <th class="text-center">상태</th>
                         </tr>
                     </thead>
@@ -322,11 +314,6 @@
                                     <td class="small text-muted">${fn:escapeXml(ct.mobile)}</td>
                                     <td class="small text-muted">${fn:escapeXml(ct.email)}</td>
                                     <td class="text-center">
-                                        <c:if test="${ct.isPrimary == 'Y'}">
-                                            <i class="bi bi-star-fill text-warning"></i>
-                                        </c:if>
-                                    </td>
-                                    <td class="text-center">
                                         <span class="status-badge status-${ct.status == 'ACTIVE' ? 'ACTIVE' : 'INACTIVE'}">
                                             <span class="status-dot dot-${ct.status == 'ACTIVE' ? 'ACTIVE' : 'INACTIVE'}"></span>
                                             ${ct.status == 'ACTIVE' ? '정상' : '중지'}
@@ -337,7 +324,7 @@
                             </c:when>
                             <c:otherwise>
                                 <tr>
-                                    <td colspan="6" class="text-center py-4 text-muted small">등록된 담당자가 없습니다.</td>
+                                    <td colspan="5" class="text-center py-4 text-muted small">등록된 담당자가 없습니다.</td>
                                 </tr>
                             </c:otherwise>
                         </c:choose>

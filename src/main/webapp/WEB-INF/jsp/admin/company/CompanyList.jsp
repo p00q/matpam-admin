@@ -31,6 +31,35 @@
     </div>
 
     <div class="px-4 py-3">
+
+        <!-- ══ KPI 통계 카드 ══ -->
+        <div class="kpi-grid" id="kpiGrid">
+            <div class="kpi-card">
+                <div class="kpi-icon total"><i class="bi bi-building" style="color:#4361ee;"></i></div>
+                <div class="kpi-body">
+                    <div class="kpi-label">전체 업체</div>
+                    <div class="kpi-value" id="kpiTotal">-</div>
+                    <div class="kpi-sub">등록된 모든 업체</div>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon active"><i class="bi bi-check-circle-fill" style="color:#10b981;"></i></div>
+                <div class="kpi-body">
+                    <div class="kpi-label">정상 업체</div>
+                    <div class="kpi-value" id="kpiActive">-</div>
+                    <div class="kpi-sub">거래 가능 상태</div>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon locked"><i class="bi bi-slash-circle-fill" style="color:#f59e0b;"></i></div>
+                <div class="kpi-body">
+                    <div class="kpi-label">비활성</div>
+                    <div class="kpi-value" id="kpiLocked">-</div>
+                    <div class="kpi-sub">관리자 확인 필요</div>
+                </div>
+            </div>
+        </div>
+
         <!-- Search Area -->
         <div class="search-panel">
             <div class="panel-title">
@@ -153,5 +182,24 @@ function fn_link_page(pageNo) {
     form.appendChild(input);
     form.submit();
 }
+
+/* ── KPI 통계 로드 ── */
+function fn_loadCompanyStats() {
+    $.ajax({
+        url:  '<c:url value="/admin/company/companyStats.ajax"/>',
+        type: 'GET',
+        data: { companyType: '${param.companyType}' },
+        success: function(res) {
+            if (!res.success) return;
+            $('#kpiTotal').text(res.total.toLocaleString());
+            $('#kpiActive').text(res.activeCount.toLocaleString());
+            $('#kpiLocked').text(res.lockedCount.toLocaleString());
+        }
+    });
+}
+
+$(function() {
+    fn_loadCompanyStats();
+});
 </script>
 

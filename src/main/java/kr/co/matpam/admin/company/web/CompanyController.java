@@ -105,8 +105,11 @@ public class CompanyController {
             if (company == null) {
                 return "redirect:/admin/company/companyList.do";
             }
-            // 담당자 목록 조회
-            contactList = companyService.selectCompanyContactList(param);
+            // 담당자 목록 조회 (업체 유형 기반 필터 적용)
+            CompanyVO contactParam = new CompanyVO();
+            contactParam.setCompanyId(companyId);
+            contactParam.setCompanyType(company.getCompanyType());
+            contactList = companyService.selectCompanyContactList(contactParam);
             
             // 소속 채널 목록 조회 (기존 매핑 정보)
             List<Map<String, Object>> mappedChannelList = companyService.selectCompanyChannelList(companyId);
@@ -199,6 +202,37 @@ public class CompanyController {
     }
 
     /* ════════════════════════════════════════════
+       업체 통계 (KPI 카드용 AJAX)
+    ════════════════════════════════════════════ */
+    @RequestMapping("/admin/company/companyStats.ajax")
+    @ResponseBody
+    public Map<String, Object> companyStats(
+            @RequestParam(required = false) String companyType) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            // 전체
+            CompanyVO total = new CompanyVO();
+            total.setCompanyType(companyType);
+            int totalCount = companyService.selectCompanyListTotCnt(total);
+
+            // 정상(ACTIVE)
+            CompanyVO active = new CompanyVO();
+            active.setCompanyType(companyType);
+            active.setStatus("ACTIVE");
+            int activeCount = companyService.selectCompanyListTotCnt(active);
+
+            result.put("success",      true);
+            result.put("total",        totalCount);
+            result.put("activeCount",  activeCount);
+            result.put("lockedCount",  totalCount - activeCount);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+        return result;
+    }
+
+    /* ════════════════════════════════════════════
        업체 검색 (AJAX – 회원 등록 시 사용)
     ════════════════════════════════════════════ */
     @RequestMapping("/admin/company/search.ajax")
@@ -254,11 +288,21 @@ public class CompanyController {
     ════════════════════════════════════════════ */
     @RequestMapping("/admin/company/contactList.ajax")
     @ResponseBody
-    public Map<String, Object> contactList(@RequestParam Long companyId) {
+    public Map<String, Object> contactList(
+            @RequestParam Long companyId,
+            @RequestParam(required = false) String companyType) {
         Map<String, Object> result = new HashMap<>();
         try {
+            // companyType이 없으면 DB에서 조회
+            if (companyType == null || companyType.isEmpty()) {
+                CompanyVO detail = new CompanyVO();
+                detail.setCompanyId(companyId);
+                CompanyVO loaded = companyService.selectCompanyDetail(detail);
+                if (loaded != null) companyType = loaded.getCompanyType();
+            }
             CompanyVO param = new CompanyVO();
             param.setCompanyId(companyId);
+            param.setCompanyType(companyType);
             List<CompanyContactVO> list = companyService.selectCompanyContactList(param);
             result.put("success", true);
             result.put("list",    list);
