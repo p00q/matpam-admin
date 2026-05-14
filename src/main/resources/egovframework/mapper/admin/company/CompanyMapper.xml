@@ -155,9 +155,12 @@
         FROM tb_company c
         LEFT JOIN tb_tenant t ON c.tenant_id = t.tenant_id
         <if test="channelId != null">
-        INNER JOIN tb_company_channel_map m ON c.company_id = m.company_id AND m.channel_id = #{channelId}
+        INNER JOIN tb_company_channel_map m ON c.company_id = m.company_id AND m.channel_id = #{channelId} AND m.status = 'ACTIVE'
         </if>
         <where>
+            <if test="tenantId != null">
+                AND c.tenant_id = #{tenantId}
+            </if>
             <if test="companyType != null and companyType != ''">
                 AND c.company_type = #{companyType}
             </if>

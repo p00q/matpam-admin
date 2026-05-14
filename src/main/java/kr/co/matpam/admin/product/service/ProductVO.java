@@ -14,6 +14,7 @@ public class ProductVO extends MatpamBaseVO implements Serializable {
 
     private Long productId;
     private Long tenantId;
+    private Long channelId;
     private Long sellerCompanyId;
     private String productCode;
     private String productName;
@@ -38,6 +39,9 @@ public class ProductVO extends MatpamBaseVO implements Serializable {
 
     public Long getTenantId() { return tenantId; }
     public void setTenantId(Long tenantId) { this.tenantId = tenantId; }
+
+    public Long getChannelId() { return channelId; }
+    public void setChannelId(Long channelId) { this.channelId = channelId; }
 
     public Long getSellerCompanyId() { return sellerCompanyId; }
     public void setSellerCompanyId(Long sellerCompanyId) { this.sellerCompanyId = sellerCompanyId; }

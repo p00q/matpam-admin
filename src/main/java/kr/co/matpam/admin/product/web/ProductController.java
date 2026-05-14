@@ -28,7 +28,9 @@ public class ProductController {
      * 상품 목록 조회
      */
     @RequestMapping("/admin/product/productList.do")
-    public String productList(@ModelAttribute("searchVO") ProductVO searchVO, ModelMap model) throws Exception {
+    public String productList(@ModelAttribute("searchVO") ProductVO searchVO,
+                              HttpServletRequest request,
+                              ModelMap model) throws Exception {
         
         PaginationInfo paginationInfo = new PaginationInfo();
         paginationInfo.setCurrentPageNo(searchVO.getPageIndex());
@@ -38,6 +40,7 @@ public class ProductController {
         searchVO.setFirstIndex(paginationInfo.getFirstRecordIndex());
         searchVO.setLastIndex(paginationInfo.getLastRecordIndex());
         searchVO.setRecordCountPerPage(paginationInfo.getRecordCountPerPage());
+        applyProductScope(searchVO, request);
 
         List<ProductVO> list = productService.selectProductList(searchVO);
         model.addAttribute("resultList", list);
@@ -64,11 +67,7 @@ public class ProductController {
         if (productId == null) {
             product = new ProductVO();
             LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
-            if (loginVO != null && !"SUPER_ADMIN".equals(loginVO.getMemberType())) {
-                product.setTenantId(loginVO.getCompanyId());
-            } else {
-                product.setTenantId(1L); // 기본 테넌트
-            }
+            product.setTenantId(resolveTenantId(loginVO));
             product.setIndependentSaleYn("Y");
             product.setStockManagedYn("Y");
             product.setSaleStatus("ON_SALE");
@@ -90,12 +89,40 @@ public class ProductController {
      * 상품 정보 저장
      */
     @RequestMapping("/admin/product/saveProduct.do")
-    public String saveProduct(@ModelAttribute("product") ProductVO product) throws Exception {
+    public String saveProduct(@ModelAttribute("product") ProductVO product,
+                              HttpServletRequest request) throws Exception {
+        applyProductScope(product, request);
         if (product.getProductId() == null) {
             productService.insertProduct(product);
         } else {
             productService.updateProduct(product);
         }
         return "redirect:/admin/product/productList.do";
+    }
+
+    private void applyProductScope(ProductVO product, HttpServletRequest request) {
+        LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
+        if (loginVO == null || isSuperAdmin(loginVO)) {
+            return;
+        }
+        product.setTenantId(resolveTenantId(loginVO));
+        if ("CHANNEL_ADMIN".equals(loginVO.getMemberType())) {
+            product.setChannelId(loginVO.getChannelId());
+        }
+        if (product.getCreatedBy() == null) {
+            product.setCreatedBy(loginVO.getMemberPk());
+        }
+    }
+
+    private Long resolveTenantId(LoginVO loginVO) {
+        if (loginVO == null) {
+            return 1L;
+        }
+        return loginVO.getTenantId() != null ? loginVO.getTenantId() : 1L;
+    }
+
+    private boolean isSuperAdmin(LoginVO loginVO) {
+        return "SUPER_ADMIN".equals(loginVO.getMemberType()) || "SUPER".equals(loginVO.getMemberType())
+                || "SUPER".equals(loginVO.getRoleCd());
     }
 }

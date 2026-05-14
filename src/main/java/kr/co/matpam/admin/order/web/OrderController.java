@@ -36,9 +36,12 @@ public class OrderController {
      */
     @RequestMapping("/admin/order/selectOrderList.do")
     @org.springframework.web.bind.annotation.ResponseBody
-    public java.util.Map<String, Object> selectOrderList(@ModelAttribute kr.co.matpam.admin.order.service.OrderSearchVO searchVO) throws Exception {
+    public java.util.Map<String, Object> selectOrderList(
+            @ModelAttribute kr.co.matpam.admin.order.service.OrderSearchVO searchVO,
+            javax.servlet.http.HttpServletRequest request) throws Exception {
         java.util.Map<String, Object> resultMap = new java.util.HashMap<>();
         try {
+            applyOrderScope(searchVO, request);
             org.egovframe.rte.ptl.mvc.tags.ui.pagination.PaginationInfo paginationInfo = new org.egovframe.rte.ptl.mvc.tags.ui.pagination.PaginationInfo();
             paginationInfo.setCurrentPageNo(searchVO.getPageIndex());
             paginationInfo.setRecordCountPerPage(searchVO.getRecordCountPerPage());
@@ -67,9 +70,12 @@ public class OrderController {
      */
     @RequestMapping("/admin/order/selectOrderSummary.do")
     @org.springframework.web.bind.annotation.ResponseBody
-    public java.util.Map<String, Object> selectOrderSummary(@ModelAttribute kr.co.matpam.admin.order.service.OrderSearchVO searchVO) throws Exception {
+    public java.util.Map<String, Object> selectOrderSummary(
+            @ModelAttribute kr.co.matpam.admin.order.service.OrderSearchVO searchVO,
+            javax.servlet.http.HttpServletRequest request) throws Exception {
         java.util.Map<String, Object> resultMap = new java.util.HashMap<>();
         try {
+            applyOrderScope(searchVO, request);
             kr.co.matpam.admin.order.service.OrderSummaryVO summary = orderManageService.selectOrderSummary(searchVO);
             resultMap.put("success", true);
             resultMap.put("summary", summary);
@@ -173,5 +179,30 @@ public class OrderController {
         resultMap.put("success", true);
         resultMap.put("message", "공장수령 정보가 저장되었습니다.");
         return resultMap;
+    }
+
+    private void applyOrderScope(kr.co.matpam.admin.order.service.OrderSearchVO searchVO,
+                                 javax.servlet.http.HttpServletRequest request) {
+        kr.co.matpam.admin.common.service.LoginVO loginVO =
+                (kr.co.matpam.admin.common.service.LoginVO) request.getSession().getAttribute("loginVO");
+        if (loginVO == null || isSuperAdmin(loginVO)) {
+            return;
+        }
+        searchVO.setTenantId(resolveTenantId(loginVO));
+        if ("CHANNEL_ADMIN".equals(loginVO.getMemberType())) {
+            searchVO.setChannelId(loginVO.getChannelId());
+        }
+    }
+
+    private Long resolveTenantId(kr.co.matpam.admin.common.service.LoginVO loginVO) {
+        if (loginVO == null) {
+            return 1L;
+        }
+        return loginVO.getTenantId() != null ? loginVO.getTenantId() : 1L;
+    }
+
+    private boolean isSuperAdmin(kr.co.matpam.admin.common.service.LoginVO loginVO) {
+        return "SUPER_ADMIN".equals(loginVO.getMemberType()) || "SUPER".equals(loginVO.getMemberType())
+                || "SUPER".equals(loginVO.getRoleCd());
     }
 }

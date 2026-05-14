@@ -55,10 +55,13 @@ public class UserController {
 
     @RequestMapping("/admin/user/userList.do")
     public String userList(@ModelAttribute("searchVO") UserVO searchVO,
+                           HttpServletRequest request,
                            ModelMap model) throws Exception {
 
         // 일반 회원 조회 모드 설정 (운영자 제외)
         searchVO.setSearchCondition("MEMBER");
+        LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
+        applyUserScope(searchVO, loginVO);
 
         int currentPage      = searchVO.getPageIndex()    != null ? searchVO.getPageIndex()    : 1;
         int recordsPerPage   = searchVO.getPageUnit()     != null ? searchVO.getPageUnit()     : 10;
@@ -77,7 +80,7 @@ public class UserController {
         model.addAttribute("userList",       userService.selectUserList(searchVO));
         model.addAttribute("paginationInfo", paginationInfo);
         model.addAttribute("tenants",        userService.selectActiveTenantList());
-        model.addAttribute("companies",      companyService.selectCompanyListAll(new CompanyVO()));
+        model.addAttribute("companies",      companyService.selectCompanyListAll(buildCompanySearch(loginVO)));
         model.addAttribute("contentPage",    "/WEB-INF/jsp/admin/user/UserList.jsp");
         
         // 역할별 메뉴 및 제목 처리
@@ -132,12 +135,8 @@ public class UserController {
             if (loginVO != null) {
                 System.out.println("[DEBUG] LoginVO found: " + loginVO.getLoginId() + " | Role: " + loginVO.getRoleCd());
                 if (!"SUPER_ADMIN".equals(loginVO.getMemberType())) {
-                    String tenantStr = (loginVO.getChannelCd() != null && !loginVO.getChannelCd().isEmpty()) ? loginVO.getChannelCd() : "1";
-                    try {
-                        searchVO.setTenantId(Long.parseLong(tenantStr));
-                    } catch (Exception e) {
-                        searchVO.setTenantId(1L);
-                    }
+                    searchVO.setTenantId(resolveTenantId(loginVO));
+                    searchVO.setCompanyId(loginVO.getCompanyId());
                 }
             } else {
                 System.out.println("[DEBUG] LoginVO is NULL in session!");
@@ -148,6 +147,9 @@ public class UserController {
 
             // 채널 목록 (역할 필터 드롭다운용)
             ChannelVO chParam = new ChannelVO();
+            if (loginVO != null && !isSuperAdmin(loginVO)) {
+                chParam.setCompanyId(loginVO.getCompanyId());
+            }
             java.util.List<ChannelVO> channelList = sysChannelService.selectChannelList(chParam);
 
             model.addAttribute("operatorList",   userService.selectUserList(searchVO));
@@ -195,6 +197,12 @@ public class UserController {
             } else {
                 user.setUserRole("SELLER_ADMIN"); // 운영자일 경우 기본값
             }
+            if (loginVO != null && !isSuperAdmin(loginVO)) {
+                user.setTenantId(resolveTenantId(loginVO));
+                if ("CHANNEL_ADMIN".equals(loginVO.getMemberType())) {
+                    user.setChannelId(loginVO.getChannelId());
+                }
+            }
         } else {
             UserVO param = new UserVO();
             param.setUserId(userId);
@@ -231,6 +239,11 @@ public class UserController {
             user = new UserVO();
             user.setStatus("ACTIVE");
             user.setUserRole("OPERATOR");     // 기본: 운영자
+            LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
+            if (loginVO != null && !isSuperAdmin(loginVO)) {
+                user.setTenantId(resolveTenantId(loginVO));
+                user.setCompanyId(loginVO.getCompanyId());
+            }
         } else {
             UserVO param = new UserVO();
             param.setUserId(userId);
@@ -239,6 +252,10 @@ public class UserController {
 
         // 체널 목록 (채널운영자 선택 용)
         ChannelVO chParam = new ChannelVO();
+        LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
+        if (loginVO != null && !isSuperAdmin(loginVO)) {
+            chParam.setCompanyId(loginVO.getCompanyId());
+        }
         java.util.List<ChannelVO> channelList = sysChannelService.selectChannelList(chParam);
 
         model.addAttribute("user",        user);
@@ -320,6 +337,7 @@ public class UserController {
                     return result;
                 }
             }
+            applyUserMutationScope(userVO, loginVO);
             if (userVO.getUserId() == null) {
                 userService.insertUser(userVO);
                 result.put("message", "사용자가 등록되었습니다.");
@@ -398,37 +416,46 @@ public class UserController {
     @RequestMapping("/admin/user/userStats.ajax")
     @ResponseBody
     public Map<String, Object> userStats(@RequestParam(value = "userRole", required = false) String userRole,
-                                         @RequestParam(value = "searchCondition", required = false) String searchCondition) {
+                                         @RequestParam(value = "searchCondition", required = false) String searchCondition,
+                                         HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
         try {
+            LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
             // 역할별 필터 반영
             UserVO base = new UserVO();
             base.setUserRole(userRole);
             base.setSearchCondition(searchCondition != null ? searchCondition : "MEMBER");
+            applyUserScope(base, loginVO);
             int total = userService.selectUserListTotCnt(base);
 
             UserVO activeVO = new UserVO(); 
             activeVO.setStatus("ACTIVE");
             activeVO.setUserRole(userRole);
             activeVO.setSearchCondition(base.getSearchCondition());
+            applyUserScope(activeVO, loginVO);
             int activeCount = userService.selectUserListTotCnt(activeVO);
 
             UserVO lockedVO = new UserVO(); 
             lockedVO.setStatus("LOCKED");
             lockedVO.setUserRole(userRole);
             lockedVO.setSearchCondition(base.getSearchCondition());
+            applyUserScope(lockedVO, loginVO);
             int lockedCount = userService.selectUserListTotCnt(lockedVO);
 
             UserVO superVO = new UserVO(); superVO.setUserRole("SUPER_ADMIN");
+            applyUserScope(superVO, loginVO);
             int superCount = userService.selectUserListTotCnt(superVO);
 
             UserVO sellerVO = new UserVO(); sellerVO.setUserRole("SELLER_ADMIN");
+            applyUserScope(sellerVO, loginVO);
             int sellerCount = userService.selectUserListTotCnt(sellerVO);
 
             UserVO channelVO = new UserVO(); channelVO.setUserRole("CHANNEL_ADMIN");
+            applyUserScope(channelVO, loginVO);
             int channelCount = userService.selectUserListTotCnt(channelVO);
 
             UserVO buyerVO = new UserVO(); buyerVO.setUserRole("BUYER_ADMIN");
+            applyUserScope(buyerVO, loginVO);
             int buyerCount = userService.selectUserListTotCnt(buyerVO);
 
             result.put("success",      true);
@@ -444,5 +471,50 @@ public class UserController {
             result.put("message", e.getMessage());
         }
         return result;
+    }
+
+    private void applyUserScope(UserVO userVO, LoginVO loginVO) {
+        if (userVO == null || loginVO == null || isSuperAdmin(loginVO)) {
+            return;
+        }
+        userVO.setTenantId(resolveTenantId(loginVO));
+        if ("CHANNEL_ADMIN".equals(loginVO.getMemberType())) {
+            userVO.setChannelId(loginVO.getChannelId());
+        }
+    }
+
+    private void applyUserMutationScope(UserVO userVO, LoginVO loginVO) {
+        if (userVO == null || loginVO == null || isSuperAdmin(loginVO)) {
+            return;
+        }
+        userVO.setTenantId(resolveTenantId(loginVO));
+        if ("CHANNEL_ADMIN".equals(loginVO.getMemberType())) {
+            userVO.setChannelId(loginVO.getChannelId());
+        } else if ("OPERATOR".equals(loginVO.getMemberType()) && userVO.getCompanyId() == null) {
+            userVO.setCompanyId(loginVO.getCompanyId());
+        }
+    }
+
+    private CompanyVO buildCompanySearch(LoginVO loginVO) {
+        CompanyVO companyVO = new CompanyVO();
+        if (loginVO != null && !isSuperAdmin(loginVO)) {
+            companyVO.setTenantId(resolveTenantId(loginVO));
+            if ("CHANNEL_ADMIN".equals(loginVO.getMemberType())) {
+                companyVO.setChannelId(loginVO.getChannelId());
+            }
+        }
+        return companyVO;
+    }
+
+    private Long resolveTenantId(LoginVO loginVO) {
+        if (loginVO == null) {
+            return 1L;
+        }
+        return loginVO.getTenantId() != null ? loginVO.getTenantId() : 1L;
+    }
+
+    private boolean isSuperAdmin(LoginVO loginVO) {
+        return "SUPER_ADMIN".equals(loginVO.getMemberType()) || "SUPER".equals(loginVO.getMemberType())
+                || "SUPER".equals(loginVO.getRoleCd());
     }
 }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import kr.co.matpam.admin.member.service.MemberService;
 import kr.co.matpam.admin.member.service.MemberVO;
+import kr.co.matpam.admin.common.service.LoginVO;
 
 @Controller
 public class MemberController {
@@ -21,6 +22,7 @@ public class MemberController {
 
     @RequestMapping("/admin/member/memberList.do")
     public String memberList(@ModelAttribute("searchVO") MemberVO searchVO, ModelMap model, HttpServletRequest request) throws Exception {
+        applyMemberScope(searchVO, request);
         
         int currentPage = searchVO.getPageIndex() != null ? searchVO.getPageIndex() : 1;
         int recordsPerPage = searchVO.getPageUnit() != null ? searchVO.getPageUnit() : 10;
@@ -79,8 +81,13 @@ public class MemberController {
      */
     @RequestMapping("/admin/member/getOptions.do")
     @org.springframework.web.bind.annotation.ResponseBody
-    public java.util.Map<String, Object> getOptions(@RequestParam("tenantId") Long tenantId) throws Exception {
+    public java.util.Map<String, Object> getOptions(@RequestParam("tenantId") Long tenantId,
+                                                    HttpServletRequest request) throws Exception {
         java.util.Map<String, Object> resultMap = new java.util.HashMap<>();
+        LoginVO loginVO = getLoginVO(request);
+        if (loginVO != null && !isSuperAdmin(loginVO)) {
+            tenantId = resolveTenantId(loginVO);
+        }
         resultMap.put("channelList", memberService.selectChannelList(tenantId));
         resultMap.put("buyerList", memberService.selectBuyerCompanyList(tenantId));
         return resultMap;
@@ -91,9 +98,17 @@ public class MemberController {
      */
     @RequestMapping("/admin/member/insertUser.do")
     @org.springframework.web.bind.annotation.ResponseBody
-    public java.util.Map<String, Object> insertUser(@ModelAttribute kr.co.matpam.admin.user.service.UserVO vo) throws Exception {
+    public java.util.Map<String, Object> insertUser(@ModelAttribute kr.co.matpam.admin.user.service.UserVO vo,
+                                                    HttpServletRequest request) throws Exception {
         java.util.Map<String, Object> resultMap = new java.util.HashMap<>();
         try {
+            LoginVO loginVO = getLoginVO(request);
+            if (loginVO != null && !isSuperAdmin(loginVO)) {
+                vo.setTenantId(resolveTenantId(loginVO));
+                if ("CHANNEL_ADMIN".equals(loginVO.getMemberType())) {
+                    vo.setChannelId(loginVO.getChannelId());
+                }
+            }
             memberService.insertUser(vo);
             resultMap.put("success", true);
         } catch (Exception e) {
@@ -108,9 +123,11 @@ public class MemberController {
      */
     @RequestMapping("/admin/member/selectMemberList.do")
     @org.springframework.web.bind.annotation.ResponseBody
-    public java.util.Map<String, Object> selectMemberList(@ModelAttribute MemberVO searchVO) throws Exception {
+    public java.util.Map<String, Object> selectMemberList(@ModelAttribute MemberVO searchVO,
+                                                          HttpServletRequest request) throws Exception {
         java.util.Map<String, Object> resultMap = new java.util.HashMap<>();
         try {
+            applyMemberScope(searchVO, request);
             searchVO.setFirstIndex(0);
             searchVO.setRecordCountPerPage(100);
             resultMap.put("success", true);
@@ -120,5 +137,28 @@ public class MemberController {
             resultMap.put("message", e.getMessage());
         }
         return resultMap;
+    }
+
+    private void applyMemberScope(MemberVO searchVO, HttpServletRequest request) {
+        LoginVO loginVO = getLoginVO(request);
+        if (loginVO != null && !isSuperAdmin(loginVO)) {
+            searchVO.setTenantId(resolveTenantId(loginVO));
+        }
+    }
+
+    private LoginVO getLoginVO(HttpServletRequest request) {
+        return (LoginVO) request.getSession().getAttribute("loginVO");
+    }
+
+    private Long resolveTenantId(LoginVO loginVO) {
+        if (loginVO == null) {
+            return 1L;
+        }
+        return loginVO.getTenantId() != null ? loginVO.getTenantId() : 1L;
+    }
+
+    private boolean isSuperAdmin(LoginVO loginVO) {
+        return "SUPER_ADMIN".equals(loginVO.getMemberType()) || "SUPER".equals(loginVO.getMemberType())
+                || "SUPER".equals(loginVO.getRoleCd());
     }
 }

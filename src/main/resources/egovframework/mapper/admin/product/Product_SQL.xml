@@ -19,6 +19,21 @@
         FROM tb_product p
         LEFT JOIN tb_company c ON p.seller_company_id = c.company_id
         WHERE 1=1
+        <if test="tenantId != null">
+            AND p.tenant_id = #{tenantId}
+        </if>
+        <if test="sellerCompanyId != null">
+            AND p.seller_company_id = #{sellerCompanyId}
+        </if>
+        <if test="channelId != null">
+            AND EXISTS (
+                SELECT 1
+                FROM tb_product_price pp
+                WHERE pp.product_id = p.product_id
+                  AND pp.channel_id = #{channelId}
+                  AND pp.status = 'ACTIVE'
+            )
+        </if>
         <if test="searchKeyword != null and searchKeyword != ''">
             AND (p.product_name LIKE CONCAT('%', #{searchKeyword}, '%') OR p.product_code LIKE CONCAT('%', #{searchKeyword}, '%'))
         </if>
@@ -33,6 +48,21 @@
         SELECT COUNT(*)
         FROM tb_product p
         WHERE 1=1
+        <if test="tenantId != null">
+            AND p.tenant_id = #{tenantId}
+        </if>
+        <if test="sellerCompanyId != null">
+            AND p.seller_company_id = #{sellerCompanyId}
+        </if>
+        <if test="channelId != null">
+            AND EXISTS (
+                SELECT 1
+                FROM tb_product_price pp
+                WHERE pp.product_id = p.product_id
+                  AND pp.channel_id = #{channelId}
+                  AND pp.status = 'ACTIVE'
+            )
+        </if>
         <if test="searchKeyword != null and searchKeyword != ''">
             AND (p.product_name LIKE CONCAT('%', #{searchKeyword}, '%') OR p.product_code LIKE CONCAT('%', #{searchKeyword}, '%'))
         </if>

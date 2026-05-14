@@ -80,7 +80,7 @@
                     <div class="col-md-6" id="channelSelectArea" style="display: ${currentMenu eq 'comp_seller' or currentMenu eq 'comp_buyer' ? 'block' : 'none'};">
                         <label class="form-label fw-bold small">참여 채널 <span class="text-danger">*</span></label>
                         <c:choose>
-                            <c:when test="${loginVO.roleCd eq 'SUPER_ADMIN' or loginVO.channelCd eq '1'}">
+                            <c:when test="${loginVO.roleCd eq 'SUPER_ADMIN' or loginVO.roleCd eq 'OPERATOR'}">
                                 <select name="channelId" id="channelId" class="form-select form-select-sm">
                                     <option value="">-- 채널 선택 --</option>
                                     <c:forEach var="chn" items="${allChannelList}">
@@ -92,15 +92,15 @@
                                 <div class="form-control-plaintext bg-light px-3 border rounded small">
                                     <c:set var="foundChannel" value="false" />
                                     <c:forEach var="chn" items="${allChannelList}">
-                                        <c:if test="${loginVO.channelCd == chn.channelId}">
+                                        <c:if test="${loginVO.channelId == chn.channelId}">
                                             ${chn.channelName}
                                             <input type="hidden" name="channelId" value="${chn.channelId}">
                                             <c:set var="foundChannel" value="true" />
                                         </c:if>
                                     </c:forEach>
                                     <c:if test="${not foundChannel}">
-                                        <span class="text-danger">소속 채널 정보 없음 (ID: ${loginVO.channelCd})</span>
-                                        <input type="hidden" name="channelId" value="${loginVO.channelCd}">
+                                        <span class="text-danger">소속 채널 정보 없음 (ID: ${loginVO.channelId})</span>
+                                        <input type="hidden" name="channelId" value="${loginVO.channelId}">
                                     </c:if>
                                 </div>
                             </c:otherwise>

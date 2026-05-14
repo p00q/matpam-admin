@@ -10,6 +10,8 @@ public class OrderSearchVO extends MatpamBaseVO {
 
     private static final long serialVersionUID = 1L;
 
+    private Long channelId;
+
     /*
      * =========================================================
      * 페이징 (eGov 표준)
@@ -54,6 +56,14 @@ public class OrderSearchVO extends MatpamBaseVO {
 
     public String getOrderStatusCd() {
         return orderStatusCd;
+    }
+
+    public Long getChannelId() {
+        return channelId;
+    }
+
+    public void setChannelId(Long channelId) {
+        this.channelId = channelId;
     }
 
     public void setOrderStatusCd(String orderStatusCd) {

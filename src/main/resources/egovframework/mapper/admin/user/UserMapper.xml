@@ -230,11 +230,12 @@
     <select id="selectChannelListByTenant"
             parameterType="long"
             resultMap="channelMap">
-        SELECT channel_id, tenant_id, channel_type, channel_name, status
-        FROM tb_channel
-        WHERE tenant_id = #{tenantId}
-          AND status = 'ACTIVE'
-        ORDER BY channel_name ASC
+        SELECT c.channel_id, co.tenant_id, c.channel_type, c.channel_name, c.status
+        FROM tb_channel c
+        JOIN tb_company co ON c.company_id = co.company_id
+        WHERE co.tenant_id = #{tenantId}
+          AND c.status = 'ACTIVE'
+        ORDER BY c.channel_name ASC
     </select>
 
     <!-- ================================================================

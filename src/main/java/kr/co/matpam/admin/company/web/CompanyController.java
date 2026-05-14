@@ -55,11 +55,7 @@ public class CompanyController {
             HttpServletRequest request) throws Exception {
 
         LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
-        if (loginVO != null && "CHANNEL_ADMIN".equals(loginVO.getMemberType())) {
-            if (loginVO.getChannelCd() != null && !loginVO.getChannelCd().isEmpty()) {
-                searchVO.setChannelId(Long.parseLong(loginVO.getChannelCd()));
-            }
-        }
+        applyCompanyScope(searchVO, loginVO);
 
         int currentPage    = searchVO.getPageIndex() != null ? searchVO.getPageIndex() : 1;
         int recordsPerPage = searchVO.getPageUnit()  != null ? searchVO.getPageUnit()  : 10;
@@ -97,16 +93,12 @@ public class CompanyController {
 
         CompanyVO company;
         List<CompanyContactVO> contactList = null;
+        LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
 
         if (companyId == null) {
             // 신규 등록
             company = new CompanyVO();
-            LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
-            if (loginVO != null && !"SUPER_ADMIN".equals(loginVO.getMemberType())) {
-                company.setTenantId(loginVO.getCompanyId()); // 현재 LoginVO.companyId가 소속 테넌트 ID 역할을 수행 중
-            } else {
-                company.setTenantId(1L); // 슈퍼관리자 기본값 (Config화 권장)
-            }
+            company.setTenantId(resolveTenantId(loginVO));
             company.setCompanyType(companyType);
             company.setStatus("ACTIVE");
         } else {
@@ -139,10 +131,12 @@ public class CompanyController {
         ChannelVO channelParam = new ChannelVO();
         channelParam.setRecordCountPerPage(100);
         channelParam.setFirstIndex(0);
+        if (loginVO != null && !isSuperAdmin(loginVO)) {
+            channelParam.setCompanyId(loginVO.getCompanyId());
+        }
         model.addAttribute("allChannelList", sysChannelService.selectChannelList(channelParam));
 
         // 로그인 세션 정보 전달
-        LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
         model.addAttribute("loginVO", loginVO);
 
         model.addAttribute("company",     company);
@@ -178,11 +172,7 @@ public class CompanyController {
         try {
             // CHANNEL_ADMIN 권한 차단: 몰 기본정보(BOTH) 저장 불가
             LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
-            if (loginVO != null && !"SUPER_ADMIN".equals(loginVO.getMemberType())) {
-                companyVO.setTenantId(loginVO.getCompanyId());
-            } else if (companyVO.getTenantId() == null) {
-                companyVO.setTenantId(1L); 
-            }
+            companyVO.setTenantId(resolveTenantId(loginVO));
             if (companyVO.getCompanyId() == null || companyVO.getCompanyId() == 0) {
                 companyService.insertCompany(companyVO);
             } else {
@@ -231,16 +221,13 @@ public class CompanyController {
         Map<String, Object> result = new HashMap<>();
         try {
             LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
-            Long channelId = null;
-            if (loginVO != null && "CHANNEL_ADMIN".equals(loginVO.getMemberType())) {
-                if (loginVO.getChannelCd() != null && !loginVO.getChannelCd().isEmpty()) {
-                    channelId = Long.parseLong(loginVO.getChannelCd());
-                }
-            }
+            Long channelId = loginVO != null && "CHANNEL_ADMIN".equals(loginVO.getMemberType())
+                    ? loginVO.getChannelId() : null;
 
             // 전체
             CompanyVO total = new CompanyVO();
             total.setCompanyType(companyType);
+            total.setTenantId(resolveTenantId(loginVO));
             total.setChannelId(channelId);
             int totalCount = companyService.selectCompanyListTotCnt(total);
 
@@ -248,6 +235,7 @@ public class CompanyController {
             CompanyVO active = new CompanyVO();
             active.setCompanyType(companyType);
             active.setStatus("ACTIVE");
+            active.setTenantId(resolveTenantId(loginVO));
             active.setChannelId(channelId);
             int activeCount = companyService.selectCompanyListTotCnt(active);
 
@@ -279,15 +267,11 @@ public class CompanyController {
             searchVO.setCompanyType(companyType);
             
             // 권한 기반 필터링
-            if (loginVO != null) {
+            if (loginVO != null && !isSuperAdmin(loginVO)) {
+                searchVO.setTenantId(resolveTenantId(loginVO));
                 if ("CHANNEL_ADMIN".equals(loginVO.getMemberType())) {
                     // 채널 관리자: 해당 채널에 소속된 업체만 조회
-                    if (loginVO.getChannelCd() != null && !loginVO.getChannelCd().isEmpty()) {
-                        searchVO.setChannelId(Long.parseLong(loginVO.getChannelCd()));
-                    }
-                } else if (!"SUPER_ADMIN".equals(loginVO.getMemberType())) {
-                    // 일반 업체 관리자: 자신의 업체만 조회
-                    searchVO.setCompanyId(loginVO.getCompanyId());
+                    searchVO.setChannelId(loginVO.getChannelId());
                 }
             }
             
@@ -429,7 +413,7 @@ public class CompanyController {
         Map<String, Object> result = new HashMap<>();
         try {
             LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
-            Long tenantId = (loginVO != null) ? loginVO.getCompanyId() : 1L;
+            Long tenantId = resolveTenantId(loginVO);
             
             boolean isDuplicate = companyService.checkBusinessNoDuplicate(tenantId, businessNo, companyId);
             result.put("success", true);
@@ -454,11 +438,12 @@ public class CompanyController {
         Map<String, Object> result = new HashMap<>();
         try {
             LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
-            Long tenantId = (loginVO != null) ? loginVO.getCompanyId() : 1L;
+            Long tenantId = resolveTenantId(loginVO);
 
             java.util.List<java.util.Map<String, Object>> channels = new java.util.ArrayList<>();
             if (channelIds != null && roles != null) {
                 for (int i = 0; i < channelIds.size(); i++) {
+                    validateChannelMappingScope(channelIds.get(i), loginVO);
                     java.util.Map<String, Object> m = new java.util.HashMap<>();
                     m.put("channelId",     channelIds.get(i));
                     m.put("companyRoleCd", roles.get(i));
@@ -473,5 +458,40 @@ public class CompanyController {
             result.put("message", e.getMessage());
         }
         return result;
+    }
+
+    private void applyCompanyScope(CompanyVO searchVO, LoginVO loginVO) {
+        if (searchVO == null || loginVO == null || isSuperAdmin(loginVO)) {
+            return;
+        }
+        searchVO.setTenantId(resolveTenantId(loginVO));
+        if ("CHANNEL_ADMIN".equals(loginVO.getMemberType())) {
+            searchVO.setChannelId(loginVO.getChannelId());
+        }
+    }
+
+    private void validateChannelMappingScope(Long channelId, LoginVO loginVO) throws Exception {
+        if (channelId == null || loginVO == null || isSuperAdmin(loginVO)) {
+            return;
+        }
+        if ("CHANNEL_ADMIN".equals(loginVO.getMemberType()) && !channelId.equals(loginVO.getChannelId())) {
+            throw new IllegalArgumentException("소속 채널만 지정할 수 있습니다.");
+        }
+        ChannelVO channel = sysChannelService.selectChannelDetail(channelId);
+        if (channel == null || channel.getCompanyId() == null || !channel.getCompanyId().equals(loginVO.getCompanyId())) {
+            throw new IllegalArgumentException("운영업체에 속하지 않은 채널입니다.");
+        }
+    }
+
+    private Long resolveTenantId(LoginVO loginVO) {
+        if (loginVO == null) {
+            return 1L;
+        }
+        return loginVO.getTenantId() != null ? loginVO.getTenantId() : 1L;
+    }
+
+    private boolean isSuperAdmin(LoginVO loginVO) {
+        return "SUPER_ADMIN".equals(loginVO.getMemberType()) || "SUPER".equals(loginVO.getMemberType())
+                || "SUPER".equals(loginVO.getRoleCd());
     }
 }

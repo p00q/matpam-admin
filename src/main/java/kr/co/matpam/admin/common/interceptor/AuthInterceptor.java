@@ -15,6 +15,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import kr.co.matpam.admin.common.service.LoginVO;
 import kr.co.matpam.admin.user.service.UserVO;
 import kr.co.matpam.common.security.MatpamUser;
+import kr.co.matpam.common.util.MatpamContextHolder;
 
 /**
  * 인증 및 역할(roleCd) 기반 메뉴 접근 제어 인터셉터
@@ -45,20 +46,29 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
 
         // 2. 테넌트 정보(channelCd) 필수 체크
-        String channelCd = loginVO.getChannelCd();
-        if (channelCd == null || channelCd.isEmpty()) {
+        String roleCd = loginVO.getRoleCd() != null ? loginVO.getRoleCd() : loginVO.getMemberType();
+        if (roleCd == null || roleCd.isEmpty()) {
+            roleCd = "SUPER_ADMIN";
+        }
+
+        Long tenantId = resolveTenantId(loginVO);
+        Long channelId = loginVO.getChannelId();
+        String channelCd = channelId != null ? String.valueOf(channelId) : loginVO.getChannelCd();
+        if (tenantId == null && !"SUPER_ADMIN".equals(roleCd)) {
             response.sendRedirect(request.getContextPath() + "/admin/login.do?reason=INVALID_TENANT");
             return false;
         }
 
-        String roleCd = loginVO.getRoleCd() != null ? loginVO.getRoleCd() : "SUPER_ADMIN";
-
         // 3. Request Attributes 설정
         request.setAttribute("loginId",       loginVO.getLoginId());
         request.setAttribute("adminMemberId", loginVO.getMemberPk());
+        request.setAttribute("tenantId",      tenantId);
         request.setAttribute("companyId",     loginVO.getCompanyId());
         request.setAttribute("channelCd",     channelCd);
+        request.setAttribute("channelId",     channelId);
         request.setAttribute("adminRoleCd",   roleCd);
+        MatpamContextHolder.setCurrentTenantId(tenantId != null ? tenantId : 1L);
+        MatpamContextHolder.setCurrentUserId(loginVO.getMemberPk());
 
         // 4. SecurityContextHolder 동기화 (TenantAspect용)
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -68,9 +78,9 @@ public class AuthInterceptor implements HandlerInterceptor {
             uvo.setUserName(loginVO.getMemberName());
             
             // 테넌트 ID 파싱
-            Long tId = Long.parseLong(channelCd);
-            uvo.setTenantId(tId);
+            uvo.setTenantId(tenantId);
             uvo.setCompanyId(loginVO.getCompanyId());
+            uvo.setChannelId(channelId);
 
             List<SimpleGrantedAuthority> authorities = 
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + roleCd));
@@ -104,6 +114,18 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
 
         return true;
+    }
+
+    private Long resolveTenantId(LoginVO loginVO) {
+        if (loginVO.getTenantId() != null) {
+            return loginVO.getTenantId();
+        }
+        return loginVO.getCompanyId();
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+        MatpamContextHolder.clear();
     }
 
     private String detectMenu(String uri, HttpServletRequest request) {

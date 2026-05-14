@@ -31,8 +31,8 @@ public class TransportController {
     @RequestMapping("/driverList.do")
     public String driverList(DriverVO vo, HttpServletRequest request, Model model) throws Exception {
         LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
-        vo.setTenantId(loginVO.getCompanyId()); // 테넌트 ID 설정
-        vo.setChannelId(loginVO.getCompanyId()); // 실제로는 채널 PK 필요
+        vo.setTenantId(resolveTenantId(loginVO));
+        vo.setChannelId(resolveChannelId(loginVO));
         
         PaginationInfo paginationInfo = new PaginationInfo();
         paginationInfo.setCurrentPageNo(vo.getPageIndex());
@@ -59,8 +59,8 @@ public class TransportController {
     @RequestMapping("/vehicleList.do")
     public String vehicleList(VehicleVO vo, HttpServletRequest request, Model model) throws Exception {
         LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
-        vo.setTenantId(loginVO.getCompanyId());
-        vo.setChannelId(loginVO.getCompanyId());
+        vo.setTenantId(resolveTenantId(loginVO));
+        vo.setChannelId(resolveChannelId(loginVO));
 
         PaginationInfo paginationInfo = new PaginationInfo();
         paginationInfo.setCurrentPageNo(vo.getPageIndex());
@@ -93,5 +93,19 @@ public class TransportController {
         } catch (Exception e) {
             return "ERROR: " + e.getMessage();
         }
+    }
+
+    private Long resolveTenantId(LoginVO loginVO) {
+        if (loginVO == null) {
+            return 1L;
+        }
+        return loginVO.getTenantId() != null ? loginVO.getTenantId() : 1L;
+    }
+
+    private Long resolveChannelId(LoginVO loginVO) {
+        if (loginVO == null || "SUPER_ADMIN".equals(loginVO.getMemberType())) {
+            return null;
+        }
+        return loginVO.getChannelId();
     }
 }

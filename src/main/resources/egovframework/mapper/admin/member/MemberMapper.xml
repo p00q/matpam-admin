@@ -14,6 +14,9 @@
             created_at AS createdAt
         FROM tb_company
         WHERE company_type = 'BUYER'
+        <if test="tenantId != null">
+            AND tenant_id = #{tenantId}
+        </if>
         <if test="searchKeyword != null and searchKeyword != ''">
             AND (company_name LIKE CONCAT('%', #{searchKeyword}, '%') OR business_no LIKE CONCAT('%', #{searchKeyword}, '%'))
         </if>
@@ -24,6 +27,9 @@
     <select id="selectMemberListTotCnt" parameterType="kr.co.matpam.admin.member.service.MemberVO" resultType="int">
         SELECT COUNT(*) FROM tb_company
         WHERE company_type = 'BUYER'
+        <if test="tenantId != null">
+            AND tenant_id = #{tenantId}
+        </if>
         <if test="searchKeyword != null and searchKeyword != ''">
             AND (company_name LIKE CONCAT('%', #{searchKeyword}, '%') OR business_no LIKE CONCAT('%', #{searchKeyword}, '%'))
         </if>
@@ -70,7 +76,11 @@
     </select>
 
     <select id="selectChannelList" parameterType="long" resultType="java.util.HashMap">
-        SELECT channel_id AS id, channel_name AS name FROM tb_channel WHERE tenant_id = #{tenantId} AND status = 'ACTIVE'
+        SELECT c.channel_id AS id, c.channel_name AS name
+        FROM tb_channel c
+        JOIN tb_company co ON c.company_id = co.company_id
+        WHERE co.tenant_id = #{tenantId}
+          AND c.status = 'ACTIVE'
     </select>
 
     <select id="selectBuyerCompanyList" parameterType="long" resultType="java.util.HashMap">

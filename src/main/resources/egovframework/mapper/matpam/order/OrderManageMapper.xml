@@ -48,6 +48,14 @@
             o.use_yn = 'Y'
             AND o.del_yn = 'N'
 
+            <if test="tenantId != null">
+                AND o.tenant_id = #{tenantId}
+            </if>
+
+            <if test="channelId != null">
+                AND o.channel_id = #{channelId}
+            </if>
+
             <if test="opType != null and opType != '' and opType != 'NATIONAL'">
                 AND o.op_type = #{opType}
             </if>

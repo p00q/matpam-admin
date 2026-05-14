@@ -14,7 +14,9 @@ public class LoginVO implements Serializable {
     private String memberType; // SUPER_ADMIN, COMPANY_ADMIN, BUYER, RAW_SELLER, PROCESS_SELLER
     
     // 추가 계층 구조 권한 필드
+    private Long tenantId;
     private Long companyId;
+    private Long channelId;
     private String channelCd;
     private String roleCd;
     
@@ -36,11 +38,44 @@ public class LoginVO implements Serializable {
     public String getMemberType() { return memberType; }
     public void setMemberType(String memberType) { this.memberType = memberType; }
     
+    public Long getTenantId() { return tenantId; }
+    public void setTenantId(Long tenantId) { this.tenantId = tenantId; }
+
     public Long getCompanyId() { return companyId; }
     public void setCompanyId(Long companyId) { this.companyId = companyId; }
+
+    public Long getChannelId() {
+        if (channelId != null) {
+            return channelId;
+        }
+        if (channelCd == null || channelCd.isEmpty()) {
+            return null;
+        }
+        try {
+            return Long.valueOf(channelCd);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    public void setChannelId(Long channelId) {
+        this.channelId = channelId;
+        this.channelCd = channelId != null ? String.valueOf(channelId) : null;
+    }
     
     public String getChannelCd() { return channelCd; }
-    public void setChannelCd(String channelCd) { this.channelCd = channelCd; }
+    public void setChannelCd(String channelCd) {
+        this.channelCd = channelCd;
+        if (channelCd == null || channelCd.isEmpty()) {
+            this.channelId = null;
+            return;
+        }
+        try {
+            this.channelId = Long.valueOf(channelCd);
+        } catch (NumberFormatException e) {
+            this.channelId = null;
+        }
+    }
     
     public String getRoleCd() { return roleCd; }
     public void setRoleCd(String roleCd) { this.roleCd = roleCd; }
