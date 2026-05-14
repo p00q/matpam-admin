@@ -1,38 +1,38 @@
 package kr.co.matpam.common.util;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import kr.co.matpam.common.security.MatpamUser;
-
 /**
- * 현재 로그인한 사용자의 컨텍스트 정보를 제공하는 유틸리티
+ * 전역 테넌트 컨텍스트 홀더
  */
 public class MatpamContextHolder {
 
-    /**
-     * 현재 인증된 사용자 정보를 가져옵니다.
-     */
-    public static MatpamUser getCurrentUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getPrincipal() instanceof MatpamUser) {
-            return (MatpamUser) auth.getPrincipal();
+    private static final ThreadLocal<Long> currentTenantId = new ThreadLocal<Long>() {
+        @Override
+        protected Long initialValue() {
+            return 1L;
         }
-        return null;
-    }
+    };
 
-    /**
-     * 현재 테넌트 ID를 가져옵니다.
-     */
+    private static final ThreadLocal<Long> currentUserId = new ThreadLocal<Long>();
+
     public static Long getCurrentTenantId() {
-        MatpamUser user = getCurrentUser();
-        return (user != null) ? user.getTenantId() : null;
+        Long id = currentTenantId.get();
+        return id != null ? id : 1L;
     }
 
-    /**
-     * 현재 사용자 PK를 가져옵니다.
-     */
+    public static void setCurrentTenantId(Long tenantId) {
+        currentTenantId.set(tenantId);
+    }
+
     public static Long getCurrentUserId() {
-        MatpamUser user = getCurrentUser();
-        return (user != null) ? user.getUserId() : null;
+        return currentUserId.get();
+    }
+
+    public static void setCurrentUserId(Long userId) {
+        currentUserId.set(userId);
+    }
+
+    public static void clear() {
+        currentTenantId.remove();
+        currentUserId.remove();
     }
 }

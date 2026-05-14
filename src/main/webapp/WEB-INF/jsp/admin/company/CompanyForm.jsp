@@ -114,6 +114,80 @@
                 </div>
 
                 <div class="row mb-3">
+                    <c:choose>
+                        <c:when test="${company.companyType eq 'SELLER' or param.companyType eq 'SELLER'}">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small">판매업체 유형 <span class="text-danger">*</span></label>
+                                <div class="mt-1">
+                                    <div class="form-check form-check-inline small">
+                                        <input type="radio" name="sellerType" id="sellerTypeRaw" value="RAW"
+                                               class="form-check-input" onchange="fn_changeSellerType()"
+                                               ${company.sellerType == 'RAW' ? 'checked' : ''}>
+                                        <label class="form-check-label" for="sellerTypeRaw">원물</label>
+                                    </div>
+                                    <div class="form-check form-check-inline small">
+                                        <input type="radio" name="sellerType" id="sellerTypeProcessed" value="PROCESSED"
+                                               class="form-check-input" onchange="fn_changeSellerType()"
+                                               ${company.sellerType == 'PROCESSED' ? 'checked' : ''}>
+                                        <label class="form-check-label" for="sellerTypeProcessed">가공</label>
+                                    </div>
+                                    <div class="form-check form-check-inline small">
+                                        <input type="radio" name="sellerType" id="sellerTypeFinished" value="FINISHED"
+                                               class="form-check-input" onchange="fn_changeSellerType()"
+                                               ${company.sellerType == 'FINISHED' ? 'checked' : ''}>
+                                        <label class="form-check-label" for="sellerTypeFinished">완제품</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                        </c:when>
+                        <c:otherwise>
+                            <div class="col-md-6">
+                        </c:otherwise>
+                    </c:choose>
+                        <label class="form-label fw-bold small">기본 과세 유형 <span class="text-danger">*</span></label>
+                        <div class="mt-1">
+                            <div class="form-check form-check-inline small">
+                                <input type="radio" name="defaultTaxType" id="taxTaxable" value="TAXABLE"
+                                       class="form-check-input"
+                                       ${empty company.defaultTaxType or company.defaultTaxType == 'TAXABLE' ? 'checked' : ''}>
+                                <label class="form-check-label" for="taxTaxable">과세</label>
+                            </div>
+                            <div class="form-check form-check-inline small">
+                                <input type="radio" name="defaultTaxType" id="taxTaxFree" value="TAX_FREE"
+                                       class="form-check-input"
+                                       ${company.defaultTaxType == 'TAX_FREE' ? 'checked' : ''}>
+                                <label class="form-check-label" for="taxTaxFree">면세</label>
+                            </div>
+                        </div>
+                    </div>
+                    <c:choose>
+                        <c:when test="${company.companyType eq 'SELLER' or param.companyType eq 'SELLER'}">
+                            <div class="col-md-4">
+                        </c:when>
+                        <c:otherwise>
+                            <div class="col-md-6">
+                        </c:otherwise>
+                    </c:choose>
+                        <label class="form-label fw-bold small">상태</label>
+                        <div class="mt-1">
+                            <div class="form-check form-check-inline small">
+                                <input type="radio" name="status" id="stActive" value="ACTIVE"
+                                       class="form-check-input"
+                                       ${empty company.status or company.status == 'ACTIVE' ? 'checked' : ''}>
+                                <label class="form-check-label" for="stActive">정상</label>
+                            </div>
+                            <div class="form-check form-check-inline small">
+                                <input type="radio" name="status" id="stInactive" value="INACTIVE"
+                                       class="form-check-input"
+                                       ${company.status == 'INACTIVE' ? 'checked' : ''}>
+                                <label class="form-check-label" for="stInactive">중지</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
                     <%-- 2. 중단 Row: 사업자번호 + 대표자명 --%>
                     <div class="col-md-6">
                         <label class="form-label fw-bold small">사업자 등록 번호 <span class="text-danger">*</span></label>
@@ -212,42 +286,6 @@
                     </div>
                 </div>
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold small">기본 과세 유형 <span class="text-danger">*</span></label>
-                        <div class="mt-1">
-                            <div class="form-check form-check-inline small">
-                                <input type="radio" name="defaultTaxType" id="taxTaxable" value="TAXABLE"
-                                       class="form-check-input"
-                                       ${empty company.defaultTaxType or company.defaultTaxType == 'TAXABLE' ? 'checked' : ''}>
-                                <label class="form-check-label" for="taxTaxable">과세</label>
-                            </div>
-                            <div class="form-check form-check-inline small">
-                                <input type="radio" name="defaultTaxType" id="taxTaxFree" value="TAX_FREE"
-                                       class="form-check-input"
-                                       ${company.defaultTaxType == 'TAX_FREE' ? 'checked' : ''}>
-                                <label class="form-check-label" for="taxTaxFree">면세</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold small">상태</label>
-                        <div class="mt-1">
-                            <div class="form-check form-check-inline small">
-                                <input type="radio" name="status" id="stActive" value="ACTIVE"
-                                       class="form-check-input"
-                                       ${empty company.status or company.status == 'ACTIVE' ? 'checked' : ''}>
-                                <label class="form-check-label" for="stActive">정상</label>
-                            </div>
-                            <div class="form-check form-check-inline small">
-                                <input type="radio" name="status" id="stInactive" value="INACTIVE"
-                                       class="form-check-input"
-                                       ${company.status == 'INACTIVE' ? 'checked' : ''}>
-                                <label class="form-check-label" for="stInactive">중지</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 <%-- 은행 정보 --%>
                 <div class="row mb-4">
@@ -429,6 +467,11 @@
             if ($btn.prop('disabled')) return;
             $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>처리중...');
             
+            // 버튼 복구 공통 함수
+            function restoreBtn() {
+                $btn.prop('disabled', false).html(originalBtnHtml);
+            }
+            
             // 1. 기본 유효성 검사
             var companyName = (jQuery('#companyName').val() || '').trim();
             var businessNo  = (jQuery('#businessNo').val() || '').trim();
@@ -436,17 +479,18 @@
             
             console.log('Step 1: Basic Check - Name:', companyName, 'BizNo:', businessNo);
             
-            if (!companyName) { validationFail('업체명을 입력하세요.', '#companyName'); return; }
-            if (!ceoName)     { validationFail('대표자명을 입력하세요.', '#ceoName'); return; }
+            if (!companyName) { restoreBtn(); validationFail('업체명을 입력하세요.', '#companyName'); return; }
+            if (!ceoName)     { restoreBtn(); validationFail('대표자명을 입력하세요.', '#ceoName'); return; }
 
             // 2. 사업자번호 및 중복확인
-            if (!businessNo)  { validationFail('사업자 등록 번호를 입력하세요.', '#businessNo'); return; }
+            if (!businessNo)  { restoreBtn(); validationFail('사업자 등록 번호를 입력하세요.', '#businessNo'); return; }
             var bizChecked = jQuery('#bizNoChecked').val();
             
             console.log('Step 2: BizNo Check - IS_MALL:', IS_MALL, 'bizChecked:', bizChecked, 'COMPANY_ID:', COMPANY_ID);
             
             if (!IS_MALL && (!COMPANY_ID || COMPANY_ID === '0')) {
                 if (bizChecked !== 'Y') { 
+                    restoreBtn();
                     validationFail('사업자번호 중복 확인을 먼저 해주세요.', '#businessNo'); 
                     return; 
                 }
@@ -459,19 +503,32 @@
             
             console.log('Step 3: Contact Check - Phone:', phone, 'Email:', email);
             
-            if (!phone) { validationFail('대표 전화번호를 입력하세요.', '#phone'); return; }
-            if (!email) { validationFail('대표 이메일을 입력하세요.', '#email'); return; }
-            if (!addr1) { validationFail('기본 주소를 입력하세요.', '#address1'); return; }
+            if (!phone) { restoreBtn(); validationFail('대표 전화번호를 입력하세요.', '#phone'); return; }
+            if (!email) { restoreBtn(); validationFail('대표 이메일을 입력하세요.', '#email'); return; }
+            if (!addr1) { restoreBtn(); validationFail('기본 주소를 입력하세요.', '#address1'); return; }
 
-            // 4. 채널 확인 (판매업체 전용)
+            // 4. 채널 확인 (판매/구매업체 전용, channelSelectArea가 표시된 경우만)
             var ctype = (typeof COMPANY_TYPE !== 'undefined' ? COMPANY_TYPE : '');
-            var channelId = jQuery('#channelId').val() || jQuery('input[name="channelId"]').val();
+            // select 박스 또는 hidden input 모두에서 channelId를 읽음
+            var $channelSelect = jQuery('#channelId');
+            var $channelHidden = jQuery('input[name="channelId"]');
+            var channelId = ($channelSelect.length && $channelSelect.val()) 
+                          ? $channelSelect.val()
+                          : ($channelHidden.length ? $channelHidden.val() : '');
+            var channelAreaVisible = jQuery('#channelSelectArea').is(':visible');
             
-            console.log('Step 4: Type/Channel Check - Type:', ctype, 'ChannelId:', channelId);
+            console.log('Step 4: Type/Channel Check - Type:', ctype, 'ChannelId:', channelId, 'AreaVisible:', channelAreaVisible);
             
-            if ((ctype === 'SELLER' || ctype === 'BUYER') && !channelId) { 
+            if (channelAreaVisible && (ctype === 'SELLER' || ctype === 'BUYER') && !channelId) { 
+                restoreBtn();
                 validationFail('참여 채널을 선택하세요.', '#channelId'); 
                 return; 
+            }
+
+            // 4.5 판매업체 유형 확인
+            if (ctype === 'SELLER') {
+                var sellerType = jQuery('input[name="sellerType"]:checked').val();
+                if (!sellerType) { restoreBtn(); validationFail('판매업체 유형을 선택하세요.', '#sellerTypeRaw'); return; }
             }
 
             // 5. 서버 전송
@@ -511,7 +568,7 @@
                     alert('서버와의 통신에 실패했습니다.');
                 },
                 complete: function() {
-                    $btn.prop('disabled', false).html(originalBtnHtml);
+                    restoreBtn();
                 }
             });
         } catch (e) {
@@ -552,6 +609,16 @@
                 jQuery('#factoryAddress2').focus();
             }
         }).open();
+    };
+    
+    /* 판매업체 유형 변경 시 과세/면세 자동 전환 */
+    window.fn_changeSellerType = function() {
+        var type = jQuery('input[name="sellerType"]:checked').val();
+        if (type === 'RAW') {
+            jQuery('#taxTaxFree').prop('checked', true);
+        } else if (type === 'PROCESSED' || type === 'FINISHED') {
+            jQuery('#taxTaxable').prop('checked', true);
+        }
     };
     
     /* ================================================================

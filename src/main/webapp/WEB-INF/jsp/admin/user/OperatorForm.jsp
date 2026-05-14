@@ -21,6 +21,21 @@
             </div>
             <div class="card-body p-4">
                 <div class="row g-3 mb-4">
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold small text-muted">소속 테넌트(운영사) <span class="text-danger">*</span></label>
+                        <select name="tenantId" class="form-select" ${not empty user.userId ? 'disabled' : ''}>
+                            <option value="">-- 테넌트 선택 --</option>
+                            <c:forEach var="t" items="${tenants}">
+                                <option value="${t.tenantId}" ${user.tenantId eq t.tenantId ? 'selected' : ''}>${t.tenantName}</option>
+                            </c:forEach>
+                        </select>
+                        <c:if test="${not empty user.userId}">
+                            <input type="hidden" name="tenantId" value="${user.tenantId}">
+                        </c:if>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
                     <div class="col-md-6">
                         <label class="form-label fw-bold small text-muted">로그인 ID <span class="text-danger">*</span></label>
                         <div class="input-group">

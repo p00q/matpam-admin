@@ -1,42 +1,49 @@
 package kr.co.matpam.common.aspect;
-
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 import kr.co.matpam.common.annotation.RequiresTenant;
 import kr.co.matpam.common.service.MatpamBaseVO;
-import kr.co.matpam.common.util.MatpamContextHolder;
-import java.util.Map;
 
 @Aspect
 @Component
 public class TenantAspect {
-
     @Around("@annotation(requiresTenant)")
     public Object enforceTenantContext(ProceedingJoinPoint joinPoint, RequiresTenant requiresTenant) throws Throwable {
-        
-        Long currentTenantId = MatpamContextHolder.getCurrentTenantId();
+        // 1. 제외 대상 URL 및 세션 유무 체크 (미인증 사용자는 인터셉터에 맡김)
+        try {
+            org.springframework.web.context.request.ServletRequestAttributes attrs = (org.springframework.web.context.request.ServletRequestAttributes) org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
+            if (attrs != null) {
+                javax.servlet.http.HttpServletRequest request = attrs.getRequest();
+                String uri = request.getRequestURI();
+                
+                // 로그인/로그아웃 관련은 무조건 통과
+                if (uri.contains("/admin/login.do") || uri.contains("/admin/actionLogin.do") || uri.contains("/admin/logout.do")) {
+                    return joinPoint.proceed();
+                }
 
-        if (currentTenantId == null) {
-            // 로그인하지 않은 상태에서 테넌트가 필요한 요청을 보낸 경우
-            throw new IllegalStateException("테넌트 컨텍스트를 찾을 수 없습니다. 로그인이 필요합니다.");
-        }
+                // 세션이 없으면 통과 (인터셉터가 처리하도록 유도)
+                javax.servlet.http.HttpSession session = request.getSession(false);
+                if (session == null || session.getAttribute("loginVO") == null) {
+                    return joinPoint.proceed();
+                }
+            }
+        } catch (Exception e) {}
 
+        // 2. 인증된 사용자의 테넌트 체크 (세션은 있는데 테넌트 정보만 유실된 경우 차단)
         Object[] args = joinPoint.getArgs();
         for (int i = 0; i < args.length; i++) {
-            if (args[i] == null) continue;
-
-            if (args[i] instanceof Map) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> paramMap = (Map<String, Object>) args[i];
-                paramMap.put("tenantId", currentTenantId);
-            } else if (args[i] instanceof MatpamBaseVO) {
-                // MatpamBaseVO를 상속받은 모든 객체에 테넌트 ID 강제 주입
-                ((MatpamBaseVO) args[i]).setTenantId(currentTenantId);
+            if (args[i] instanceof MatpamBaseVO) {
+                MatpamBaseVO vo = (MatpamBaseVO) args[i];
+                if (vo != null) {
+                    Long tid = vo.getTenantId();
+                    if (tid == null || tid <= 0) {
+                        throw new IllegalStateException("테넌트 정보를 찾을 수 없습니다. (Session exists but No Tenant ID)");
+                    }
+                }
             }
         }
-
-        return joinPoint.proceed(args);
+        return joinPoint.proceed();
     }
 }

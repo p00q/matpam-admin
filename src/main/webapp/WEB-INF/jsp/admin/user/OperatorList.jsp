@@ -208,57 +208,13 @@
 </div>
 
 
-
 <script>
-    var ctx = '${pageContext.request.contextPath}';
-    var operatorModal = null;
-
-    $(function() {
-        operatorModal = new bootstrap.Modal(document.getElementById('operatorModal'));
-
-        // 비밀번호 실시간 체크
-        $('#modalPasswordConfirm').on('input', function() {
-            const pw = $('#modalPassword').val();
-            const msg = $('#pwdMatchMsg');
-            if (!pw || !$(this).val()) { msg.html(''); return; }
-            if (pw !== $(this).val()) {
-                msg.html('<span class="text-danger">비밀번호가 일치하지 않습니다.</span>');
-            } else {
-                msg.html('<span class="text-success">일치합니다.</span>');
-            }
-        });
-    });
-
-    function fn_modalRoleChange(role) {
-        $('#modalUserRole').val(role);
-        $('#modalChannelWrap').toggle(role === 'CHANNEL_ADMIN');
-        $('.role-card-v4').removeClass('active');
-        $('#modal-card-' + role).addClass('active');
-    }
-
     function fn_openModal(userId) {
         const url = userId ? "<c:url value='/admin/user/operatorForm.do'/>?userId=" + userId + "&isModal=Y" 
                            : "<c:url value='/admin/user/operatorForm.do'/>?isModal=Y";
         const title = userId ? "운영자 정보 수정" : "신규 운영자 등록";
         fn_openAdminModal(url, title);
     }
-
-    fn_onSaveSuccess = function() {
-        const modalEl = document.getElementById('adminCommonModal');
-        const modal = bootstrap.Modal.getInstance(modalEl);
-        if (modal) {
-            $(modalEl).one('hidden.bs.modal', function() {
-                fn_toast('운영자 정보가 저장되었습니다.', 'success');
-                setTimeout(() => location.reload(), 1500);
-            });
-            modal.hide();
-        } else {
-            fn_toast('운영자 정보가 저장되었습니다.', 'success');
-            setTimeout(() => location.reload(), 1500);
-        }
-    };
-
-
 
     function deleteOperator(userId, userName) {
         if (!confirm('[' + userName + '] 운영자를 삭제(비활성화) 처리하시겠습니까?')) return;

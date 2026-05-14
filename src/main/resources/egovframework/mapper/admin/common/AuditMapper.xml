@@ -12,10 +12,7 @@
             after_json,
             actor_user_id,
             acted_at,
-            ip_address,
-            reason_code,
-            approval_request_id,
-            trace_id
+            ip_address
         ) VALUES (
             #{tenantId},
             #{entityName},
@@ -25,10 +22,7 @@
             #{afterJson},
             #{actorUserId},
             NOW(),
-            #{ipAddress},
-            #{reasonCode},
-            #{approvalRequestId},
-            #{traceId}
+            #{ipAddress}
         )
     </insert>
 

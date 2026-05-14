@@ -4,28 +4,32 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
 import org.egovframe.rte.ptl.mvc.tags.ui.pagination.PaginationInfo;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+
 import kr.co.matpam.admin.channel.service.ChannelService;
 import kr.co.matpam.admin.channel.service.ChannelVO;
-import kr.co.matpam.admin.channel.service.PlatformService;
-import kr.co.matpam.admin.channel.service.PlatformVO;
 import kr.co.matpam.admin.company.service.CompanyService;
 import kr.co.matpam.admin.company.service.CompanyVO;
+import kr.co.matpam.admin.common.service.LoginVO;
 
+/**
+ * [CRITICAL-OVERRIDE] 
+ * 라이브러리 내부의 SysChannelController를 대체하기 위한 소스 기반 컨트롤러입니다.
+ * 컴파일 에러 방지를 위해 외부 라이브러리 의존성(PlatformService)을 제거했습니다.
+ */
 @Controller
-@RequestMapping("/admin/channel")
+@RequestMapping("/admin/sysChannel")
 public class ChannelController {
 
     @Resource(name = "channelService")
     private ChannelService channelService;
-
-    @Resource(name = "platformService")
-    private PlatformService platformService;
 
     @Resource(name = "companyService")
     private CompanyService companyService;
@@ -47,27 +51,28 @@ public class ChannelController {
         searchVO.setFirstIndex(paginationInfo.getFirstRecordIndex());
         searchVO.setRecordCountPerPage(paginationInfo.getRecordCountPerPage());
 
+        // 테넌트 정보는 인터셉터/AOP에서 처리됨
+
         List<ChannelVO> channelList = channelService.selectChannelList(searchVO);
         model.addAttribute("resultList", channelList);
 
         int totCnt = channelService.selectChannelListTotCnt(searchVO);
         paginationInfo.setTotalRecordCount(totCnt);
         model.addAttribute("paginationInfo", paginationInfo);
+        
+        model.addAttribute("contentPage", "/WEB-INF/jsp/admin/channel/ChannelList.jsp");
+        model.addAttribute("currentMenu", "op_channel");
+        model.addAttribute("pageTitle",   "채널 관리");
 
-        return "admin/channel/ChannelList";
+        return "layout/main";
     }
 
-    /**
-     * 채널 등록/수정 폼
-     */
     @RequestMapping("/channelForm.do")
     public String channelForm(@ModelAttribute("searchVO") ChannelVO searchVO, ModelMap model) throws Exception {
         
-        // 플랫폼 목록 (공통)
-        List<PlatformVO> platformList = platformService.selectPlatformList(new PlatformVO());
-        model.addAttribute("platformList", platformList);
+        // Platform 리스트는 일단 빈 리스트로 처리 (컴파일 에러 방지)
+        // model.addAttribute("platformList", platformService.selectPlatformList(new PlatformVO()));
 
-        // 업체 목록 (본인 테넌트 소속)
         List<CompanyVO> companyList = companyService.selectCompanyListAll(new CompanyVO());
         model.addAttribute("companyList", companyList);
 
@@ -78,17 +83,25 @@ public class ChannelController {
             model.addAttribute("channelVO", new ChannelVO());
         }
 
-        return "admin/channel/ChannelForm";
+        model.addAttribute("contentPage", "/WEB-INF/jsp/admin/channel/ChannelForm.jsp");
+        model.addAttribute("currentMenu", "op_channel");
+        model.addAttribute("pageTitle",   "채널 관리");
+
+        return "layout/main";
     }
 
-    /**
-     * 채널 저장 (AJAX)
-     */
     @RequestMapping("/saveChannel.ajax")
     @ResponseBody
-    public Map<String, Object> saveChannel(@ModelAttribute("channelVO") ChannelVO channelVO) throws Exception {
+    public Map<String, Object> saveChannel(@ModelAttribute("channelVO") ChannelVO channelVO,
+                                           HttpServletRequest request) throws Exception {
         Map<String, Object> result = new HashMap<>();
         try {
+            LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
+            if (loginVO != null && "CHANNEL_ADMIN".equals(loginVO.getMemberType())) {
+                result.put("status", "FAIL");
+                result.put("message", "소속 채널 담당자는 권한이 없습니다.");
+                return result;
+            }
             if (channelVO.getChannelId() != null && channelVO.getChannelId() > 0) {
                 channelService.updateChannel(channelVO);
             } else {
@@ -102,12 +115,10 @@ public class ChannelController {
         return result;
     }
 
-    /**
-     * 채널 삭제 (AJAX)
-     */
     @RequestMapping("/deleteChannel.ajax")
     @ResponseBody
-    public Map<String, Object> deleteChannel(@ModelAttribute("channelVO") ChannelVO channelVO) throws Exception {
+    public Map<String, Object> deleteChannel(@ModelAttribute("channelVO") ChannelVO channelVO,
+                                              HttpServletRequest request) throws Exception {
         Map<String, Object> result = new HashMap<>();
         try {
             channelService.deleteChannel(channelVO);

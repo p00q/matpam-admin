@@ -30,6 +30,9 @@ public class CompanyVO extends MatpamBaseVO {
     private Date createdAt;
     private Date updatedAt;
 
+    // 테넌트 정보 (Join용)
+    private String tenantName;
+
     // 추가된 필드 (Join 및 상세 정보용)
     private String channelName;
     private String bankName;
@@ -57,6 +60,9 @@ public class CompanyVO extends MatpamBaseVO {
 
     public Long getTenantId() { return tenantId; }
     public void setTenantId(Long tenantId) { this.tenantId = tenantId; }
+
+    public String getTenantName() { return tenantName; }
+    public void setTenantName(String tenantName) { this.tenantName = tenantName; }
 
     public java.util.List<CompanyContactVO> getContactList() { return contactList; }
     public void setContactList(java.util.List<CompanyContactVO> contactList) { this.contactList = contactList; }

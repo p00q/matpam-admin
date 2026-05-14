@@ -42,6 +42,12 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
                 loginVO.setMemberType(userVO.getUserRole());
                 loginVO.setCompanyId(userVO.getCompanyId());
                 
+                if (userVO.getChannelId() != null) {
+                    loginVO.setChannelCd(String.valueOf(userVO.getChannelId()));
+                }
+                loginVO.setRoleCd(userVO.getUserRole());
+                loginVO.setOpType(userVO.getUserRole());
+                
                 HttpSession session = request.getSession();
                 session.setAttribute("loginVO", loginVO);
             }

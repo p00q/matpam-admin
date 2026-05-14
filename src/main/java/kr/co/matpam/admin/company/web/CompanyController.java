@@ -54,6 +54,13 @@ public class CompanyController {
             ModelMap model,
             HttpServletRequest request) throws Exception {
 
+        LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
+        if (loginVO != null && "CHANNEL_ADMIN".equals(loginVO.getMemberType())) {
+            if (loginVO.getChannelCd() != null && !loginVO.getChannelCd().isEmpty()) {
+                searchVO.setChannelId(Long.parseLong(loginVO.getChannelCd()));
+            }
+        }
+
         int currentPage    = searchVO.getPageIndex() != null ? searchVO.getPageIndex() : 1;
         int recordsPerPage = searchVO.getPageUnit()  != null ? searchVO.getPageUnit()  : 10;
 
@@ -94,7 +101,12 @@ public class CompanyController {
         if (companyId == null) {
             // 신규 등록
             company = new CompanyVO();
-            company.setTenantId(1L);
+            LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
+            if (loginVO != null && !"SUPER_ADMIN".equals(loginVO.getMemberType())) {
+                company.setTenantId(loginVO.getCompanyId()); // 현재 LoginVO.companyId가 소속 테넌트 ID 역할을 수행 중
+            } else {
+                company.setTenantId(1L); // 슈퍼관리자 기본값 (Config화 권장)
+            }
             company.setCompanyType(companyType);
             company.setStatus("ACTIVE");
         } else {
@@ -160,10 +172,17 @@ public class CompanyController {
     ════════════════════════════════════════════ */
     @RequestMapping("/admin/company/saveCompany.ajax")
     @ResponseBody
-    public Map<String, Object> saveCompany(CompanyVO companyVO) {
+    public Map<String, Object> saveCompany(CompanyVO companyVO,
+                                           javax.servlet.http.HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
         try {
-            companyVO.setTenantId(1L); // 임시 고정
+            // CHANNEL_ADMIN 권한 차단: 몰 기본정보(BOTH) 저장 불가
+            LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
+            if (loginVO != null && !"SUPER_ADMIN".equals(loginVO.getMemberType())) {
+                companyVO.setTenantId(loginVO.getCompanyId());
+            } else if (companyVO.getTenantId() == null) {
+                companyVO.setTenantId(1L); 
+            }
             if (companyVO.getCompanyId() == null || companyVO.getCompanyId() == 0) {
                 companyService.insertCompany(companyVO);
             } else {
@@ -207,18 +226,29 @@ public class CompanyController {
     @RequestMapping("/admin/company/companyStats.ajax")
     @ResponseBody
     public Map<String, Object> companyStats(
-            @RequestParam(required = false) String companyType) {
+            @RequestParam(required = false) String companyType,
+            HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
         try {
+            LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
+            Long channelId = null;
+            if (loginVO != null && "CHANNEL_ADMIN".equals(loginVO.getMemberType())) {
+                if (loginVO.getChannelCd() != null && !loginVO.getChannelCd().isEmpty()) {
+                    channelId = Long.parseLong(loginVO.getChannelCd());
+                }
+            }
+
             // 전체
             CompanyVO total = new CompanyVO();
             total.setCompanyType(companyType);
+            total.setChannelId(channelId);
             int totalCount = companyService.selectCompanyListTotCnt(total);
 
             // 정상(ACTIVE)
             CompanyVO active = new CompanyVO();
             active.setCompanyType(companyType);
             active.setStatus("ACTIVE");
+            active.setChannelId(channelId);
             int activeCount = companyService.selectCompanyListTotCnt(active);
 
             result.put("success",      true);
@@ -248,9 +278,17 @@ public class CompanyController {
             searchVO.setSearchKeyword(searchKeyword);
             searchVO.setCompanyType(companyType);
             
-            // SUPER_ADMIN이 아니면 자신의 업체만 조회 가능하도록 강제 필터링
-            if (loginVO != null && !"SUPER_ADMIN".equals(loginVO.getMemberType())) {
-                searchVO.setCompanyId(loginVO.getCompanyId());
+            // 권한 기반 필터링
+            if (loginVO != null) {
+                if ("CHANNEL_ADMIN".equals(loginVO.getMemberType())) {
+                    // 채널 관리자: 해당 채널에 소속된 업체만 조회
+                    if (loginVO.getChannelCd() != null && !loginVO.getChannelCd().isEmpty()) {
+                        searchVO.setChannelId(Long.parseLong(loginVO.getChannelCd()));
+                    }
+                } else if (!"SUPER_ADMIN".equals(loginVO.getMemberType())) {
+                    // 일반 업체 관리자: 자신의 업체만 조회
+                    searchVO.setCompanyId(loginVO.getCompanyId());
+                }
             }
             
             List<CompanyVO> list = companyService.selectCompanySearch(searchVO);

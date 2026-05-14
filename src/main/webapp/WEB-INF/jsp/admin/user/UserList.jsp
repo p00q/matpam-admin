@@ -3,7 +3,19 @@
 <%@ taglib prefix="fmt"  uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="ui"   uri="http://egovframework.gov/ctl/ui"%>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
-
+<%
+    String aspectLocation = "Unknown";
+    try {
+        java.net.URL loc = kr.co.matpam.common.aspect.TenantAspect.class.getProtectionDomain().getCodeSource().getLocation();
+        if (loc != null) {
+            aspectLocation = loc.toString();
+        }
+    } catch (Exception e) {}
+    request.setAttribute("aspectLocation", aspectLocation);
+%>
+<div style="background:red; color:white; padding:10px; font-weight:bold; position:absolute; top:0; z-index:9999;">
+    [DIAGNOSTIC] TenantAspect is loaded from: ${aspectLocation}
+</div>
 <div class="container-fluid px-0">
 
     <!-- ── 페이지 헤더 ── -->

@@ -39,6 +39,7 @@
         <result property="channelId"         column="channel_id"/>
         <result property="primaryContactName" column="primary_contact_name"/>
         <result property="primaryContactMobile" column="primary_contact_mobile"/>
+        <result property="tenantName"           column="tenant_name"/>
 
         <!-- 몰 기본정보 확장 필드 -->
         <result property="contactPhone"      column="contact_phone"/>
@@ -69,17 +70,25 @@
     <sql id="companyWhere">
         <where>
             <if test="tenantId != null">
-                AND tenant_id = #{tenantId}
+                AND c.tenant_id = #{tenantId}
             </if>
             <if test="companyType != null and companyType != ''">
-                AND company_type = #{companyType}
+                AND c.company_type = #{companyType}
             </if>
             <if test="status != null and status != ''">
-                AND status = #{status}
+                AND c.status = #{status}
             </if>
             <if test="searchKeyword != null and searchKeyword != ''">
-                AND (company_name LIKE CONCAT('%', #{searchKeyword}, '%')
-                  OR business_no  LIKE CONCAT('%', #{searchKeyword}, '%'))
+                AND (c.company_name LIKE CONCAT('%', #{searchKeyword}, '%')
+                  OR c.business_no  LIKE CONCAT('%', #{searchKeyword}, '%'))
+            </if>
+            <if test="channelId != null">
+                AND EXISTS (
+                    SELECT 1 FROM tb_company_channel_map chm 
+                    WHERE chm.company_id = c.company_id 
+                      AND chm.channel_id = #{channelId} 
+                      AND chm.status = 'ACTIVE'
+                )
             </if>
         </where>
     </sql>
@@ -91,17 +100,20 @@
             c.*,
             ch.channel_id as channel_id,
             ch.channel_name as channel_name,
-            pcc.contact_name as primary_contact_name,
-            pcc.mobile as primary_contact_mobile
+            pcc.primary_contact_name as primary_contact_name,
+            pcc.primary_contact_mobile as primary_contact_mobile
         FROM tb_company c
         LEFT JOIN tb_company_channel_map m ON c.company_id = m.company_id AND m.status = 'ACTIVE'
         LEFT JOIN tb_channel ch ON m.channel_id = ch.channel_id
-        LEFT JOIN tb_company_contact pcc ON pcc.contact_id = (
-            SELECT contact_id FROM tb_company_contact 
-            WHERE company_id = c.company_id AND status = 'ACTIVE'
-            ORDER BY is_primary DESC, created_at DESC
-            LIMIT 1
-        )
+        LEFT JOIN (
+            SELECT company_id, contact_name as primary_contact_name, mobile as primary_contact_mobile
+            FROM (
+                SELECT company_id, contact_name, mobile,
+                       ROW_NUMBER() OVER(PARTITION BY company_id ORDER BY is_primary DESC, created_at DESC) as rn
+                FROM tb_company_contact
+                WHERE status = 'ACTIVE'
+            ) t WHERE rn = 1
+        ) pcc ON pcc.company_id = c.company_id
         <where>
             <if test="tenantId != null">
                 AND c.tenant_id = #{tenantId}
@@ -116,6 +128,9 @@
                 AND (c.company_name LIKE CONCAT('%', #{searchKeyword}, '%')
                   OR c.business_no  LIKE CONCAT('%', #{searchKeyword}, '%'))
             </if>
+            <if test="channelId != null">
+                AND ch.channel_id = #{channelId}
+            </if>
         </where>
         ORDER BY c.created_at DESC
         LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
@@ -125,23 +140,26 @@
     <select id="selectCompanyListAll"
             parameterType="kr.co.matpam.admin.company.service.CompanyVO"
             resultMap="companyMap">
-        SELECT * FROM tb_company
+        SELECT * FROM tb_company c
         <include refid="companyWhere"/>
-        ORDER BY company_name ASC
+        ORDER BY c.company_name ASC
     </select>
 
     <!-- 업체 검색 (테넌트명 포함) -->
     <select id="selectCompanySearch"
             parameterType="kr.co.matpam.admin.company.service.CompanyVO"
-            resultType="kr.co.matpam.admin.company.service.CompanyVO">
-        SELECT 
+            resultMap="companyMap">
+        SELECT DISTINCT
             c.*,
-            t.tenant_name as tenantName
+            CONCAT(c.company_name, ' [', t.tenant_name, ']') as company_name
         FROM tb_company c
         LEFT JOIN tb_tenant t ON c.tenant_id = t.tenant_id
+        <if test="channelId != null">
+        INNER JOIN tb_company_channel_map m ON c.company_id = m.company_id AND m.channel_id = #{channelId}
+        </if>
         <where>
             <if test="companyType != null and companyType != ''">
-                AND (c.company_type = #{companyType} OR c.company_type = 'BOTH')
+                AND c.company_type = #{companyType}
             </if>
             <if test="searchKeyword != null and searchKeyword != ''">
                 AND (c.company_name LIKE CONCAT('%', #{searchKeyword}, '%')
@@ -158,7 +176,7 @@
     <select id="selectCompanyListTotCnt"
             parameterType="kr.co.matpam.admin.company.service.CompanyVO"
             resultType="int">
-        SELECT COUNT(*) FROM tb_company
+        SELECT COUNT(*) FROM tb_company c
         <include refid="companyWhere"/>
     </select>
 
@@ -250,7 +268,10 @@
         WHERE contact_id = #{contactId}
     </update>
 
-    <!-- 담당자 목록 (업체별 + 연동 회원 역할 기반 필터) -->
+    <!-- 담당자 목록 (업체별 + 연동 회원 역할 기반 필터)
+         - SELLER 업체: SELLER_ADMIN 만 표시
+         - BUYER  업체: BUYER_ADMIN  만 표시
+         - BOTH (몰 기본정보) / 타입 없음: OPERATOR, CHANNEL_ADMIN 표시 -->
     <select id="selectCompanyContactList"
             parameterType="kr.co.matpam.admin.company.service.CompanyVO"
             resultMap="contactMap">
@@ -259,12 +280,18 @@
         INNER JOIN tb_user u ON cc.linked_user_id = u.user_id
         WHERE cc.company_id = #{companyId}
           AND cc.status = 'ACTIVE'
-          <if test="companyType != null and companyType == 'SELLER'">
-          AND u.role = 'SELLER_ADMIN'
-          </if>
-          <if test="companyType != null and companyType == 'BUYER'">
-          AND u.role = 'BUYER_ADMIN'
-          </if>
+          <choose>
+            <when test="companyType != null and companyType == 'SELLER'">
+              AND u.role = 'SELLER_ADMIN'
+            </when>
+            <when test="companyType != null and companyType == 'BUYER'">
+              AND u.role = 'BUYER_ADMIN'
+            </when>
+            <otherwise>
+              <!-- BOTH 또는 companyType 없는 경우: 운영자급만 표시 -->
+              AND u.role IN ('OPERATOR', 'CHANNEL_ADMIN', 'SUPER_ADMIN')
+            </otherwise>
+          </choose>
         ORDER BY cc.is_primary DESC, cc.created_at ASC
     </select>
 

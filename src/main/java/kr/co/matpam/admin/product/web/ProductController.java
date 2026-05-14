@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.egovframe.rte.ptl.mvc.tags.ui.pagination.PaginationInfo;
+import javax.servlet.http.HttpServletRequest;
+import kr.co.matpam.admin.common.service.LoginVO;
 import kr.co.matpam.admin.product.service.ProductService;
 import kr.co.matpam.admin.product.service.ProductVO;
 import kr.co.matpam.admin.product.service.ProductPriceVO;
@@ -54,12 +56,19 @@ public class ProductController {
      * 상품 등록/수정 폼
      */
     @RequestMapping("/admin/product/productForm.do")
-    public String productForm(@RequestParam(value = "productId", required = false) Long productId, ModelMap model) throws Exception {
+    public String productForm(@RequestParam(value = "productId", required = false) Long productId, 
+                               HttpServletRequest request,
+                               ModelMap model) throws Exception {
         
         ProductVO product;
         if (productId == null) {
             product = new ProductVO();
-            product.setTenantId(1L); // 기본 테넌트
+            LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
+            if (loginVO != null && !"SUPER_ADMIN".equals(loginVO.getMemberType())) {
+                product.setTenantId(loginVO.getCompanyId());
+            } else {
+                product.setTenantId(1L); // 기본 테넌트
+            }
             product.setIndependentSaleYn("Y");
             product.setStockManagedYn("Y");
             product.setSaleStatus("ON_SALE");

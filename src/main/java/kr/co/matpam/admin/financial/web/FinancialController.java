@@ -10,6 +10,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import javax.servlet.http.HttpServletRequest;
+import kr.co.matpam.admin.common.service.LoginVO;
 
 @Controller
 public class FinancialController {
@@ -19,13 +21,21 @@ public class FinancialController {
 
     @RequestMapping("/admin/financial/getMeatMoney.ajax")
     @ResponseBody
-    public Map<String, Object> getMeatMoney(@RequestParam Long companyId) {
+    public Map<String, Object> getMeatMoney(@RequestParam Long companyId, HttpServletRequest request) {
         Map<String, Object> res = new HashMap<>();
         Connection conn = null;
         try {
+            LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
+            if (loginVO == null) throw new Exception("로그인이 필요합니다.");
+
             conn = dataSource.getConnection();
-            Long tenantId = 1L;
-            Long sellerId = 2L;
+            Long tenantId = loginVO.getCompanyId(); // 현재 LoginVO.companyId가 테넌트 ID 역할을 수행 중
+            Long sellerId = loginVO.getCompanyId(); // 판매사 입장에서 조회 시 본인 ID
+            
+            if ("SUPER_ADMIN".equals(loginVO.getMemberType())) {
+                tenantId = 1L; // 슈퍼관리자 기본값
+                sellerId = 2L; // 기본 판매사 (맛팜)
+            }
             
             // 1. 여신 잔액 조회
             BigDecimal credit = BigDecimal.ZERO;
@@ -62,15 +72,25 @@ public class FinancialController {
 
     @RequestMapping("/admin/financial/adjustCredit.ajax")
     @ResponseBody
-    public Map<String, Object> adjustCredit(@RequestParam Long companyId, @RequestParam BigDecimal amount, @RequestParam String memo) {
+    public Map<String, Object> adjustCredit(@RequestParam Long companyId, @RequestParam BigDecimal amount, @RequestParam String memo, HttpServletRequest request) {
         Map<String, Object> res = new HashMap<>();
         Connection conn = null;
         try {
+            LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
+            if (loginVO == null) throw new Exception("로그인이 필요합니다.");
+
             conn = dataSource.getConnection();
             conn.setAutoCommit(false); // 트랜잭션 수동 제어
             
-            Long tenantId = 1L;
-            Long sellerId = 2L;
+            Long tenantId = loginVO.getCompanyId();
+            Long sellerId = loginVO.getCompanyId();
+            Long creatorId = loginVO.getMemberPk();
+            
+            if ("SUPER_ADMIN".equals(loginVO.getMemberType())) {
+                tenantId = 1L;
+                sellerId = 2L;
+                creatorId = 1L;
+            }
             
             // 1. 현재 잔액 조회
             BigDecimal prevBalance = BigDecimal.ZERO;
@@ -94,7 +114,7 @@ public class FinancialController {
             pstmt.setBigDecimal(5, amount);
             pstmt.setBigDecimal(6, newBalance);
             pstmt.setString(7, memo);
-            pstmt.setLong(8, 1L);
+            pstmt.setLong(8, creatorId);
             pstmt.executeUpdate();
             
             // 3. 정책 업데이트 (업서트 시뮬레이션)
@@ -122,15 +142,25 @@ public class FinancialController {
 
     @RequestMapping("/admin/financial/depositAdvance.ajax")
     @ResponseBody
-    public Map<String, Object> depositAdvance(@RequestParam Long companyId, @RequestParam BigDecimal amount, @RequestParam String memo) {
+    public Map<String, Object> depositAdvance(@RequestParam Long companyId, @RequestParam BigDecimal amount, @RequestParam String memo, HttpServletRequest request) {
         Map<String, Object> res = new HashMap<>();
         Connection conn = null;
         try {
+            LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
+            if (loginVO == null) throw new Exception("로그인이 필요합니다.");
+
             conn = dataSource.getConnection();
             conn.setAutoCommit(false);
             
-            Long tenantId = 1L;
-            Long sellerId = 2L;
+            Long tenantId = loginVO.getCompanyId();
+            Long sellerId = loginVO.getCompanyId();
+            Long creatorId = loginVO.getMemberPk();
+
+            if ("SUPER_ADMIN".equals(loginVO.getMemberType())) {
+                tenantId = 1L;
+                sellerId = 2L;
+                creatorId = 1L;
+            }
             
             // 1. 현재 잔액 조회
             BigDecimal prevBalance = BigDecimal.ZERO;
@@ -154,7 +184,7 @@ public class FinancialController {
             pstmt.setBigDecimal(5, amount);
             pstmt.setBigDecimal(6, newBalance);
             pstmt.setString(7, memo);
-            pstmt.setLong(8, 1L);
+            pstmt.setLong(8, creatorId);
             pstmt.executeUpdate();
             
             conn.commit();

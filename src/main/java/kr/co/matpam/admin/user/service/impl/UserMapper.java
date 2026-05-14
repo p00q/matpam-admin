@@ -55,6 +55,9 @@ public interface UserMapper {
     /** 테넌트의 대표 판매업체 ID 조회 (seller_company_id) */
     Long selectSellerCompanyIdByTenant(Long tenantId) throws Exception;
 
+    /** 테넌트의 운영사(HQ) ID 조회 */
+    Long selectHqCompanyIdByTenant(Long tenantId) throws Exception;
+
     // ── 담당자 동시 생성 및 동기화 ──────────────────────────────────────
 
 

@@ -6,7 +6,7 @@
     <div class="px-4 py-3 ${param.isModal == 'Y' ? 'pt-4' : ''}">
         <div class="row justify-content-center">
             <div class="col-xl-12 col-lg-12">
-                <form:form modelAttribute="user" id="detailForm" name="detailForm" action="${pageContext.request.contextPath}/admin/user/saveUser.ajax?v=${now.time}">
+                <form:form modelAttribute="user" id="userDetailForm" name="detailForm" action="${pageContext.request.contextPath}/admin/user/saveUser.ajax">
                     <form:hidden path="userId" id="userIdHidden"/>
                     <form:hidden path="tenantId" id="tenantIdHidden"/>
                     <form:hidden path="userRole" id="userRoleHidden"/>
@@ -23,6 +23,7 @@
                                 <div class="col-md-6 ${isRoleFixed ? 'd-none' : ''}">
                                     <label class="form-label fw-bold text-dark">소속 구분 <span class="text-danger">*</span></label>
                                     <select id="affiliationType" class="form-select shadow-none" onchange="window.fn_onAffiliationTypeChange(this.value)">
+                                        <option value="HQ" ${user.userRole == 'OPERATOR' ? 'selected' : ''}>운영사 (HQ)</option>
                                         <option value="SELLER" ${user.userRole == 'SELLER_ADMIN' || empty user.userRole ? 'selected' : ''}>판매업체 (Seller)</option>
                                         <option value="BUYER" ${user.userRole == 'BUYER_ADMIN' ? 'selected' : ''}>구매업체 (Buyer)</option>
                                     </select>
@@ -108,28 +109,50 @@
     };
 
     window.fn_onAffiliationTypeChange = function(type) {
-        var role = (type === 'SELLER') ? 'SELLER_ADMIN' : 'BUYER_ADMIN';
+        var role = 'SELLER_ADMIN';
+        if (type === 'HQ') role = 'OPERATOR';
+        else if (type === 'BUYER') role = 'BUYER_ADMIN';
+        
         $('#userRoleHidden').val(role);
         window.fn_loadCompanies(type);
     };
 
     window.fn_loadCompanies = function(type) {
+        if (!type) return;
         var $select = $('#companySelect').empty().append('<option value="">-- 업체 선택 --</option>');
+        
+        // 중복 호출 방지용 기교
+        if (window._loadingCompanies === type) return;
+        window._loadingCompanies = type;
+
         $.ajax({
             url: "<c:url value='/admin/company/search.ajax'/>?v=" + new Date().getTime(),
             type: 'GET',
             data: { companyType: type },
             success: function(res) {
+                window._loadingCompanies = null;
                 if (res.success && res.list) {
                     $.each(res.list, function(i, co) {
+                        // 서버 필터가 미작동할 경우를 대비한 클라이언트 사이드 보조 필터
+                        if (co.companyType !== type && co.companyType !== 'BOTH') return;
+
                         var isSelected = String(co.companyId) === String(window.INIT_CO);
-                        $select.append('<option value="' + co.companyId + '" data-tenant="' + co.tenantId + '" ' + (isSelected ? 'selected' : '') + '>' + co.companyName + '</option>');
+                        // 업체명 뒤에 사업자번호를 붙여 중복 이름 식별 및 정리
+                        var displayName = co.companyName;
+                        if (co.businessNo) {
+                            displayName += ' (' + co.businessNo + ')';
+                        }
+                        
+                        $select.append('<option value="' + co.companyId + '" data-tenant="' + co.tenantId + '" ' + (isSelected ? 'selected' : '') + '>' + displayName + '</option>');
                     });
                     if (window.INIT_CO) {
                         $select.val(window.INIT_CO);
                         window.fn_onCompanyChange(window.INIT_CO);
                     }
                 }
+            },
+            error: function() {
+                window._loadingCompanies = null;
             }
         });
     };
@@ -186,9 +209,9 @@
     window.fn_save = function() {
         if (!window.fn_validate()) return;
         
-        var formData = $('#detailForm').serialize();
+        var formData = $('#userDetailForm').serialize();
         $.ajax({
-            url: $('#detailForm').attr('action'),
+            url: $('#userDetailForm').attr('action'),
             type: 'POST',
             data: formData,
             cache: false,
@@ -225,7 +248,10 @@
         if ($('#mobile').val()) {
             $('#mobile').val(window.fn_formatMobile($('#mobile').val()));
         }
-        var initType = (window.INIT_ROLE === 'BUYER_ADMIN') ? 'BUYER' : 'SELLER';
+        var initType = 'SELLER';
+        if (window.INIT_ROLE === 'OPERATOR') initType = 'HQ';
+        else if (window.INIT_ROLE === 'BUYER_ADMIN') initType = 'BUYER';
+        
         $('#affiliationType').val(initType);
         window.fn_loadCompanies(initType);
     });

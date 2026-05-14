@@ -120,8 +120,9 @@ public class UserServiceImpl extends EgovAbstractServiceImpl implements UserServ
 
         String role = (vo.getUserRole() != null) ? vo.getUserRole().trim().toUpperCase() : "";
         
-        // 동기화 대상 역할: 판매처관리자, 구매처관리자, 채널운영자
-        if (!"SELLER_ADMIN".equals(role) && !"BUYER_ADMIN".equals(role) && !"CHANNEL_ADMIN".equals(role)) {
+        // 동기화 대상 역할: 운영자, 판매처관리자, 구매처관리자, 채널운영자
+        // SUPER_ADMIN은 특정 업체에 종속되지 않으므로 제외
+        if ("SUPER_ADMIN".equals(role) || role.isEmpty()) {
             return;
         }
 
@@ -185,7 +186,10 @@ public class UserServiceImpl extends EgovAbstractServiceImpl implements UserServ
 
         if (tenantId != null) {
             // CHANNEL_ADMIN: 채널 목록 필요
-            if ("CHANNEL_ADMIN".equals(userRole) || "SELLER_ADMIN".equals(userRole)) {
+            if ("OPERATOR".equals(userRole) || "CHANNEL_ADMIN".equals(userRole)) {
+                result.put("hqCompanyId", userMapper.selectHqCompanyIdByTenant(tenantId));
+            }
+            if ("SELLER_ADMIN".equals(userRole)) {
                 result.put("channels", userMapper.selectChannelListByTenant(tenantId));
                 result.put("sellerCompanyId", userMapper.selectSellerCompanyIdByTenant(tenantId));
             }
@@ -218,28 +222,40 @@ public class UserServiceImpl extends EgovAbstractServiceImpl implements UserServ
                 break;
 
             case "OPERATOR":
-                // 운영자: 테넌트1, 업체(\ubab0 본사) 1 고정, 채널 없음
-                if (vo.getTenantId() == null) vo.setTenantId(1L);
-                if (vo.getCompanyId() == null) vo.setCompanyId(1L);
+                // 운영자: 해당 테넌트의 운영사(HQ) 소속으로 고정, 채널 없음
+                if (vo.getTenantId() == null) {
+                    throw new IllegalArgumentException("USER_002:운영자 등록 시 테넌트 정보는 필수입니다.");
+                }
+                if (vo.getCompanyId() == null) {
+                    Long hqId = userMapper.selectHqCompanyIdByTenant(vo.getTenantId());
+                    if (hqId == null) {
+                        throw new IllegalArgumentException("USER_004:해당 테넌트에 운영사(HQ)가 등록되어 있지 않습니다.");
+                    }
+                    vo.setCompanyId(hqId);
+                }
                 vo.setChannelId(null);
                 break;
 
             case "CHANNEL_ADMIN":
-                // 채널 운영자 (운영자 화면 경유 등록 시: tenantId/channelId 필수)
-                if (vo.getTenantId() == null) vo.setTenantId(1L);
+                // 채널 운영자
+                if (vo.getTenantId() == null) {
+                    throw new IllegalArgumentException("USER_002:채널 관리자 등록 시 테넌트 정보는 필수입니다.");
+                }
                 require(vo.getChannelId() != null, "USER_002:담당 채널은 필수입니다.");
                 if (vo.getCompanyId() == null) {
-                    // 운영자 화면: 판매 업체 자동 세팅 (없으면 1번 기본)
-                    Long sellerIdForChannel = userMapper.selectSellerCompanyIdByTenant(vo.getTenantId());
-                    vo.setCompanyId(sellerIdForChannel != null ? sellerIdForChannel : 1L);
+                    // 채널 관리자도 운영사의 일종으로 간주 (HQ 소속)
+                    Long hqId = userMapper.selectHqCompanyIdByTenant(vo.getTenantId());
+                    vo.setCompanyId(hqId != null ? hqId : 1L); // 하이브리드 과도기용: HQ 없으면 일단 1번
                 }
                 break;
 
             case "SELLER_ADMIN":
                 require(vo.getTenantId() != null, "USER_002:테넌트는 필수입니다.");
-                Long sellerIdForSeller = userMapper.selectSellerCompanyIdByTenant(vo.getTenantId());
-                require(sellerIdForSeller != null, "USER_004:해당 테넌트에 대표 판매업체가 지정되지 않았습니다.");
-                vo.setCompanyId(sellerIdForSeller);
+                if (vo.getCompanyId() == null) {
+                    Long sellerIdForSeller = userMapper.selectSellerCompanyIdByTenant(vo.getTenantId());
+                    require(sellerIdForSeller != null, "USER_004:해당 테넌트에 대표 판매업체가 지정되지 않았습니다.");
+                    vo.setCompanyId(sellerIdForSeller);
+                }
                 vo.setChannelId(null);
                 break;
 
@@ -260,6 +276,7 @@ public class UserServiceImpl extends EgovAbstractServiceImpl implements UserServ
             return inputRole;
         }
         switch (userRole != null ? userRole : "") {
+            case "OPERATOR":      return "ADMIN";   // 몰 운영자
             case "SELLER_ADMIN":  return "ADMIN";
             case "CHANNEL_ADMIN": return "ADMIN";
             case "BUYER_ADMIN":   return "PURCHASE";

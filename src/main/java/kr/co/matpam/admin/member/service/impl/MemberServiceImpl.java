@@ -56,8 +56,9 @@ public class MemberServiceImpl extends EgovAbstractServiceImpl implements Member
         vo.setPasswordHash(encoder.encode(vo.getPasswordHash()));
         
         // company_id 필수 제약조건 대응 (마스터 계정 등)
-        if (vo.getCompanyId() == null) {
-            vo.setCompanyId(1L);
+        if (vo.getCompanyId() == null && !"SUPER_ADMIN".equals(vo.getUserRole())) {
+             // FIXME: 필요 시 여기서 테넌트 HQ를 조회하여 세팅하는 로직 추가 가능
+             // throw new IllegalArgumentException("소속 업체 정보가 누락되었습니다.");
         }
         
         memberMapper.insertUser(vo);

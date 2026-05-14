@@ -266,5 +266,15 @@
           AND company_type = 'SELLER'
         LIMIT 1
     </select>
+    
+    <select id="selectHqCompanyIdByTenant"
+            parameterType="long"
+            resultType="long">
+        SELECT company_id
+        FROM tb_company
+        WHERE tenant_id = #{tenantId}
+          AND company_type = 'HQ'
+        LIMIT 1
+    </select>
 
 </mapper>

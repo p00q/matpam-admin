@@ -80,11 +80,13 @@
 
         <nav class="sidebar-nav">
             <div class="nav-group-title">Menu</div>
-            
-            <c:set var="uriLower" value="${fn:toLowerCase(pageContext.request.requestURI)}"/>
 
-            
-            <!-- 운영관리 -->
+            <%-- 현재 로그인 역할 (JSP EL용) --%>
+            <c:set var="loginRole"  value="${sessionScope.loginVO.roleCd}"/>
+            <c:set var="uriLower"   value="${fn:toLowerCase(pageContext.request.requestURI)}"/>
+
+            <%-- 운영관리: SUPER_ADMIN, OPERATOR만 표시 / CHANNEL_ADMIN 숨김 --%>
+            <c:if test="${loginRole ne 'CHANNEL_ADMIN'}">
             <div class="nav-group">
                 <c:set var="isOpPage" value="${fn:startsWith(currentMenu, 'op_') or fn:contains(uriLower, 'operator') or fn:contains(uriLower, 'syschannel')}"/>
                 <div class="nav-parent ${isOpPage ? '' : 'collapsed'}" data-bs-toggle="collapse" data-bs-target="#menu_op" aria-expanded="${isOpPage ? 'true' : 'false'}">
@@ -93,15 +95,20 @@
                     <i class="bi bi-chevron-down toggle-arrow"></i>
                 </div>
                 <div class="collapse ${isOpPage ? 'show' : ''}" id="menu_op" data-bs-parent=".sidebar-nav">
-
                     <ul class="nav-child-list">
+                        <%-- 몰 기본정보: 전체 허용 (OPERATOR·SUPER_ADMIN) --%>
                         <li><a href="<c:url value='/admin/company/companyForm.do?companyId=1'/>" class="nav-child-item ${currentMenu eq 'op_mall' ? 'active' : ''}">몰 기본정보</a></li>
+                        <%-- 채널관리: OPERATOR 이상만 허용 --%>
                         <li><a href="<c:url value='/admin/sysChannel/channelList.do'/>" class="nav-child-item ${currentMenu eq 'op_channel' ? 'active' : ''}">채널관리</a></li>
+                        <%-- 운영자관리: SUPER_ADMIN만 허용 --%>
+                        <c:if test="${loginRole eq 'SUPER_ADMIN'}">
                         <li><a href="<c:url value='/admin/user/operatorList.do'/>" class="nav-child-item ${currentMenu eq 'op_operator' ? 'active' : ''}">운영자관리</a></li>
+                        </c:if>
                         <li><a href="#" class="nav-child-item">약관정보</a></li>
                     </ul>
                 </div>
             </div>
+            </c:if>
 
             <!-- 업체관리 -->
             <div class="nav-group">
@@ -194,7 +201,21 @@
                 </div>
                 <div class="user-info">
                     <span class="user-name">${sessionScope.loginVO.userNm}</span>
-                    <span class="user-role">${sessionScope.loginVO.opType}</span>
+                    <%-- 역할명 한국어 표시 --%>
+                    <c:choose>
+                        <c:when test="${sessionScope.loginVO.roleCd eq 'SUPER_ADMIN'}">
+                            <span class="user-role" style="color:#f59e0b;">슈퍼관리자</span>
+                        </c:when>
+                        <c:when test="${sessionScope.loginVO.roleCd eq 'OPERATOR'}">
+                            <span class="user-role" style="color:#60a5fa;">몰 운영자</span>
+                        </c:when>
+                        <c:when test="${sessionScope.loginVO.roleCd eq 'CHANNEL_ADMIN'}">
+                            <span class="user-role" style="color:#34d399;">채널관리자</span>
+                        </c:when>
+                        <c:otherwise>
+                            <span class="user-role">${sessionScope.loginVO.opType}</span>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
                 <a href="<c:url value='/admin/login/actionLogout.do'/>" class="logout-btn" title="로그아웃">
                     <i class="bi bi-power"></i>
@@ -211,11 +232,30 @@
             </h5>
         </div>
         <div class="d-flex align-items-center gap-3">
-            <a href="<c:url value='/admin/login.do'/>" class="btn btn-sm btn-outline-warning py-1 px-3 shadow-sm" style="border-radius:20px; font-weight:600; font-size:0.75rem; border-color: rgba(245, 158, 11, 0.3);">
-                <i class="bi bi-arrow-clockwise me-1"></i> 재로그인
-            </a>
+            <%-- 개발용 역할 전환 버튼 --%>
+            <div class="dropdown">
+                <button class="btn btn-sm btn-outline-warning dropdown-toggle py-1 px-3 shadow-sm" type="button" id="roleDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius:20px; font-weight:600; font-size:0.75rem; border-color: rgba(245, 158, 11, 0.3);">
+                    <i class="bi bi-person-badge me-1"></i> 권한 변경 (테스트)
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="roleDropdown">
+                    <li><h6 class="dropdown-header">관리자 계정</h6></li>
+                    <li><a class="dropdown-item small" href="<c:url value='/admin/login.do?role=SUPER'/>"><i class="bi bi-shield-lock me-2 text-warning"></i>수퍼관리자 (admin)</a></li>
+                    <li><a class="dropdown-item small" href="<c:url value='/admin/login.do?role=OP'/>"><i class="bi bi-gear me-2 text-primary"></i>몰운영자 (operator01)</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><h6 class="dropdown-header">채널관리자 계정</h6></li>
+                    <li><a class="dropdown-item small" href="<c:url value='/admin/login.do?role=CH3'/>"><i class="bi bi-truck me-2 text-success"></i>전국택배 (tester01)</a></li>
+                    <li><a class="dropdown-item small" href="<c:url value='/admin/login.do?role=CH4'/>"><i class="bi bi-box-seam me-2 text-info"></i>화물직송 (optest99)</a></li>
+                    <li><a class="dropdown-item small" href="<c:url value='/admin/login.do?role=CH5'/>"><i class="bi bi-shop me-2 text-secondary"></i>공장수령 (sync_test_002)</a></li>
+                </ul>
+            </div>
             <div class="badge px-3 py-2 border shadow-sm" style="background: rgba(255,255,255,0.05); color: var(--accent); border-color: var(--glass-border) !important;">
-                <i class="bi bi-shield-check me-2"></i>운영자 권한: <strong>${sessionScope.loginVO.opType}</strong>
+                <i class="bi bi-shield-check me-2"></i>
+                <c:choose>
+                    <c:when test="${sessionScope.loginVO.roleCd eq 'SUPER_ADMIN'}">슈퍼관리자</c:when>
+                    <c:when test="${sessionScope.loginVO.roleCd eq 'OPERATOR'}">몰 운영자</c:when>
+                    <c:when test="${sessionScope.loginVO.roleCd eq 'CHANNEL_ADMIN'}">채널관리자</c:when>
+                    <c:otherwise>${sessionScope.loginVO.opType}</c:otherwise>
+                </c:choose>
             </div>
         </div>
     </div>
