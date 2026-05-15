@@ -84,7 +84,7 @@ public class ChannelController {
         }
 
         model.addAttribute("channel", channel);
-        model.addAttribute("managerList", selectManagerList(request));
+        model.addAttribute("managerList", selectManagerList(request, channel != null ? channel.getChannelId() : null));
         model.addAttribute("existingTypes", selectExistingTypes(searchVO, channel));
         model.addAttribute("contentPage", "/WEB-INF/jsp/admin/tenant/SysChannelForm.jsp");
         model.addAttribute("currentMenu", "op_channel");
@@ -108,6 +108,7 @@ public class ChannelController {
 
             applyOperatorScope(channelVO, request);
             validateChannel(channelVO);
+            validateChannelManager(channelVO);
 
             if (channelVO.getChannelId() != null && channelVO.getChannelId() > 0) {
                 ChannelVO saved = sysChannelService.selectChannelDetail(channelVO.getChannelId());
@@ -176,9 +177,10 @@ public class ChannelController {
                 || (channel.getCompanyId() != null && channel.getCompanyId().equals(loginVO.getCompanyId()));
     }
 
-    private List<UserVO> selectManagerList(HttpServletRequest request) throws Exception {
+    private List<UserVO> selectManagerList(HttpServletRequest request, Long currentChannelId) throws Exception {
         UserVO searchVO = new UserVO();
         searchVO.setSearchCondition("OPERATOR");
+        searchVO.setUserRole("CHANNEL_ADMIN");
         searchVO.setFirstIndex(0);
         searchVO.setRecordCountPerPage(1000);
 
@@ -190,7 +192,9 @@ public class ChannelController {
             }
         }
 
-        return userService.selectUserList(searchVO);
+        List<UserVO> users = userService.selectUserList(searchVO);
+        users.removeIf(user -> user.getChannelId() != null && !user.getChannelId().equals(currentChannelId));
+        return users;
     }
 
     private String selectExistingTypes(ChannelVO searchVO, ChannelVO current) throws Exception {
@@ -221,6 +225,28 @@ public class ChannelController {
         }
         if (channelVO.getStatus() == null || channelVO.getStatus().isEmpty()) {
             channelVO.setStatus("ACTIVE");
+        }
+    }
+
+    private void validateChannelManager(ChannelVO channelVO) throws Exception {
+        if (channelVO.getManagerId() == null) {
+            return;
+        }
+
+        UserVO param = new UserVO();
+        param.setUserId(channelVO.getManagerId());
+        UserVO manager = userService.selectUserDetail(param);
+        if (manager == null) {
+            throw new IllegalArgumentException("담당자 정보를 찾을 수 없습니다.");
+        }
+        if (!"CHANNEL_ADMIN".equals(manager.getUserRole())) {
+            throw new IllegalArgumentException("채널 담당자는 채널 운영자만 지정할 수 있습니다.");
+        }
+        if (manager.getChannelId() != null) {
+            Long currentChannelId = channelVO.getChannelId();
+            if (currentChannelId == null || !manager.getChannelId().equals(currentChannelId)) {
+                throw new IllegalArgumentException("이미 다른 채널에 배정된 담당자입니다.");
+            }
         }
     }
 

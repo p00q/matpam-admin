@@ -1,0 +1,45 @@
+SLF4J: Class path contains multiple SLF4J bindings.
+SLF4J: Found binding in [jar:file:/C:/Users/handy_chatbot/.m2/repository/org/apache/logging/log4j/log4j-slf4j-impl/2.20.0/log4j-slf4j-impl-2.20.0.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: Found binding in [jar:file:/C:/Users/handy_chatbot/.m2/repository/org/slf4j/slf4j-reload4j/1.7.36/slf4j-reload4j-1.7.36.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
+SLF4J: Actual binding is of type [org.apache.logging.slf4j.Log4jLoggerFactory]
+[AUDIT ERROR] Failed to record audit log: 
+### Error updating database.  Cause: java.sql.SQLIntegrityConstraintViolationException: CONSTRAINT `tb_audit_log.after_json` failed for `matpam_new`.`tb_audit_log`
+### The error may exist in file [D:\antigravity\matpam-admin\target\classes\egovframework\mapper\admin\common\AuditMapper.xml]
+### The error may involve kr.co.matpam.admin.common.service.impl.AuditMapper.insertAuditLog-Inline
+### The error occurred while setting parameters
+### SQL: INSERT INTO tb_audit_log (             tenant_id,             entity_name,             entity_id,             action_type,             before_json,             after_json,             actor_user_id,             acted_at,             ip_address         ) VALUES (             ?,             ?,             ?,             ?,             ?,             ?,             ?,             NOW(),             ?         )
+### Cause: java.sql.SQLIntegrityConstraintViolationException: CONSTRAINT `tb_audit_log.after_json` failed for `matpam_new`.`tb_audit_log`
+; CONSTRAINT `tb_audit_log.after_json` failed for `matpam_new`.`tb_audit_log`; nested exception is java.sql.SQLIntegrityConstraintViolationException: CONSTRAINT `tb_audit_log.after_json` failed for `matpam_new`.`tb_audit_log`
+[AUDIT ERROR] Failed to record audit log: 
+### Error updating database.  Cause: java.sql.SQLIntegrityConstraintViolationException: CONSTRAINT `tb_audit_log.after_json` failed for `matpam_new`.`tb_audit_log`
+### The error may exist in file [D:\antigravity\matpam-admin\target\classes\egovframework\mapper\admin\common\AuditMapper.xml]
+### The error may involve kr.co.matpam.admin.common.service.impl.AuditMapper.insertAuditLog-Inline
+### The error occurred while setting parameters
+### SQL: INSERT INTO tb_audit_log (             tenant_id,             entity_name,             entity_id,             action_type,             before_json,             after_json,             actor_user_id,             acted_at,             ip_address         ) VALUES (             ?,             ?,             ?,             ?,             ?,             ?,             ?,             NOW(),             ?         )
+### Cause: java.sql.SQLIntegrityConstraintViolationException: CONSTRAINT `tb_audit_log.after_json` failed for `matpam_new`.`tb_audit_log`
+; CONSTRAINT `tb_audit_log.after_json` failed for `matpam_new`.`tb_audit_log`; nested exception is java.sql.SQLIntegrityConstraintViolationException: CONSTRAINT `tb_audit_log.after_json` failed for `matpam_new`.`tb_audit_log`
+[AUDIT ERROR] Failed to record audit log: 
+### Error updating database.  Cause: java.sql.SQLIntegrityConstraintViolationException: CONSTRAINT `tb_audit_log.after_json` failed for `matpam_new`.`tb_audit_log`
+### The error may exist in file [D:\antigravity\matpam-admin\target\classes\egovframework\mapper\admin\common\AuditMapper.xml]
+### The error may involve kr.co.matpam.admin.common.service.impl.AuditMapper.insertAuditLog-Inline
+### The error occurred while setting parameters
+### SQL: INSERT INTO tb_audit_log (             tenant_id,             entity_name,             entity_id,             action_type,             before_json,             after_json,             actor_user_id,             acted_at,             ip_address         ) VALUES (             ?,             ?,             ?,             ?,             ?,             ?,             ?,             NOW(),             ?         )
+### Cause: java.sql.SQLIntegrityConstraintViolationException: CONSTRAINT `tb_audit_log.after_json` failed for `matpam_new`.`tb_audit_log`
+; CONSTRAINT `tb_audit_log.after_json` failed for `matpam_new`.`tb_audit_log`; nested exception is java.sql.SQLIntegrityConstraintViolationException: CONSTRAINT `tb_audit_log.after_json` failed for `matpam_new`.`tb_audit_log`
+[AUDIT ERROR] Failed to record audit log: 
+### Error updating database.  Cause: java.sql.SQLIntegrityConstraintViolationException: CONSTRAINT `tb_audit_log.after_json` failed for `matpam_new`.`tb_audit_log`
+### The error may exist in file [D:\antigravity\matpam-admin\target\classes\egovframework\mapper\admin\common\AuditMapper.xml]
+### The error may involve kr.co.matpam.admin.common.service.impl.AuditMapper.insertAuditLog-Inline
+### The error occurred while setting parameters
+### SQL: INSERT INTO tb_audit_log (             tenant_id,             entity_name,             entity_id,             action_type,             before_json,             after_json,             actor_user_id,             acted_at,             ip_address         ) VALUES (             ?,             ?,             ?,             ?,             ?,             ?,             ?,             NOW(),             ?         )
+### Cause: java.sql.SQLIntegrityConstraintViolationException: CONSTRAINT `tb_audit_log.after_json` failed for `matpam_new`.`tb_audit_log`
+; CONSTRAINT `tb_audit_log.after_json` failed for `matpam_new`.`tb_audit_log`; nested exception is java.sql.SQLIntegrityConstraintViolationException: CONSTRAINT `tb_audit_log.after_json` failed for `matpam_new`.`tb_audit_log`
+[AUDIT ERROR] Failed to record audit log: 
+### Error updating database.  Cause: java.sql.SQLIntegrityConstraintViolationException: CONSTRAINT `tb_audit_log.after_json` failed for `matpam_new`.`tb_audit_log`
+### The error may exist in file [D:\antigravity\matpam-admin\target\classes\egovframework\mapper\admin\common\AuditMapper.xml]
+### The error may involve kr.co.matpam.admin.common.service.impl.AuditMapper.insertAuditLog-Inline
+### The error occurred while setting parameters
+### SQL: INSERT INTO tb_audit_log (             tenant_id,             entity_name,             entity_id,             action_type,             before_json,             after_json,             actor_user_id,             acted_at,             ip_address         ) VALUES (             ?,             ?,             ?,             ?,             ?,             ?,             ?,             NOW(),             ?         )
+### Cause: java.sql.SQLIntegrityConstraintViolationException: CONSTRAINT `tb_audit_log.after_json` failed for `matpam_new`.`tb_audit_log`
+; CONSTRAINT `tb_audit_log.after_json` failed for `matpam_new`.`tb_audit_log`; nested exception is java.sql.SQLIntegrityConstraintViolationException: CONSTRAINT `tb_audit_log.after_json` failed for `matpam_new`.`tb_audit_log`

@@ -20,25 +20,25 @@ public class AdminLoginController {
 
         switch (role.toUpperCase()) {
             case "SUPER":
-                setLogin(loginVO, 1L, "admin", "슈퍼관리자", "SUPER_ADMIN", 1L, 1L, null);
+                setLogin(loginVO, 1L, "admin", "super admin", "SUPER_ADMIN", 1L, 1L, null);
                 break;
 
             case "OP":
-                setLogin(loginVO, 2L, "operator01", "운영담당자", "OPERATOR", 1L, 2L, null);
+                setLogin(loginVO, 2L, "operator01", "mall operator", "OPERATOR", 1L, 1L, null);
                 break;
 
             case "CH4":
-                setLogin(loginVO, 4L, "optest99", "화물직배송 담당자", "CHANNEL_ADMIN", 1L, 2L, 4L);
+                setLogin(loginVO, 4L, "optest99", "direct channel manager", "CHANNEL_ADMIN", 1L, 1L, 4L);
                 break;
 
             case "CH5":
-                setLogin(loginVO, 8L, "sync_test_002", "공장수령 담당자", "CHANNEL_ADMIN", 1L, 2L, 5L);
+                setLogin(loginVO, 8L, "sync_test_002", "collect channel manager", "CHANNEL_ADMIN", 1L, 1L, 5L);
                 break;
 
             case "CH3":
             case "CH":
             default:
-                setLogin(loginVO, 3L, "tester01", "전국택배 담당자", "CHANNEL_ADMIN", 1L, 2L, 3L);
+                setLogin(loginVO, 19L, "new_op_arch_01", "courier channel manager", "CHANNEL_ADMIN", 1L, 1L, 3L);
                 break;
         }
 

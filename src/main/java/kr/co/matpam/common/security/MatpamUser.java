@@ -18,10 +18,20 @@ public class MatpamUser extends User {
     private final String userName;
 
     public MatpamUser(UserVO userVO, Collection<? extends GrantedAuthority> authorities) {
-        super(userVO.getLoginId(), userVO.getPasswordHash(), authorities);
+        super(defaultLoginId(userVO), defaultPassword(userVO), authorities);
         this.userId = userVO.getUserId();
         this.tenantId = userVO.getTenantId();
         this.companyId = userVO.getCompanyId();
         this.userName = userVO.getUserName();
+    }
+
+    private static String defaultLoginId(UserVO userVO) {
+        return userVO.getLoginId() != null && !userVO.getLoginId().isEmpty()
+                ? userVO.getLoginId() : "anonymous";
+    }
+
+    private static String defaultPassword(UserVO userVO) {
+        return userVO.getPasswordHash() != null && !userVO.getPasswordHash().isEmpty()
+                ? userVO.getPasswordHash() : "SESSION_AUTH";
     }
 }

@@ -76,6 +76,26 @@
         WHERE c.channel_id = #{channelId}
     </select>
 
+    <select id="selectActiveChannelByManagerId" resultType="kr.co.matpam.admin.tenant.service.ChannelVO">
+        SELECT
+            c.channel_id as channelId,
+            c.company_id as companyId,
+            c.channel_type as channelType,
+            c.channel_name as channelName,
+            c.manager_id as managerId,
+            u.user_name as managerName,
+            c.status as status,
+            c.sort_order as sortOrder,
+            c.created_at as createdAt,
+            c.updated_at as updatedAt
+        FROM tb_channel c
+        LEFT JOIN tb_user u ON c.manager_id = u.user_id
+        WHERE c.manager_id = #{managerId}
+          AND c.status != 'INACTIVE'
+        ORDER BY c.channel_id DESC
+        LIMIT 1
+    </select>
+
     <insert id="insertChannel" useGeneratedKeys="true" keyProperty="channelId">
         INSERT INTO tb_channel (
             company_id,

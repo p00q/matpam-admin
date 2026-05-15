@@ -208,7 +208,6 @@ public class UserController {
             param.setUserId(userId);
             user = userService.selectUserDetail(param);
         }
-
         // 폼 공통 옵션: 테넌트 목록 (화면 로딩 시 초기 노출)
         model.addAttribute("user",         user);
         model.addAttribute("tenants",      userService.selectActiveTenantList());
@@ -251,6 +250,17 @@ public class UserController {
         }
 
         // 체널 목록 (채널운영자 선택 용)
+        ChannelVO managedChannel = null;
+        boolean channelAssignmentLocked = false;
+        if (user != null && user.getUserId() != null) {
+            managedChannel = sysChannelService.selectActiveChannelByManagerId(user.getUserId());
+            channelAssignmentLocked = managedChannel != null;
+            if (managedChannel != null) {
+                user.setUserRole("CHANNEL_ADMIN");
+                user.setChannelId(managedChannel.getChannelId());
+            }
+        }
+
         ChannelVO chParam = new ChannelVO();
         LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
         if (loginVO != null && !isSuperAdmin(loginVO)) {
@@ -261,6 +271,8 @@ public class UserController {
         model.addAttribute("user",        user);
         model.addAttribute("channelList", channelList);
         model.addAttribute("tenants",     userService.selectActiveTenantList());
+        model.addAttribute("managedChannel", managedChannel);
+        model.addAttribute("channelAssignmentLocked", channelAssignmentLocked);
         
         String jspView = "admin/user/OperatorForm";
         if ("Y".equalsIgnoreCase(request.getParameter("isModal"))) {
@@ -337,7 +349,11 @@ public class UserController {
                     return result;
                 }
             }
+            validateManagedChannelChange(userVO);
             applyUserMutationScope(userVO, loginVO);
+            if (userVO.getStatus() == null || userVO.getStatus().isEmpty()) {
+                userVO.setStatus("ACTIVE");
+            }
             if (userVO.getUserId() == null) {
                 userService.insertUser(userVO);
                 result.put("message", "사용자가 등록되었습니다.");
@@ -471,6 +487,23 @@ public class UserController {
             result.put("message", e.getMessage());
         }
         return result;
+    }
+
+    private void validateManagedChannelChange(UserVO userVO) throws Exception {
+        if (userVO == null || userVO.getUserId() == null) {
+            return;
+        }
+
+        ChannelVO managedChannel = sysChannelService.selectActiveChannelByManagerId(userVO.getUserId());
+        if (managedChannel == null) {
+            return;
+        }
+
+        if (!"CHANNEL_ADMIN".equals(userVO.getUserRole())) {
+            throw new IllegalArgumentException("USER_ERR:채널에 배정된 담당자는 채널관리에서 해제 후 역할을 변경하세요.");
+        }
+
+        userVO.setChannelId(managedChannel.getChannelId());
     }
 
     private void applyUserScope(UserVO userVO, LoginVO loginVO) {

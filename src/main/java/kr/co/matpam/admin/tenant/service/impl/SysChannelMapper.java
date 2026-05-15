@@ -12,6 +12,8 @@ public interface SysChannelMapper {
     int selectChannelListTotCnt(ChannelVO vo) throws Exception;
     
     ChannelVO selectChannelDetail(Long channelId) throws Exception;
+
+    ChannelVO selectActiveChannelByManagerId(Long managerId) throws Exception;
     
     void insertChannel(ChannelVO vo) throws Exception;
     

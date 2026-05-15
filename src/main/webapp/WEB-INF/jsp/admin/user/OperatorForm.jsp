@@ -11,10 +11,11 @@
 <div class="px-4 py-3 ${param.isModal == 'Y' ? 'pt-4' : ''}">
     <form id="operatorForm">
         <input type="hidden" name="userId" value="${user.userId}">
-        <input type="hidden" name="tenantId" value="${user.tenantId}">
         <input type="hidden" id="formUserRole" name="userRole" value="${not empty user.userRole ? user.userRole : 'OPERATOR'}">
+        <c:if test="${channelAssignmentLocked}">
+            <input type="hidden" name="channelId" value="${user.channelId}">
+        </c:if>
 
-        <!-- ── 섹션 01 : 기본 정보 ── -->
         <div class="premium-card mb-4 border-0 shadow-sm">
             <div class="card-header bg-white py-3 border-bottom">
                 <h6 class="mb-0 fw-bold text-primary"><span class="badge bg-primary-subtle text-primary me-2">01</span> 계정 정보</h6>
@@ -39,7 +40,7 @@
                     <div class="col-md-6">
                         <label class="form-label fw-bold small text-muted">로그인 ID <span class="text-danger">*</span></label>
                         <div class="input-group">
-                            <input type="text" id="formLoginId" name="loginId" class="form-control" value="${user.loginId}" 
+                            <input type="text" id="formLoginId" name="loginId" class="form-control" value="${user.loginId}"
                                    ${not empty user.userId ? 'readonly' : ''} placeholder="4~20자 영문/숫자">
                             <c:if test="${empty user.userId}">
                                 <button class="btn btn-outline-dark" type="button" onclick="fn_checkId()">중복확인</button>
@@ -100,7 +101,6 @@
             </div>
         </div>
 
-        <!-- ── 섹션 02 : 역할 설정 ── -->
         <div class="premium-card mb-4 border-0 shadow-sm">
             <div class="card-header bg-white py-3 border-bottom">
                 <h6 class="mb-0 fw-bold text-primary"><span class="badge bg-primary-subtle text-primary me-2">02</span> 권한 및 역할</h6>
@@ -109,7 +109,7 @@
                 <div class="row g-2 mb-4">
                     <div class="col-md-6">
                         <label class="role-card-v4 ${user.userRole eq 'OPERATOR' or empty user.userRole ? 'active' : ''}" id="card-OPERATOR">
-                            <input type="radio" name="roleType" value="OPERATOR" ${user.userRole eq 'OPERATOR' or empty user.userRole ? 'checked' : ''} onclick="fn_roleChange('OPERATOR')">
+                            <input type="radio" name="roleType" value="OPERATOR" ${user.userRole eq 'OPERATOR' or empty user.userRole ? 'checked' : ''} ${channelAssignmentLocked ? 'disabled' : ''} onclick="fn_roleChange('OPERATOR')">
                             <div class="role-icon-box total"><i class="bi bi-person-badge"></i></div>
                             <div class="role-info">
                                 <div class="role-title">운영자</div>
@@ -119,7 +119,7 @@
                     </div>
                     <div class="col-md-6">
                         <label class="role-card-v4 ${user.userRole eq 'CHANNEL_ADMIN' ? 'active' : ''}" id="card-CHANNEL_ADMIN">
-                            <input type="radio" name="roleType" value="CHANNEL_ADMIN" ${user.userRole eq 'CHANNEL_ADMIN' ? 'checked' : ''} onclick="fn_roleChange('CHANNEL_ADMIN')">
+                            <input type="radio" name="roleType" value="CHANNEL_ADMIN" ${user.userRole eq 'CHANNEL_ADMIN' ? 'checked' : ''} ${channelAssignmentLocked ? 'disabled' : ''} onclick="fn_roleChange('CHANNEL_ADMIN')">
                             <div class="role-icon-box active"><i class="bi bi-diagram-3"></i></div>
                             <div class="role-info">
                                 <div class="role-title">채널 운영자</div>
@@ -129,9 +129,14 @@
                     </div>
                 </div>
 
+                <c:if test="${channelAssignmentLocked}">
+                    <div class="alert alert-warning py-2 px-3 small mb-4">
+                        현재 이 운영자는 채널관리에서 <strong>${fn:escapeXml(managedChannel.channelName)}</strong> 담당자로 지정되어 있습니다. 역할과 담당 채널은 채널관리에서만 변경할 수 있습니다.
+                    </div>
+                </c:if>
                 <div id="channelWrap" style="${user.userRole eq 'CHANNEL_ADMIN' ? '' : 'display:none;'}">
                     <label class="form-label fw-bold small text-muted">담당 채널 <span class="text-danger">*</span></label>
-                    <select name="channelId" class="form-select">
+                    <select name="channelId" class="form-select" ${channelAssignmentLocked ? 'disabled' : ''}>
                         <option value="">-- 채널 선택 --</option>
                         <c:forEach var="ch" items="${channelList}">
                             <option value="${ch.channelId}" ${user.channelId eq ch.channelId ? 'selected' : ''}>${fn:escapeXml(ch.channelName)}</option>
@@ -142,7 +147,7 @@
         </div>
 
         <div class="d-flex justify-content-center gap-3 mb-4">
-            <button type="button" class="btn btn-primary px-5 py-2 shadow" style="border-radius:12px; font-weight:700;" onclick="fn_saveOperator()">
+            <button type="button" id="btnSaveOperator" class="btn btn-primary px-5 py-2 shadow" style="border-radius:12px; font-weight:700;" onclick="fn_saveOperator()">
                 <i class="bi bi-check2-circle me-1"></i> ${empty user.userId ? '운영자 등록하기' : '수정 내용 저장'}
             </button>
         </div>
@@ -200,22 +205,64 @@
         if (pw && pw !== pwC) { alert('비밀번호가 일치하지 않습니다.'); return; }
         if (role === 'CHANNEL_ADMIN' && !$('select[name="channelId"]').val()) { alert('담당 채널을 선택하세요.'); return; }
 
+        const $saveButton = $('#btnSaveOperator');
         const formData = $('#operatorForm').serialize();
-        $.post("<c:url value='/admin/user/saveUser.ajax'/>", formData, function(res) {
+        $saveButton.prop('disabled', true);
+
+        $.ajax({
+            url: "<c:url value='/admin/user/saveUser.ajax'/>",
+            type: "POST",
+            data: formData,
+            dataType: "json"
+        }).done(function(res) {
+            if (typeof res === 'string') {
+                try {
+                    res = JSON.parse(res);
+                } catch (e) {
+                    res = { success: false, message: '응답을 해석하지 못했습니다.' };
+                }
+            }
+
             if (res.success) {
-                if ("${param.isModal}" === "Y" && typeof fn_onSaveSuccess === 'function') {
-                    fn_onSaveSuccess();
-                } else if (typeof window.parent.fn_onSaveSuccess === 'function') {
-                    window.parent.fn_onSaveSuccess();
-                } else {
-                    if(typeof fn_toast === 'function') fn_toast(res.message || '저장되었습니다.', 'success');
-                    else alert(res.message || '저장되었습니다.');
-                    setTimeout(() => location.reload(), 1000);
+                $saveButton.prop('disabled', false);
+                try {
+                    if ("${param.isModal}" === "Y" && typeof fn_onSaveSuccess === 'function') {
+                        fn_onSaveSuccess();
+                    } else if (typeof window.parent.fn_onSaveSuccess === 'function') {
+                        window.parent.fn_onSaveSuccess();
+                    } else {
+                        if (typeof fn_toast === 'function') fn_toast(res.message || '저장되었습니다.', 'success');
+                        else alert(res.message || '저장되었습니다.');
+                        setTimeout(function() { location.reload(); }, 1000);
+                    }
+                } catch (e) {
+                    console.error('[Operator Save Success Callback Error]', e);
+                    alert(res.message || '저장되었습니다.');
+                    location.reload();
                 }
             } else {
-                if(typeof fn_toast === 'function') fn_toast(res.message || '저장 중 오류가 발생했습니다.', 'error');
+                if (typeof fn_toast === 'function') fn_toast(res.message || '저장 중 오류가 발생했습니다.', 'error');
                 else alert(res.message || '저장 중 오류가 발생했습니다.');
             }
+        }).fail(function(xhr) {
+            let message = '저장 중 오류가 발생했습니다.';
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                message = xhr.responseJSON.message;
+            } else if (xhr.responseText) {
+                try {
+                    const parsed = JSON.parse(xhr.responseText);
+                    if (parsed.message) {
+                        message = parsed.message;
+                    }
+                } catch (e) {
+                    message = '저장 요청이 실패했습니다. (' + xhr.status + ')';
+                }
+            }
+
+            if (typeof fn_toast === 'function') fn_toast(message, 'error');
+            else alert(message);
+        }).always(function() {
+            $saveButton.prop('disabled', false);
         });
     }
 </script>

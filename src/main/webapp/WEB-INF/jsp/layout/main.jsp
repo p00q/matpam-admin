@@ -101,7 +101,7 @@
                         <%-- 채널관리: OPERATOR 이상만 허용 --%>
                         <li><a href="<c:url value='/admin/sysChannel/channelList.do'/>" class="nav-child-item ${currentMenu eq 'op_channel' ? 'active' : ''}">채널관리</a></li>
                         <%-- 운영자관리: SUPER_ADMIN만 허용 --%>
-                        <c:if test="${loginRole eq 'SUPER_ADMIN'}">
+                        <c:if test="${loginRole eq 'SUPER_ADMIN' or loginRole eq 'OPERATOR'}">
                         <li><a href="<c:url value='/admin/user/operatorList.do'/>" class="nav-child-item ${currentMenu eq 'op_operator' ? 'active' : ''}">운영자관리</a></li>
                         </c:if>
                         <li><a href="#" class="nav-child-item">약관정보</a></li>
@@ -243,7 +243,7 @@
                     <li><a class="dropdown-item small" href="<c:url value='/admin/login.do?role=OP'/>"><i class="bi bi-gear me-2 text-primary"></i>몰운영자 (operator01)</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><h6 class="dropdown-header">채널관리자 계정</h6></li>
-                    <li><a class="dropdown-item small" href="<c:url value='/admin/login.do?role=CH3'/>"><i class="bi bi-truck me-2 text-success"></i>전국택배 (tester01)</a></li>
+                    <li><a class="dropdown-item small" href="<c:url value='/admin/login.do?role=CH3'/>"><i class="bi bi-truck me-2 text-success"></i>전국택배 (new_op_arch_01)</a></li>
                     <li><a class="dropdown-item small" href="<c:url value='/admin/login.do?role=CH4'/>"><i class="bi bi-box-seam me-2 text-info"></i>화물직송 (optest99)</a></li>
                     <li><a class="dropdown-item small" href="<c:url value='/admin/login.do?role=CH5'/>"><i class="bi bi-shop me-2 text-secondary"></i>공장수령 (sync_test_002)</a></li>
                 </ul>
@@ -304,22 +304,44 @@
          * @param url 로드할 JSP URL
          * @param title 모달 상단 타이틀 (옵션)
          */
+        var adminModalRequest = null;
+
         function fn_openAdminModal(url, title) {
             if (title) $('#adminCommonModalTitle').html('<i class="bi bi-window-stack me-2 text-warning"></i>' + title);
-            
+
+            if (adminModalRequest && adminModalRequest.readyState !== 4) {
+                adminModalRequest.abort();
+            }
+             
             // 로딩 표시
             $('#adminCommonModalBody').html('<div class="d-flex justify-content-center align-items-center" style="height:500px;"><div class="spinner-border text-primary" role="status"></div></div>');
             
             const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('adminCommonModal'));
             modal.show();
 
-            $.ajax({
+            adminModalRequest = $.ajax({
                 url: url,
                 type: 'GET',
+                cache: false,
+                timeout: 15000,
                 success: function(html) {
                     $('#adminCommonModalBody').html(html);
 
+                    /*
                     // jQuery .html()은 <script> 블록을 자동 실행하지 않으므로 수동 재실행
+                    $('#adminCommonModalBody').find('script').each(function() {
+                    $('#adminCommonModalBody').find('script').each(function() {
+                        try {
+                            if (this.src) {
+                                $.getScript(this.src);
+                            } else {
+                                $.globalEval(this.text || this.textContent || this.innerHTML || '');
+                            }
+                        } catch(e) {
+                            console.warn('[Modal Script Eval Error]', e);
+                        }
+                    });
+                    */
                     $('#adminCommonModalBody').find('script').each(function() {
                         try {
                             if (this.src) {
@@ -332,8 +354,13 @@
                         }
                     });
                 },
-                error: function(xhr) {
-                    $('#adminCommonModalBody').html('<div class="p-5 text-center text-danger"><i class="bi bi-exclamation-triangle fs-1"></i><br>데이터를 불러오지 못했습니다. (' + xhr.status + ')</div>');
+                error: function(xhr, status) {
+                    if (status === 'abort') return;
+                    const code = status === 'timeout' ? 'timeout' : xhr.status;
+                    $('#adminCommonModalBody').html('<div class="p-5 text-center text-danger"><i class="bi bi-exclamation-triangle fs-1"></i><br>데이터를 불러오지 못했습니다. (' + code + ')</div>');
+                },
+                complete: function() {
+                    adminModalRequest = null;
                 }
             });
         }
@@ -359,6 +386,10 @@
 
         // 모달이 닫힐 때 상태 강제 복구 (회귀 방지)
         $(document).on('hidden.bs.modal', '#adminCommonModal', function () {
+            if (adminModalRequest && adminModalRequest.readyState !== 4) {
+                adminModalRequest.abort();
+                adminModalRequest = null;
+            }
             $('body').removeClass('modal-open').css('overflow', '');
             $('.modal-backdrop').remove();
         });

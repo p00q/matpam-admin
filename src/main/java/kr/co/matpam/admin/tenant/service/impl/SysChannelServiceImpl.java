@@ -37,6 +37,14 @@ public class SysChannelServiceImpl extends EgovAbstractServiceImpl implements Sy
     }
 
     @Override
+    public ChannelVO selectActiveChannelByManagerId(Long managerId) throws Exception {
+        if (managerId == null) {
+            return null;
+        }
+        return sysChannelMapper.selectActiveChannelByManagerId(managerId);
+    }
+
+    @Override
     public void insertChannel(ChannelVO vo) throws Exception {
         validateDuplicateType(vo);
         sysChannelMapper.insertChannel(vo);
