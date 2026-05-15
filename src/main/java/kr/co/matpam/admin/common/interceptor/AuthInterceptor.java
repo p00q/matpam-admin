@@ -33,6 +33,10 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         // 1. 세션 체크 및 제외 URL 처리
         String uri = request.getRequestURI();
+        String contextPath = request.getContextPath();
+        if (uri.equals(contextPath + "/admin") || uri.equals(contextPath + "/admin/")) {
+            return true;
+        }
         if (uri.contains("/admin/login.do") || uri.contains("/admin/actionLogin.do") || uri.contains("/admin/logout.do")) {
             return true;
         }
@@ -70,24 +74,31 @@ public class AuthInterceptor implements HandlerInterceptor {
         MatpamContextHolder.setCurrentTenantId(tenantId != null ? tenantId : 1L);
         MatpamContextHolder.setCurrentUserId(loginVO.getMemberPk());
 
-        // 4. SecurityContextHolder 동기화 (TenantAspect용)
+        // 4. SecurityContextHolder 동기화 (TenantAspect 및 권한 체크용)
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserVO uvo = new UserVO();
-            uvo.setUserId(loginVO.getMemberPk());
-            uvo.setLoginId(loginVO.getLoginId());
-            uvo.setUserName(loginVO.getMemberName());
-            
-            // 테넌트 ID 파싱
-            uvo.setTenantId(tenantId);
-            uvo.setCompanyId(loginVO.getCompanyId());
-            uvo.setChannelId(channelId);
+            try {
+                UserVO uvo = new UserVO();
+                uvo.setUserId(loginVO.getMemberPk());
+                uvo.setLoginId(loginVO.getLoginId());
+                uvo.setUserName(loginVO.getMemberName());
+                uvo.setTenantId(tenantId);
+                uvo.setCompanyId(loginVO.getCompanyId());
+                uvo.setChannelId(channelId);
 
-            List<SimpleGrantedAuthority> authorities = 
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + roleCd));
-            
-            MatpamUser mUser = new MatpamUser(uvo, authorities);
-            Authentication auth = new UsernamePasswordAuthenticationToken(mUser, null, authorities);
-            SecurityContextHolder.getContext().setAuthentication(auth);
+                // roleCd 공백 제거 및 유효성 체크
+                String cleanRole = (roleCd != null) ? roleCd.trim() : "USER";
+                if (cleanRole.isEmpty()) cleanRole = "USER";
+
+                List<SimpleGrantedAuthority> authorities = 
+                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + cleanRole));
+                
+                MatpamUser mUser = new MatpamUser(uvo, authorities);
+                Authentication auth = new UsernamePasswordAuthenticationToken(mUser, null, authorities);
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            } catch (Exception e) {
+                // 인증 객체 생성 실패 시 로그만 남기고 통과 (최소한 서비스는 돌아가게 함)
+                System.err.println("[AuthInterceptor] SecurityContext sync failed: " + e.getMessage());
+            }
         }
 
         // 5. 역할별 접근 제어

@@ -45,7 +45,7 @@ public class UserController {
     @InitBinder
     public void initBinder(WebDataBinder binder) {
         binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
-        binder.registerCustomEditor(Long.class,   new CustomNumberEditor(Long.class,   true));
+        binder.registerCustomEditor(Long.class, new CustomNumberEditor(Long.class, true));
         binder.registerCustomEditor(Integer.class, new CustomNumberEditor(Integer.class, true));
     }
 
@@ -55,16 +55,16 @@ public class UserController {
 
     @RequestMapping("/admin/user/userList.do")
     public String userList(@ModelAttribute("searchVO") UserVO searchVO,
-                           HttpServletRequest request,
-                           ModelMap model) throws Exception {
+            HttpServletRequest request,
+            ModelMap model) throws Exception {
 
         // 일반 회원 조회 모드 설정 (운영자 제외)
         searchVO.setSearchCondition("MEMBER");
         LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
         applyUserScope(searchVO, loginVO);
 
-        int currentPage      = searchVO.getPageIndex()    != null ? searchVO.getPageIndex()    : 1;
-        int recordsPerPage   = searchVO.getPageUnit()     != null ? searchVO.getPageUnit()     : 10;
+        int currentPage = searchVO.getPageIndex() != null ? searchVO.getPageIndex() : 1;
+        int recordsPerPage = searchVO.getPageUnit() != null ? searchVO.getPageUnit() : 10;
 
         PaginationInfo paginationInfo = new PaginationInfo();
         paginationInfo.setCurrentPageNo(currentPage);
@@ -77,23 +77,23 @@ public class UserController {
         int totalCount = userService.selectUserListTotCnt(searchVO);
         paginationInfo.setTotalRecordCount(totalCount);
 
-        model.addAttribute("userList",       userService.selectUserList(searchVO));
+        model.addAttribute("userList", userService.selectUserList(searchVO));
         model.addAttribute("paginationInfo", paginationInfo);
-        model.addAttribute("tenants",        userService.selectActiveTenantList());
-        model.addAttribute("companies",      companyService.selectCompanyListAll(buildCompanySearch(loginVO)));
-        model.addAttribute("contentPage",    "/WEB-INF/jsp/admin/user/UserList.jsp");
-        
+        model.addAttribute("tenants", userService.selectActiveTenantList());
+        model.addAttribute("companies", companyService.selectCompanyListAll(buildCompanySearch(loginVO)));
+        model.addAttribute("contentPage", "/WEB-INF/jsp/admin/user/UserList.jsp");
+
         // 역할별 메뉴 및 제목 처리
         String role = searchVO.getUserRole();
         if ("SELLER_ADMIN".equals(role)) {
             model.addAttribute("currentMenu", "user_seller");
-            model.addAttribute("pageTitle",   "판매회원 관리");
+            model.addAttribute("pageTitle", "판매회원 관리");
         } else if ("BUYER_ADMIN".equals(role)) {
             model.addAttribute("currentMenu", "user_buyer");
-            model.addAttribute("pageTitle",   "구매회원 관리");
+            model.addAttribute("pageTitle", "구매회원 관리");
         } else {
             model.addAttribute("currentMenu", "user_list");
-            model.addAttribute("pageTitle",   "회원관리");
+            model.addAttribute("pageTitle", "회원관리");
         }
 
         return "layout/main";
@@ -105,22 +105,22 @@ public class UserController {
 
     @RequestMapping("/admin/user/operatorList.do")
     public String operatorList(@ModelAttribute("searchVO") UserVO searchVO,
-                               HttpServletRequest request,
-                               ModelMap model) throws Exception {
+            HttpServletRequest request,
+            ModelMap model) throws Exception {
 
         try {
             System.out.println("[DEBUG] Entering operatorList.do");
-            
+
             // 운영자 조회 모드 설정 (OPERATOR, CHANNEL_ADMIN만 포함)
             searchVO.setSearchCondition("OPERATOR");
-            
+
             // 운영자·채널운영자만 필터
             if (searchVO.getUserRole() == null || searchVO.getUserRole().isEmpty()) {
-                searchVO.setUserRole(null); 
+                searchVO.setUserRole(null);
             }
 
-            int currentPage    = searchVO.getPageIndex()  != null ? searchVO.getPageIndex()  : 1;
-            int recordsPerPage = searchVO.getPageUnit()   != null ? searchVO.getPageUnit()   : 10;
+            int currentPage = searchVO.getPageIndex() != null ? searchVO.getPageIndex() : 1;
+            int recordsPerPage = searchVO.getPageUnit() != null ? searchVO.getPageUnit() : 10;
 
             PaginationInfo paginationInfo = new PaginationInfo();
             paginationInfo.setCurrentPageNo(currentPage);
@@ -129,11 +129,12 @@ public class UserController {
 
             searchVO.setFirstIndex(paginationInfo.getFirstRecordIndex());
             searchVO.setRecordCountPerPage(paginationInfo.getRecordCountPerPage());
-            
+
             // 운영자 계정 조회: 본인 테넌트 기준 (SUPER_ADMIN 제외)
             LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
             if (loginVO != null) {
-                System.out.println("[DEBUG] LoginVO found: " + loginVO.getLoginId() + " | Role: " + loginVO.getRoleCd());
+                System.out
+                        .println("[DEBUG] LoginVO found: " + loginVO.getLoginId() + " | Role: " + loginVO.getRoleCd());
                 if (!"SUPER_ADMIN".equals(loginVO.getMemberType())) {
                     searchVO.setTenantId(resolveTenantId(loginVO));
                     searchVO.setCompanyId(loginVO.getCompanyId());
@@ -152,23 +153,22 @@ public class UserController {
             }
             java.util.List<ChannelVO> channelList = sysChannelService.selectChannelList(chParam);
 
-            model.addAttribute("operatorList",   userService.selectUserList(searchVO));
+            model.addAttribute("operatorList", userService.selectUserList(searchVO));
             model.addAttribute("paginationInfo", paginationInfo);
-            model.addAttribute("channelList",    channelList);
-            model.addAttribute("contentPage",    "/WEB-INF/jsp/admin/user/OperatorList.jsp");
-            model.addAttribute("currentMenu",    "op_operator");
-            model.addAttribute("pageTitle",      "운영자관리");
+            model.addAttribute("channelList", channelList);
+            model.addAttribute("contentPage", "/WEB-INF/jsp/admin/user/OperatorList.jsp");
+            model.addAttribute("currentMenu", "op_operator");
+            model.addAttribute("pageTitle", "운영자관리");
 
         } catch (Exception e) {
             System.err.println("[ERROR] Error in operatorList: " + e.getMessage());
             e.printStackTrace();
             model.addAttribute("errorMessage", "데이터 로딩 중 오류가 발생했습니다: " + e.getMessage());
-            model.addAttribute("contentPage",  "/WEB-INF/jsp/common/error.jsp"); 
+            model.addAttribute("contentPage", "/WEB-INF/jsp/common/error.jsp");
         }
 
         return "layout/main";
     }
-
 
     // ─────────────────────────────────────────────────────────────────
     // 사용자 등록/수정 폼
@@ -176,8 +176,8 @@ public class UserController {
 
     @RequestMapping("/admin/user/userForm.do")
     public String userForm(@RequestParam(value = "userId", required = false) Long userId,
-                           HttpServletRequest request,
-                           ModelMap model) throws Exception {
+            HttpServletRequest request,
+            ModelMap model) throws Exception {
 
         LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
         UserVO user;
@@ -186,7 +186,7 @@ public class UserController {
             user.setStatus("ACTIVE");
             user.setCreateContactYn("N");
             user.setIsPrimaryContact("N");
-            
+
             // 관리자 권한 또는 파라미터에 따른 기본 역할 세팅
             String reqRole = request.getParameter("userRole");
             if (reqRole != null && !reqRole.isEmpty()) {
@@ -209,17 +209,17 @@ public class UserController {
             user = userService.selectUserDetail(param);
         }
         // 폼 공통 옵션: 테넌트 목록 (화면 로딩 시 초기 노출)
-        model.addAttribute("user",         user);
-        model.addAttribute("tenants",      userService.selectActiveTenantList());
-        
+        model.addAttribute("user", user);
+        model.addAttribute("tenants", userService.selectActiveTenantList());
+
         String jspView = "admin/user/UserForm";
         if ("Y".equalsIgnoreCase(request.getParameter("isModal"))) {
             return jspView;
         }
-        
-        model.addAttribute("contentPage",  "/WEB-INF/jsp/" + jspView + ".jsp");
-        model.addAttribute("currentMenu",  "user_form");
-        model.addAttribute("pageTitle",    "회원등록");
+
+        model.addAttribute("contentPage", "/WEB-INF/jsp/" + jspView + ".jsp");
+        model.addAttribute("currentMenu", "user_form");
+        model.addAttribute("pageTitle", "회원등록");
 
         return "layout/main";
     }
@@ -230,14 +230,14 @@ public class UserController {
 
     @RequestMapping("/admin/user/operatorForm.do")
     public String operatorForm(@RequestParam(value = "userId", required = false) Long userId,
-                               HttpServletRequest request,
-                               ModelMap model) throws Exception {
+            HttpServletRequest request,
+            ModelMap model) throws Exception {
 
         UserVO user;
         if (userId == null) {
             user = new UserVO();
             user.setStatus("ACTIVE");
-            user.setUserRole("OPERATOR");     // 기본: 운영자
+            user.setUserRole("OPERATOR"); // 기본: 운영자
             LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
             if (loginVO != null && !isSuperAdmin(loginVO)) {
                 user.setTenantId(resolveTenantId(loginVO));
@@ -268,12 +268,12 @@ public class UserController {
         }
         java.util.List<ChannelVO> channelList = sysChannelService.selectChannelList(chParam);
 
-        model.addAttribute("user",        user);
+        model.addAttribute("user", user);
         model.addAttribute("channelList", channelList);
-        model.addAttribute("tenants",     userService.selectActiveTenantList());
+        model.addAttribute("tenants", userService.selectActiveTenantList());
         model.addAttribute("managedChannel", managedChannel);
         model.addAttribute("channelAssignmentLocked", channelAssignmentLocked);
-        
+
         String jspView = "admin/user/OperatorForm";
         if ("Y".equalsIgnoreCase(request.getParameter("isModal"))) {
             return jspView;
@@ -281,7 +281,7 @@ public class UserController {
 
         model.addAttribute("contentPage", "/WEB-INF/jsp/" + jspView + ".jsp");
         model.addAttribute("currentMenu", "op_operator");
-        model.addAttribute("pageTitle",   "운영자관리");
+        model.addAttribute("pageTitle", "운영자관리");
 
         return "layout/main";
     }
@@ -294,8 +294,8 @@ public class UserController {
     @RequestMapping("/admin/user/formOptions.ajax")
     @ResponseBody
     public Map<String, Object> formOptions(
-            @RequestParam(value = "userRole",  required = false) String userRole,
-            @RequestParam(value = "tenantId",  required = false) Long   tenantId) {
+            @RequestParam(value = "userRole", required = false) String userRole,
+            @RequestParam(value = "tenantId", required = false) Long tenantId) {
 
         Map<String, Object> result = new HashMap<>();
         try {
@@ -321,7 +321,7 @@ public class UserController {
             param.setUserId(userId);
             UserVO user = userService.selectUserDetail(param);
             result.put("success", true);
-            result.put("user",    user);
+            result.put("user", user);
         } catch (Exception e) {
             result.put("success", false);
             result.put("message", e.getMessage());
@@ -336,7 +336,7 @@ public class UserController {
     @RequestMapping("/admin/user/saveUser.ajax")
     @ResponseBody
     public Map<String, Object> saveUser(UserVO userVO,
-                                        HttpServletRequest request) {
+            HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
         try {
             // CHANNEL_ADMIN 권한 차단: 운영자 등록/수정 불가
@@ -362,13 +362,13 @@ public class UserController {
                 result.put("message", "사용자 정보가 수정되었습니다.");
             }
             result.put("success", true);
-            result.put("userId",  userVO.getUserId());
+            result.put("userId", userVO.getUserId());
         } catch (IllegalArgumentException e) {
             // 서비스에서 "에러코드:메시지" 형식으로 던진 경우 파싱
-            String[] parts  = e.getMessage().split(":", 2);
-            result.put("success",   false);
+            String[] parts = e.getMessage().split(":", 2);
+            result.put("success", false);
             result.put("errorCode", parts.length > 1 ? parts[0] : "USER_ERR");
-            result.put("message",   parts.length > 1 ? parts[1] : e.getMessage());
+            result.put("message", parts.length > 1 ? parts[1] : e.getMessage());
         } catch (Exception e) {
             result.put("success", false);
             result.put("message", "저장 중 오류가 발생했습니다: " + e.getMessage());
@@ -387,7 +387,7 @@ public class UserController {
         try {
             UserVO user = userService.selectUserByLoginId(loginId);
             result.put("duplicated", user != null);
-            result.put("success",    true);
+            result.put("success", true);
         } catch (Exception e) {
             result.put("success", false);
             result.put("message", e.getMessage());
@@ -403,7 +403,7 @@ public class UserController {
     @RequestMapping("/admin/user/updateStatus.ajax")
     @ResponseBody
     public Map<String, Object> updateStatus(
-            @RequestParam Long   userId,
+            @RequestParam Long userId,
             @RequestParam String status) {
         Map<String, Object> result = new HashMap<>();
         try {
@@ -415,7 +415,7 @@ public class UserController {
             vo.setStatus(status);
             userService.updateUserStatus(vo);
             result.put("success", true);
-            result.put("status",  status);
+            result.put("status", status);
             result.put("message", "상태가 변경되었습니다.");
         } catch (Exception e) {
             result.put("success", false);
@@ -432,8 +432,8 @@ public class UserController {
     @RequestMapping("/admin/user/userStats.ajax")
     @ResponseBody
     public Map<String, Object> userStats(@RequestParam(value = "userRole", required = false) String userRole,
-                                         @RequestParam(value = "searchCondition", required = false) String searchCondition,
-                                         HttpServletRequest request) {
+            @RequestParam(value = "searchCondition", required = false) String searchCondition,
+            HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
         try {
             LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
@@ -444,44 +444,48 @@ public class UserController {
             applyUserScope(base, loginVO);
             int total = userService.selectUserListTotCnt(base);
 
-            UserVO activeVO = new UserVO(); 
+            UserVO activeVO = new UserVO();
             activeVO.setStatus("ACTIVE");
             activeVO.setUserRole(userRole);
             activeVO.setSearchCondition(base.getSearchCondition());
             applyUserScope(activeVO, loginVO);
             int activeCount = userService.selectUserListTotCnt(activeVO);
 
-            UserVO lockedVO = new UserVO(); 
+            UserVO lockedVO = new UserVO();
             lockedVO.setStatus("LOCKED");
             lockedVO.setUserRole(userRole);
             lockedVO.setSearchCondition(base.getSearchCondition());
             applyUserScope(lockedVO, loginVO);
             int lockedCount = userService.selectUserListTotCnt(lockedVO);
 
-            UserVO superVO = new UserVO(); superVO.setUserRole("SUPER_ADMIN");
+            UserVO superVO = new UserVO();
+            superVO.setUserRole("SUPER_ADMIN");
             applyUserScope(superVO, loginVO);
             int superCount = userService.selectUserListTotCnt(superVO);
 
-            UserVO sellerVO = new UserVO(); sellerVO.setUserRole("SELLER_ADMIN");
+            UserVO sellerVO = new UserVO();
+            sellerVO.setUserRole("SELLER_ADMIN");
             applyUserScope(sellerVO, loginVO);
             int sellerCount = userService.selectUserListTotCnt(sellerVO);
 
-            UserVO channelVO = new UserVO(); channelVO.setUserRole("CHANNEL_ADMIN");
+            UserVO channelVO = new UserVO();
+            channelVO.setUserRole("CHANNEL_ADMIN");
             applyUserScope(channelVO, loginVO);
             int channelCount = userService.selectUserListTotCnt(channelVO);
 
-            UserVO buyerVO = new UserVO(); buyerVO.setUserRole("BUYER_ADMIN");
+            UserVO buyerVO = new UserVO();
+            buyerVO.setUserRole("BUYER_ADMIN");
             applyUserScope(buyerVO, loginVO);
             int buyerCount = userService.selectUserListTotCnt(buyerVO);
 
-            result.put("success",      true);
-            result.put("total",        total);
-            result.put("activeCount",  activeCount);
-            result.put("lockedCount",  lockedCount);
-            result.put("superCount",   superCount);
-            result.put("sellerCount",  sellerCount);
+            result.put("success", true);
+            result.put("total", total);
+            result.put("activeCount", activeCount);
+            result.put("lockedCount", lockedCount);
+            result.put("superCount", superCount);
+            result.put("sellerCount", sellerCount);
             result.put("channelCount", channelCount);
-            result.put("buyerCount",   buyerCount);
+            result.put("buyerCount", buyerCount);
         } catch (Exception e) {
             result.put("success", false);
             result.put("message", e.getMessage());

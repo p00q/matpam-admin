@@ -1,52 +1,28 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.matpam.admin.user.service.impl.UserMapper">
 
-    <!-- ================================================================
-         ResultMap
-    ================================================================ -->
     <resultMap id="userMap" type="kr.co.matpam.admin.user.service.UserVO">
-        <id   property="userId"       column="user_id"/>
-        <result property="tenantId"   column="tenant_id"/>
-        <result property="companyId"  column="company_id"/>
-        <result property="loginId"    column="login_id"/>
+        <id property="userId" column="user_id"/>
+        <result property="tenantId" column="tenant_id"/>
+        <result property="companyId" column="company_id"/>
+        <result property="loginId" column="login_id"/>
         <result property="passwordHash" column="password_hash"/>
-        <result property="userName"   column="user_name"/>
-        <result property="mobile"     column="mobile"/>
-        <result property="email"      column="email"/>
-        <result property="userRole"   column="role"/>
-        <result property="channelId"  column="channel_id"/>
-        <result property="status"     column="status"/>
+        <result property="userName" column="user_name"/>
+        <result property="mobile" column="mobile"/>
+        <result property="email" column="email"/>
+        <result property="userRole" column="role"/>
+        <result property="channelId" column="channel_id"/>
+        <result property="status" column="status"/>
         <result property="lastLoginAt" column="last_login_at"/>
-        <result property="createdAt"  column="created_at"/>
-        <result property="updatedAt"  column="updated_at"/>
-        <!-- 조인 컬럼 -->
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
         <result property="companyName" column="company_name"/>
-        <result property="tenantName"  column="tenant_name"/>
+        <result property="tenantName" column="tenant_name"/>
         <result property="channelName" column="channel_name"/>
         <result property="channelType" column="channel_type"/>
     </resultMap>
 
-    <resultMap id="tenantMap" type="kr.co.matpam.admin.tenant.service.TenantVO">
-        <id   property="tenantId"        column="tenant_id"/>
-        <result property="tenantName"    column="tenant_name"/>
-        <result property="status"        column="status"/>
-        <result property="createdAt"     column="created_at"/>
-        <result property="updatedAt"     column="updated_at"/>
-    </resultMap>
-
-    <resultMap id="channelMap" type="kr.co.matpam.admin.tenant.service.ChannelVO">
-        <id   property="channelId"   column="channel_id"/>
-        <result property="tenantId"  column="tenant_id"/>
-        <result property="channelType" column="channel_type"/>
-        <result property="channelName" column="channel_name"/>
-        <result property="status"    column="status"/>
-        <result property="sortOrder" column="sort_order"/>
-    </resultMap>
-
-    <!-- ================================================================
-         공통 WHERE 절
-    ================================================================ -->
     <sql id="userWhere">
         <where>
             <choose>
@@ -66,216 +42,83 @@
             <if test="userRole != null and userRole != ''">
                 AND u.role = #{userRole}
             </if>
-            <if test="channelId != null">
-                AND u.channel_id = #{channelId}
-            </if>
-            <if test="status != null and status != ''">
-                AND u.status = #{status}
-            </if>
             <if test="searchKeyword != null and searchKeyword != ''">
-                AND (u.login_id LIKE CONCAT('%', #{searchKeyword}, '%')
-                  OR u.user_name LIKE CONCAT('%', #{searchKeyword}, '%'))
+                AND (u.login_id LIKE CONCAT('%', #{searchKeyword}, '%') OR u.user_name LIKE CONCAT('%', #{searchKeyword}, '%'))
             </if>
         </where>
     </sql>
 
-    <!-- ================================================================
-         사용자 목록 조회 (업체명·채널명 조인)
-    ================================================================ -->
-    <select id="selectUserList"
-            parameterType="kr.co.matpam.admin.user.service.UserVO"
-            resultMap="userMap">
-        SELECT
-            u.*,
-            c.company_name,
-            t.tenant_name,
-            ch.channel_name,
-            ch.channel_type
+    <select id="selectUserList" parameterType="kr.co.matpam.admin.user.service.UserVO" resultMap="userMap">
+        SELECT u.*, c.company_name, t.tenant_name, ch.channel_name, ch.channel_type
         FROM tb_user u
-        LEFT JOIN tb_company  c  ON u.company_id  = c.company_id
-        LEFT JOIN tb_tenant   t  ON u.tenant_id   = t.tenant_id
-        LEFT JOIN tb_channel  ch ON u.channel_id  = ch.channel_id
+        LEFT JOIN tb_company c ON u.company_id = c.company_id
+        LEFT JOIN tb_tenant t ON u.tenant_id = t.tenant_id
+        LEFT JOIN tb_channel ch ON u.channel_id = ch.channel_id
         <include refid="userWhere"/>
         ORDER BY u.created_at DESC
         LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
     </select>
 
-    <!-- ================================================================
-         사용자 목록 건수
-    ================================================================ -->
-    <select id="selectUserListTotCnt"
-            parameterType="kr.co.matpam.admin.user.service.UserVO"
-            resultType="int">
+    <select id="selectUserListTotCnt" parameterType="kr.co.matpam.admin.user.service.UserVO" resultType="int">
         SELECT COUNT(*) FROM tb_user u
         <include refid="userWhere"/>
     </select>
 
-    <!-- ================================================================
-         사용자 상세 조회
-    ================================================================ -->
-    <select id="selectUserDetail"
-            parameterType="kr.co.matpam.admin.user.service.UserVO"
-            resultMap="userMap">
-        SELECT
-            u.*,
-            c.company_name,
-            t.tenant_name,
-            ch.channel_name,
-            ch.channel_type
+    <select id="selectUserDetail" parameterType="kr.co.matpam.admin.user.service.UserVO" resultMap="userMap">
+        SELECT u.*, c.company_name, t.tenant_name, ch.channel_name, ch.channel_type
         FROM tb_user u
-        LEFT JOIN tb_company  c  ON u.company_id  = c.company_id
-        LEFT JOIN tb_tenant   t  ON u.tenant_id   = t.tenant_id
-        LEFT JOIN tb_channel  ch ON u.channel_id  = ch.channel_id
+        LEFT JOIN tb_company c ON u.company_id = c.company_id
+        LEFT JOIN tb_tenant t ON u.tenant_id = t.tenant_id
+        LEFT JOIN tb_channel ch ON u.channel_id = ch.channel_id
         WHERE u.user_id = #{userId}
     </select>
 
-    <!-- ================================================================
-         로그인 ID 중복 체크
-    ================================================================ -->
-    <select id="selectUserByLoginId"
-            parameterType="string"
-            resultMap="userMap">
+    <select id="selectUserByLoginId" parameterType="string" resultMap="userMap">
         SELECT * FROM tb_user WHERE login_id = #{loginId}
     </select>
 
-    <!-- ================================================================
-         사용자 등록
-    ================================================================ -->
-    <insert id="insertUser"
-            parameterType="kr.co.matpam.admin.user.service.UserVO"
-            useGeneratedKeys="true" keyProperty="userId">
-        INSERT INTO tb_user (
-            tenant_id, company_id, login_id, password_hash, user_name,
-            mobile, email, role, channel_id, status,
-            created_at, updated_at
-        ) VALUES (
-            #{tenantId}, #{companyId}, #{loginId}, #{passwordHash}, #{userName},
-            #{mobile}, #{email}, #{userRole}, #{channelId}, #{status},
-            NOW(), NOW()
-        )
+    <insert id="insertUser" parameterType="kr.co.matpam.admin.user.service.UserVO" useGeneratedKeys="true" keyProperty="userId">
+        INSERT INTO tb_user (tenant_id, company_id, login_id, password_hash, user_name, mobile, email, role, channel_id, status, created_at, updated_at)
+        VALUES (#{tenantId}, #{companyId}, #{loginId}, #{passwordHash}, #{userName}, #{mobile}, #{email}, #{userRole}, #{channelId}, #{status}, NOW(), NOW())
     </insert>
 
-    <!-- ================================================================
-         사용자 수정
-    ================================================================ -->
-    <update id="updateUser"
-            parameterType="kr.co.matpam.admin.user.service.UserVO">
+    <update id="updateUser" parameterType="kr.co.matpam.admin.user.service.UserVO">
         UPDATE tb_user
-        SET
-            tenant_id  = #{tenantId},
-            company_id = #{companyId},
-            user_name  = #{userName},
-            mobile     = #{mobile},
-            email      = #{email},
-            role       = #{userRole},
-            channel_id = #{channelId},
-            status     = #{status},
-            updated_at = NOW()
-            <if test="passwordHash != null and passwordHash != ''">
-            , password_hash = #{passwordHash}
-            </if>
+        SET tenant_id = #{tenantId}, company_id = #{companyId}, user_name = #{userName}, mobile = #{mobile}, email = #{email}, role = #{userRole}, channel_id = #{channelId}, status = #{status}, updated_at = NOW()
+        <if test="passwordHash != null and passwordHash != ''">, password_hash = #{passwordHash}</if>
         WHERE user_id = #{userId}
     </update>
 
-    <!-- ================================================================
-         사용자 역할 및 채널 ID 업데이트 (동기화용)
-    ================================================================ -->
-    <update id="updateUserRoleAndChannel"
-            parameterType="kr.co.matpam.admin.user.service.UserVO">
-        UPDATE tb_user
-        SET
-            role = #{userRole},
-            channel_id = #{channelId},
-            updated_at = NOW()
-        WHERE user_id = #{userId}
+    <update id="updateUserRoleAndChannel" parameterType="kr.co.matpam.admin.user.service.UserVO">
+        UPDATE tb_user SET role = #{userRole}, channel_id = #{channelId}, updated_at = NOW() WHERE user_id = #{userId}
     </update>
 
-    <!-- ================================================================
-         특정 채널 관리자 권한 초기화
-    ================================================================ -->
-    <update id="resetChannelManagerRole"
-            parameterType="long">
-        UPDATE tb_user
-        SET
-            role = 'OPERATOR',
-            channel_id = NULL,
-            updated_at = NOW()
-        WHERE channel_id = #{channelId}
-          AND role = 'CHANNEL_ADMIN'
+    <update id="resetChannelManagerRole" parameterType="long">
+        UPDATE tb_user SET channel_id = NULL, updated_at = NOW() WHERE channel_id = #{channelId} AND role = 'CHANNEL_ADMIN'
     </update>
 
-    <!-- ================================================================
-         사용자 상태 변경
-    ================================================================ -->
-    <update id="updateUserStatus"
-            parameterType="kr.co.matpam.admin.user.service.UserVO">
-        UPDATE tb_user
-        SET status = #{status}, updated_at = NOW()
-        WHERE user_id = #{userId}
-    </update>
-
-    <!-- ================================================================
-         폼 옵션: 활성 테넌트 목록
-    ================================================================ -->
-    <select id="selectActiveTenantList" resultMap="tenantMap">
-        SELECT tenant_id, tenant_name, status, created_at, updated_at
-        FROM tb_tenant
-        WHERE status = 'ACTIVE'
-        ORDER BY tenant_name ASC
+    <select id="selectActiveTenantList" resultType="kr.co.matpam.admin.tenant.service.TenantVO">
+        SELECT tenant_id as tenantId, tenant_name as tenantName, status FROM tb_tenant WHERE status = 'ACTIVE' ORDER BY tenant_name ASC
     </select>
 
-    <!-- ================================================================
-         폼 옵션: 테넌트별 활성 채널 목록
-    ================================================================ -->
-    <select id="selectChannelListByTenant"
-            parameterType="long"
-            resultMap="channelMap">
-        SELECT c.channel_id, co.tenant_id, c.channel_type, c.channel_name, c.status
+    <select id="selectChannelListByTenant" parameterType="long" resultType="kr.co.matpam.admin.tenant.service.ChannelVO">
+        SELECT c.channel_id as channelId, c.channel_name as channelName, c.channel_type as channelType, c.status
         FROM tb_channel c
         JOIN tb_company co ON c.company_id = co.company_id
-        WHERE co.tenant_id = #{tenantId}
-          AND c.status = 'ACTIVE'
+        WHERE co.tenant_id = #{tenantId} AND c.status = 'ACTIVE'
         ORDER BY c.channel_name ASC
     </select>
 
-    <!-- ================================================================
-         폼 옵션: 테넌트별 구매업체 목록 (BUYER only)
-    ================================================================ -->
-    <select id="selectBuyerCompanyListByTenant"
-            parameterType="long"
-            resultType="map">
-        SELECT
-            company_id   AS companyId,
-            company_name AS companyName,
-            business_no  AS businessNo
-        FROM tb_company
-        WHERE tenant_id    = #{tenantId}
-          AND company_type = 'BUYER'
-          AND status       = 'ACTIVE'
-        ORDER BY company_name ASC
+    <select id="selectBuyerCompanyListByTenant" parameterType="long" resultType="map">
+        SELECT company_id AS companyId, company_name AS companyName, business_no AS businessNo FROM tb_company WHERE tenant_id = #{tenantId} AND company_type = 'BUYER' AND status = 'ACTIVE' ORDER BY company_name ASC
     </select>
 
-    <!-- ================================================================
-         폼 옵션: 테넌트의 대표 판매업체 ID
-    ================================================================ -->
-    <select id="selectSellerCompanyIdByTenant"
-            parameterType="long"
-            resultType="long">
-        SELECT company_id
-        FROM tb_company
-        WHERE tenant_id = #{tenantId}
-          AND company_type = 'SELLER'
-        LIMIT 1
+    <select id="selectSellerCompanyIdByTenant" parameterType="long" resultType="long">
+        SELECT company_id FROM tb_company WHERE tenant_id = #{tenantId} AND company_type = 'SELLER' LIMIT 1
     </select>
-    
-    <select id="selectHqCompanyIdByTenant"
-            parameterType="long"
-            resultType="long">
-        SELECT company_id
-        FROM tb_company
-        WHERE tenant_id = #{tenantId}
-          AND company_type = 'HQ'
-        LIMIT 1
+
+    <select id="selectHqCompanyIdByTenant" parameterType="long" resultType="long">
+        SELECT company_id FROM tb_company WHERE tenant_id = #{tenantId} AND company_type = 'HQ' LIMIT 1
     </select>
 
 </mapper>

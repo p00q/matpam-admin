@@ -11,6 +11,11 @@ import kr.co.matpam.admin.common.service.LoginVO;
 @Controller
 public class AdminLoginController {
 
+    @RequestMapping({"/admin", "/admin/"})
+    public String adminEntry() {
+        return "redirect:/admin/login.do?role=OP";
+    }
+
     @RequestMapping("/admin/login.do")
     public String loginForm(
             HttpSession session,

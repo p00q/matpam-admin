@@ -241,7 +241,6 @@ public class UserServiceImpl extends EgovAbstractServiceImpl implements UserServ
                 if (vo.getTenantId() == null) {
                     throw new IllegalArgumentException("USER_002:채널 관리자 등록 시 테넌트 정보는 필수입니다.");
                 }
-                require(vo.getChannelId() != null, "USER_002:담당 채널은 필수입니다.");
                 if (vo.getCompanyId() == null) {
                     // 채널 관리자도 운영사의 일종으로 간주 (HQ 소속)
                     Long hqId = userMapper.selectHqCompanyIdByTenant(vo.getTenantId());

@@ -135,7 +135,7 @@
                     </div>
                 </c:if>
                 <div id="channelWrap" style="${user.userRole eq 'CHANNEL_ADMIN' ? '' : 'display:none;'}">
-                    <label class="form-label fw-bold small text-muted">담당 채널 <span class="text-danger">*</span></label>
+                    <label class="form-label fw-bold small text-muted">담당 채널</label>
                     <select name="channelId" class="form-select" ${channelAssignmentLocked ? 'disabled' : ''}>
                         <option value="">-- 채널 선택 --</option>
                         <c:forEach var="ch" items="${channelList}">
@@ -203,7 +203,6 @@
         if (!userName) { alert('이름을 입력하세요.'); return; }
         if (!userId && !pw) { alert('비밀번호를 입력하세요.'); return; }
         if (pw && pw !== pwC) { alert('비밀번호가 일치하지 않습니다.'); return; }
-        if (role === 'CHANNEL_ADMIN' && !$('select[name="channelId"]').val()) { alert('담당 채널을 선택하세요.'); return; }
 
         const $saveButton = $('#btnSaveOperator');
         const formData = $('#operatorForm').serialize();

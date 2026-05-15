@@ -399,7 +399,7 @@
     </div><!-- /container-fluid -->
 </div>
 
-<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script>
 (function () {
     var COMPANY_ID   = '${not empty company.companyId ? company.companyId : 0}';
@@ -409,10 +409,46 @@
     /* ================================================================
        유틸 함수
     ================================================================ */
+    window.showCompanyMessagePopup = function(msg) {
+        var modalId = 'companyMessagePopup';
+        var $modal = jQuery('#' + modalId);
+
+        if (!$modal.length) {
+            jQuery('body').append(
+                '<div class="modal fade" id="' + modalId + '" tabindex="-1" aria-hidden="true" style="z-index: 2100;">' +
+                '  <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">' +
+                '    <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">' +
+                '      <div class="modal-header border-0 pb-0">' +
+                '        <h6 class="modal-title fw-bold text-dark mb-0"><i class="bi bi-exclamation-circle-fill text-warning me-2"></i>입력 확인</h6>' +
+                '        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>' +
+                '      </div>' +
+                '      <div class="modal-body pt-3 pb-2">' +
+                '        <div id="' + modalId + 'Msg" class="small text-secondary" style="line-height:1.6;"></div>' +
+                '      </div>' +
+                '      <div class="modal-footer border-0 pt-0">' +
+                '        <button type="button" class="btn btn-primary btn-sm px-4" data-bs-dismiss="modal" style="border-radius:8px;">확인</button>' +
+                '      </div>' +
+                '    </div>' +
+                '  </div>' +
+                '</div>'
+            );
+            $modal = jQuery('#' + modalId);
+        }
+
+        jQuery('#' + modalId + 'Msg').text(msg);
+        if (window.bootstrap && bootstrap.Modal) {
+            bootstrap.Modal.getOrCreateInstance($modal[0]).show();
+        } else if (window.fn_toast) {
+            fn_toast(msg, 'warning');
+        } else {
+            alert(msg);
+        }
+    };
+
     window.validationFail = function(msg, selector) {
         console.warn('[Validation Failed]', msg);
-        // [FORCE ALERT] 텍스트 알림 (PM 확인용)
-        alert(msg);
+        // Browser alert 대신 화면 내부 팝업을 사용한다.
+        showCompanyMessagePopup(msg);
         
         if (selector) {
             var $el = jQuery(selector);
@@ -592,23 +628,146 @@
     };
 
     /* 주소 검색 */
-    window.fn_searchAddr = function() {
+    function openPostcodeLayer(onComplete) {
+        if (!window.daum || !daum.Postcode) {
+            showCompanyMessagePopup('주소 검색 서비스를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.');
+            return;
+        }
+
+        var modalId = 'postcodeLayerModal';
+        var bodyId = 'postcodeLayerBody';
+        var $modal = jQuery('#' + modalId);
+
+        if (!$modal.length) {
+            jQuery('body').append(
+                '<div class="modal fade" id="' + modalId + '" tabindex="-1" aria-hidden="true" style="z-index: 2100;">' +
+                '  <div class="modal-dialog modal-dialog-centered modal-lg">' +
+                '    <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">' +
+                '      <div class="modal-header bg-white border-bottom">' +
+                '        <h6 class="modal-title fw-bold mb-0"><i class="bi bi-search me-2 text-primary"></i>주소 검색</h6>' +
+                '        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>' +
+                '      </div>' +
+                '      <div class="modal-body p-0">' +
+                '        <div id="' + bodyId + '" style="position:relative; width:100%; height:520px;"></div>' +
+                '      </div>' +
+                '    </div>' +
+                '  </div>' +
+                '</div>'
+            );
+            $modal = jQuery('#' + modalId);
+        }
+
+        var modal = bootstrap.Modal.getOrCreateInstance($modal[0]);
+        var $body = jQuery('#' + bodyId).html(
+            '<div id="postcodeLayerFrame" style="position:relative; width:100%; height:520px;"></div>' +
+            '<div id="postcodeLayerLoading" class="d-flex justify-content-center align-items-center text-muted small" ' +
+            '     style="position:absolute; inset:56px 0 0 0; background:#fff; z-index:2;">' +
+            '주소 검색을 불러오는 중입니다.' +
+            '</div>'
+        );
+
+        $modal.off('shown.bs.modal.postcode').one('shown.bs.modal.postcode', function() {
+            var $frame = jQuery('#postcodeLayerFrame');
+            var $loading = jQuery('#postcodeLayerLoading');
+            new daum.Postcode({
+                width: '100%',
+                height: '100%',
+                onresize: function(size) {
+                    if (size && size.height) {
+                        $frame.height(Math.max(size.height, 520));
+                        $body.height(Math.max(size.height, 520));
+                    }
+                    $loading.remove();
+                },
+                oncomplete: function(data) {
+                    onComplete(data);
+                    modal.hide();
+                }
+            }).embed($frame[0]);
+
+            setTimeout(function() {
+                $loading.remove();
+            }, 3500);
+        });
+
+        modal.show();
+    }
+
+    function openPostcodeFixedLayer(onComplete) {
+        if (!window.daum || !daum.Postcode) {
+            showCompanyMessagePopup('주소 검색 서비스를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.');
+            return;
+        }
+
+        jQuery('#postcodeLayerModal').remove();
+        jQuery('.modal-backdrop').remove();
+        jQuery('body').removeClass('modal-open').css('overflow', '');
+
+        var layerId = 'postcodeFixedLayer';
+        var frameId = 'postcodeFixedFrame';
+        var $layer = jQuery('#' + layerId);
+
+        if (!$layer.length) {
+            jQuery('body').append(
+                '<div id="' + layerId + '" style="display:none; position:fixed; inset:0; z-index:3000; background:rgba(15,23,42,.55);">' +
+                '  <div style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(760px, calc(100vw - 32px)); background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.25);">' +
+                '    <div style="height:56px; display:flex; align-items:center; justify-content:space-between; padding:0 18px; border-bottom:1px solid #e5e7eb;">' +
+                '      <div style="font-weight:700; color:#111827;"><i class="bi bi-search me-2 text-primary"></i>주소 검색</div>' +
+                '      <button type="button" id="postcodeFixedClose" class="btn-close" aria-label="Close"></button>' +
+                '    </div>' +
+                '    <div id="' + frameId + '" style="position:relative; width:100%; height:520px;">' +
+                '      <div id="postcodeFixedLoading" class="d-flex justify-content-center align-items-center text-muted small" style="position:absolute; inset:0; background:#fff; z-index:2;">주소 검색을 불러오는 중입니다.</div>' +
+                '    </div>' +
+                '  </div>' +
+                '</div>'
+            );
+            $layer = jQuery('#' + layerId);
+            jQuery(document).on('click', '#postcodeFixedClose', function() {
+                jQuery('#' + layerId).hide();
+                jQuery('#' + frameId).empty();
+            });
+        }
+
+        var $frame = jQuery('#' + frameId).html(
+            '<div id="postcodeFixedLoading" class="d-flex justify-content-center align-items-center text-muted small" style="position:absolute; inset:0; background:#fff; z-index:2;">주소 검색을 불러오는 중입니다.</div>'
+        );
+        var $loading = jQuery('#postcodeFixedLoading');
+        $layer.show();
+
         new daum.Postcode({
+            width: '100%',
+            height: '100%',
+            onresize: function(size) {
+                if (size && size.height) {
+                    $frame.height(Math.max(size.height, 520));
+                }
+                $loading.remove();
+            },
             oncomplete: function(data) {
-                jQuery('#postalCode').val(data.zonecode);
-                jQuery('#address1').val(data.address);
-                jQuery('#address2').focus();
+                onComplete(data);
+                $layer.hide();
+                $frame.empty();
             }
-        }).open();
+        }).embed($frame[0]);
+
+        setTimeout(function() {
+            $loading.remove();
+        }, 3500);
+    }
+
+    window.fn_searchAddr = function() {
+        openPostcodeFixedLayer(function(data) {
+            jQuery('#postalCode').val(data.zonecode);
+            jQuery('#address1').val(data.address);
+            jQuery('#address2').focus();
+        });
     };
     window.fn_searchFactoryAddr = function() {
-        new daum.Postcode({
-            oncomplete: function(data) {
-                jQuery('#factoryPostalCode').val(data.zonecode);
-                jQuery('#factoryAddress1').val(data.address);
-                jQuery('#factoryAddress2').focus();
-            }
-        }).open();
+        openPostcodeFixedLayer(function(data) {
+            jQuery('#factoryPostalCode').val(data.zonecode);
+            jQuery('#factoryAddress1').val(data.address);
+            jQuery('#factoryAddress2').focus();
+        });
     };
     
     /* 판매업체 유형 변경 시 과세/면세 자동 전환 */
