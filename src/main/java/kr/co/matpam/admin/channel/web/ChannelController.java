@@ -257,6 +257,73 @@ public class ChannelController {
         }
     }
 
+    /**
+     * 채널 담당자 신규 생성 (CHANNEL_ADMIN 계정)
+     * - 채널 수정 폼에서 인라인으로 호출
+     * - 계정 생성 후 userId/userName/loginId를 반환하여 드롭다운에 추가
+     */
+    @RequestMapping("/createChannelAdmin.ajax")
+    @ResponseBody
+    public Map<String, Object> createChannelAdmin(
+            @RequestParam("companyId") Long companyId,
+            @RequestParam("loginId") String loginId,
+            @RequestParam("userName") String userName,
+            @RequestParam(value = "password") String password,
+            @RequestParam(value = "mobile", required = false) String mobile,
+            @RequestParam(value = "email", required = false) String email,
+            HttpServletRequest request) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            LoginVO loginVO = getLoginVO(request);
+            if (loginVO != null && "CHANNEL_ADMIN".equals(loginVO.getMemberType())) {
+                result.put("status", "FAIL");
+                result.put("message", "채널 담당자는 계정 생성 권한이 없습니다.");
+                return result;
+            }
+
+            // 필수값 검증
+            if (loginId == null || loginId.trim().isEmpty()) {
+                throw new IllegalArgumentException("로그인 ID를 입력해 주세요.");
+            }
+            if (userName == null || userName.trim().isEmpty()) {
+                throw new IllegalArgumentException("이름을 입력해 주세요.");
+            }
+            if (password == null || password.trim().isEmpty()) {
+                throw new IllegalArgumentException("비밀번호를 입력해 주세요.");
+            }
+
+            // 로그인ID 중복 검사
+            UserVO dup = userService.selectUserByLoginId(loginId.trim());
+            if (dup != null) {
+                throw new IllegalArgumentException("이미 사용 중인 로그인 ID입니다: " + loginId);
+            }
+
+            // CHANNEL_ADMIN 계정 생성
+            UserVO newUser = new UserVO();
+            newUser.setCompanyId(companyId);
+            newUser.setLoginId(loginId.trim());
+            newUser.setUserName(userName.trim());
+            newUser.setMobile(mobile != null ? mobile.trim() : "");
+            newUser.setEmail(email != null ? email.trim() : "");
+            newUser.setPasswordHash(password.trim());
+            newUser.setUserRole("CHANNEL_ADMIN");
+            newUser.setStatus("ACTIVE");
+            newUser.setTenantId(loginVO != null ? loginVO.getTenantId() : 1L);
+
+            userService.insertUser(newUser);
+
+            // 프론트엔드에서 드롭다운 옵션 추가에 사용할 정보 반환
+            result.put("status", "SUCCESS");
+            result.put("userId", newUser.getUserId());
+            result.put("userName", newUser.getUserName());
+            result.put("loginId", newUser.getLoginId());
+        } catch (Exception e) {
+            result.put("status", "FAIL");
+            result.put("message", e.getMessage());
+        }
+        return result;
+    }
+
     private Long resolveCompanyId(Long requestCompanyId, LoginVO loginVO) {
         if (loginVO != null && !isSuperAdmin(loginVO) && loginVO.getCompanyId() != null) {
             return loginVO.getCompanyId();
