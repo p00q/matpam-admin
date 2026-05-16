@@ -31,9 +31,6 @@
         <if test="status != null and status != ''">
             AND c.status = #{status}
         </if>
-        <if test="status == null or status == ''">
-            AND c.status != 'INACTIVE'
-        </if>
         ORDER BY c.sort_order ASC, c.channel_id DESC
         LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
     </select>
@@ -53,9 +50,6 @@
         </if>
         <if test="status != null and status != ''">
             AND c.status = #{status}
-        </if>
-        <if test="status == null or status == ''">
-            AND c.status != 'INACTIVE'
         </if>
     </select>
 

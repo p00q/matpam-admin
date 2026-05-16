@@ -24,7 +24,7 @@
         <url>https://repo1.maven.org/maven2/</url>
     </repository>
 
-    <!-- eGovFrame Maven ?�?�소 -->
+    <!-- eGovFrame Maven ??μ냼 -->
     <repository>
         <id>egovframe</id>
         <url>https://maven.egovframe.go.kr/maven/</url>
@@ -38,21 +38,21 @@
   </repositories>
 
   <dependencies>
-    <!-- eGovFrame ?�행?�경: MVC -->
+    <!-- eGovFrame ?ㅽ뻾?섍꼍: MVC -->
     <dependency>
         <groupId>org.egovframe.rte</groupId>
         <artifactId>org.egovframe.rte.ptl.mvc</artifactId>
         <version>${org.egovframe.rte.version}</version>
     </dependency>
 
-    <!-- eGovFrame ?�행?�경: DataAccess (EgovAbstractMapper, EgovMap ?? -->
+    <!-- eGovFrame ?ㅽ뻾?섍꼍: DataAccess (EgovAbstractMapper, EgovMap ?? -->
     <dependency>
         <groupId>org.egovframe.rte</groupId>
         <artifactId>org.egovframe.rte.psl.dataaccess</artifactId>
         <version>${org.egovframe.rte.version}</version>
     </dependency>
 
-    <!-- eGovFrame ?�행?�경: 공통(FDL Common, EgovAbstractServiceImpl) -->
+    <!-- eGovFrame ?ㅽ뻾?섍꼍: 怨듯넻(FDL Common, EgovAbstractServiceImpl) -->
     <dependency>
         <groupId>org.egovframe.rte</groupId>
         <artifactId>org.egovframe.rte.fdl.cmmn</artifactId>
@@ -202,7 +202,7 @@
         <scope>runtime</scope>
     </dependency>
     
-    <!-- JSON-B 구현�?-->
+    <!-- JSON-B 援ы쁽泥?-->
     <dependency>
         <groupId>org.eclipse</groupId>
         <artifactId>yasson</artifactId>
@@ -227,21 +227,21 @@
     </dependency>
     
 
-    <!-- Bean Validation 구현�?: Hibernate Validator (javax.validation 2.0) -->
+    <!-- Bean Validation 援ы쁽泥?: Hibernate Validator (javax.validation 2.0) -->
     <dependency>
         <groupId>org.hibernate.validator</groupId>
         <artifactId>hibernate-validator</artifactId>
         <version>6.2.5.Final</version>
     </dependency>
 
-    <!-- EL 구현�?(?�수???�니지�? 밸리?�이?�이 EL???�는 경우 ?�요) -->
+    <!-- EL 援ы쁽泥?(?꾩닔???꾨땲吏留? 諛몃━?곗씠?섏씠 EL???곕뒗 寃쎌슦 ?꾩슂) -->
     <dependency>
         <groupId>org.glassfish</groupId>
         <artifactId>jakarta.el</artifactId>
         <version>3.0.4</version>
     </dependency>
 
-    <!-- ?�일 ?�로??처리??Multipart Resolver -->
+    <!-- ?뚯씪 ?낅줈??泥섎━??Multipart Resolver -->
     <dependency>
         <groupId>commons-fileupload</groupId>
         <artifactId>commons-fileupload</artifactId>
@@ -352,13 +352,13 @@
           </container>
           <configuration>
             <properties>
-              <cargo.servlet.port>5052</cargo.servlet.port>
+              <cargo.servlet.port>5053</cargo.servlet.port>
             </properties>
           </configuration>
         </configuration>
       </plugin>
 
-      <!-- Jetty Plugin for Port 5052 (Compatible with javax.servlet) -->
+      <!-- Jetty Plugin for Port 5053 (Compatible with javax.servlet) -->
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>

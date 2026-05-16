@@ -16,6 +16,9 @@ public class CompanyContactVO extends MatpamBaseVO {
     private String email;
     private String isPrimary;
     private Long linkedUserId;
+    private String loginId;
+    private String userRole;
+    private String userStatus;
     private String status;
     private Date createdAt;
     private Date updatedAt;
@@ -44,6 +47,15 @@ public class CompanyContactVO extends MatpamBaseVO {
 
     public Long getLinkedUserId() { return linkedUserId; }
     public void setLinkedUserId(Long linkedUserId) { this.linkedUserId = linkedUserId; }
+
+    public String getLoginId() { return loginId; }
+    public void setLoginId(String loginId) { this.loginId = loginId; }
+
+    public String getUserRole() { return userRole; }
+    public void setUserRole(String userRole) { this.userRole = userRole; }
+
+    public String getUserStatus() { return userStatus; }
+    public void setUserStatus(String userStatus) { this.userStatus = userStatus; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

@@ -3,19 +3,7 @@
 <%@ taglib prefix="fmt"  uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="ui"   uri="http://egovframework.gov/ctl/ui"%>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
-<%
-    String aspectLocation = "Unknown";
-    try {
-        java.net.URL loc = kr.co.matpam.common.aspect.TenantAspect.class.getProtectionDomain().getCodeSource().getLocation();
-        if (loc != null) {
-            aspectLocation = loc.toString();
-        }
-    } catch (Exception e) {}
-    request.setAttribute("aspectLocation", aspectLocation);
-%>
-<div style="background:red; color:white; padding:10px; font-weight:bold; position:absolute; top:0; z-index:9999;">
-    [DIAGNOSTIC] TenantAspect is loaded from: ${aspectLocation}
-</div>
+<%-- Removed Diagnostic Info --%>
 <div class="container-fluid px-0">
 
     <!-- ── 페이지 헤더 ── -->
@@ -179,6 +167,7 @@
                             <th class="text-center" style="width:44px;">No</th>
                             <th style="min-width:130px;">사용자ID</th>
                             <th style="min-width:100px;">이름</th>
+                            <th style="min-width:120px;">대상 채널</th>
                             <th style="min-width:130px;">소속 업체</th>
                             <th style="min-width:120px;">연락처</th>
                             <th class="text-center" style="min-width:90px;">상태</th>
@@ -207,6 +196,11 @@
 
 
 
+
+                                        <!-- 대상 채널 -->
+                                        <td style="font-size:.82rem; color:#64748b; font-weight:bold; color:#4361ee;">
+                                            전국택배 (강제출력)
+                                        </td>
 
                                         <!-- 소속 업체 -->
                                         <td>

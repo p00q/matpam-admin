@@ -20,7 +20,7 @@
                             <!-- 소속 정보 -->
                             <c:set var="isRoleFixed" value="${not empty param.userRole or (not empty user.userId and (user.userRole eq 'SELLER_ADMIN' or user.userRole eq 'BUYER_ADMIN'))}"/>
                             <div class="row g-4 mb-4">
-                                <div class="col-md-6 ${isRoleFixed ? 'd-none' : ''}">
+                                <div class="col-md-4 ${isRoleFixed ? 'd-none' : ''}">
                                     <label class="form-label fw-bold text-dark">소속 구분 <span class="text-danger">*</span></label>
                                     <select id="affiliationType" class="form-select shadow-none" onchange="window.fn_onAffiliationTypeChange(this.value)">
                                         <option value="HQ" ${user.userRole == 'OPERATOR' ? 'selected' : ''}>운영사 (HQ)</option>
@@ -28,7 +28,16 @@
                                         <option value="BUYER" ${user.userRole == 'BUYER_ADMIN' ? 'selected' : ''}>구매업체 (Buyer)</option>
                                     </select>
                                 </div>
-                                <div class="${isRoleFixed ? 'col-md-12' : 'col-md-6'}">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold text-dark">대상 채널</label>
+                                    <div id="channelNameDisplay" class="form-control-plaintext bg-light px-3 border rounded small" style="min-height:38px;">
+                                        <c:choose>
+                                            <c:when test="${not empty user.channelName}">${user.channelName}</c:when>
+                                            <c:otherwise>-</c:otherwise>
+                                        </c:choose>
+                                    </div>
+                                </div>
+                                <div class="${isRoleFixed ? 'col-md-8' : 'col-md-4'}">
                                     <label class="form-label fw-bold text-dark">대상 업체 <span class="text-danger">*</span></label>
                                     <select id="companySelect" class="form-select shadow-none" onchange="window.fn_onCompanyChange(this.value)">
                                         <option value="">-- 업체 선택 --</option>
@@ -133,17 +142,15 @@
                 window._loadingCompanies = null;
                 if (res.success && res.list) {
                     $.each(res.list, function(i, co) {
-                        // 서버 필터가 미작동할 경우를 대비한 클라이언트 사이드 보조 필터
                         if (co.companyType !== type && co.companyType !== 'BOTH') return;
 
                         var isSelected = String(co.companyId) === String(window.INIT_CO);
-                        // 업체명 뒤에 사업자번호를 붙여 중복 이름 식별 및 정리
                         var displayName = co.companyName;
                         if (co.businessNo) {
                             displayName += ' (' + co.businessNo + ')';
                         }
                         
-                        $select.append('<option value="' + co.companyId + '" data-tenant="' + co.tenantId + '" ' + (isSelected ? 'selected' : '') + '>' + displayName + '</option>');
+                        $select.append('<option value="' + co.companyId + '" data-tenant="' + co.tenantId + '" data-channel="' + (co.channelName || '-') + '" ' + (isSelected ? 'selected' : '') + '>' + displayName + '</option>');
                     });
                     if (window.INIT_CO) {
                         $select.val(window.INIT_CO);
@@ -158,9 +165,13 @@
     };
 
     window.fn_onCompanyChange = function(id) {
-        var tenantId = $('#companySelect option:selected').data('tenant');
+        var $opt = $('#companySelect option:selected');
+        var tenantId = $opt.data('tenant');
+        var channelName = $opt.data('channel') || '-';
+        
         $('#companyIdHidden').val(id);
         $('#tenantIdHidden').val(tenantId || 1);
+        $('#channelNameDisplay').text(channelName);
     };
 
     // 검증 헬퍼 (레드 강조)

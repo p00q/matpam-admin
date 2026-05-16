@@ -61,6 +61,9 @@
         <result property="email"        column="email"/>
         <result property="isPrimary"    column="is_primary"/>
         <result property="linkedUserId" column="linked_user_id"/>
+        <result property="loginId"      column="login_id"/>
+        <result property="userRole"     column="user_role"/>
+        <result property="userStatus"   column="user_status"/>
         <result property="status"       column="status"/>
         <result property="createdAt"    column="created_at"/>
         <result property="updatedAt"    column="updated_at"/>
@@ -137,6 +140,7 @@
     </select>
 
     <!-- 업체 전체 목록 -->
+    <!-- 업체 전체 목록 -->
     <select id="selectCompanyListAll"
             parameterType="kr.co.matpam.admin.company.service.CompanyVO"
             resultMap="companyMap">
@@ -145,24 +149,27 @@
         ORDER BY c.company_name ASC
     </select>
 
-    <!-- 업체 검색 (테넌트명 포함) -->
+    <!-- 업체 검색 (테넌트명 및 채널명 포함) -->
     <select id="selectCompanySearch"
             parameterType="kr.co.matpam.admin.company.service.CompanyVO"
             resultMap="companyMap">
         SELECT DISTINCT
             c.*,
-            CONCAT(c.company_name, ' [', t.tenant_name, ']') as company_name
+            CONCAT(c.company_name, ' [', t.tenant_name, ']') as company_name,
+            ch.channel_name as channel_name
         FROM tb_company c
         LEFT JOIN tb_tenant t ON c.tenant_id = t.tenant_id
-        <if test="channelId != null">
-        INNER JOIN tb_company_channel_map m ON c.company_id = m.company_id AND m.channel_id = #{channelId} AND m.status = 'ACTIVE'
-        </if>
+        LEFT JOIN tb_company_channel_map m ON c.company_id = m.company_id AND m.status = 'ACTIVE'
+        LEFT JOIN tb_channel ch ON m.channel_id = ch.channel_id
         <where>
             <if test="tenantId != null">
                 AND c.tenant_id = #{tenantId}
             </if>
             <if test="companyType != null and companyType != ''">
                 AND c.company_type = #{companyType}
+            </if>
+            <if test="channelId != null">
+                AND m.channel_id = #{channelId}
             </if>
             <if test="searchKeyword != null and searchKeyword != ''">
                 AND (c.company_name LIKE CONCAT('%', #{searchKeyword}, '%')
@@ -278,7 +285,7 @@
     <select id="selectCompanyContactList"
             parameterType="kr.co.matpam.admin.company.service.CompanyVO"
             resultMap="contactMap">
-        SELECT cc.*
+        SELECT cc.*, u.login_id, u.role AS user_role, u.status AS user_status
         FROM tb_company_contact cc
         INNER JOIN tb_user u ON cc.linked_user_id = u.user_id
         WHERE cc.company_id = #{companyId}
@@ -292,7 +299,7 @@
             </when>
             <otherwise>
               <!-- BOTH 또는 companyType 없는 경우: 운영자급만 표시 -->
-              AND u.role IN ('OPERATOR', 'CHANNEL_ADMIN', 'SUPER_ADMIN')
+              AND u.role IN ('OPERATOR', 'SUPER_ADMIN')
             </otherwise>
           </choose>
         ORDER BY cc.is_primary DESC, cc.created_at ASC

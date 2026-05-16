@@ -324,9 +324,16 @@
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h5 class="fw-bold mb-0">담당자 관리</h5>
-                <span class="badge bg-light text-muted border small fw-normal">
-                    <i class="bi bi-info-circle me-1"></i> 회원 등록 후 자동 연동됩니다
-                </span>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-light text-muted border small fw-normal">
+                        <i class="bi bi-info-circle me-1"></i> 회원 등록 후 자동 연동됩니다
+                    </span>
+                    <c:if test="${currentMenu eq 'op_mall'}">
+                        <button type="button" class="btn btn-primary btn-sm px-3" style="border-radius:8px;" onclick="fn_openMallOperatorModal()">
+                            <i class="bi bi-person-plus me-1"></i> 운영자 추가
+                        </button>
+                    </c:if>
+                </div>
             </div>
             
             <div class="table-responsive">
@@ -338,6 +345,9 @@
                             <th>연락처</th>
                             <th>이메일</th>
                             <th class="text-center">상태</th>
+                            <c:if test="${currentMenu eq 'op_mall'}">
+                                <th class="text-center">관리</th>
+                            </c:if>
                         </tr>
                     </thead>
                     <tbody>
@@ -352,17 +362,38 @@
                                     <td class="small text-muted">${fn:escapeXml(ct.mobile)}</td>
                                     <td class="small text-muted">${fn:escapeXml(ct.email)}</td>
                                     <td class="text-center">
-                                        <span class="status-badge status-${ct.status == 'ACTIVE' ? 'ACTIVE' : 'INACTIVE'}">
-                                            <span class="status-dot dot-${ct.status == 'ACTIVE' ? 'ACTIVE' : 'INACTIVE'}"></span>
-                                            ${ct.status == 'ACTIVE' ? '정상' : '중지'}
+                                        <span class="status-badge status-${ct.userStatus == 'ACTIVE' ? 'ACTIVE' : 'INACTIVE'}">
+                                            <span class="status-dot dot-${ct.userStatus == 'ACTIVE' ? 'ACTIVE' : 'INACTIVE'}"></span>
+                                            <c:choose>
+                                                <c:when test="${ct.userStatus eq 'ACTIVE'}">정상</c:when>
+                                                <c:when test="${ct.userStatus eq 'LOCKED'}">잠김</c:when>
+                                                <c:otherwise>중지</c:otherwise>
+                                            </c:choose>
                                         </span>
                                     </td>
+                                    <c:if test="${currentMenu eq 'op_mall'}">
+                                        <td class="text-center">
+                                            <button type="button"
+                                                    class="btn btn-outline-primary btn-sm"
+                                                    style="border-radius:8px;"
+                                                    onclick="fn_openMallOperatorModal(this)"
+                                                    data-user-id="${ct.linkedUserId}"
+                                                    data-user-role="${ct.userRole}"
+                                                    data-login-id="${fn:escapeXml(ct.loginId)}"
+                                                    data-name="${fn:escapeXml(ct.contactName)}"
+                                                    data-mobile="${fn:escapeXml(ct.mobile)}"
+                                                    data-email="${fn:escapeXml(ct.email)}"
+                                                    data-status="${empty ct.userStatus ? 'ACTIVE' : ct.userStatus}">
+                                                <i class="bi bi-pencil-square me-1"></i> 수정
+                                            </button>
+                                        </td>
+                                    </c:if>
                                 </tr>
                                 </c:forEach>
                             </c:when>
                             <c:otherwise>
                                 <tr>
-                                    <td colspan="5" class="text-center py-4 text-muted small">등록된 담당자가 없습니다.</td>
+                                    <td colspan="${currentMenu eq 'op_mall' ? 6 : 5}" class="text-center py-4 text-muted small">등록된 담당자가 없습니다.</td>
                                 </tr>
                             </c:otherwise>
                         </c:choose>
@@ -399,12 +430,98 @@
     </div><!-- /container-fluid -->
 </div>
 
+<c:if test="${currentMenu eq 'op_mall'}">
+<div class="modal fade" id="mallOperatorModal" tabindex="-1" aria-hidden="true" style="z-index: 2100;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:16px; overflow:hidden;">
+            <div class="modal-header bg-white border-bottom">
+                <h6 class="modal-title fw-bold mb-0" id="mallOperatorModalTitle">
+                    <i class="bi bi-person-badge me-2 text-primary"></i>몰 운영자 추가
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="mallOperatorForm">
+                    <input type="hidden" name="userId" id="mallOperatorUserId">
+                    <input type="hidden" name="tenantId" value="${not empty company.tenantId ? company.tenantId : 1}">
+                    <input type="hidden" name="companyId" value="${company.companyId}">
+                    <input type="hidden" name="userRole" id="mallOperatorRole" value="OPERATOR">
+                    <input type="hidden" name="contactRole" value="ADMIN">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">로그인 ID <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="text" name="loginId" id="mallOperatorLoginId" class="form-control" maxlength="20" autocomplete="off">
+                            <button type="button" id="mallOperatorIdCheckBtn" class="btn btn-outline-secondary" onclick="fn_checkMallOperatorLoginId()">중복 확인</button>
+                        </div>
+                        <input type="hidden" id="mallOperatorIdChecked" value="N">
+                        <div id="mallOperatorIdMsg" class="small mt-1"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">이름 <span class="text-danger">*</span></label>
+                        <input type="text" name="userName" id="mallOperatorName" class="form-control" maxlength="50" placeholder="담당자 이름">
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">비밀번호 <span id="mallOperatorPasswordRequired" class="text-danger">*</span></label>
+                            <input type="password" name="passwordHash" id="mallOperatorPassword" class="form-control" maxlength="100" autocomplete="new-password" placeholder="신규 또는 변경 시 입력">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">비밀번호 확인</label>
+                            <input type="password" id="mallOperatorPasswordConfirm" class="form-control" maxlength="100" autocomplete="new-password" placeholder="비밀번호 재입력">
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">연락처</label>
+                            <input type="text" name="mobile" id="mallOperatorMobile" class="form-control" maxlength="13" inputmode="tel" autocomplete="off" placeholder="010-0000-0000">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">이메일</label>
+                            <input type="email" name="email" id="mallOperatorEmail" class="form-control" maxlength="100" autocomplete="off" placeholder="name@example.com">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="form-label fw-bold small">상태</label>
+                        <div class="d-flex gap-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="status" id="mallOperatorStatusActive" value="ACTIVE" checked>
+                                <label class="form-check-label" for="mallOperatorStatusActive">정상</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="status" id="mallOperatorStatusLocked" value="LOCKED">
+                                <label class="form-check-label" for="mallOperatorStatusLocked">잠김</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="status" id="mallOperatorStatusInactive" value="INACTIVE">
+                                <label class="form-check-label" for="mallOperatorStatusInactive">중지</label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light border-top">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" id="mallOperatorSaveBtn" class="btn btn-primary px-4" onclick="fn_saveMallOperator()">
+                    <i class="bi bi-check2-circle me-1"></i> 저장
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+</c:if>
+
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script>
 (function () {
     var COMPANY_ID   = '${not empty company.companyId ? company.companyId : 0}';
     var COMPANY_TYPE = '${not empty company.companyType ? company.companyType : param.companyType}';
     var IS_MALL      = '${currentMenu}' === 'op_mall';
+    jQuery('#global-loader').hide();
 
     /* ================================================================
        유틸 함수
@@ -508,22 +625,35 @@
                 $btn.prop('disabled', false).html(originalBtnHtml);
             }
             
-            // 1. 기본 유효성 검사
-            var companyName = (jQuery('#companyName').val() || '').trim();
-            var businessNo  = (jQuery('#businessNo').val() || '').trim();
-            var ceoName     = (jQuery('#ceoName').val() || '').trim();
+            // 1. 참여 채널 확인 (UI 최상단)
+            var ctype = (typeof COMPANY_TYPE !== 'undefined' ? COMPANY_TYPE : '');
+            var $channelSelect = jQuery('#channelId');
+            var $channelHidden = jQuery('input[name="channelId"]');
+            var channelId = ($channelSelect.length && $channelSelect.val()) 
+                          ? $channelSelect.val()
+                          : ($channelHidden.length ? $channelHidden.val() : '');
+            var channelAreaVisible = jQuery('#channelSelectArea').is(':visible');
             
-            console.log('Step 1: Basic Check - Name:', companyName, 'BizNo:', businessNo);
-            
-            if (!companyName) { restoreBtn(); validationFail('업체명을 입력하세요.', '#companyName'); return; }
-            if (!ceoName)     { restoreBtn(); validationFail('대표자명을 입력하세요.', '#ceoName'); return; }
+            if (channelAreaVisible && (ctype === 'SELLER' || ctype === 'BUYER') && !channelId) { 
+                restoreBtn();
+                validationFail('참여 채널을 선택하세요.', '#channelId'); 
+                return; 
+            }
 
-            // 2. 사업자번호 및 중복확인
+            // 2. 업체명
+            var companyName = (jQuery('#companyName').val() || '').trim();
+            if (!companyName) { restoreBtn(); validationFail('업체명을 입력하세요.', '#companyName'); return; }
+
+            // 3. 판매업체 유형 (판매업체 전용)
+            if (ctype === 'SELLER') {
+                var sellerType = jQuery('input[name="sellerType"]:checked').val();
+                if (!sellerType) { restoreBtn(); validationFail('판매업체 유형을 선택하세요.', '#sellerTypeRaw'); return; }
+            }
+
+            // 4. 사업자번호 및 중복확인
+            var businessNo  = (jQuery('#businessNo').val() || '').trim();
             if (!businessNo)  { restoreBtn(); validationFail('사업자 등록 번호를 입력하세요.', '#businessNo'); return; }
             var bizChecked = jQuery('#bizNoChecked').val();
-            
-            console.log('Step 2: BizNo Check - IS_MALL:', IS_MALL, 'bizChecked:', bizChecked, 'COMPANY_ID:', COMPANY_ID);
-            
             if (!IS_MALL && (!COMPANY_ID || COMPANY_ID === '0')) {
                 if (bizChecked !== 'Y') { 
                     restoreBtn();
@@ -532,40 +662,19 @@
                 }
             }
 
-            // 3. 연락처 및 주소 (최소 필수값)
+            // 5. 대표자명
+            var ceoName = (jQuery('#ceoName').val() || '').trim();
+            if (!ceoName) { restoreBtn(); validationFail('대표자명을 입력하세요.', '#ceoName'); return; }
+
+            // 6. 연락처 (전화, 이메일)
             var phone = (jQuery('#phone').val() || '').trim();
             var email = (jQuery('#email').val() || '').trim();
-            var addr1 = (jQuery('#address1').val() || '').trim();
-            
-            console.log('Step 3: Contact Check - Phone:', phone, 'Email:', email);
-            
             if (!phone) { restoreBtn(); validationFail('대표 전화번호를 입력하세요.', '#phone'); return; }
             if (!email) { restoreBtn(); validationFail('대표 이메일을 입력하세요.', '#email'); return; }
+
+            // 7. 주소 (UI 최하단부)
+            var addr1 = (jQuery('#address1').val() || '').trim();
             if (!addr1) { restoreBtn(); validationFail('기본 주소를 입력하세요.', '#address1'); return; }
-
-            // 4. 채널 확인 (판매/구매업체 전용, channelSelectArea가 표시된 경우만)
-            var ctype = (typeof COMPANY_TYPE !== 'undefined' ? COMPANY_TYPE : '');
-            // select 박스 또는 hidden input 모두에서 channelId를 읽음
-            var $channelSelect = jQuery('#channelId');
-            var $channelHidden = jQuery('input[name="channelId"]');
-            var channelId = ($channelSelect.length && $channelSelect.val()) 
-                          ? $channelSelect.val()
-                          : ($channelHidden.length ? $channelHidden.val() : '');
-            var channelAreaVisible = jQuery('#channelSelectArea').is(':visible');
-            
-            console.log('Step 4: Type/Channel Check - Type:', ctype, 'ChannelId:', channelId, 'AreaVisible:', channelAreaVisible);
-            
-            if (channelAreaVisible && (ctype === 'SELLER' || ctype === 'BUYER') && !channelId) { 
-                restoreBtn();
-                validationFail('참여 채널을 선택하세요.', '#channelId'); 
-                return; 
-            }
-
-            // 4.5 판매업체 유형 확인
-            if (ctype === 'SELLER') {
-                var sellerType = jQuery('input[name="sellerType"]:checked').val();
-                if (!sellerType) { restoreBtn(); validationFail('판매업체 유형을 선택하세요.', '#sellerTypeRaw'); return; }
-            }
 
             // 5. 서버 전송
             console.log('Step 5: Serializing and Sending...');
@@ -784,12 +893,208 @@
        담당자 관리 (수동 CRUD)
     ================================================================ */
     window.fn_addContact = function() {
+        fn_openMallOperatorModal();
+    };
+
+    window.fn_openMallOperatorModal = function(button) {
         if (!COMPANY_ID || COMPANY_ID === '0') {
-            alert('업체 정보를 먼저 저장한 후 담당자를 추가할 수 있습니다.');
+            showCompanyMessagePopup('몰 기본정보를 먼저 저장한 후 담당자를 추가할 수 있습니다.');
             return;
         }
-        alert('회원관리에서 회원을 등록하시면 자동으로 담당자 목록에 추가됩니다. 수동 추가가 필요하시면 @개발자에게 요청해 주세요.');
+
+        if (!IS_MALL) {
+            showCompanyMessagePopup('몰 운영자 담당자는 몰 기본정보 화면에서만 관리할 수 있습니다.');
+            return;
+        }
+
+        var $form = jQuery('#mallOperatorForm');
+        jQuery('#global-loader').hide();
+        if (!$form.length) {
+            showCompanyMessagePopup('몰 운영자 관리 화면을 찾을 수 없습니다.');
+            return;
+        }
+
+        $form[0].reset();
+        jQuery('#mallOperatorIdMsg').empty();
+        jQuery('#mallOperatorIdChecked').val('N');
+        jQuery('#mallOperatorUserId').val('');
+        jQuery('#mallOperatorLoginId').val('').prop('readonly', false);
+        jQuery('#mallOperatorName').val('');
+        jQuery('#mallOperatorPassword').val('');
+        jQuery('#mallOperatorPasswordConfirm').val('');
+        jQuery('#mallOperatorMobile').val('');
+        jQuery('#mallOperatorEmail').val('');
+        jQuery('#mallOperatorIdCheckBtn').show();
+        jQuery('#mallOperatorPasswordRequired').show();
+        jQuery('#mallOperatorRole').val('OPERATOR');
+        jQuery('#mallOperatorModalTitle').html('<i class="bi bi-person-badge me-2 text-primary"></i>몰 운영자 추가');
+
+        if (button) {
+            var $btn = jQuery(button);
+            var userId = $btn.data('user-id');
+            var userRole = $btn.data('user-role') || 'OPERATOR';
+            if (!userId) {
+                showCompanyMessagePopup('연결된 운영자 계정이 없어 이 화면에서 수정할 수 없습니다.');
+                return;
+            }
+            if (userRole !== 'OPERATOR') {
+                showCompanyMessagePopup('몰 운영자 계정만 이 화면에서 수정할 수 있습니다.');
+                return;
+            }
+
+            jQuery('#mallOperatorUserId').val(userId);
+            jQuery('#mallOperatorRole').val(userRole);
+            jQuery('#mallOperatorLoginId').val($btn.data('login-id') || '').prop('readonly', true);
+            jQuery('#mallOperatorIdCheckBtn').hide();
+            jQuery('#mallOperatorIdChecked').val('Y');
+            jQuery('#mallOperatorName').val($btn.data('name') || '');
+            jQuery('#mallOperatorMobile').val($btn.data('mobile') || '');
+            jQuery('#mallOperatorEmail').val($btn.data('email') || '');
+            jQuery('#mallOperatorPasswordRequired').hide();
+            jQuery('#mallOperatorModalTitle').html('<i class="bi bi-person-badge me-2 text-primary"></i>몰 운영자 수정');
+
+            var status = $btn.data('status') || 'ACTIVE';
+            jQuery('#mallOperatorForm input[name="status"][value="' + status + '"]').prop('checked', true);
+        } else {
+            jQuery('#mallOperatorStatusActive').prop('checked', true);
+        }
+
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('mallOperatorModal')).show();
+        if (!button) {
+            setTimeout(function() {
+                jQuery('#mallOperatorLoginId').val('').focus();
+            }, 100);
+        }
     };
+
+    window.fn_checkMallOperatorLoginId = function() {
+        var loginId = (jQuery('#mallOperatorLoginId').val() || '').trim();
+        var $msg = jQuery('#mallOperatorIdMsg');
+
+        if (!loginId) {
+            showCompanyMessagePopup('로그인 ID를 입력하세요.');
+            jQuery('#mallOperatorLoginId').focus();
+            return;
+        }
+        if (!/^[A-Za-z0-9_]{4,20}$/.test(loginId)) {
+            jQuery('#mallOperatorIdChecked').val('N');
+            $msg.html('<span class="text-danger">로그인 ID는 영문, 숫자, 밑줄(_) 4~20자로 입력하세요.</span>');
+            jQuery('#mallOperatorLoginId').focus();
+            return;
+        }
+
+        jQuery.get('<c:url value="/admin/user/checkLoginId.ajax"/>', { loginId: loginId }, function(res) {
+            if (res && res.success && !res.duplicated) {
+                jQuery('#mallOperatorIdChecked').val('Y');
+                $msg.html('<span class="text-success">사용 가능한 ID입니다.</span>');
+            } else {
+                jQuery('#mallOperatorIdChecked').val('N');
+                $msg.html('<span class="text-danger">이미 사용 중인 ID입니다.</span>');
+            }
+        }).fail(function() {
+            jQuery('#mallOperatorIdChecked').val('N');
+            $msg.html('<span class="text-danger">중복 확인에 실패했습니다.</span>');
+        });
+    };
+
+    window.fn_saveMallOperator = function() {
+        var userId = (jQuery('#mallOperatorUserId').val() || '').trim();
+        var loginId = (jQuery('#mallOperatorLoginId').val() || '').trim();
+        var userName = (jQuery('#mallOperatorName').val() || '').trim();
+        var password = jQuery('#mallOperatorPassword').val() || '';
+        var passwordConfirm = jQuery('#mallOperatorPasswordConfirm').val() || '';
+        var mobile = formatMallOperatorMobile(jQuery('#mallOperatorMobile').val() || '');
+        jQuery('#mallOperatorMobile').val(mobile);
+        var email = (jQuery('#mallOperatorEmail').val() || '').trim();
+        var loginIdPattern = /^[A-Za-z0-9_]{4,20}$/;
+        var mobilePattern = /^01[016789]-\d{3,4}-\d{4}$/;
+        var emailPattern = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
+        if (!loginId) { showCompanyMessagePopup('로그인 ID를 입력하세요.'); jQuery('#mallOperatorLoginId').focus(); return; }
+        if (!loginIdPattern.test(loginId)) {
+            showCompanyMessagePopup('로그인 ID는 영문, 숫자, 밑줄(_) 4~20자로 입력하세요.');
+            jQuery('#mallOperatorLoginId').focus();
+            return;
+        }
+        if (!userId && jQuery('#mallOperatorIdChecked').val() !== 'Y') {
+            showCompanyMessagePopup('로그인 ID 중복 확인을 먼저 해주세요.');
+            return;
+        }
+        if (!userName) { showCompanyMessagePopup('이름을 입력하세요.'); jQuery('#mallOperatorName').focus(); return; }
+        if (userName.length > 50) { showCompanyMessagePopup('이름은 50자 이하로 입력하세요.'); jQuery('#mallOperatorName').focus(); return; }
+        if (!userId && !password) { showCompanyMessagePopup('비밀번호를 입력하세요.'); jQuery('#mallOperatorPassword').focus(); return; }
+        if (password && password.length > 100) { showCompanyMessagePopup('비밀번호는 100자 이하로 입력하세요.'); jQuery('#mallOperatorPassword').focus(); return; }
+        if (password && password !== passwordConfirm) {
+            showCompanyMessagePopup('비밀번호가 일치하지 않습니다.');
+            jQuery('#mallOperatorPasswordConfirm').focus();
+            return;
+        }
+        if (mobile && !mobilePattern.test(mobile)) {
+            showCompanyMessagePopup('연락처는 010-1234-5678 형식으로 입력하세요.');
+            jQuery('#mallOperatorMobile').focus();
+            return;
+        }
+        if (email && (email.length > 100 || !emailPattern.test(email))) {
+            showCompanyMessagePopup('이메일은 100자 이하의 올바른 이메일 형식으로 입력하세요.');
+            jQuery('#mallOperatorEmail').focus();
+            return;
+        }
+
+        var $saveButton = jQuery('#mallOperatorSaveBtn');
+        if ($saveButton.prop('disabled')) return;
+        $saveButton.prop('disabled', true);
+
+        jQuery.ajax({
+            url: '<c:url value="/admin/user/saveUser.ajax"/>',
+            type: 'POST',
+            global: false,
+            timeout: 15000,
+            dataType: 'json',
+            data: jQuery('#mallOperatorForm').serialize(),
+            success: function(res) {
+                if (res && res.success) {
+                    if (window.fn_toast) {
+                        fn_toast(res.message || '저장되었습니다.', 'success');
+                    }
+                    bootstrap.Modal.getOrCreateInstance(document.getElementById('mallOperatorModal')).hide();
+                    setTimeout(function() { location.reload(); }, 500);
+                } else {
+                    showCompanyMessagePopup((res && res.message) || '저장 중 오류가 발생했습니다.');
+                }
+            },
+            error: function(xhr) {
+                var message = '저장 요청에 실패했습니다.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                }
+                showCompanyMessagePopup(message);
+            },
+            complete: function() {
+                $saveButton.prop('disabled', false);
+            }
+        });
+    };
+
+    jQuery(document).on('input', '#mallOperatorLoginId', function() {
+        jQuery('#mallOperatorIdChecked').val('N');
+        jQuery('#mallOperatorIdMsg').empty();
+        this.value = this.value.replace(/[^A-Za-z0-9_]/g, '').slice(0, 20);
+    });
+
+    function formatMallOperatorMobile(value) {
+        var digits = (value || '').replace(/\D/g, '').slice(0, 11);
+        if (digits.length <= 3) {
+            return digits;
+        }
+        if (digits.length <= 7) {
+            return digits.slice(0, 3) + '-' + digits.slice(3);
+        }
+        return digits.slice(0, 3) + '-' + digits.slice(3, 7) + '-' + digits.slice(7);
+    }
+
+    jQuery(document).on('input', '#mallOperatorMobile', function() {
+        this.value = formatMallOperatorMobile(this.value);
+    });
 
     window.fn_deleteContact = function(id) {
         if (!confirm('해당 담당자를 삭제하시겠습니까?')) return;

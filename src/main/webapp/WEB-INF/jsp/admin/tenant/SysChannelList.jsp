@@ -31,6 +31,14 @@
                         <option value="COLLECT" ${searchVO.channelType eq 'COLLECT' ? 'selected' : ''}>공장수령</option>
                     </select>
                 </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold small">상태</label>
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="">-- 전체 --</option>
+                        <option value="ACTIVE" ${searchVO.status eq 'ACTIVE' ? 'selected' : ''}>정상</option>
+                        <option value="INACTIVE" ${searchVO.status eq 'INACTIVE' ? 'selected' : ''}>중지</option>
+                    </select>
+                </div>
                 <div class="col-md-3">
                     <label class="form-label fw-semibold small">검색어</label>
                     <input type="text" name="searchKeyword" class="form-control form-control-sm"
@@ -104,20 +112,20 @@
                                         </c:otherwise>
                                     </c:choose>
                                 </td>
-                                <td class="text-center">
-                                    <c:choose>
-                                        <c:when test="${item.status eq 'ACTIVE'}">
-                                            <span class="status-badge status-ACTIVE">
-                                                <span class="status-dot dot-ACTIVE"></span>정상
-                                            </span>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <span class="status-badge status-INACTIVE">
-                                                <span class="status-dot dot-INACTIVE"></span>중지
-                                            </span>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </td>
+                                        <td class="text-center">
+                                            <c:choose>
+                                                <c:when test="${item.status eq 'ACTIVE'}">
+                                                    <span class="status-badge status-ACTIVE">
+                                                        <span class="status-dot dot-ACTIVE"></span>정상
+                                                    </span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span class="status-badge status-INACTIVE">
+                                                        <span class="status-dot dot-INACTIVE"></span>중지
+                                                    </span>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </td>
                                 <td class="text-center">
                                     <div class="action-btn-group">
                                         <button type="button" class="btn-action" title="수정" onclick="editChannel('${item.channelId}')">

@@ -24,11 +24,21 @@
         body.modal-open .top-bar,
         body.modal-open .sidebar {
             z-index: 900 !important;
-            /* opacity: 0; // 이 부분이 사이드바 증발의 원인 */
-            /* visibility: hidden; */
-            pointer-events: none; /* 클릭만 방지 */
-            filter: blur(2px) grayscale(0.5); /* 시각적으로만 뒤로 밀기 */
+            pointer-events: none;
+            filter: blur(2px) grayscale(0.5);
             transition: all 0.3s ease;
+        }
+        /* 사이드바 스크롤 절대 금지 (초강력 전역 패치) */
+        ::-webkit-scrollbar { display: none !important; }
+        * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+        
+        .sidebar { 
+            overflow: hidden !important; 
+            height: calc(100vh - 3rem) !important;
+        }
+        .sidebar-nav { 
+            height: 100% !important; 
+            overflow: hidden !important;
         }
         .modal-backdrop.show {
             z-index: 1500 !important;
@@ -65,7 +75,7 @@
     </div>
 
     <!-- Sidebar Navigation -->
-    <aside class="sidebar" id="sidebar">
+    <aside class="sidebar" id="sidebar" style="overflow:hidden !important;">
         <div class="sidebar-header">
             <div class="logo-container">
                 <div class="logo-icon">
