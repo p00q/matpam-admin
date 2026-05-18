@@ -112,7 +112,10 @@
                         <c:forEach var="item" items="${companyList}" varStatus="status">
                             <tr>
                                 <td class="text-center small text-muted">${item.channelName}</td>
-                                <td class="fw-bold text-start ps-4" style="color:#1e293b;">${item.companyName}</td>
+                                <td class="fw-bold text-start ps-4" style="color:#1e293b;">
+                                    <a href="javascript:;" class="text-decoration-none text-primary fw-bold"
+                                       onclick="fn_openCompanyModal('${item.companyId}', '${empty item.companyType ? param.companyType : item.companyType}')">${item.companyName}</a>
+                                </td>
                                 <td class="text-center">${item.ceoName}</td>
                                 <td class="text-center">${item.primaryContactName}</td>
                                 <td class="text-center small">${item.primaryContactMobile}</td>
@@ -138,7 +141,8 @@
                                             <c:param name="companyId" value="${item.companyId}" />
                                             <c:param name="companyType" value="${empty item.companyType ? param.companyType : item.companyType}" />
                                         </c:url>
-                                        <a href="${detailUrl}" class="btn-action" title="수정">
+                                        <a href="javascript:;" class="btn-action" title="수정"
+                                           onclick="fn_openCompanyModal('${item.companyId}', '${empty item.companyType ? param.companyType : item.companyType}')">
                                             <i class="bi bi-pencil-fill"></i>
                                         </a>
                                     </div>
@@ -181,6 +185,15 @@ function fn_link_page(pageNo) {
     input.value = pageNo;
     form.appendChild(input);
     form.submit();
+}
+
+function fn_openCompanyModal(companyId, companyType) {
+    var url = '<c:url value="/admin/company/companyForm.do"/>' + '?companyId=' + companyId + '&isModal=Y';
+    if (companyType) {
+        url += '&companyType=' + encodeURIComponent(companyType);
+    }
+    var title = companyType === 'BUYER' ? '구매업체 상세정보' : (companyType === 'SELLER' ? '판매업체 상세정보' : '업체 상세정보');
+    fn_openAdminModal(url, title);
 }
 
 /* ── KPI 통계 로드 ── */

@@ -209,11 +209,13 @@
 
                                                                     <!-- 사용자ID -->
                                                                     <td style="font-size:.82rem; color:#334155;">
-                                                                        ${item.loginId}</td>
+                                                                        <a href="javascript:;" class="text-decoration-none text-muted"
+                                                                           onclick="fn_openUserModal(${item.userId})">${item.loginId}</a></td>
 
                                                                     <!-- 이름 -->
                                                                     <td style="font-weight:600; color:#1e293b;">
-                                                                        ${item.userName}</td>
+                                                                        <a href="javascript:;" class="text-decoration-none text-primary fw-semibold"
+                                                                           onclick="fn_openUserModal(${item.userId})">${item.userName}</a></td>
 
 
 

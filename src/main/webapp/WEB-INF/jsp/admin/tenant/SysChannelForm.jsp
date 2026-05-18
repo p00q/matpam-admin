@@ -66,26 +66,26 @@
                         <div class="row g-2 mb-2">
                             <div class="col-md-6">
                                 <label class="form-label small fw-semibold text-dark mb-1">로그인 ID <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control form-control-sm bg-white" id="newMgrLoginId" placeholder="예: ch_admin_01" autocomplete="off">
+                                <input type="text" class="form-control form-control-sm bg-white" id="newMgrLoginId" maxlength="20" autocomplete="off">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label small fw-semibold text-dark mb-1">이름 <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control form-control-sm bg-white" id="newMgrUserName" placeholder="담당자 실명">
+                                <input type="text" class="form-control form-control-sm bg-white" id="newMgrUserName" placeholder="담당자 실명" maxlength="50">
                             </div>
                         </div>
                         <div class="row g-2 mb-2">
                             <div class="col-md-6">
                                 <label class="form-label small fw-semibold text-dark mb-1">비밀번호 <span class="text-danger">*</span></label>
-                                <input type="password" class="form-control form-control-sm bg-white" id="newMgrPassword" placeholder="초기 비밀번호" autocomplete="new-password">
+                                <input type="password" class="form-control form-control-sm bg-white" id="newMgrPassword" placeholder="초기 비밀번호" maxlength="100" autocomplete="new-password">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label small fw-semibold text-dark mb-1">연락처</label>
-                                <input type="text" class="form-control form-control-sm bg-white" id="newMgrMobile" placeholder="010-0000-0000">
+                                <input type="text" class="form-control form-control-sm bg-white" id="newMgrMobile" placeholder="010-0000-0000" maxlength="13" inputmode="tel" autocomplete="off">
                             </div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label small fw-semibold text-dark mb-1">이메일</label>
-                            <input type="email" class="form-control form-control-sm bg-white" id="newMgrEmail" placeholder="email@example.com">
+                            <input type="email" class="form-control form-control-sm bg-white" id="newMgrEmail" placeholder="email@example.com" maxlength="100" autocomplete="off">
                         </div>
                         <div class="d-flex align-items-center justify-content-between">
                             <div class="small" style="color:#64748b;">
@@ -150,18 +150,39 @@
         $("#newManagerSection").slideUp(200);
     }
 
+    function formatChannelManagerMobile(value) {
+        var digits = (value || "").replace(/\D/g, "").slice(0, 11);
+        if (digits.length <= 3) return digits;
+        if (digits.length <= 7) return digits.replace(/(\d{3})(\d+)/, "$1-$2");
+        return digits.replace(/(\d{3})(\d{4})(\d+)/, "$1-$2-$3");
+    }
+
+    $(document).on("input", "#newMgrLoginId", function() {
+        this.value = this.value.replace(/[^A-Za-z0-9_]/g, "").slice(0, 20);
+    });
+
+    $(document).on("input", "#newMgrMobile", function() {
+        this.value = formatChannelManagerMobile(this.value);
+    });
+
     /* ── 신규 담당자 계정 생성 ── */
     $("#btnCreateNewManager").on("click", function() {
         var loginId  = $("#newMgrLoginId").val().trim();
         var userName = $("#newMgrUserName").val().trim();
         var password = $("#newMgrPassword").val().trim();
-        var mobile   = $("#newMgrMobile").val().trim();
+        var mobile   = formatChannelManagerMobile($("#newMgrMobile").val().trim());
         var email    = $("#newMgrEmail").val().trim();
         var companyId = $("input[name='companyId']").val();
+        $("#newMgrMobile").val(mobile);
 
         if (!loginId)  { alert("로그인 ID를 입력하세요."); $("#newMgrLoginId").focus(); return; }
+        if (!/^[A-Za-z0-9_]{4,20}$/.test(loginId)) { alert("로그인 ID는 영문, 숫자, 밑줄(_) 4~20자로 입력하세요."); $("#newMgrLoginId").focus(); return; }
         if (!userName) { alert("이름을 입력하세요."); $("#newMgrUserName").focus(); return; }
+        if (userName.length > 50) { alert("이름은 50자 이하로 입력하세요."); $("#newMgrUserName").focus(); return; }
         if (!password) { alert("비밀번호를 입력하세요."); $("#newMgrPassword").focus(); return; }
+        if (password.length > 100) { alert("비밀번호는 100자 이하로 입력하세요."); $("#newMgrPassword").focus(); return; }
+        if (mobile && !/^01[016789]-\d{3,4}-\d{4}$/.test(mobile)) { alert("연락처는 010-1234-5678 형식으로 입력하세요."); $("#newMgrMobile").focus(); return; }
+        if (email && (email.length > 100 || !/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(email))) { alert("이메일 형식을 확인하세요."); $("#newMgrEmail").focus(); return; }
 
         var $btn = $(this);
         $btn.prop("disabled", true).html('<i class="bi bi-hourglass-split me-1"></i>생성 중...');

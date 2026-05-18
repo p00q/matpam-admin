@@ -108,10 +108,10 @@
                         <c:forEach var="user" items="${userList}">
                             <tr>
                                 <td class="ps-4">
-                                    <div class="fw-bold">${user.maskedUserName}</div>
+                                    <div class="fw-bold">${user.userName}</div>
                                 </td>
                                 <td><code class="text-primary">${user.loginId}</code></td>
-                                <td class="text-muted small">${user.maskedEmail}</td>
+                                <td class="text-muted small">${user.email}</td>
                                 <td class="text-center">
                                     <span class="badge bg-light text-dark border rounded-pill px-2">${user.userRole}</span>
                                 </td>

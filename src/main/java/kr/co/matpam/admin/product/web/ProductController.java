@@ -1,6 +1,7 @@
 package kr.co.matpam.admin.product.web;
 
 import java.util.List;
+import java.util.Collections;
 import javax.annotation.Resource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.egovframe.rte.ptl.mvc.tags.ui.pagination.PaginationInfo;
 import javax.servlet.http.HttpServletRequest;
 import kr.co.matpam.admin.common.service.LoginVO;
+import kr.co.matpam.admin.company.service.CompanyService;
+import kr.co.matpam.admin.company.service.CompanyVO;
 import kr.co.matpam.admin.product.service.ProductService;
 import kr.co.matpam.admin.product.service.ProductVO;
 import kr.co.matpam.admin.product.service.ProductPriceVO;
@@ -23,6 +26,9 @@ public class ProductController {
 
     @Resource(name = "productService")
     private ProductService productService;
+
+    @Resource(name = "companyService")
+    private CompanyService companyService;
 
     /**
      * 상품 목록 조회
@@ -68,8 +74,17 @@ public class ProductController {
             product = new ProductVO();
             LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
             product.setTenantId(resolveTenantId(loginVO));
+            product.setSellerCompanyId(resolveSellerCompanyId(loginVO));
+            product.setItemKind("GOODS");
+            product.setProcessingType("RAW_GOODS");
+            product.setTaxCategory("TAX_FREE");
+            product.setUnitName("kg");
             product.setIndependentSaleYn("Y");
             product.setStockManagedYn("Y");
+            product.setStockManageYn("N");
+            product.setIsNew("N");
+            product.setIsMonthly("N");
+            product.setIsHidden("N");
             product.setSaleStatus("ON_SALE");
         } else {
             product = productService.selectProductDetail(productId);
@@ -78,6 +93,8 @@ public class ProductController {
             model.addAttribute("priceList", priceList);
         }
         
+        addSellerModel(model, (LoginVO) request.getSession().getAttribute("loginVO"));
+        addRecommendedProcessModel(model, product, (LoginVO) request.getSession().getAttribute("loginVO"));
         model.addAttribute("product", product);
         model.addAttribute("currentMenu", "product");
         model.addAttribute("pageTitle", "상품 상세 정보");
@@ -92,6 +109,11 @@ public class ProductController {
     public String saveProduct(@ModelAttribute("product") ProductVO product,
                               HttpServletRequest request) throws Exception {
         applyProductScope(product, request);
+        LoginVO loginVO = (LoginVO) request.getSession().getAttribute("loginVO");
+        Long sellerCompanyId = resolveSellerCompanyId(loginVO);
+        if (sellerCompanyId != null) {
+            product.setSellerCompanyId(sellerCompanyId);
+        }
         if (product.getProductId() == null) {
             productService.insertProduct(product);
         } else {
@@ -119,6 +141,58 @@ public class ProductController {
             return 1L;
         }
         return loginVO.getTenantId() != null ? loginVO.getTenantId() : 1L;
+    }
+
+    private Long resolveSellerCompanyId(LoginVO loginVO) {
+        if (loginVO == null || loginVO.getCompanyId() == null) {
+            return null;
+        }
+        String memberType = loginVO.getMemberType();
+        String roleCd = loginVO.getRoleCd();
+        if (containsSeller(memberType) || containsSeller(roleCd)) {
+            return loginVO.getCompanyId();
+        }
+        return null;
+    }
+
+    private void addSellerModel(ModelMap model, LoginVO loginVO) throws Exception {
+        Long sellerCompanyId = resolveSellerCompanyId(loginVO);
+        if (sellerCompanyId != null) {
+            CompanyVO param = new CompanyVO();
+            param.setCompanyId(sellerCompanyId);
+            param.setTenantId(resolveTenantId(loginVO));
+            CompanyVO seller = companyService.selectCompanyDetail(param);
+            if (seller == null) {
+                seller = new CompanyVO();
+                seller.setCompanyId(sellerCompanyId);
+                seller.setCompanyName("본인 판매업체");
+            }
+            model.addAttribute("sellerList", Collections.singletonList(seller));
+            model.addAttribute("sellerLocked", true);
+            return;
+        }
+
+        CompanyVO search = new CompanyVO();
+        search.setCompanyType("SELLER");
+        if (loginVO != null && !isSuperAdmin(loginVO)) {
+            search.setTenantId(resolveTenantId(loginVO));
+            if ("CHANNEL_ADMIN".equals(loginVO.getMemberType())) {
+                search.setChannelId(loginVO.getChannelId());
+            }
+        }
+        model.addAttribute("sellerList", companyService.selectCompanyListAll(search));
+        model.addAttribute("sellerLocked", false);
+    }
+
+    private void addRecommendedProcessModel(ModelMap model, ProductVO product, LoginVO loginVO) throws Exception {
+        ProductVO search = new ProductVO();
+        search.setTenantId(product != null && product.getTenantId() != null ? product.getTenantId() : resolveTenantId(loginVO));
+        search.setProductId(product != null ? product.getProductId() : null);
+        model.addAttribute("recommendedProcessCandidates", productService.selectRecommendedProcessCandidateList(search));
+    }
+
+    private boolean containsSeller(String value) {
+        return value != null && value.contains("SELLER");
     }
 
     private boolean isSuperAdmin(LoginVO loginVO) {

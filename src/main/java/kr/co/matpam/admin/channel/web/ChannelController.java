@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
@@ -33,6 +34,10 @@ public class ChannelController {
 
     @Resource(name = "userService")
     private UserService userService;
+
+    private static final Pattern LOGIN_ID_PATTERN = Pattern.compile("^[A-Za-z0-9_]{4,20}$");
+    private static final Pattern MOBILE_PATTERN = Pattern.compile("^01[016789]-\\d{3,4}-\\d{4}$");
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
 
     @RequestMapping("/channelList.do")
     public String selectChannelList(@ModelAttribute("searchVO") ChannelVO searchVO,
@@ -281,16 +286,9 @@ public class ChannelController {
                 return result;
             }
 
-            // 필수값 검증
-            if (loginId == null || loginId.trim().isEmpty()) {
-                throw new IllegalArgumentException("로그인 ID를 입력해 주세요.");
-            }
-            if (userName == null || userName.trim().isEmpty()) {
-                throw new IllegalArgumentException("이름을 입력해 주세요.");
-            }
-            if (password == null || password.trim().isEmpty()) {
-                throw new IllegalArgumentException("비밀번호를 입력해 주세요.");
-            }
+            Long scopedCompanyId = resolveCompanyId(companyId, loginVO);
+            String normalizedMobile = normalizeMobile(mobile);
+            validateChannelAdminInput(loginId, userName, password, normalizedMobile, email);
 
             // 로그인ID 중복 검사
             UserVO dup = userService.selectUserByLoginId(loginId.trim());
@@ -300,10 +298,10 @@ public class ChannelController {
 
             // CHANNEL_ADMIN 계정 생성
             UserVO newUser = new UserVO();
-            newUser.setCompanyId(companyId);
+            newUser.setCompanyId(scopedCompanyId);
             newUser.setLoginId(loginId.trim());
             newUser.setUserName(userName.trim());
-            newUser.setMobile(mobile != null ? mobile.trim() : "");
+            newUser.setMobile(normalizedMobile);
             newUser.setEmail(email != null ? email.trim() : "");
             newUser.setPasswordHash(password.trim());
             newUser.setUserRole("CHANNEL_ADMIN");
@@ -322,6 +320,54 @@ public class ChannelController {
             result.put("message", e.getMessage());
         }
         return result;
+    }
+
+    private void validateChannelAdminInput(String loginId, String userName, String password,
+            String mobile, String email) {
+        if (loginId == null || loginId.trim().isEmpty()) {
+            throw new IllegalArgumentException("로그인 ID를 입력해 주세요.");
+        }
+        if (!LOGIN_ID_PATTERN.matcher(loginId.trim()).matches()) {
+            throw new IllegalArgumentException("로그인 ID는 영문, 숫자, 밑줄(_) 4~20자로 입력해 주세요.");
+        }
+        if (userName == null || userName.trim().isEmpty()) {
+            throw new IllegalArgumentException("이름을 입력해 주세요.");
+        }
+        if (userName.trim().length() > 50) {
+            throw new IllegalArgumentException("이름은 50자 이하로 입력해 주세요.");
+        }
+        if (password == null || password.trim().isEmpty()) {
+            throw new IllegalArgumentException("비밀번호를 입력해 주세요.");
+        }
+        if (password.trim().length() > 100) {
+            throw new IllegalArgumentException("비밀번호는 100자 이하로 입력해 주세요.");
+        }
+        if (mobile != null && !mobile.isEmpty() && !MOBILE_PATTERN.matcher(mobile).matches()) {
+            throw new IllegalArgumentException("연락처는 010-1234-5678 형식으로 입력해 주세요.");
+        }
+        if (email != null && !email.trim().isEmpty()) {
+            String trimmedEmail = email.trim();
+            if (trimmedEmail.length() > 100 || !EMAIL_PATTERN.matcher(trimmedEmail).matches()) {
+                throw new IllegalArgumentException("이메일은 100자 이하의 올바른 이메일 형식으로 입력해 주세요.");
+            }
+        }
+    }
+
+    private String normalizeMobile(String mobile) {
+        if (mobile == null || mobile.trim().isEmpty()) {
+            return "";
+        }
+        String digits = mobile.replaceAll("\\D", "");
+        if (digits.length() > 11) {
+            digits = digits.substring(0, 11);
+        }
+        if (digits.length() <= 3) {
+            return digits;
+        }
+        if (digits.length() <= 7) {
+            return digits.substring(0, 3) + "-" + digits.substring(3);
+        }
+        return digits.substring(0, 3) + "-" + digits.substring(3, 7) + "-" + digits.substring(7);
     }
 
     private Long resolveCompanyId(Long requestCompanyId, LoginVO loginVO) {

@@ -23,6 +23,11 @@ public interface ProductService {
     ProductVO selectProductDetail(Long productId) throws Exception;
 
     /**
+     * 추천가공 후보 상품 목록 조회
+     */
+    List<ProductVO> selectRecommendedProcessCandidateList(ProductVO vo) throws Exception;
+
+    /**
      * 상품 등록
      */
     void insertProduct(ProductVO vo) throws Exception;

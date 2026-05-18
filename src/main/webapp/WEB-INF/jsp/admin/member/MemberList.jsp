@@ -61,8 +61,14 @@
                     <tbody>
                         <c:forEach var="item" items="${memberList}" varStatus="status">
                             <tr>
-                                <td class="ps-4 text-muted small">${item.companyId}</td>
-                                <td class="fw-bold text-primary">${item.companyName}</td>
+                                <td class="ps-4 text-muted small">
+                                    <a href="javascript:;" class="text-decoration-none text-muted"
+                                       onclick="fn_openMemberDetail('${item.companyId}')">${item.companyId}</a>
+                                </td>
+                                <td class="fw-bold text-primary">
+                                    <a href="javascript:;" class="text-decoration-none text-primary fw-bold"
+                                       onclick="fn_openMemberDetail('${item.companyId}')">${item.companyName}</a>
+                                </td>
                                 <td class="fw-semibold">${item.businessNo}</td>
                                 <td>${item.ceoName}</td>
                                 <td>${item.phone}</td>
@@ -80,7 +86,8 @@
                                     </c:choose>
                                 </td>
                                 <td class="pe-4 text-center">
-                                    <a href="${pageContext.request.contextPath}/admin/member/memberDetail.do?companyId=${item.companyId}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                    <a href="javascript:;" class="btn btn-sm btn-outline-primary rounded-pill px-3"
+                                       onclick="fn_openMemberDetail('${item.companyId}')">
                                         상세
                                     </a>
                                 </td>
@@ -112,5 +119,10 @@
 function fn_egov_link_page(pageNo) {
     document.searchForm.pageIndex.value = pageNo;
     document.searchForm.submit();
+}
+
+function fn_openMemberDetail(companyId) {
+    const url = '${pageContext.request.contextPath}/admin/member/memberDetail.do?companyId=' + companyId + '&isModal=Y';
+    fn_openAdminModal(url, '회원 상세정보');
 }
 </script>

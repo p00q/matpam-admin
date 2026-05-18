@@ -158,6 +158,10 @@ public class CompanyController {
             model.addAttribute("pageTitle", "몰 기본정보");
         }
 
+        if ("Y".equalsIgnoreCase(request.getParameter("isModal"))) {
+            return "admin/company/CompanyForm";
+        }
+
         return "layout/main";
     }
 

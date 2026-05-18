@@ -63,7 +63,7 @@
             email,
             role AS userRole,
             status,
-            last_login_at AS lastLoginAt,
+            NULL AS lastLoginAt,
             created_at AS createdAt
         FROM tb_user
         WHERE company_id = #{companyId}

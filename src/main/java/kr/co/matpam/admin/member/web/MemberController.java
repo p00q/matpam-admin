@@ -52,7 +52,9 @@ public class MemberController {
      * 구매업체 상세 정보 조회
      */
     @RequestMapping("/admin/member/memberDetail.do")
-    public String memberDetail(@RequestParam("companyId") Long companyId, ModelMap model) throws Exception {
+    public String memberDetail(@RequestParam("companyId") Long companyId,
+            @RequestParam(value = "isModal", required = false) String isModal,
+            ModelMap model) throws Exception {
         
         MemberVO param = new MemberVO();
         param.setCompanyId(companyId);
@@ -62,6 +64,10 @@ public class MemberController {
         model.addAttribute("userList", memberService.selectMemberUserList(param));
         
         model.addAttribute("contentPage", "/WEB-INF/jsp/admin/member/MemberDetail.jsp");
+
+        if ("Y".equalsIgnoreCase(isModal)) {
+            return "admin/member/MemberDetail";
+        }
 
         return "layout/main";
     }

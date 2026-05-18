@@ -15,6 +15,18 @@
             p.tax_category,
             p.unit_name,
             p.sale_status,
+            p.supply_price,
+            p.vat_amount,
+            p.sale_price,
+            p.sale_start_at,
+            p.sale_end_at,
+            p.display_order,
+            p.is_new,
+            p.is_monthly,
+            p.is_hidden,
+            p.stock_manage_yn,
+            p.safety_stock_qty,
+            p.delivery_fee,
             p.created_at
         FROM tb_product p
         LEFT JOIN tb_company c ON p.seller_company_id = c.company_id
@@ -80,17 +92,51 @@
         WHERE p.product_id = #{productId}
     </select>
 
+    <select id="selectNextProductCode" parameterType="kr.co.matpam.admin.product.service.ProductVO" resultType="string">
+        SELECT CAST(
+            COALESCE(
+                CEIL((MAX(CAST(p.product_code AS UNSIGNED)) + 1) / 100) * 100,
+                #{codeBase}
+            ) AS CHAR
+        )
+        FROM tb_product p
+        WHERE p.tenant_id = #{tenantId}
+          AND p.product_code REGEXP '^[0-9]+$'
+          AND CAST(p.product_code AS UNSIGNED) &gt;= #{codeBase}
+          AND CAST(p.product_code AS UNSIGNED) &lt; #{codeBase} + 1000000
+    </select>
+
+    <select id="selectNextDisplayOrder" parameterType="kr.co.matpam.admin.product.service.ProductVO" resultType="int">
+        SELECT CAST(
+            COALESCE(
+                CEIL((MAX(p.display_order) + 1) / 100) * 100,
+                #{codeBase}
+            ) AS SIGNED
+        )
+        FROM tb_product p
+        WHERE p.tenant_id = #{tenantId}
+          AND p.display_order IS NOT NULL
+          AND p.display_order &gt;= #{codeBase}
+          AND p.display_order &lt; #{codeBase} + 1000000
+    </select>
+
     <insert id="insertProduct" parameterType="kr.co.matpam.admin.product.service.ProductVO" useGeneratedKeys="true" keyProperty="productId">
         INSERT INTO tb_product (
             tenant_id, seller_company_id, product_code, product_name, 
             item_kind, processing_type, tax_category, unit_name, 
-            independent_sale_yn, stock_managed_yn, sale_status, 
-            description, image_url, created_by
+            sale_status, 
+            description, image_url, supply_price, vat_amount, sale_price,
+            sale_start_at, sale_end_at, display_order, md_comment, summary,
+            is_new, is_monthly, is_hidden, stock_manage_yn, safety_stock_qty,
+            delivery_fee, created_by
         ) VALUES (
             #{tenantId}, #{sellerCompanyId}, #{productCode}, #{productName}, 
             #{itemKind}, #{processingType}, #{taxCategory}, #{unitName}, 
-            #{independentSaleYn}, #{stockManagedYn}, #{saleStatus}, 
-            #{description}, #{imageUrl}, #{createdBy}
+            #{saleStatus}, 
+            #{description}, #{imageUrl}, #{supplyPrice}, #{vatAmount}, #{salePrice},
+            #{saleStartAt}, #{saleEndAt}, #{displayOrder}, #{mdComment}, #{summary},
+            #{isNew}, #{isMonthly}, #{isHidden}, #{stockManageYn}, #{safetyStockQty},
+            #{deliveryFee}, #{createdBy}
         )
     </insert>
 
@@ -101,13 +147,95 @@
             processing_type = #{processingType},
             tax_category = #{taxCategory},
             unit_name = #{unitName},
-            independent_sale_yn = #{independentSaleYn},
-            stock_managed_yn = #{stockManagedYn},
             sale_status = #{saleStatus},
             description = #{description},
-            image_url = #{imageUrl}
+            image_url = #{imageUrl},
+            supply_price = #{supplyPrice},
+            vat_amount = #{vatAmount},
+            sale_price = #{salePrice},
+            sale_start_at = #{saleStartAt},
+            sale_end_at = #{saleEndAt},
+            display_order = #{displayOrder},
+            md_comment = #{mdComment},
+            summary = #{summary},
+            is_new = #{isNew},
+            is_monthly = #{isMonthly},
+            is_hidden = #{isHidden},
+            stock_manage_yn = #{stockManageYn},
+            safety_stock_qty = #{safetyStockQty},
+            delivery_fee = #{deliveryFee}
         WHERE product_id = #{productId}
     </update>
+
+    <select id="selectProductImageList" parameterType="long" resultType="kr.co.matpam.admin.product.service.ProductImageVO">
+        SELECT
+            image_id,
+            product_id,
+            image_type,
+            image_url,
+            sort_order,
+            use_yn,
+            created_at
+        FROM tb_product_image
+        WHERE product_id = #{productId}
+          AND use_yn = 'Y'
+        ORDER BY sort_order ASC, image_id ASC
+    </select>
+
+    <delete id="deleteProductImages" parameterType="long">
+        DELETE FROM tb_product_image
+        WHERE product_id = #{productId}
+    </delete>
+
+    <insert id="insertProductImage" parameterType="kr.co.matpam.admin.product.service.ProductImageVO" useGeneratedKeys="true" keyProperty="imageId">
+        INSERT INTO tb_product_image (
+            product_id, image_type, image_url, sort_order, use_yn
+        ) VALUES (
+            #{productId}, #{imageType}, #{imageUrl}, #{sortOrder}, #{useYn}
+        )
+    </insert>
+
+    <select id="selectRecommendedProcessCandidateList" parameterType="kr.co.matpam.admin.product.service.ProductVO" resultType="kr.co.matpam.admin.product.service.ProductVO">
+        SELECT
+            p.product_id,
+            p.product_code,
+            p.product_name,
+            p.processing_type,
+            p.sale_status
+        FROM tb_product p
+        WHERE p.tenant_id = #{tenantId}
+          AND p.processing_type = 'PROCESS_SERVICE'
+          AND p.sale_status IN ('ON_SALE', 'STOPPED', 'TEMP_SAVE', 'APPROVAL_WAIT')
+        <if test="productId != null">
+          AND p.product_id != #{productId}
+        </if>
+        ORDER BY p.processing_type ASC, p.product_name ASC
+    </select>
+
+    <select id="selectRecommendedProcessIdList" parameterType="long" resultType="long">
+        SELECT related_product_id
+        FROM tb_product_relation
+        WHERE base_product_id = #{productId}
+          AND relation_kind = 'RAW_TO_PROCESS_SERVICE'
+          AND status = 'ACTIVE'
+        ORDER BY sort_order ASC, relation_id ASC
+    </select>
+
+    <delete id="deleteRecommendedProcessRelations" parameterType="long">
+        DELETE FROM tb_product_relation
+        WHERE base_product_id = #{productId}
+          AND relation_kind = 'RAW_TO_PROCESS_SERVICE'
+    </delete>
+
+    <insert id="insertRecommendedProcessRelation" parameterType="map">
+        INSERT INTO tb_product_relation (
+            base_product_id, related_product_id, relation_kind, bundle_mode,
+            sort_order, effective_from, status, created_by
+        ) VALUES (
+            #{baseProductId}, #{relatedProductId}, #{relationKind}, #{bundleMode},
+            #{sortOrder}, NOW(), 'ACTIVE', #{createdBy}
+        )
+    </insert>
 
     <select id="selectProductPriceList" parameterType="long" resultType="kr.co.matpam.admin.product.service.ProductPriceVO">
         SELECT 

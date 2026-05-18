@@ -97,8 +97,14 @@
                                     <td class="text-center text-muted small">
                                         ${paginationInfo.totalRecordCount - paginationInfo.firstRecordIndex - status.index}
                                     </td>
-                                    <td class="fw-bold" style="color:#334155;">${fn:escapeXml(op.userName)}</td>
-                                    <td class="small text-muted">${fn:escapeXml(op.loginId)}</td>
+                                    <td class="fw-bold" style="color:#334155;">
+                                        <a href="javascript:;" class="text-decoration-none text-primary fw-bold"
+                                           onclick="fn_openModal('${op.userId}')">${fn:escapeXml(op.userName)}</a>
+                                    </td>
+                                    <td class="small text-muted">
+                                        <a href="javascript:;" class="text-decoration-none text-muted"
+                                           onclick="fn_openModal('${op.userId}')">${fn:escapeXml(op.loginId)}</a>
+                                    </td>
                                     <td class="text-center">
                                         <c:choose>
                                             <c:when test="${op.userRole eq 'OPERATOR'}">

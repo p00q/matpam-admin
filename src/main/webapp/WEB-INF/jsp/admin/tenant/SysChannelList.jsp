@@ -98,13 +98,19 @@
                                         <c:otherwise><span class="badge bg-light text-dark border">${item.channelType}</span></c:otherwise>
                                     </c:choose>
                                 </td>
-                                <td class="fw-bold" style="color:#1e293b;">${item.channelName}</td>
+                                <td class="fw-bold" style="color:#1e293b;">
+                                    <a href="javascript:;" class="text-decoration-none text-primary fw-bold"
+                                       onclick="editChannel('${item.channelId}')">${item.channelName}</a>
+                                </td>
                                 <td>
                                     <c:choose>
                                         <c:when test="${not empty item.managerName}">
                                             <div class="d-flex align-items-center">
                                                 <i class="bi bi-person-circle text-muted me-2"></i>
-                                                <div style="font-weight:600; color:#334155;">${item.managerName}</div>
+                                                <div style="font-weight:600; color:#334155;">
+                                                    <a href="javascript:;" class="text-decoration-none text-reset"
+                                                       onclick="editChannel('${item.channelId}')">${item.managerName}</a>
+                                                </div>
                                             </div>
                                         </c:when>
                                         <c:otherwise>
